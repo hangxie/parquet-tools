@@ -21,7 +21,9 @@ CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
 LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
 
-.PHONY: deps format lint build docker-build clean help
+.PHONY: all deps format lint test build docker-build clean help
+
+all: deps format lint test build  ## Build all common targets
 
 format:  ## Format all golang code
 	@echo "==> Formatting all golang code"
@@ -49,6 +51,12 @@ clean:  ## Clean up the build dirs
 docker-build:  ## Build docker image
 	@echo "==> Building docker image"
 	@echo TBD
+
+test:  ## Run unit tests
+	@echo "==> Running unit tests"
+	@mkdir -p build
+	@go test -coverprofile=build/cover.out ./...
+	@go tool cover -html=build/cover.out -o build/coverage.html
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile

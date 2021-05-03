@@ -12,6 +12,10 @@ type RowCountCmd struct {
 
 // Run does actual rowcount job
 func (c *RowCountCmd) Run(ctx *Context) error {
-	fmt.Println("rowcount", c.URI)
+	reader, err := newParquetFileReader(c.URI)
+	if err != nil {
+		return err
+	}
+	fmt.Println(reader.GetNumRows())
 	return nil
 }
