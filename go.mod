@@ -4,11 +4,10 @@ go 1.16
 
 require (
 	github.com/alecthomas/kong v0.2.16
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/aws/aws-sdk-go v1.38.30
 	github.com/stretchr/testify v1.5.1
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	github.com/xitongsys/parquet-go v1.6.0
+	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be
 )
 
 replace github.com/hangxie/parquet-tools/cmd => ./cmd
