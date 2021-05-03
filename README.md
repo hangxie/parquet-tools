@@ -11,3 +11,5 @@ This project is inspired by:
 Some test data are from:
 * https://pro.dp.la/developers/bulk-download
 * https://github.com/xitongsys/parquet-go/tree/master/example/
+
+CircleCI Status: [![CircleCI](https://circleci.com/gh/circleci/circleci-docs.svg?style=svg)](https://circleci.com/gh/circleci/circleci-docs)
