@@ -1,3 +1,3 @@
-module github.com/hangxie/parquet-tools/cmd
+module cmd
 
 go 1.16
