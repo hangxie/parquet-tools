@@ -18,9 +18,23 @@ jobs:
           paths:
             - "/go/pkg/mod"
       - run:
-          name: Run tests
+          name: Run format
           command: |
-            make test
+            make format
+            DIFF=$(git diff)
+            if [ ! -z "${DIFF}" ] ; then
+              echo "${DIFF}"
+              false
+            fi
+      - run:
+          name: Run lint
+          command: make lint
+      - run:
+          name: Run tests
+          command: make test
+      - run:
+          name: Build
+          command: make build
       - store_artifacts:
           path: build/coverage.html
           destination: test-coverage.html
