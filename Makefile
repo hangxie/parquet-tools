@@ -37,7 +37,7 @@ deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
 	@go mod tidy
 	@test -x $(GOBIN)/golint || \
-		(cd /tmp; go get golint)
+		(cd /tmp; go get golang.org/x/lint/golint)
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@echo "==> Building executable"
