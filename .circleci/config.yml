@@ -32,9 +32,11 @@ jobs:
       - run:
           name: Run tests
           command: make test
+      - store_test_results:
+          path: build/junit
       - run:
           name: Build
           command: make build
       - store_artifacts:
-          path: build/coverage.html
+          path: build/test/coverage.html
           destination: test-coverage.html
