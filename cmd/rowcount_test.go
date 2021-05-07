@@ -17,7 +17,7 @@ func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 	ctx := Context{}
 
 	err := cmd.Run(&ctx)
-	assert.NotEqual(t, err, nil)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), string("failed to open local file"))
 }
 
@@ -32,7 +32,7 @@ func Test_RowCountCmd_Run_good(t *testing.T) {
 	savedStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	cmd.Run(&ctx)
+	assert.Nil(t, cmd.Run(&ctx))
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = savedStdout
