@@ -21,23 +21,29 @@ CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
 LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
 
-.PHONY: all deps format lint test build docker-build clean help
+.PHONY: all deps tools format lint test build docker-build clean help
 
-all: deps format lint test build  ## Build all common targets
+all: deps tools format lint test build  ## Build all common targets
 
 format:  ## Format all golang code
 	@echo "==> Formatting all golang code"
 	@gofmt -w -s $(GOSOURCES)
 
-lint:  ## Run static code analysis
+lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
 	@$(GOBIN)/golint ./...
 
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
 	@go mod tidy
+
+tools:  ## Install build tools
+	@echo "==> Installing build tools"
 	@test -x $(GOBIN)/golint || \
 		(cd /tmp; go get golang.org/x/lint/golint)
+	@test -x $(GOBIN)/go-junit-report || \
+		(cd /tmp; go get -u github.com/jstemmer/go-junit-report)
+
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@echo "==> Building executable"
@@ -52,11 +58,12 @@ docker-build:  ## Build docker image
 	@echo "==> Building docker image"
 	@echo TBD
 
-test:  ## Run unit tests
+test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
-	@mkdir -p build
-	@go test -coverprofile=build/cover.out ./...
-	@go tool cover -html=build/cover.out -o build/coverage.html
+	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
+	@go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
+	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml
+	@go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
