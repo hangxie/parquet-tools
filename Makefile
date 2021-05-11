@@ -62,8 +62,8 @@ test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
 	@go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
-	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml
-	@go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
+	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml && \
+		go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
