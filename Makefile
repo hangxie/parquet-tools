@@ -31,7 +31,7 @@ format:  ## Format all golang code
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
-	@$(GOBIN)/golint ./...
+	@$(GOBIN)/golint -set_exit_status ./...
 
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"

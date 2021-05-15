@@ -132,6 +132,10 @@ func Test_newParquetFileWriter(t *testing.T) {
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
 
+	// invalid URI
+	_, err = newParquetFileWriter("invalid://uri", dummySchema)
+	assert.Contains(t, err.Error(), "unknown location scheme")
+
 	// invalid schema
 	_, err = newParquetFileWriter(testFile, "")
 	assert.Contains(t, err.Error(), "error in unmarshalling json schema string")
@@ -143,6 +147,10 @@ func Test_newCSVWriter(t *testing.T) {
 	pw, err := newCSVWriter(testFile, dummySchema)
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
+
+	// invalid URI
+	_, err = newCSVWriter("invalid://uri", dummySchema)
+	assert.Contains(t, err.Error(), "unknown location scheme")
 
 	// invalid schema will cause panic
 	assert.Panics(t, func() { newCSVWriter(testFile, []string{"invalid schema"}) })
