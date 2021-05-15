@@ -31,7 +31,7 @@ format:  ## Format all golang code
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
-	@$(GOBIN)/golint -set_exit_status ./...
+	@$(GOBIN)/golangci-lint run ./...
 
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
@@ -39,8 +39,8 @@ deps:  ## Install prerequisite for build
 
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
-	@test -x $(GOBIN)/golint || \
-		(cd /tmp; go get golang.org/x/lint/golint)
+	@test -x $(GOBIN)/golangci-lint || \
+		(cd /tmp; GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.1)
 	@test -x $(GOBIN)/go-junit-report || \
 		(cd /tmp; go get -u github.com/jstemmer/go-junit-report)
 
@@ -61,9 +61,10 @@ docker-build:  ## Build docker image
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
-	@go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
-	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml && \
-		go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
+	@set -eou pipefail \
+		&& go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
+	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
+		&& go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile

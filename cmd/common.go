@@ -31,7 +31,7 @@ type Context struct {
 	Build   string
 }
 
-func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
+func parseURI(uri string) (*url.URL, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
@@ -41,21 +41,39 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 		u.Scheme = "file"
 	}
 
+	return u, nil
+}
+
+func getBucketRegion(bucket string) (string, error) {
+	// Get region of the S3 bucket
+	ctx := context.Background()
+	sess := session.Must(session.NewSession())
+	region, err := s3manager.GetBucketRegion(ctx, sess, bucket, "us-east-1")
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
+			return "", fmt.Errorf("unable to find bucket %s's region", bucket)
+		}
+		return "", fmt.Errorf("AWS error: %s", err.Error())
+	}
+
+	return region, nil
+}
+
+func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
+	u, err := parseURI(uri)
+	if err != nil {
+		return nil, err
+	}
+
 	var fileReader source.ParquetFile
 	switch u.Scheme {
 	case "s3":
-		// Get region of the S3 bucket
-		ctx := context.Background()
-		sess := session.Must(session.NewSession())
-		region, err := s3manager.GetBucketRegion(ctx, sess, u.Host, "us-east-1")
+		region, err := getBucketRegion(u.Host)
 		if err != nil {
-			if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-				return nil, fmt.Errorf("unable to find bucket %s's region", u.Host)
-			}
-			return nil, fmt.Errorf("AWS error: %s", err.Error())
+			return nil, err
 		}
 
-		fileReader, err = s3.NewS3FileReader(ctx, u.Host, strings.TrimLeft(u.Path, "/"), &aws.Config{Region: aws.String(region)})
+		fileReader, err = s3.NewS3FileReader(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), &aws.Config{Region: aws.String(region)})
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
 		}
@@ -73,30 +91,20 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 }
 
 func newFileWriter(uri string) (source.ParquetFile, error) {
-	u, err := url.Parse(uri)
+	u, err := parseURI(uri)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
-	}
-
-	if u.Scheme == "" {
-		u.Scheme = "file"
+		return nil, err
 	}
 
 	var fileWriter source.ParquetFile
 	switch u.Scheme {
 	case "s3":
-		// Get region of the S3 bucket
-		ctx := context.Background()
-		sess := session.Must(session.NewSession())
-		region, err := s3manager.GetBucketRegion(ctx, sess, u.Host, "us-east-1")
+		region, err := getBucketRegion(u.Host)
 		if err != nil {
-			if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-				return nil, fmt.Errorf("unable to find bucket %s's region", u.Host)
-			}
-			return nil, fmt.Errorf("AWS error: %s", err.Error())
+			return nil, err
 		}
 
-		fileWriter, err = s3.NewS3FileWriter(ctx, u.Host, strings.TrimLeft(u.Path, "/"), nil, &aws.Config{Region: aws.String(region)})
+		fileWriter, err = s3.NewS3FileWriter(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), nil, &aws.Config{Region: aws.String(region)})
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
 		}

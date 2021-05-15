@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -20,7 +21,7 @@ func Test_ImportCmd_Run_good(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		cmd.Run(&Context{})
+		assert.Nil(t, cmd.Run(&Context{}))
 	})
 
 	assert.Equal(t, stdout, "")
@@ -32,7 +33,7 @@ func Test_ImportCmd_Run_good(t *testing.T) {
 
 func Test_ImportCmd_Run_bad_schema_file(t *testing.T) {
 	cmd := &ImportCmd{
-		Schema: "testdata/does-not-exist",
+		Schema: "file/does/not/exist",
 		Format: "csv",
 	}
 
@@ -52,46 +53,49 @@ func Test_ImportCmd_Run_invalid_format(t *testing.T) {
 	assert.Contains(t, err.Error(), "is not a recognized source format")
 }
 
-func Test_importCSV(t *testing.T) {
+func Test_ImportCmd_importCSV_invalid_uri(t *testing.T) {
 	cmd := &ImportCmd{}
-	var err error
-	schema := `
-name=Id, type=INT64
-name=Name, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY
-name=Age, type=INT32
-name=Temperature, type=FLOAT
-name=Vaccinated, type=BOOLEAN
-`
 
-	// invalid target
-	err = cmd.importCSV("some-source", "bad://target", "")
+	err := cmd.importCSV("testdata/csv.source", "://uri", "")
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unknown location scheme")
+	assert.Contains(t, err.Error(), "unable to parse file location")
+}
 
-	// invalid schema
-	assert.Panics(t, func() {
-		cmd.importCSV("some-source", "s3://target", "bad schema")
-	})
+func Test_ImportCmd_importCSV_non_existent_source(t *testing.T) {
+	cmd := &ImportCmd{}
 
 	// non-existent source
-	err = cmd.importCSV("some-source", "s3://target", "")
+	err := cmd.importCSV("some-source", "s3://target", "")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open CSV file")
+}
 
+func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
 	// fail to write
-	err = cmd.importCSV("testdata/csv.source", "s3://target", schema)
+	cmd := &ImportCmd{}
+	schema, _ := ioutil.ReadFile("testdata/csv.schema")
+
+	err := cmd.importCSV("testdata/csv.source", "s3://target", string(schema))
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to close Parquet file")
 }
 
-func Test_importJson(t *testing.T) {
+func Test_ImportCmd_importCSV_good(t *testing.T) {
+	cmd := &ImportCmd{}
+	schema, _ := ioutil.ReadFile("testdata/csv.schema")
+
+	err := cmd.importCSV("testdata/csv.source", os.TempDir()+"/import-csv.parquet", string(schema))
+	assert.Nil(t, err)
+}
+
+func Test_ImportCmd_importJson_good(t *testing.T) {
 	cmd := &ImportCmd{
 		Schema: "testdata/csv.schema",
 		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		cmd.Run(&Context{})
+		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t, stdout, "TBD\n")
 	assert.Equal(t, stderr, "")

@@ -12,9 +12,9 @@ import (
 // ImportCmd is a kong command for import
 type ImportCmd struct {
 	CommonOption
-	Source string `help:"Source file name."`
+	Source string `required:"" help:"Source file name."`
 	Format string `help:"Source file format." enum:"csv,json" default:"csv"`
-	Schema string `help:"Schema file name."`
+	Schema string `required:"" help:"Schema file name."`
 }
 
 // Run does actual import job
@@ -46,18 +46,17 @@ func (c *ImportCmd) importCSV(source string, target string, schemaData string) e
 		}
 	}
 
-	parquetWriter, err := newCSVWriter(target, schema)
-	if err != nil {
-		return err
-	}
-	defer parquetWriter.WriteStop()
-
 	csvFile, err := os.Open(source)
 	if err != nil {
 		return fmt.Errorf("failed to open CSV file %s: %s", source, err.Error())
 	}
 	defer csvFile.Close()
 	csvReader := csv.NewReader(csvFile)
+
+	parquetWriter, err := newCSVWriter(target, schema)
+	if err != nil {
+		return err
+	}
 
 	for {
 		fields, err := csvReader.Read()
