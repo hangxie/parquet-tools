@@ -14,6 +14,7 @@ var (
 var cli struct {
 	Cat      cmd.CatCmd      `cmd:"" help:"Prints the content of a Parquet file, data only."`
 	Dump     cmd.DumpCmd     `cmd:"" help:"Prints the content and metadata."`
+	Import   cmd.ImportCmd   `cmd:"" help:"Create Parquet file from other source data."`
 	Meta     cmd.MetaCmd     `cmd:"" help:"Prints the metadata."`
 	RowCount cmd.RowCountCmd `cmd:"" help:"Prints the count of rows."`
 	Schema   cmd.SchemaCmd   `cmd:"" help:"Prints the schema."`
