@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
@@ -146,4 +147,22 @@ func Test_newCSVWriter(t *testing.T) {
 	// invalid schema will cause panic
 	assert.Panics(t, func() { newCSVWriter(testFile, []string{"invalid schema"}) })
 	assert.Panics(t, func() { newCSVWriter(testFile, []string{"name=Id"}) })
+}
+
+func captureStdoutStderr(f func()) (string, string) {
+	savedStdout := os.Stdout
+	savedStderr := os.Stderr
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+	f()
+	wOut.Close()
+	wErr.Close()
+	stdout, _ := ioutil.ReadAll(rOut)
+	stderr, _ := ioutil.ReadAll(rErr)
+	os.Stdout = savedStdout
+	os.Stderr = savedStderr
+
+	return string(stdout), string(stderr)
 }
