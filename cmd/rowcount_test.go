@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,12 +9,11 @@ import (
 func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 	cmd := &RowCountCmd{
 		CommonOption: CommonOption{
-			URI: "path/to/non-existent/file",
+			URI: "file/does/not/exist",
 		},
 	}
-	ctx := Context{}
 
-	err := cmd.Run(&ctx)
+	err := cmd.Run(&Context{})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), string("failed to open local file"))
 }
@@ -24,18 +21,13 @@ func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 func Test_RowCountCmd_Run_good(t *testing.T) {
 	cmd := &RowCountCmd{
 		CommonOption: CommonOption{
-			URI: "file://./testdata/good.parquet",
+			URI: "testdata/good.parquet",
 		},
 	}
-	ctx := Context{}
 
-	savedStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-	assert.Nil(t, cmd.Run(&ctx))
-	w.Close()
-	out, _ := ioutil.ReadAll(r)
-	os.Stdout = savedStdout
-
-	assert.Equal(t, string(out), "4\n")
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, stdout, "4\n")
+	assert.Equal(t, stderr, "")
 }

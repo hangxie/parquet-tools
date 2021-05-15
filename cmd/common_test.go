@@ -10,151 +10,134 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_newParquetFileReader(t *testing.T) {
-	testCases := []struct {
-		uri           string
-		expectedError error
-	}{
-		{
-			uri:           "://uri",
-			expectedError: fmt.Errorf("unable to parse file location"),
-		},
-		{
-			uri:           "non-existent-local-file",
-			expectedError: fmt.Errorf("no such file or directory"),
-		},
-		{
-			uri:           "invalid-scheme://something",
-			expectedError: fmt.Errorf("unknown location scheme"),
-		},
-		{
-			uri:           "file://./testdata/not-a-parquet-file",
-			expectedError: fmt.Errorf("invalid argument"),
-		},
-		{
-			uri:           "file://testdata/not-a-parquet-file",
-			expectedError: fmt.Errorf("invalid argument"),
-		},
-		{
-			uri:           "testdata/not-a-parquet-file",
-			expectedError: fmt.Errorf("invalid argument"),
-		},
-		{
-			uri:           "testdata/good.parquet",
-			expectedError: nil,
-		},
-		{
-			uri:           "s3://somebucket-not-exists",
-			expectedError: fmt.Errorf("unable to find"),
-		},
-		{
-			// https://pro.dp.la/developers/bulk-download
-			uri:           "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet",
-			expectedError: fmt.Errorf("failed to open S3 object"),
-		},
-	}
+func Test_common_parseURI_invalid_uri(t *testing.T) {
+	_, err := parseURI("://uri")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to parse file location")
+}
 
+func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
+	_, err := newParquetFileReader(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to find")
+}
+
+func Test_common_newParquetFileReader_invalid_uri(t *testing.T) {
+	_, err := newParquetFileReader("://uri")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to parse file location")
+}
+
+func Test_common_newParquetFileReader_invalid_uri_scheme(t *testing.T) {
+	_, err := newParquetFileReader("invalid-scheme://something")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unknown location scheme")
+}
+
+func Test_common_newParquetFileReader_local_non_existent_file(t *testing.T) {
+	_, err := newParquetFileReader("file/does/not/exist")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "no such file or directory")
+}
+
+func Test_common_newParquetFileReader_local_not_parquet(t *testing.T) {
+	_, err := newParquetFileReader("testdata/not-a-parquet-file")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "invalid argument")
+}
+
+func Test_common_newParquetFileReader_local_good(t *testing.T) {
+	pr, err := newParquetFileReader("testdata/good.parquet")
+	assert.Nil(t, err)
+	assert.NotNil(t, pr)
+}
+
+func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
-	for _, tc := range testCases {
-		r, err := newParquetFileReader(tc.uri)
-		if tc.expectedError != nil {
-			// expect error
-			assert.NotEqual(t, err, nil)
-			assert.Contains(t, err.Error(), tc.expectedError.Error())
-			continue
-		}
-
-		// expect good result
-		assert.Equal(t, err, nil)
-		assert.NotEqual(t, r, nil)
-	}
+	_, err := newParquetFileReader("s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to open S3 object")
 }
 
-func Test_newFileWriter(t *testing.T) {
-	testCases := []struct {
-		uri           string
-		expectedError error
-	}{
-		{
-			uri:           "://uri",
-			expectedError: fmt.Errorf("unable to parse file location"),
-		},
-		{
-			uri:           "invalid-scheme://something",
-			expectedError: fmt.Errorf("unknown location scheme"),
-		},
-		{
-			uri:           "testdata/",
-			expectedError: fmt.Errorf("is a directory"),
-		},
-		{
-			uri:           os.TempDir() + "/file-writer.parquet",
-			expectedError: nil,
-		},
-		{
-			uri:           "s3://somebucket-not-exists",
-			expectedError: fmt.Errorf("unable to find"),
-		},
-		{
-			// https://pro.dp.la/developers/bulk-download
-			uri:           "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet",
-			expectedError: nil,
-		},
-	}
+func Test_common_newFileWriter_invalid_uri(t *testing.T) {
+	_, err := newFileWriter("://uri")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to parse file location")
+}
 
+func Test_common_newFileWriter_invalid_uri_scheme(t *testing.T) {
+	_, err := newFileWriter("invalid-scheme://something")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unknown location scheme")
+}
+
+func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
+	_, err := newFileWriter(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to find")
+}
+
+func Test_common_newFileWriter_local_not_a_file(t *testing.T) {
+	_, err := newFileWriter("testdata/")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "is a directory")
+}
+
+func Test_common_newFileWriter_local_good(t *testing.T) {
+	pw, err := newFileWriter(os.TempDir() + "/file-writer.parquet")
+	assert.Nil(t, err)
+	assert.NotNil(t, pw)
+}
+
+func Test_common_newFileWriter_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
-	for _, tc := range testCases {
-		r, err := newFileWriter(tc.uri)
-		if tc.expectedError != nil {
-			// expect error
-			assert.NotEqual(t, err, nil)
-			assert.Contains(t, err.Error(), tc.expectedError.Error())
-			continue
-		}
-
-		// expect good result
-		assert.Equal(t, err, nil)
-		assert.NotEqual(t, r, nil)
-		os.Remove(tc.uri)
-	}
+	// parquet writer does not actually write to destination immediately
+	pw, err := newFileWriter("s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet")
+	assert.Nil(t, err)
+	assert.NotNil(t, pw)
 }
 
-func Test_newParquetFileWriter(t *testing.T) {
-	dummySchema := struct{}{}
-	testFile := os.TempDir() + "/parquet-writer.parquet"
-	pw, err := newParquetFileWriter(testFile, &dummySchema)
-	assert.NotNil(t, pw)
-	assert.Nil(t, err)
-
-	// invalid URI
-	_, err = newParquetFileWriter("invalid://uri", dummySchema)
-	assert.Contains(t, err.Error(), "unknown location scheme")
-
-	// invalid schema
-	_, err = newParquetFileWriter(testFile, "")
-	assert.Contains(t, err.Error(), "error in unmarshalling json schema string")
+func Test_common_newParquetFileWriter_invalid_uri(t *testing.T) {
+	_, err := newParquetFileWriter("://uri", &struct{}{})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to parse file location")
 }
 
-func Test_newCSVWriter(t *testing.T) {
-	dummySchema := []string{"name=Id, type=INT64"}
-	testFile := os.TempDir() + "/csv-writer.parquet"
-	pw, err := newCSVWriter(testFile, dummySchema)
+func Test_common_newParquetFileWriter_good(t *testing.T) {
+	pw, err := newParquetFileWriter(os.TempDir()+"/parquet-writer.parquet", &struct{}{})
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
+}
 
-	// invalid URI
-	_, err = newCSVWriter("invalid://uri", dummySchema)
-	assert.Contains(t, err.Error(), "unknown location scheme")
+func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
+	_, err := newCSVWriter("://uri", []string{"name=Id, type=INT64"})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to parse file location")
+}
 
+func Test_common_newCSVWriter_invalid_schema(t *testing.T) {
 	// invalid schema will cause panic
-	assert.Panics(t, func() { newCSVWriter(testFile, []string{"invalid schema"}) })
-	assert.Panics(t, func() { newCSVWriter(testFile, []string{"name=Id"}) })
+	testFile := os.TempDir() + "/csv-writer.parquet"
+	assert.Panics(t, func() {
+		_, err := newCSVWriter(testFile, []string{"invalid schema"})
+		assert.NotNil(t, err)
+	})
+	assert.Panics(t, func() {
+		_, err := newCSVWriter(testFile, []string{"name=Id"})
+		assert.NotNil(t, err)
+	})
+}
+
+func Test_common_newCSVWriter_good(t *testing.T) {
+	pw, err := newCSVWriter(os.TempDir()+"/csv-writer.parquet", []string{"name=Id, type=INT64"})
+	assert.NotNil(t, pw)
+	assert.Nil(t, err)
 }
 
 func captureStdoutStderr(f func()) (string, string) {
