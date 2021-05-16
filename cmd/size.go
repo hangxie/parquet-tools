@@ -7,7 +7,7 @@ import (
 // SizeCmd is a kong command for size
 type SizeCmd struct {
 	CommonOption
-	Uncompressed bool `help:"Output uncompressed size." default:"false"`
+	Uncompressed bool `short:"u" help:"Output uncompressed size." default:"false"`
 }
 
 // Run does actual size job

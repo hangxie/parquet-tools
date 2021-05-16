@@ -12,9 +12,9 @@ import (
 // ImportCmd is a kong command for import
 type ImportCmd struct {
 	CommonOption
-	Source string `required:"" help:"Source file name."`
-	Format string `help:"Source file format." enum:"csv,json" default:"csv"`
-	Schema string `required:"" help:"Schema file name."`
+	Source string `required:"" short:"s" help:"Source file name."`
+	Format string `help:"Source file format." short:"f" enum:"csv,json" default:"csv"`
+	Schema string `required:"" short:"m" help:"Schema file name."`
 }
 
 // Run does actual import job

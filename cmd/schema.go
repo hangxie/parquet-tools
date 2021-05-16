@@ -17,7 +17,7 @@ var (
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
 	CommonOption
-	Format string `help:"Schema format." enum:"raw,json,go" default:"json"`
+	Format string `short:"f" help:"Schema format." enum:"raw,json,go" default:"json"`
 }
 
 // Run does actual schema job

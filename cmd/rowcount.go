@@ -7,7 +7,7 @@ import (
 // RowCountCmd is a kong command for rowcount
 type RowCountCmd struct {
 	CommonOption
-	Detailed bool `help:"Detailed rowcount."`
+	Detailed bool `short:"d" help:"Detailed rowcount."`
 }
 
 // Run does actual rowcount job
