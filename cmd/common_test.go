@@ -50,6 +50,7 @@ func Test_common_newParquetFileReader_local_good(t *testing.T) {
 	pr, err := newParquetFileReader("testdata/good.parquet")
 	assert.Nil(t, err)
 	assert.NotNil(t, pr)
+	pr.PFile.Close()
 }
 
 func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
@@ -87,9 +88,10 @@ func Test_common_newFileWriter_local_not_a_file(t *testing.T) {
 }
 
 func Test_common_newFileWriter_local_good(t *testing.T) {
-	pw, err := newFileWriter(os.TempDir() + "/file-writer.parquet")
+	fw, err := newFileWriter(os.TempDir() + "/file-writer.parquet")
 	assert.Nil(t, err)
-	assert.NotNil(t, pw)
+	assert.NotNil(t, fw)
+	fw.Close()
 }
 
 func Test_common_newFileWriter_s3_good(t *testing.T) {
@@ -98,9 +100,10 @@ func Test_common_newFileWriter_s3_good(t *testing.T) {
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
 	// parquet writer does not actually write to destination immediately
-	pw, err := newFileWriter("s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet")
+	fw, err := newFileWriter("s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet")
 	assert.Nil(t, err)
-	assert.NotNil(t, pw)
+	assert.NotNil(t, fw)
+	fw.Close()
 }
 
 func Test_common_newParquetFileWriter_invalid_uri(t *testing.T) {
@@ -113,6 +116,7 @@ func Test_common_newParquetFileWriter_good(t *testing.T) {
 	pw, err := newParquetFileWriter(os.TempDir()+"/parquet-writer.parquet", &struct{}{})
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
+	pw.PFile.Close()
 }
 
 func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
@@ -143,6 +147,7 @@ func Test_common_newCSVWriter_good(t *testing.T) {
 func captureStdoutStderr(f func()) (string, string) {
 	savedStdout := os.Stdout
 	savedStderr := os.Stderr
+
 	rOut, wOut, _ := os.Pipe()
 	rErr, wErr, _ := os.Pipe()
 	os.Stdout = wOut
@@ -152,6 +157,9 @@ func captureStdoutStderr(f func()) (string, string) {
 	wErr.Close()
 	stdout, _ := ioutil.ReadAll(rOut)
 	stderr, _ := ioutil.ReadAll(rErr)
+	rOut.Close()
+	rErr.Close()
+
 	os.Stdout = savedStdout
 	os.Stderr = savedStderr
 

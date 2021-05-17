@@ -26,6 +26,7 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 	if err != nil {
 		return err
 	}
+	defer reader.PFile.Close()
 
 	if err := reader.ReadFooter(); err != nil {
 		return fmt.Errorf("failed to read footer from Parquet file: %s", err.Error())
