@@ -16,6 +16,8 @@ func (c *RowCountCmd) Run(ctx *Context) error {
 	if err != nil {
 		return err
 	}
+	defer reader.PFile.Close()
+
 	fmt.Println(reader.GetNumRows())
 	return nil
 }

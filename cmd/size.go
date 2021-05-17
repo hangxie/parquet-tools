@@ -23,6 +23,7 @@ func (c *SizeCmd) Run(ctx *Context) error {
 	if err != nil {
 		return err
 	}
+	defer reader.PFile.Close()
 
 	footerSize, err := reader.GetFooterSize()
 	if err != nil {
