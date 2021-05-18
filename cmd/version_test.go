@@ -26,3 +26,19 @@ func Test_VersionCmd_Run_good(t *testing.T) {
 	assert.Equal(t, stdout, "Version: the-version\nBuild Time: the-build\n")
 	assert.Equal(t, stderr, "")
 }
+
+func Test_VersionCmd_Run_good_json(t *testing.T) {
+	cmd := &VersionCmd{
+		JSON: true,
+	}
+	ctx := Context{
+		Version: "the-version",
+		Build:   "the-build",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&ctx))
+	})
+	assert.Equal(t, stdout, `{"Version":"the-version","BuildTime":"the-build"}`+"\n")
+	assert.Equal(t, stderr, "")
+}
