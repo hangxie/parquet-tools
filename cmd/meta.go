@@ -59,17 +59,19 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				columns[colIndex].Encodings[i] = encoding.String()
 			}
 			// TODO find a parquet file with index to test this
-			for _, indexCol := range rg.SortingColumns {
-				if indexCol.ColumnIdx == int32(colIndex) {
-					columns[colIndex].Index = new(string)
-					if indexCol.Descending {
-						*columns[colIndex].Index = "DESC"
-					} else {
-						*columns[colIndex].Index = "ACS"
+			/*
+				for _, indexCol := range rg.SortingColumns {
+					if indexCol.ColumnIdx == int32(colIndex) {
+						columns[colIndex].Index = new(string)
+						if indexCol.Descending {
+							*columns[colIndex].Index = "DESC"
+						} else {
+							*columns[colIndex].Index = "ACS"
+						}
+						break
 					}
-					break
 				}
-			}
+			*/
 		}
 		rowGroups[rgIndex] = rowGroupMeta{
 			NumRows:       rg.NumRows,
@@ -85,11 +87,8 @@ func (c *MetaCmd) Run(ctx *Context) error {
 		NumRowGroups: len(rowGroups),
 		RowGroups:    rowGroups,
 	}
-	buf, err := json.Marshal(meta)
-	if err != nil {
-		return err
-	}
-
+	buf, _ := json.Marshal(meta)
 	fmt.Println(string(buf))
+
 	return nil
 }
