@@ -26,7 +26,10 @@ func main() {
 		Version: version,
 		Build:   build,
 	}
-	ctx := kong.Parse(&cli)
+	ctx := kong.Parse(&cli,
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
+	)
 	err := ctx.Run(&cmdCtx)
 	ctx.FatalIfErrorf(err)
 }
