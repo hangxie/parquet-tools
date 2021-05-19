@@ -94,6 +94,6 @@ func Test_SchemaCmd_Run_good_go(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 
-	assert.Equal(t, stdout, "TBD\n")
+	assert.Equal(t, stdout, "To be implemented.\n")
 	assert.Equal(t, stderr, "")
 }

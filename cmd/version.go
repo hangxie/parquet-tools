@@ -7,7 +7,7 @@ import (
 
 // VersionCmd is a kong command for version
 type VersionCmd struct {
-	JSON bool `short:"j" help:"Output JSON format." default:"false"`
+	JSON bool `short:"j" help:"Output in JSON format." default:"false"`
 }
 
 // Run does actual version job

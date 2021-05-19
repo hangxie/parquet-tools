@@ -8,9 +8,9 @@ import (
 
 func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    10,
-		PageSize: 10,
-		Sampling: 1.0,
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
 		CommonOption: CommonOption{
 			URI: "file/does/not/exist",
 		},
@@ -23,9 +23,9 @@ func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 
 func Test_CatCmd_Run_invalid_limit(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    -10,
-		PageSize: 10,
-		Sampling: 0.5,
+		Limit:       -10,
+		PageSize:    10,
+		SampleRatio: 0.5,
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
@@ -38,9 +38,9 @@ func Test_CatCmd_Run_invalid_limit(t *testing.T) {
 
 func Test_CatCmd_Run_default_limit(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    -1,
-		PageSize: 10,
-		Sampling: 0.5,
+		Limit:       0,
+		PageSize:    10,
+		SampleRatio: 0.5,
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
@@ -53,9 +53,9 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 
 func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    10,
-		PageSize: 0,
-		Sampling: 0.5,
+		Limit:       10,
+		PageSize:    0,
+		SampleRatio: 0.5,
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
@@ -68,9 +68,9 @@ func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
 
 func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    10,
-		PageSize: 10,
-		Sampling: 2.0,
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 2.0,
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
@@ -83,9 +83,9 @@ func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 
 func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    10,
-		PageSize: 10,
-		Sampling: -0.5,
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: -0.5,
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
@@ -98,9 +98,9 @@ func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 
 func Test_CatCmd_Run_good_default(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    10,
-		PageSize: 10,
-		Sampling: 1.0,
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
@@ -116,9 +116,9 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 
 func Test_CatCmd_Run_good_limit(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    2,
-		PageSize: 10,
-		Sampling: 1.0,
+		Limit:       2,
+		PageSize:    10,
+		SampleRatio: 1.0,
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
@@ -134,9 +134,9 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 
 func Test_CatCmd_Run_good_sampling(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:    2,
-		PageSize: 10,
-		Sampling: 0.0,
+		Limit:       2,
+		PageSize:    10,
+		SampleRatio: 0.0,
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},

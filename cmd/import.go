@@ -13,7 +13,7 @@ import (
 type ImportCmd struct {
 	CommonOption
 	Source string `required:"" short:"s" help:"Source file name."`
-	Format string `help:"Source file format." short:"f" enum:"csv,json" default:"csv"`
+	Format string `help:"Source file format (csv/json)." short:"f" enum:"csv,json" default:"csv"`
 	Schema string `required:"" short:"m" help:"Schema file name."`
 }
 
@@ -28,7 +28,7 @@ func (c *ImportCmd) Run(ctx *Context) error {
 	case "csv":
 		return c.importCSV(c.Source, c.URI, string(schemaData))
 	case "json":
-		fmt.Println("TBD")
+		fmt.Println("To be implemented.")
 	default:
 		return fmt.Errorf("[%s] is not a recognized source format", c.Format)
 	}
