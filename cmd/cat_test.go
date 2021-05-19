@@ -46,9 +46,13 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 		},
 	}
 
-	err := cmd.Run(&Context{})
-	assert.Nil(t, err)
-	assert.Equal(t, cmd.Limit, int64(1<<63-1))
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run(&Context{})
+		assert.Nil(t, err)
+		assert.Equal(t, cmd.Limit, int64(1<<63-1))
+	})
+	assert.NotEqual(t, stdout, "")
+	assert.Equal(t, stderr, "")
 }
 
 func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
