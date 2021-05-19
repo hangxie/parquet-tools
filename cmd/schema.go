@@ -105,7 +105,7 @@ func repetitionTyeStr(se parquet.SchemaElement) string {
 
 type jsonSchemaNode struct {
 	Tag    string
-	Fields []*jsonSchemaNode
+	Fields []*jsonSchemaNode `json:",omitempty"`
 }
 
 func (s *schemaNode) jsonSchema() *jsonSchemaNode {
