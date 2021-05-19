@@ -70,7 +70,8 @@ test: deps tools  ## Run unit tests
 release-build: deps ## Build release binaries
 	@mkdir -p $(BUILDDIR)/release/
 	@echo "==> Building release binaries"
-	@for TARGET in $(REL_TARGET); do \
+	@set -eou pipefail; \
+	for TARGET in $(REL_TARGET); do \
 		echo "    $${TARGET}"; \
 		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
 		rm -f $${BINARY} $${BINARY}.gz; \
@@ -80,7 +81,9 @@ release-build: deps ## Build release binaries
 		GOOS=$${GOOS} GOARCH=$${GOARCH} \
 		    $(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
 		gzip $${BINARY}; \
-	done
+	done; \
+	echo $(VERSION) > $(BUILDDIR)/VERSION; \
+	cp LICENSE $(BUILDDIR)/release/LICENSE
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile

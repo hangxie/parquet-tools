@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/golang:1.15.8
+      - image: circleci/golang:1.16.3
     steps:
       - checkout
       - restore_cache:
@@ -34,9 +34,43 @@ jobs:
           command: make test
       - store_test_results:
           path: build/junit
-      - run:
-          name: Build
-          command: make build
       - store_artifacts:
           path: build/test/coverage.html
           destination: test-coverage.html
+      - run:
+          name: Build release binaries
+          command: make release-build
+      - persist_to_workspace:
+          root: build
+          paths:
+            - release
+            - VERSION
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.13
+    steps:
+      - attach_workspace:
+          at: /wrk
+      - run:
+          name: Push to Github
+          command: |
+            VERSION=$(cat /wrk/VERSION)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /wrk/release
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - publish-github-release:
+          context: parquet-tools
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
