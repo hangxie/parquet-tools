@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 )
@@ -8,6 +9,7 @@ import (
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
 	CommonOption
+	Base64 bool `short:"b" help:"Encode min/max value." default:"false"`
 }
 
 type columnMeta struct {
@@ -19,8 +21,8 @@ type columnMeta struct {
 	NumValues        int64
 	NullCount        *int64  `json:",omitempty"`
 	DistinctCount    *int64  `json:",omitempty"`
-	MaxValue         []byte  `json:",omitempty"`
-	MinValue         []byte  `json:",omitempty"`
+	MaxValue         *string `json:",omitempty"`
+	MinValue         *string `json:",omitempty"`
 	Index            *string `json:",omitempty"`
 }
 
@@ -45,18 +47,19 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				PathInSchema:     col.MetaData.PathInSchema,
 				Type:             col.MetaData.Type.String(),
 				Encodings:        make([]string, len(col.MetaData.Encodings)),
+				CompressedSize:   col.MetaData.TotalCompressedSize,
+				UncompressedSize: col.MetaData.TotalUncompressedSize,
 				NumValues:        col.MetaData.NumValues,
 				NullCount:        col.MetaData.Statistics.NullCount,
 				DistinctCount:    col.MetaData.Statistics.DistinctCount,
-				MaxValue:         col.MetaData.Statistics.MaxValue,
-				MinValue:         col.MetaData.Statistics.MinValue,
-				CompressedSize:   col.MetaData.TotalCompressedSize,
-				UncompressedSize: col.MetaData.TotalUncompressedSize,
+				MaxValue:         c.retrieveValue(col.MetaData.Statistics.MaxValue, c.Base64),
+				MinValue:         c.retrieveValue(col.MetaData.Statistics.MinValue, c.Base64),
 				Index:            nil,
 			}
 			for i, encoding := range col.MetaData.Encodings {
 				columns[colIndex].Encodings[i] = encoding.String()
 			}
+
 			// TODO find a parquet file with index to test this
 			/*
 				for _, indexCol := range rg.SortingColumns {
@@ -90,4 +93,18 @@ func (c *MetaCmd) Run(ctx *Context) error {
 	fmt.Println(string(buf))
 
 	return nil
+}
+
+func (c *MetaCmd) retrieveValue(value []byte, base64Encode bool) *string {
+	if value == nil {
+		return nil
+	}
+
+	if !base64Encode {
+		ret := string(value)
+		return &ret
+	}
+
+	ret := base64.StdEncoding.EncodeToString(value)
+	return &ret
 }
