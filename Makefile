@@ -7,6 +7,7 @@ VERSION     = $(shell git describe --tags)
 BUILD       = $(shell date +%FT%T%z)
 BUILDDIR    = $(CURDIR)/build
 GOBIN       = $(shell go env GOPATH)/bin
+REL_TARGET  = darwin-amd64 darwin-arm64 linux-386 linux-amd64 linux-arm linux-arm64 windows-386 windows-amd64
 
 # go option
 GO          ?= go
@@ -21,7 +22,7 @@ CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
 LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
 
-.PHONY: all deps tools format lint test build docker-build clean help
+.PHONY: all deps tools format lint test build docker-build clean release-build help
 
 all: deps tools format lint test build  ## Build all common targets
 
@@ -65,6 +66,21 @@ test: deps tools  ## Run unit tests
 		&& go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
 	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
 		&& go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
+
+release-build: deps ## Build release binaries
+	@mkdir -p $(BUILDDIR)/release/
+	@echo "==> Building release binaries"
+	@for TARGET in $(REL_TARGET); do \
+		echo "    $${TARGET}"; \
+		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
+		rm -f $${BINARY} $${BINARY}.gz; \
+		GOOS=$$(echo $${TARGET} | cut -f 1 -d \-); \
+		GOARCH=$$(echo $${TARGET} | cut -f 2 -d \-); \
+		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
+		GOOS=$${GOOS} GOARCH=$${GOARCH} \
+		    $(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
+		gzip $${BINARY}; \
+	done
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
