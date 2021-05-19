@@ -8,7 +8,6 @@ import (
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
 	CommonOption
-	OriginalType bool `help:"Print logical types in OriginalType representation."`
 }
 
 type columnMeta struct {

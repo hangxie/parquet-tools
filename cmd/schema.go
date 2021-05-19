@@ -17,7 +17,7 @@ var (
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
 	CommonOption
-	Format string `short:"f" help:"Schema format." enum:"raw,json,go" default:"json"`
+	Format string `short:"f" help:"Schema format (raw/json/go)." enum:"raw,json,go" default:"json"`
 }
 
 // Run does actual schema job
@@ -159,5 +159,5 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 
 func (s *schemaNode) goStruct() string {
 	// TODO output go struct with tags
-	return "TBD"
+	return "To be implemented."
 }

@@ -97,6 +97,6 @@ func Test_ImportCmd_importJson_good(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, "TBD\n")
+	assert.Equal(t, stdout, "To be implemented.\n")
 	assert.Equal(t, stderr, "")
 }

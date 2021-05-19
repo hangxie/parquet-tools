@@ -15,8 +15,8 @@ var (
 // SizeCmd is a kong command for size
 type SizeCmd struct {
 	CommonOption
-	Query string `short:"q" help:"Output size." enum:"raw,uncompressed,footer,all" default:"raw"`
-	JSON  bool   `short:"j" help:"Output JSON format." default:"false"`
+	Query string `short:"q" help:"Size to query (raw/uncompressed/footer/all)." enum:"raw,uncompressed,footer,all" default:"raw"`
+	JSON  bool   `short:"j" help:"Output in JSON format." default:"false"`
 }
 
 // Run does actual size job
