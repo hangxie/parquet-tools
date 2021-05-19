@@ -51,7 +51,7 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 
 type schemaNode struct {
 	parquet.SchemaElement
-	Children []*schemaNode
+	Children []*schemaNode `json:"children,omitempty"`
 }
 
 func newSchemaTree(reader *reader.ParquetReader) *schemaNode {
