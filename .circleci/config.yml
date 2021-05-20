@@ -45,6 +45,7 @@ jobs:
           paths:
             - release
             - VERSION
+            - CHANGELOG
   publish-github-release:
     docker:
       - image: cibuilds/github:0.13
@@ -54,8 +55,14 @@ jobs:
       - run:
           name: Push to Github
           command: |
-            VERSION=$(cat /wrk/VERSION)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /wrk/release
+            ghr -token ${GITHUB_TOKEN} \
+                -owner ${CIRCLE_PROJECT_USERNAME} \
+                -repository ${CIRCLE_PROJECT_REPONAME} \
+                -commitish ${CIRCLE_SHA1} \
+                -body "$(cat /wrk/CHANGELOG)" \
+                -replace \
+                "$(cat /wrk/VERSION)" \
+                /wrk/release
 
 workflows:
   version: 2
