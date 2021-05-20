@@ -83,7 +83,12 @@ release-build: deps ## Build release binaries
 		gzip $${BINARY}; \
 	done; \
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
-	cp LICENSE $(BUILDDIR)/release/LICENSE
+	PREV_VERSION=$$(git tag --sort=-committerdate | head -2 | tail -1); \
+	echo "Changes since [$${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/$${PREV_VERSION}):" > $(BUILDDIR)/CHANGELOG; \
+	echo >> $(BUILDDIR)/CHANGELOG; \
+	git log --pretty=format:"* %h %s" $(VERISON)...$${PREV_VERSION} >> $(BUILDDIR)/CHANGELOG; \
+	cp LICENSE $(BUILDDIR)/release/LICENSE; \
+	cat $(BUILDDIR)/CHANGELOG
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
