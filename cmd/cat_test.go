@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -116,6 +117,13 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 	assert.Equal(t, stdout, `[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]`+
 		"\n")
 	assert.Equal(t, stderr, "")
+
+	// double check
+	res := []map[string]string{}
+	err := json.Unmarshal([]byte(stdout), &res)
+	assert.Nil(t, err)
+	assert.Equal(t, len(res), 4)
+	assert.Equal(t, res[3]["Shoe_brand"], "steph_curry")
 }
 
 func Test_CatCmd_Run_good_limit(t *testing.T) {
@@ -134,6 +142,13 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 	assert.Equal(t, stdout, `[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]`+
 		"\n")
 	assert.Equal(t, stderr, "")
+
+	// double check
+	res := []map[string]string{}
+	err := json.Unmarshal([]byte(stdout), &res)
+	assert.Nil(t, err)
+	assert.Equal(t, len(res), 2)
+	assert.Equal(t, res[1]["Shoe_brand"], "nike")
 }
 
 func Test_CatCmd_Run_good_sampling(t *testing.T) {
