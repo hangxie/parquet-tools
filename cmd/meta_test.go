@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,6 +46,13 @@ func Test_MetaCmd_Run_good_base64(t *testing.T) {
 	assert.Equal(t, stdout, `{"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"c3RlcGhfY3Vycnk=","MinValue":"ZmlsYQ=="},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"c2hvZV9uYW1l","MinValue":"YWlyX2dyaWZmZXk="}]}]}`+
 		"\n")
 	assert.Equal(t, stderr, "")
+
+	// double check fields we care about
+	meta := parquetMeta{}
+	err := json.Unmarshal([]byte(stdout), &meta)
+	assert.Nil(t, err)
+	assert.Equal(t, *meta.RowGroups[0].Columns[0].MaxValue, "c3RlcGhfY3Vycnk=")
+	assert.Equal(t, *meta.RowGroups[0].Columns[0].MinValue, "ZmlsYQ==")
 }
 
 func Test_MetaCmd_Run_good_raw(t *testing.T) {
@@ -61,6 +69,13 @@ func Test_MetaCmd_Run_good_raw(t *testing.T) {
 	assert.Equal(t, stdout, `{"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"shoe_name","MinValue":"air_griffey"}]}]}`+
 		"\n")
 	assert.Equal(t, stderr, "")
+
+	// double check fields we care about
+	meta := parquetMeta{}
+	err := json.Unmarshal([]byte(stdout), &meta)
+	assert.Nil(t, err)
+	assert.Equal(t, *meta.RowGroups[0].Columns[0].MaxValue, "steph_curry")
+	assert.Equal(t, *meta.RowGroups[0].Columns[0].MinValue, "fila")
 }
 
 func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
@@ -77,4 +92,37 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 	assert.Equal(t, stdout, `{"NumRowGroups":1,"RowGroups":[{"NumRows":20,"TotalByteSize":1699,"Columns":[{"PathInSchema":["Name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"CompressedSize":518,"UncompressedSize":639,"NumValues":20,"NullCount":0,"MaxValue":"Student Name_9","MinValue":"Student Name"},{"PathInSchema":["Age"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":266,"UncompressedSize":260,"NumValues":20},{"PathInSchema":["Id"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":346,"UncompressedSize":404,"NumValues":20},{"PathInSchema":["Weight"],"Type":"FLOAT","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":266,"UncompressedSize":260,"NumValues":20},{"PathInSchema":["Sex"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":144,"UncompressedSize":136,"NumValues":20}]}]}`+
 		"\n")
 	assert.Equal(t, stderr, "")
+
+	// double check fields we care about
+	meta := parquetMeta{}
+	err := json.Unmarshal([]byte(stdout), &meta)
+	assert.Nil(t, err)
+	assert.Nil(t, meta.RowGroups[0].Columns[1].MaxValue)
+	assert.Nil(t, meta.RowGroups[0].Columns[1].MinValue)
+	assert.Nil(t, meta.RowGroups[0].Columns[1].NullCount)
+	assert.Nil(t, meta.RowGroups[0].Columns[1].DistinctCount)
+}
+
+func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: true,
+		CommonOption: CommonOption{
+			URI: "testdata/sorting-col.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, stdout, `{"NumRowGroups":1,"RowGroups":[{"NumRows":20,"TotalByteSize":1699,"Columns":[{"PathInSchema":["Name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"CompressedSize":518,"UncompressedSize":639,"NumValues":20,"NullCount":0,"MaxValue":"U3R1ZGVudCBOYW1lXzk=","MinValue":"U3R1ZGVudCBOYW1l","Index":"DESC"},{"PathInSchema":["Age"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":266,"UncompressedSize":260,"NumValues":20,"NullCount":0,"MaxValue":"GAAAAA==","MinValue":"FAAAAA==","Index":"ASC"},{"PathInSchema":["Id"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":346,"UncompressedSize":404,"NumValues":20,"NullCount":0,"MaxValue":"CQAAAAAAAAA=","MinValue":"AAAAAAAAAAA="},{"PathInSchema":["Weight"],"Type":"FLOAT","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":266,"UncompressedSize":260,"NumValues":20,"NullCount":0,"MaxValue":"mplLQg==","MinValue":"AABIQg=="},{"PathInSchema":["Sex"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":144,"UncompressedSize":136,"NumValues":20,"NullCount":0,"MaxValue":"AQ==","MinValue":"AA=="}]}]}`+
+		"\n")
+	assert.Equal(t, stderr, "")
+
+	// double check fields we care about
+	meta := parquetMeta{}
+	err := json.Unmarshal([]byte(stdout), &meta)
+	assert.Nil(t, err)
+	assert.Equal(t, *meta.RowGroups[0].Columns[0].Index, "DESC")
+	assert.Equal(t, *meta.RowGroups[0].Columns[1].Index, "ASC")
+	assert.Nil(t, meta.RowGroups[0].Columns[2].Index)
 }

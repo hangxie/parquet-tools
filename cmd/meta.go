@@ -32,6 +32,11 @@ type rowGroupMeta struct {
 	Columns       []columnMeta
 }
 
+type parquetMeta struct {
+	NumRowGroups int
+	RowGroups    []rowGroupMeta
+}
+
 // Run does actual meta job
 func (c *MetaCmd) Run(ctx *Context) error {
 	reader, err := newParquetFileReader(c.URI)
@@ -50,6 +55,10 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				CompressedSize:   col.MetaData.TotalCompressedSize,
 				UncompressedSize: col.MetaData.TotalUncompressedSize,
 				NumValues:        col.MetaData.NumValues,
+				MaxValue:         nil,
+				MinValue:         nil,
+				NullCount:        nil,
+				DistinctCount:    nil,
 				Index:            nil,
 			}
 			if col.MetaData.Statistics != nil {
@@ -62,20 +71,17 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				columns[colIndex].Encodings[i] = encoding.String()
 			}
 
-			// TODO find a parquet file with index to test this
-			/*
-				for _, indexCol := range rg.SortingColumns {
-					if indexCol.ColumnIdx == int32(colIndex) {
-						columns[colIndex].Index = new(string)
-						if indexCol.Descending {
-							*columns[colIndex].Index = "DESC"
-						} else {
-							*columns[colIndex].Index = "ACS"
-						}
-						break
+			for _, indexCol := range rg.SortingColumns {
+				if indexCol.ColumnIdx == int32(colIndex) {
+					columns[colIndex].Index = new(string)
+					if indexCol.Descending {
+						*columns[colIndex].Index = "DESC"
+					} else {
+						*columns[colIndex].Index = "ASC"
 					}
+					break
 				}
-			*/
+			}
 		}
 		rowGroups[rgIndex] = rowGroupMeta{
 			NumRows:       rg.NumRows,
@@ -84,10 +90,7 @@ func (c *MetaCmd) Run(ctx *Context) error {
 		}
 	}
 
-	meta := struct {
-		NumRowGroups int
-		RowGroups    []rowGroupMeta
-	}{
+	meta := parquetMeta{
 		NumRowGroups: len(rowGroups),
 		RowGroups:    rowGroups,
 	}
