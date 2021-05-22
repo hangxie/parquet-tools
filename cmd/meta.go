@@ -50,11 +50,13 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				CompressedSize:   col.MetaData.TotalCompressedSize,
 				UncompressedSize: col.MetaData.TotalUncompressedSize,
 				NumValues:        col.MetaData.NumValues,
-				NullCount:        col.MetaData.Statistics.NullCount,
-				DistinctCount:    col.MetaData.Statistics.DistinctCount,
-				MaxValue:         c.retrieveValue(col.MetaData.Statistics.MaxValue, c.Base64),
-				MinValue:         c.retrieveValue(col.MetaData.Statistics.MinValue, c.Base64),
 				Index:            nil,
+			}
+			if col.MetaData.Statistics != nil {
+				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, c.Base64)
+				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, c.Base64)
+				columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
+				columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
 			}
 			for i, encoding := range col.MetaData.Encodings {
 				columns[colIndex].Encodings[i] = encoding.String()
