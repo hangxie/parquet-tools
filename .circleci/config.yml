@@ -82,8 +82,8 @@ jobs:
       - run:
           name: Push to docker hub
           command: |
-            docker tag parquet-tools:latest hangxie/parquet-tools:${CIRCLECI_TAG}
-            docker push hangxie/parquet-tools:${CIRCLECI_TAG}
+            docker tag parquet-tools:latest hangxie/parquet-tools:${CIRCLE_TAG}
+            docker push hangxie/parquet-tools:${CIRCLE_TAG}
 
 workflows:
   version: 2
