@@ -46,6 +46,7 @@ jobs:
             - release
             - VERSION
             - CHANGELOG
+
   publish-github-release:
     docker:
       - image: cibuilds/github:0.13
@@ -64,6 +65,24 @@ jobs:
                 "$(cat /wrk/VERSION)" \
                 /wrk/release
 
+  publish-docker-image:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/golang:1.16.3
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.13
+      - run:
+          name: Build docker image
+          command: make docker-build
+      - run:
+          name: Push to docker hub
+          command: |
+            echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
+            docker tag parquet-tools:latest hangxie/parquet-tools:${CIRCLE_TAG}
+            docker push hangxie/parquet-tools:${CIRCLE_TAG}
+
 workflows:
   version: 2
   main:
@@ -73,6 +92,15 @@ workflows:
             tags:
               only: /^v\d+\.\d+\.\d+$/
       - publish-github-release:
+          context: parquet-tools
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
+      - publish-docker-image:
           context: parquet-tools
           requires:
             - build
