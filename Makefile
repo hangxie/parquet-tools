@@ -77,9 +77,11 @@ release-build: deps ## Build release binaries
 		rm -f $${BINARY} $${BINARY}.gz; \
 		GOOS=$$(echo $${TARGET} | cut -f 1 -d \-); \
 		GOARCH=$$(echo $${TARGET} | cut -f 2 -d \-); \
-		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
-		GOOS=$${GOOS} GOARCH=$${GOARCH} \
-		    $(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
+		\
+		export GOOS=$${GOOS}; \
+		export GOARCH=$${GOARCH}; \
+		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
+		\
 		if [ $${GOOS} == "windows" ]; then \
 			(cd $$(dirname $${BINARY}); \
 				BASE_NAME=$$(basename $${BINARY}); \
@@ -89,6 +91,7 @@ release-build: deps ## Build release binaries
 			gzip $${BINARY}; \
 		fi; \
 	done; \
+	\
 	echo "==> generate build meta data"; \
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
 	PREV_VERSION=$$(git tag --sort=-committerdate | head -2 | tail -1); \

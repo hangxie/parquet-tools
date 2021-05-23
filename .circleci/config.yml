@@ -68,20 +68,27 @@ jobs:
   publish-docker-image:
     working_directory: ~/repo
     docker:
-      - image: circleci/golang:1.16.3
+      - image: cimg/base:stable
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.13
+          version: 19.03.14
       - run:
-          name: Build docker image
-          command: make docker-build
+          name: Enable buildx
+          command: |
+            ssh remote-docker \<<EOF
+                sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
+                sudo systemctl restart docker
+                sudo docker info
+            EOF
       - run:
-          name: Push to docker hub
+          name: Build and push to docker hub
           command: |
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
-            docker tag parquet-tools:latest hangxie/parquet-tools:${CIRCLE_TAG}
-            docker push hangxie/parquet-tools:${CIRCLE_TAG}
+            docker context create multi-platform
+            docker buildx create multi-platform --use
+            docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 --push \
+                -t hangxie/parquet-tools:${CIRCLE_TAG} . -f package/Dockerfile
 
 workflows:
   version: 2

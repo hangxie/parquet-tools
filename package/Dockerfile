@@ -1,14 +1,14 @@
-FROM golang:1.16-alpine as builder
+FROM golang:1.16-stretch as builder
 
 ADD . /src
 WORKDIR /src
 
-RUN apk update \
-    && apk add make bash git \
+RUN apt update \
+    && apt install -y bash make git \
     && make build
 
-FROM alpine
-RUN adduser -S -D -H -h /app app
+FROM debian:stretch-slim
+RUN adduser --home /app --disabled-password --system app
 USER app
 COPY --from=builder /src/build/parquet-tools /app/
 WORKDIR /app
