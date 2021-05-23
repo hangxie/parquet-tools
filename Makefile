@@ -57,7 +57,7 @@ clean:  ## Clean up the build dirs
 
 docker-build:  ## Build docker image
 	@echo "==> Building docker image"
-	@echo TBD
+	@ehco TBD
 
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
@@ -80,8 +80,16 @@ release-build: deps ## Build release binaries
 		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
 		GOOS=$${GOOS} GOARCH=$${GOARCH} \
 		    $(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
-		gzip $${BINARY}; \
+		if [ $${GOOS} == "windows" ]; then \
+			(cd $$(dirname $${BINARY}); \
+				BASE_NAME=$$(basename $${BINARY}); \
+				mv $${BASE_NAME} $${BASE_NAME}.exe; \
+				zip -m $${BASE_NAME}.zip $${BASE_NAME}.exe); \
+		else \
+			gzip $${BINARY}; \
+		fi; \
 	done; \
+	echo "==> generate build meta data"; \
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
 	PREV_VERSION=$$(git tag --sort=-committerdate | head -2 | tail -1); \
 	echo "Changes since [$${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/$${PREV_VERSION}):" > $(BUILDDIR)/CHANGELOG; \
