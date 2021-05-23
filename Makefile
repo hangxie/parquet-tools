@@ -57,7 +57,7 @@ clean:  ## Clean up the build dirs
 
 docker-build:  ## Build docker image
 	@echo "==> Building docker image"
-	@ehco TBD
+	@docker build . -f package/Dockerfile -t parquet-tools:latest
 
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
