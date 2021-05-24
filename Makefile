@@ -7,7 +7,7 @@ VERSION     = $(shell git describe --tags)
 BUILD       = $(shell date +%FT%T%z)
 BUILDDIR    = $(CURDIR)/build
 GOBIN       = $(shell go env GOPATH)/bin
-REL_TARGET  = darwin-amd64 darwin-arm64 linux-386 linux-amd64 linux-arm linux-arm64 windows-386 windows-amd64
+REL_TARGET  = darwin-amd64 darwin-arm64 linux-amd64 linux-arm linux-arm64 windows-386 windows-amd64 windows-arm
 
 # go option
 GO          ?= go
