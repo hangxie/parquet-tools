@@ -28,7 +28,13 @@ Tools used:
    go get github.com/hangxie/parquet-tools
    ```
 
-* run:
+* Homebrew:
+   ```
+   brew tap hangxie/tap
+   brew install go-parquet-tools
+   ```
+
+* Run:
    ```
    parquet-tools -h
    Usage: parquet-tools <command>
