@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -34,7 +35,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	if c.SampleRatio < 0.0 || c.SampleRatio > 1.0 {
 		return fmt.Errorf("invalid sampling %f, needs to be between 0.0 and 1.0", c.SampleRatio)
 	}
-	includeRow, err := c.includeRowFunc()
+	matchRow, err := c.matchRowFunc()
 	if err != nil {
 		return fmt.Errorf("unable to parse filter [%s]", c.Filter)
 	}
@@ -61,7 +62,9 @@ func (c *CatCmd) Run(ctx *Context) error {
 
 		for _, row := range rows {
 			buf, _ := json.Marshal(row)
-			if !includeRow(buf) {
+			if matched, err := matchRow(buf); err != nil {
+				return fmt.Errorf("failed to run filter: %s", err.Error())
+			} else if !matched {
 				continue
 			}
 
@@ -87,9 +90,9 @@ func (c *CatCmd) Run(ctx *Context) error {
 	return nil
 }
 
-func (c *CatCmd) includeRowFunc() (func([]byte) bool, error) {
+func (c *CatCmd) matchRowFunc() (func([]byte) (bool, error), error) {
 	if c.Filter == "" {
-		return func([]byte) bool { return true }, nil
+		return func([]byte) (bool, error) { return true, nil }, nil
 	}
 	matches := regexp.MustCompile(`^ *(.*?) *([>=<]{1,2}) *(.*?) *$`).FindAllStringSubmatch(c.Filter, 3)
 	if len(matches) == 0 {
@@ -109,26 +112,49 @@ func (c *CatCmd) includeRowFunc() (func([]byte) bool, error) {
 
 	fieldList := strings.Split(field, ".")
 	fieldCount := len(fieldList)
-	return func(row []byte) bool {
+	return func(row []byte) (bool, error) {
 		var rowObj map[string]interface{}
 		if err := json.Unmarshal(row, &rowObj); err != nil {
 			// this should not happen as the row string is what we marshalled
-			panic("unable to parse row value as JSON")
+			return false, errors.New("unable to parse JSON string")
 		}
 
 		for _, f := range fieldList[:(fieldCount - 1)] {
 			if v, ok := rowObj[f].(map[string]interface{}); !ok {
 				// row does not have nested layer deep enough
-				return false
+				return operator == "<>", nil
 			} else {
 				rowObj = v
 			}
 		}
-		if _, ok := rowObj[fieldList[fieldCount-1]]; !ok {
-			return false
+		fieldValue, ok := rowObj[fieldList[fieldCount-1]]
+		if !ok {
+			// row does not have nested layer deep enough
+			return operator == "<>", nil
 		}
-		valueToCompare := fmt.Sprint(rowObj[fieldList[fieldCount-1]])
-		return (operator == "==" && value == valueToCompare) ||
-			(operator == "<>" && value != valueToCompare)
+
+		if fieldValue == nil {
+			// nil only equals to nil
+			value = strings.ToLower(value)
+			isNull := (value == "nil" || value == "null")
+			return (operator == "==" && isNull) || (operator == "<>" && !isNull), nil
+		}
+
+		if v1, ok := toNumber(fieldValue); ok {
+			if v2, err := strconv.ParseFloat(value, 64); err != nil {
+				// type mismatch also means value does not match
+				return operator == "<>", nil
+			} else {
+				return (operator == "==" && v1 == v2) || (operator == "<>" && v1 != v2), nil
+			}
+		}
+
+		if v, ok := fieldValue.(string); ok {
+			v = `"` + v + `"`
+			return (operator == "==" && value == v) || (operator == "<>" && value != v), nil
+		}
+
+		// type mismatch also means value does not match
+		return operator == "<>", nil
 	}, nil
 }
