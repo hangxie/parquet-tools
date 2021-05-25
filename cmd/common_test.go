@@ -10,6 +10,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func captureStdoutStderr(f func()) (string, string) {
+	savedStdout := os.Stdout
+	savedStderr := os.Stderr
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+	f()
+	wOut.Close()
+	wErr.Close()
+	stdout, _ := ioutil.ReadAll(rOut)
+	stderr, _ := ioutil.ReadAll(rErr)
+	rOut.Close()
+	rErr.Close()
+
+	os.Stdout = savedStdout
+	os.Stderr = savedStderr
+
+	return string(stdout), string(stderr)
+}
+
 func Test_common_parseURI_invalid_uri(t *testing.T) {
 	_, err := parseURI("://uri")
 	assert.NotNil(t, err)
@@ -144,24 +166,38 @@ func Test_common_newCSVWriter_good(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func captureStdoutStderr(f func()) (string, string) {
-	savedStdout := os.Stdout
-	savedStderr := os.Stderr
+func Test_common_toNumber_bad(t *testing.T) {
+	badValues := []interface{}{
+		string("8"),
+		[]uint{9, 10},
+		nil,
+	}
 
-	rOut, wOut, _ := os.Pipe()
-	rErr, wErr, _ := os.Pipe()
-	os.Stdout = wOut
-	os.Stderr = wErr
-	f()
-	wOut.Close()
-	wErr.Close()
-	stdout, _ := ioutil.ReadAll(rOut)
-	stderr, _ := ioutil.ReadAll(rErr)
-	rOut.Close()
-	rErr.Close()
+	for _, iface := range badValues {
+		_, ok := toNumber(interface{}(iface))
+		assert.False(t, ok)
+	}
+}
 
-	os.Stdout = savedStdout
-	os.Stderr = savedStderr
+func Test_common_toNumber_good(t *testing.T) {
+	badValues := []interface{}{
+		uint(1),
+		uint8(2),
+		uint16(3),
+		uint32(4),
+		uint64(5),
+		int(6),
+		int8(7),
+		int16(8),
+		int32(9),
+		int64(10),
+		float32(11),
+		float64(12),
+	}
 
-	return string(stdout), string(stderr)
+	for i, iface := range badValues {
+		v, ok := toNumber(interface{}(iface))
+		assert.True(t, ok)
+		assert.Equal(t, v, float64(i+1))
+	}
 }
