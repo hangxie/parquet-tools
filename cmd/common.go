@@ -136,3 +136,43 @@ func newCSVWriter(uri string, schema []string) (*writer.CSVWriter, error) {
 
 	return writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
 }
+
+func toNumber(iface interface{}) (float64, bool) {
+	if v, ok := iface.(int); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(int8); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(int16); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(int32); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(int64); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(uint); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(uint8); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(uint16); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(uint32); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(uint64); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(float32); ok {
+		return float64(v), true
+	}
+	if v, ok := iface.(float64); ok {
+		return v, true
+	}
+	return 0.0, false
+}
