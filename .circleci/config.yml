@@ -37,6 +37,23 @@ jobs:
       - store_artifacts:
           path: build/test/coverage.html
           destination: test-coverage.html
+
+  release-build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/golang:1.16.3
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: Install Dependencies
+          command: make deps
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run:
           name: Build release binaries
           command: make release-build
@@ -98,10 +115,18 @@ workflows:
           filters:
             tags:
               only: /^v\d+\.\d+\.\d+$/
+      - release-build:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
       - publish-github-release:
           context: parquet-tools
           requires:
-            - build
+            - release-build
           filters:
             branches:
               ignore: /.*/
