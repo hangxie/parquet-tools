@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -188,20 +189,47 @@ func Test_CatCmd_matchRowFunc_invalid_operator(t *testing.T) {
 	assert.Nil(t, f)
 }
 
-func Test_CatCmd_matchRowFunc_missing_value(t *testing.T) {
+func Test_CatCmd_matchRowFunc_bad_value(t *testing.T) {
 	cmd := &CatCmd{}
+	testCases := []struct {
+		value string
+		err   error
+	}{
+		{"1", nil},
+		{"0.2", nil},
+		{`"1"`, nil},
+		{`""`, nil},
+		{"nil", nil},
+		{"niL", nil},
+		{"null", nil},
+		{"Null", nil},
+		{`"`, errors.New("single quote")},
+		{"", errors.New("missing value in filter")},
+		{"not-a-number", errors.New("")},
+		{`"missing-quote`, errors.New("missing trailing quote")},
+		{`missing-quote"`, errors.New("missing leading quote")},
+		{`not-a-number`, errors.New("not a numeric value")},
+	}
 
-	cmd.Filter = "a<>"
-	f, err := cmd.matchRowFunc()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "missing value in filter")
-	assert.Nil(t, f)
+	for _, tc := range testCases {
+		cmd.Filter = "a<>" + tc.value
+		t.Logf("testing [%s]", cmd.Filter)
+		f, err := cmd.matchRowFunc()
+		if tc.err == nil {
+			assert.Nil(t, err)
+			assert.NotNil(t, f)
+		} else {
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), tc.err.Error())
+			assert.Nil(t, f)
+		}
+	}
 }
 
 func Test_CatCmd_matchRowFunc_bad_json(t *testing.T) {
 	cmd := &CatCmd{}
 
-	cmd.Filter = "a<>b"
+	cmd.Filter = "a<>0"
 	f, err := cmd.matchRowFunc()
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
@@ -213,43 +241,67 @@ func Test_CatCmd_matchRowFunc_bad_json(t *testing.T) {
 
 func Test_CatCmd_matchRowFunc_missing_layer(t *testing.T) {
 	cmd := &CatCmd{}
-	testCases := []struct {
-		value  string
-		result bool
-	}{
-		{`{"z":{}}`, false},
-		{`{"a":1}`, false},
-		{`{"a":{"z":{"c":1}}}`, false},
-		{`{"a":{"b":{"z":1}}}`, false},
-	}
-	cmd.Filter = "a.b.c<>b"
-	f, err := cmd.matchRowFunc()
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-
-	for _, tc := range testCases {
-		matched, err := f([]byte(tc.value))
-		assert.Nil(t, err)
-		assert.Equal(t, tc.result, !matched)
+	testCases := []string{
+		`{"z":{}}`,
+		`{"a":1}`,
+		`{"a":{"z":{"c":1}}}`,
+		`{"a":{"b":{"z":1}}}`,
 	}
 
-	cmd.Filter = "a.b.c==b"
-	f, err = cmd.matchRowFunc()
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-
-	for _, tc := range testCases {
-		matched, err := f([]byte(tc.value))
+	for op := range supportedOperators {
+		cmd.Filter = "a.b.c" + op + `"a"`
+		f, err := cmd.matchRowFunc()
 		assert.Nil(t, err)
-		assert.Equal(t, tc.result, matched)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc)
+			matched, err := f([]byte(tc))
+			assert.Nil(t, err)
+			// missing layer means not equal, all other comparisons are just false
+			assert.Equal(t, matched, op == "<>")
+		}
 	}
 }
 
-func Test_CatCmd_matchRowFunc_good_equal(t *testing.T) {
+func Test_CatCmd_matchRowFunc_nil(t *testing.T) {
 	cmd := &CatCmd{}
 	testCases := []struct {
-		value  string
-		result bool
+		value string
+		isNil bool
+	}{
+		{`{"a":{"b":12}}`, false},
+		{`{"a":{"b":null}}`, true},
+	}
+
+	for _, nilValue := range []string{" nil", "NIL ", "null", "  NULL"} {
+		for op := range supportedOperators {
+			cmd.Filter = "a.b " + op + nilValue
+			f, err := cmd.matchRowFunc()
+			assert.Nil(t, err)
+			assert.NotNil(t, f)
+			for _, tc := range testCases {
+				t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+				matched, err := f([]byte(tc.value))
+				assert.Nil(t, err)
+				// nill only support equal and not equal, all other comparisons are just false
+				switch op {
+				case "==":
+					assert.Equal(t, matched, tc.isNil)
+				case "<>":
+					assert.Equal(t, matched, !tc.isNil)
+				default:
+					assert.Equal(t, matched, false)
+				}
+			}
+		}
+	}
+}
+
+func Test_CatCmd_matchRowFunc_number_equal_not_equal(t *testing.T) {
+	cmd := &CatCmd{}
+	testCases := []struct {
+		value    string
+		isEleven bool
 	}{
 		{`{"a":{"b":12}}`, false},
 		{`{"a":{"b":"12"}}`, false},
@@ -258,96 +310,177 @@ func Test_CatCmd_matchRowFunc_good_equal(t *testing.T) {
 		{`{"a":{"b":[11]}}`, false},
 		{`{"a":{"b":{"c":"11"}}}`, false},
 		{`{"a":{"b":"11"}}`, false},
-		{`{"a":{"b":null}}`, false},
 		{`{"a":{"b":11}}`, true},
 	}
 
-	cmd.Filter = "a.b==11"
-	f, err := cmd.matchRowFunc()
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-
-	for _, tc := range testCases {
-		matched, err := f([]byte(tc.value))
+	for _, op := range []string{"==", "<>"} {
+		cmd.Filter = "a.b" + op + "11"
+		f, err := cmd.matchRowFunc()
 		assert.Nil(t, err)
-		assert.Equal(t, tc.result, matched)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+			matched, err := f([]byte(tc.value))
+			assert.Nil(t, err)
+			if op == "==" {
+				assert.Equal(t, matched, tc.isEleven)
+			} else {
+				assert.Equal(t, matched, !tc.isEleven)
+			}
+		}
 	}
 }
 
-func Test_CatCmd_matchRowFunc_good_not_equal(t *testing.T) {
+func Test_CatCmd_matchRowFunc_string_equal_not_equal(t *testing.T) {
 	cmd := &CatCmd{}
 	testCases := []struct {
-		value  string
-		result bool
-	}{
-		{`{"a":{"b":12}}`, true},
-		{`{"a":{"b":"12"}}`, true},
-		{`{"a":{"b":{"c":"12"}}}`, true},
-		{`{"a":{"b":[1,2,3]}}`, true},
-		{`{"a":{"b":[11]}}`, true},
-		{`{"a":{"b":{"c":"11"}}}`, true},
-		{`{"a":{"b":"11"}}`, true},
-		{`{"a":{"b":null}}`, true},
-		{`{"a":{"b":11}}`, false},
-	}
-
-	cmd.Filter = "a.b <> 11"
-	f, err := cmd.matchRowFunc()
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-
-	for _, tc := range testCases {
-		matched, err := f([]byte(tc.value))
-		assert.Nil(t, err)
-		assert.Equal(t, tc.result, matched)
-	}
-}
-
-func Test_CatCmd_matchRowFunc_good_not_equal_nil(t *testing.T) {
-	cmd := &CatCmd{}
-	testCases := []struct {
-		value  string
-		result bool
-	}{
-		{`{"a":{"b":12}}`, true},
-		{`{"a":{"b":null}}`, false},
-		{`{"a":null}`, true},
-	}
-
-	cmd.Filter = "a.b <> nil"
-	f, err := cmd.matchRowFunc()
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-
-	for _, tc := range testCases {
-		matched, err := f([]byte(tc.value))
-		assert.Nil(t, err)
-		assert.Equal(t, tc.result, matched)
-	}
-}
-
-func Test_CatCmd_matchRowFunc_good_equal_nil(t *testing.T) {
-	cmd := &CatCmd{}
-	testCases := []struct {
-		value  string
-		result bool
+		value    string
+		isEleven bool
 	}{
 		{`{"a":{"b":12}}`, false},
-		{`{"a":{"b":null}}`, true},
-		{`{"a":null}`, false},
+		{`{"a":{"b":"12"}}`, false},
+		{`{"a":{"b":{"c":"12"}}}`, false},
+		{`{"a":{"b":[1,2,3]}}`, false},
+		{`{"a":{"b":[11]}}`, false},
+		{`{"a":{"b":{"c":"11"}}}`, false},
+		{`{"a":{"b":11}}`, false},
+		{`{"a":{"b":"11"}}`, true},
 	}
 
-	cmd.Filter = "a.b == null"
-	f, err := cmd.matchRowFunc()
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-
-	for _, tc := range testCases {
-		matched, err := f([]byte(tc.value))
+	for _, op := range []string{"==", "<>"} {
+		cmd.Filter = "a.b" + op + `"11"`
+		f, err := cmd.matchRowFunc()
 		assert.Nil(t, err)
-		assert.Equal(t, tc.result, matched)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+			matched, err := f([]byte(tc.value))
+			assert.Nil(t, err)
+			if op == "==" {
+				assert.Equal(t, matched, tc.isEleven)
+			} else {
+				assert.Equal(t, matched, !tc.isEleven)
+			}
+		}
+	}
+}
+
+func Test_CatCmd_matchRowFunc_number_gt_le(t *testing.T) {
+	cmd := &CatCmd{}
+	testCases := []struct {
+		value         string
+		isGreaterThan bool
+	}{
+		{`{"a":{"b":10.99}}`, false},
+		{`{"a":{"b":11}}`, false},
+		{`{"a":{"b":12}}`, true},
 	}
 
+	for _, op := range []string{">", "<="} {
+		cmd.Filter = "a.b" + op + "11"
+		f, err := cmd.matchRowFunc()
+		assert.Nil(t, err)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+			matched, err := f([]byte(tc.value))
+			assert.Nil(t, err)
+			if op == ">" {
+				assert.Equal(t, tc.isGreaterThan, matched)
+			} else {
+				assert.Equal(t, tc.isGreaterThan, !matched)
+			}
+		}
+	}
+}
+
+func Test_CatCmd_matchRowFunc_string_gt_le(t *testing.T) {
+	cmd := &CatCmd{}
+	testCases := []struct {
+		value         string
+		isGreaterThan bool
+	}{
+		{`{"a":{"b":"aa"}}`, false},
+		{`{"a":{"b":"ab"}}`, false},
+		{`{"a":{"b":"ab "}}`, true},
+		{`{"a":{"b":"bb"}}`, true},
+	}
+
+	for _, op := range []string{">", "<="} {
+		cmd.Filter = "a.b" + op + `"ab"`
+		f, err := cmd.matchRowFunc()
+		assert.Nil(t, err)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+			matched, err := f([]byte(tc.value))
+			assert.Nil(t, err)
+			if op == ">" {
+				assert.Equal(t, tc.isGreaterThan, matched)
+			} else {
+				assert.Equal(t, tc.isGreaterThan, !matched)
+			}
+		}
+	}
+}
+
+func Test_CatCmd_matchRowFunc_number_lt_ge(t *testing.T) {
+	cmd := &CatCmd{}
+	testCases := []struct {
+		value      string
+		isLessThan bool
+	}{
+		{`{"a":{"b":10.99}}`, true},
+		{`{"a":{"b":11}}`, false},
+		{`{"a":{"b":12}}`, false},
+	}
+
+	for _, op := range []string{"<", ">="} {
+		cmd.Filter = "a.b" + op + "11"
+		f, err := cmd.matchRowFunc()
+		assert.Nil(t, err)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+			matched, err := f([]byte(tc.value))
+			assert.Nil(t, err)
+			if op == "<" {
+				assert.Equal(t, tc.isLessThan, matched)
+			} else {
+				assert.Equal(t, tc.isLessThan, !matched)
+			}
+		}
+	}
+}
+
+func Test_CatCmd_matchRowFunc_string_lt_ge(t *testing.T) {
+	cmd := &CatCmd{}
+	testCases := []struct {
+		value      string
+		isLessThan bool
+	}{
+		{`{"a":{"b":"aa"}}`, true},
+		{`{"a":{"b":"ab"}}`, false},
+		{`{"a":{"b":"ab "}}`, false},
+		{`{"a":{"b":"bb"}}`, false},
+	}
+
+	for _, op := range []string{"<", ">="} {
+		cmd.Filter = "a.b" + op + `"ab"`
+		f, err := cmd.matchRowFunc()
+		assert.Nil(t, err)
+		assert.NotNil(t, f)
+		for _, tc := range testCases {
+			t.Logf("testing [%s] '%s''", cmd.Filter, tc.value)
+			matched, err := f([]byte(tc.value))
+			assert.Nil(t, err)
+			if op == "<" {
+				assert.Equal(t, tc.isLessThan, matched)
+			} else {
+				assert.Equal(t, tc.isLessThan, !matched)
+			}
+		}
+	}
 }
 
 func Test_CatCmd_Run_good_filter_equal(t *testing.T) {
