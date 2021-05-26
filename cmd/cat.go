@@ -90,6 +90,15 @@ func (c *CatCmd) Run(ctx *Context) error {
 	return nil
 }
 
+var supportedOperators = map[string]string{
+	"==": "",
+	"<>": "",
+	">":  "",
+	">=": "",
+	"<":  "",
+	"<=": "",
+}
+
 func (c *CatCmd) matchRowFunc() (func([]byte) (bool, error), error) {
 	if c.Filter == "" {
 		return func([]byte) (bool, error) { return true, nil }, nil
@@ -102,12 +111,36 @@ func (c *CatCmd) matchRowFunc() (func([]byte) (bool, error), error) {
 	operator := matches[0][2]
 	value := matches[0][3]
 
-	// TODO support >, >=, <, <=
-	if operator != "==" && operator != "<>" {
+	if _, ok := supportedOperators[operator]; !ok {
 		return nil, fmt.Errorf("invalid operator [%s]", operator)
 	}
 	if value == "" {
 		return nil, errors.New("missing value in filter")
+	}
+
+	// determine nil/null value
+	valueIsNull := (strings.ToLower(value) == "nil" || strings.ToLower(value) == "null")
+
+	// detemine string value
+	valueIsString := false
+	if value[0] == '"' || value[len(value)-1] == '"' {
+		if len(value) == 1 {
+			return nil, errors.New("single quote")
+		}
+		if value[0] != '"' {
+			return nil, errors.New("missing leading quote")
+		}
+		if value[len(value)-1] != '"' {
+			return nil, errors.New("missing trailing quote")
+		}
+		valueIsString = true
+		value = value[1 : len(value)-1]
+	}
+
+	// determine numeric value
+	valueFloat, err := strconv.ParseFloat(value, 64)
+	if !valueIsNull && !valueIsString && err != nil {
+		return nil, errors.New("not a numeric value")
 	}
 
 	fieldList := strings.Split(field, ".")
@@ -133,25 +166,43 @@ func (c *CatCmd) matchRowFunc() (func([]byte) (bool, error), error) {
 			return operator == "<>", nil
 		}
 
-		if fieldValue == nil {
+		if fieldValue == nil || valueIsNull {
 			// nil only equals to nil
-			value = strings.ToLower(value)
-			isNull := (value == "nil" || value == "null")
-			return (operator == "==" && isNull) || (operator == "<>" && !isNull), nil
+			switch operator {
+			case "==":
+				return fieldValue == nil && valueIsNull, nil
+			case "<>":
+				return !(fieldValue == nil && valueIsNull), nil
+			}
+			return false, nil
 		}
 
-		if v1, ok := toNumber(fieldValue); ok {
-			if v2, err := strconv.ParseFloat(value, 64); err != nil {
+		if v, ok := toNumber(fieldValue); ok {
+			if valueIsString {
 				// type mismatch also means value does not match
 				return operator == "<>", nil
-			} else {
-				return (operator == "==" && v1 == v2) || (operator == "<>" && v1 != v2), nil
 			}
+			return (operator == "==" && v == valueFloat) ||
+					(operator == "<>" && v != valueFloat) ||
+					(operator == ">" && v > valueFloat) ||
+					(operator == ">=" && v >= valueFloat) ||
+					(operator == "<" && v < valueFloat) ||
+					(operator == "<=" && v <= valueFloat),
+				nil
 		}
 
 		if v, ok := fieldValue.(string); ok {
-			v = `"` + v + `"`
-			return (operator == "==" && value == v) || (operator == "<>" && value != v), nil
+			if !valueIsString {
+				// type mismatch also means value does not match
+				return operator == "<>", nil
+			}
+			return (operator == "==" && v == value) ||
+					(operator == "<>" && v != value) ||
+					(operator == ">" && v > value) ||
+					(operator == ">=" && v >= value) ||
+					(operator == "<" && v < value) ||
+					(operator == "<=" && v <= value),
+				nil
 		}
 
 		// type mismatch also means value does not match
