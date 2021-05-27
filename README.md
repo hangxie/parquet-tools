@@ -2,9 +2,10 @@
 Utility to deal with Parquet data
 
 ## Credit
+
 This project is inspired by:
 
-* Go parquet-tools: https://github.com/xitongsys/parquet-go/tree/master/tool/parquet-tools/
+* parquet-go/parquet-tools: https://github.com/xitongsys/parquet-go/tree/master/tool/parquet-tools/
 * Python parquet-tools: https://pypi.org/project/parquet-tools/
 * Java parquet-tools: https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools
 * Makefile: https://github.com/cisco-sso/kdk/blob/master/Makefile
@@ -21,38 +22,7 @@ Tools used:
 * https://github.com/jstemmer/go-junit-report
 * https://circleci.com/
 
-## How-To
-
-* Install from source:
-   ```
-   go get github.com/hangxie/parquet-tools
-   ```
-
-* Homebrew:
-   ```
-   brew tap hangxie/tap
-   brew install go-parquet-tools
-   ```
-
-* Run:
-   ```
-   parquet-tools -h
-   Usage: parquet-tools <command>
-
-   Flags:
-     -h, --help    Show context-sensitive help.
-
-   Commands:
-     cat          Prints the content of a Parquet file, data only.
-     import       Create Parquet file from other source data.
-     meta         Prints the metadata.
-     row-count    Prints the count of rows.
-     schema       Prints the schema.
-     size         Prints the size.
-     version      Show build version.
-
-   Run "parquet-tools <command> --help" for more information on a command.
-   ```
+Refer to [usage page](USAGE.md) for details of how to use the tool.
 
 ## TODO
 
