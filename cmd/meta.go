@@ -9,7 +9,7 @@ import (
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
 	CommonOption
-	Base64 bool `short:"b" help:"Encode min/max value." default:"false"`
+	Base64 bool `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
 }
 
 type columnMeta struct {
