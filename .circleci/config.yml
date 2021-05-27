@@ -104,8 +104,12 @@ jobs:
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
             docker context create multi-platform
             docker buildx create multi-platform --use
-            docker buildx build --platform linux/amd64,linux/arm64 --push \
-                -t hangxie/parquet-tools:${CIRCLE_TAG} . -f package/Dockerfile
+            docker buildx build --progress plain \
+                -f package/Dockerfile --push \
+                --platform linux/amd64,linux/arm64 \
+                -t hangxie/parquet-tools:${CIRCLE_TAG} \
+                -t hangxie/parquet-tools:latest \
+                .
 
 workflows:
   version: 2
