@@ -87,7 +87,7 @@ Docker image is hosted on [Docker Hub](https://hub.docker.com/r/hangxie/parquet-
 docker pull hangxie/parquet-tools
 ```
 
-I do have image for amd64 and arm64, more architectures will come soon, I am not ready to release `latest` tag yet, but should be ready soon.
+Current this project builds docker image for amd64, arm64, and arm/v7.
 
 ### Prebuilt Packages
 
