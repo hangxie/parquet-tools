@@ -86,27 +86,22 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: cimg/base:stable
+        environment:
+          PLATFORM: linux/amd64,linux/arm64,linux/arm
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.14
       - run:
-          name: Enable buildx
-          command: |
-            ssh remote-docker \<<EOF
-                sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
-                sudo systemctl restart docker
-                sudo docker info
-            EOF
-      - run:
           name: Build and push to docker hub
           command: |
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
+            export DOCKER_CLI_EXPERIMENTAL=enabled
             docker context create multi-platform
-            docker buildx create multi-platform --use
+            docker buildx create multi-platform --platform ${PLATFORM} --use
             docker buildx build --progress plain \
                 -f package/Dockerfile --push \
-                --platform linux/amd64,linux/arm64 \
+                --platform ${PLATFORM} \
                 -t hangxie/parquet-tools:${CIRCLE_TAG} \
                 -t hangxie/parquet-tools:latest \
                 .

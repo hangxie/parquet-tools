@@ -49,7 +49,8 @@ tools:  ## Install build tools
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@echo "==> Building executable"
 	@mkdir -p $(BUILDDIR)
-	@$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILDDIR) ./
+	@CGO_ENABLED=$(CGO_ENABLED) \
+		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILDDIR) ./
 
 clean:  ## Clean up the build dirs
 	@echo "==> Cleaning up build dirs"
