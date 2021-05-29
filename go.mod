@@ -13,3 +13,5 @@ require (
 replace github.com/hangxie/parquet-tools/cmd => ./cmd
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
+
+replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1
