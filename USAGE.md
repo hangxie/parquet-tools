@@ -13,6 +13,7 @@
   - [Parquet File Location](#parquet-file-location)
     - [File System](#file-system)
     - [S3 Bucket](#s3-bucket)
+    - [GCS Bucket](#gcs-bucket)
   - [cat Command](#cat-command)
     - [Full Data Set](#full-data-set)
     - [Limit Number of Rows](#limit-number-of-rows)
@@ -116,7 +117,7 @@ Most commands can output JSON format result which can be processed by utilities 
 
 ### Parquet File Location
 
-`parquet-tools` can read and write parquet files from file system or AWS S3 bucket, you need to have proper permission on the file you are going to process.
+`parquet-tools` can read and write parquet files from file system, AWS Simple Storage Service (S3) bucket and Google Cloud Storage (GCS) bucket, you need to have proper permission on the file you are going to process.
 
 #### File System
 
@@ -149,6 +150,19 @@ $ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-000
 ```
 
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `prquet-tools` only load necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run  `parquet-tools` on a local file. The S3 object used in above sample is more 4GB, but the `row-count` command only takes several seconds to finish.
+
+#### GCS Bucket
+
+Use full [gsutil](https://cloud.google.com/storage/docs/gsutil) URI to point to GCS object location, it starts with `gs://`. You need to make sure you have permission to read or write to the GSC object, either use application default or GOOGLE_APPLICATION_CREDENTIALS, you can refer to [Google Cloud document](https://cloud.google.com/docs/authentication/production#automatically) for more details.
+
+```
+$ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
+$ parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema gs://REDACTED/csv.parquet
+$ parquet-tools row-count gs://REDACTED/csv.parquet
+7
+```
+
+Similar to S3, `parquet-tools` only downloads necessary data from GCS bucket.
 
 ### cat Command
 

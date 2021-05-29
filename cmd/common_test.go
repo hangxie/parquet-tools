@@ -105,6 +105,15 @@ func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open S3 object")
 }
 
+func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
+	// Make sure there is no GCS access
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+
+	_, err := newParquetFileReader("gs://cloud-samples-data/bigquery/us-states/us-states.parquet")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to open GCS object")
+}
+
 func Test_common_newFileWriter_invalid_uri(t *testing.T) {
 	_, err := newFileWriter("://uri")
 	assert.NotNil(t, err)
@@ -115,12 +124,6 @@ func Test_common_newFileWriter_invalid_uri_scheme(t *testing.T) {
 	_, err := newFileWriter("invalid-scheme://something")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unknown location scheme")
-}
-
-func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
-	_, err := newFileWriter(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to find")
 }
 
 func Test_common_newFileWriter_local_not_a_file(t *testing.T) {
@@ -136,6 +139,12 @@ func Test_common_newFileWriter_local_good(t *testing.T) {
 	fw.Close()
 }
 
+func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
+	_, err := newFileWriter(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to find")
+}
+
 func Test_common_newFileWriter_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
@@ -146,6 +155,16 @@ func Test_common_newFileWriter_s3_good(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fw)
 	fw.Close()
+}
+
+func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
+	// Make sure there is no GCS access
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+
+	// parquet writer does not actually write to destination immediately
+	_, err := newFileWriter("gs://cloud-samples-data/bigquery/us-states/us-states.parquet")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
 
 func Test_common_newParquetFileWriter_invalid_uri(t *testing.T) {
