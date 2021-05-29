@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/xitongsys/parquet-go-source/gcs"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3"
 	"github.com/xitongsys/parquet-go/reader"
@@ -86,6 +87,11 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
 		}
+	case "gs":
+		fileReader, err = gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
+		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}
@@ -115,6 +121,11 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 		fileWriter, err = local.NewLocalFileWriter(u.Path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
+		}
+	case "gs":
+		fileWriter, err = gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
 		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
