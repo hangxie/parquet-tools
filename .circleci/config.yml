@@ -1,5 +1,7 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
+orbs:
+  slack: circleci/slack@4.4.2
 jobs:
   build:
     working_directory: ~/repo
@@ -37,6 +39,10 @@ jobs:
       - store_artifacts:
           path: build/test/coverage.html
           destination: test-coverage.html
+      - slack/notify:
+          branch_pattern: main
+          event: fail
+          template: basic_fail_1
 
   release-build:
     working_directory: ~/repo
@@ -63,6 +69,9 @@ jobs:
             - release
             - VERSION
             - CHANGELOG
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   publish-github-release:
     docker:
@@ -81,6 +90,9 @@ jobs:
                 -replace \
                 "$(cat /wrk/VERSION)" \
                 /wrk/release
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   publish-docker-image:
     working_directory: ~/repo
@@ -105,16 +117,40 @@ jobs:
                 -t hangxie/parquet-tools:${CIRCLE_TAG} \
                 -t hangxie/parquet-tools:latest \
                 .
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "> tag ${CIRCLE_TAG} pushed to <https://hub.docker.com/r/hangxie/parquet-tools/tags|hangxie/parquet-tools> by ${CIRCLE_BUILD_URL}"
+                    }
+                  ]
+                }
+              ]
+            }
 
 workflows:
   version: 2
   main:
     jobs:
       - build:
+          context: parquet-tools
           filters:
             tags:
               only: /^v\d+\.\d+\.\d+$/
       - release-build:
+          context: parquet-tools
           requires:
             - build
           filters:
