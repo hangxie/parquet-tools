@@ -40,6 +40,11 @@ func parseURI(uri string) (*url.URL, error) {
 		u.Scheme = "file"
 	}
 
+	if u.Scheme == "file" {
+		u.Path = filepath.Join(u.Host, u.Path)
+		u.Host = ""
+	}
+
 	return u, nil
 }
 
@@ -77,10 +82,9 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
 		}
 	case "file":
-		fileName := filepath.Join(u.Host, u.Path)
-		fileReader, err = local.NewLocalFileReader(fileName)
+		fileReader, err = local.NewLocalFileReader(u.Path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open local file [%s]: %s", fileName, err.Error())
+			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
 		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
@@ -108,10 +112,9 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
 		}
 	case "file":
-		fileName := filepath.Join(u.Host, u.Path)
-		fileWriter, err = local.NewLocalFileWriter(fileName)
+		fileWriter, err = local.NewLocalFileWriter(u.Path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open local file [%s]: %s", fileName, err.Error())
+			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
 		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
