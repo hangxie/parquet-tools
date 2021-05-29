@@ -38,6 +38,26 @@ func Test_common_parseURI_invalid_uri(t *testing.T) {
 	assert.Contains(t, err.Error(), "unable to parse file location")
 }
 
+func Test_common_parseURI_good(t *testing.T) {
+	u, err := parseURI("scheme://path/to/file")
+	assert.Nil(t, err)
+	assert.Equal(t, u.Scheme, "scheme")
+	assert.Equal(t, u.Host, "path")
+	assert.Equal(t, u.Path, "/to/file")
+
+	u, err = parseURI("path/to/file")
+	assert.Nil(t, err)
+	assert.Equal(t, u.Scheme, "file")
+	assert.Equal(t, u.Host, "")
+	assert.Equal(t, u.Path, "path/to/file")
+
+	u, err = parseURI("file://path/to/file")
+	assert.Nil(t, err)
+	assert.Equal(t, u.Scheme, "file")
+	assert.Equal(t, u.Host, "")
+	assert.Equal(t, u.Path, "path/to/file")
+}
+
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
 	_, err := newParquetFileReader(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
 	assert.NotNil(t, err)
