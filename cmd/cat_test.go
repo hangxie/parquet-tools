@@ -483,6 +483,26 @@ func Test_CatCmd_matchRowFunc_string_lt_ge(t *testing.T) {
 	}
 }
 
+func Test_CatCmd_Run_invalid_filter(t *testing.T) {
+	cmd := &CatCmd{
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
+		Filter:      `bad-filter`,
+		CommonOption: CommonOption{
+			URI: "testdata/good.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run(&Context{})
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "unable to parse filter")
+	})
+	assert.Equal(t, stdout, "")
+	assert.Equal(t, stderr, "")
+}
+
 func Test_CatCmd_Run_good_filter_equal(t *testing.T) {
 	cmd := &CatCmd{
 		Limit:       10,
