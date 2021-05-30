@@ -3,6 +3,7 @@ module github.com/hangxie/parquet-tools
 go 1.16
 
 require (
+	github.com/Azure/azure-storage-blob-go v0.10.0
 	github.com/alecthomas/kong v0.2.16
 	github.com/aws/aws-sdk-go v1.38.30
 	github.com/stretchr/testify v1.6.1

@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	pqtazblob "github.com/xitongsys/parquet-go-source/azblob"
 	"github.com/xitongsys/parquet-go-source/gcs"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3"
@@ -92,6 +95,16 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
 		}
+	case "azblob":
+		azURL, cred, err := azureAccessDetail(*u)
+		if err != nil {
+			return nil, err
+		}
+
+		fileReader, err = pqtazblob.NewAzBlobFileReader(context.Background(), azURL, cred, pqtazblob.ReaderOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", uri, err.Error())
+		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}
@@ -126,6 +139,16 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 		fileWriter, err = gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
+		}
+	case "azblob":
+		azURL, cred, err := azureAccessDetail(*u)
+		if err != nil {
+			return nil, err
+		}
+
+		fileWriter, err = pqtazblob.NewAzBlobFileWriter(context.Background(), azURL, cred, pqtazblob.WriterOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", uri, err.Error())
 		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
@@ -189,4 +212,25 @@ func toNumber(iface interface{}) (float64, bool) {
 		return v, true
 	}
 	return 0.0, false
+}
+
+func azureAccessDetail(azblobURL url.URL) (string, azblob.Credential, error) {
+	pathLayers := strings.SplitN(azblobURL.Path, "/", 3)
+	if azblobURL.Host == "" || len(pathLayers) != 3 || pathLayers[0] != "" || pathLayers[1] == "" || pathLayers[2] == "" {
+		return "", nil, fmt.Errorf("azure blob URI format: azblob://storageaccount/container/blob")
+	}
+	httpURL := fmt.Sprintf("https://%s.blob.core.windows.net%s", azblobURL.Host, azblobURL.Path)
+
+	accessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
+	if accessKey == "" {
+		// anonymouse access
+		return httpURL, azblob.NewAnonymousCredential(), nil
+	}
+
+	credential, err := azblob.NewSharedKeyCredential(azblobURL.Host, accessKey)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to create Azure credential")
+	}
+
+	return httpURL, credential, nil
 }
