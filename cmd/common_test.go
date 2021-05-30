@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// this for unit test only
 func captureStdoutStderr(f func()) (string, string) {
 	savedStdout := os.Stdout
 	savedStderr := os.Stderr
@@ -33,6 +34,99 @@ func captureStdoutStderr(f func()) (string, string) {
 	os.Stderr = savedStderr
 
 	return string(stdout), string(stderr)
+}
+
+// help functions
+func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
+	u := url.URL{
+		Host: "",
+		Path: "",
+	}
+	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+
+	uri, cred, err := azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+	assert.Equal(t, uri, "")
+	assert.Equal(t, cred, nil)
+
+	u.Host = "storageacconut"
+	u.Path = "missin/leading/slash"
+	_, _, err = azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+
+	u.Host = "storageacconut"
+	u.Path = "/no-blob"
+	_, _, err = azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+
+	u.Host = "storageacconut"
+	u.Path = "/empty-blob/"
+	_, _, err = azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+}
+
+func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
+	u := url.URL{
+		Host: "storageaccount",
+		Path: "/container/path/to/object",
+	}
+
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
+	uri, cred, err := azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to create Azure credential")
+	assert.Equal(t, uri, "")
+	assert.Equal(t, cred, nil)
+}
+
+func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
+	u := url.URL{
+		Host: "storageaccount",
+		Path: "/container/path/to/object",
+	}
+	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+	uri, cred, err := azureAccessDetail(u)
+	assert.Nil(t, err)
+	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
+	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
+
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
+	uri, cred, err = azureAccessDetail(u)
+	assert.Nil(t, err)
+	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
+	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
+}
+
+func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
+	u := url.URL{
+		Host: "storageaccount",
+		Path: "/container/path/to/object",
+	}
+
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+	uri, cred, err := azureAccessDetail(u)
+	assert.Nil(t, err)
+	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
+	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.SharedKeyCredential")
+}
+
+func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
+	_, err := getBucketRegion(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to find")
+}
+
+func Test_common_getBucketRegion_aws_error(t *testing.T) {
+	_, err := getBucketRegion("")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "AWS error:")
 }
 
 func Test_common_parseURI_invalid_uri(t *testing.T) {
@@ -61,18 +155,43 @@ func Test_common_parseURI_good(t *testing.T) {
 	assert.Equal(t, u.Path, "path/to/file")
 }
 
-func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
-	_, err := getBucketRegion(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()))
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to find")
+func Test_common_toNumber_bad(t *testing.T) {
+	badValues := []interface{}{
+		string("8"),
+		[]uint{9, 10},
+		nil,
+	}
+
+	for _, iface := range badValues {
+		_, ok := toNumber(interface{}(iface))
+		assert.False(t, ok)
+	}
 }
 
-func Test_common_getBucketRegion_aws_error(t *testing.T) {
-	_, err := getBucketRegion("")
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "AWS error:")
+func Test_common_toNumber_good(t *testing.T) {
+	badValues := []interface{}{
+		uint(1),
+		uint8(2),
+		uint16(3),
+		uint32(4),
+		uint64(5),
+		int(6),
+		int8(7),
+		int16(8),
+		int32(9),
+		int64(10),
+		float32(11),
+		float64(12),
+	}
+
+	for i, iface := range badValues {
+		v, ok := toNumber(interface{}(iface))
+		assert.True(t, ok)
+		assert.Equal(t, v, float64(i+1))
+	}
 }
 
+// newParquetFileReader
 func Test_common_newParquetFileReader_invalid_uri(t *testing.T) {
 	_, err := newParquetFileReader("://uri")
 	assert.NotNil(t, err)
@@ -133,88 +252,6 @@ func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
 
-func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
-	u := url.URL{
-		Host: "",
-		Path: "",
-	}
-	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
-
-	uri, cred, err := azureAccessDetail(u)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "azure blob URI format:")
-	assert.Equal(t, uri, "")
-	assert.Equal(t, cred, nil)
-
-	u.Host = "storageacconut"
-	u.Path = "missin/leading/slash"
-	_, _, err = azureAccessDetail(u)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "azure blob URI format:")
-
-	u.Host = "storageacconut"
-	u.Path = "/no-blob"
-	_, _, err = azureAccessDetail(u)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "azure blob URI format:")
-
-	u.Host = "storageacconut"
-	u.Path = "/empty-blob/"
-	_, _, err = azureAccessDetail(u)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "azure blob URI format:")
-}
-
-func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
-	u := url.URL{
-		Host: "storageaccount",
-		Path: "/container/path/to/object",
-	}
-	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
-	uri, cred, err := azureAccessDetail(u)
-	assert.Nil(t, err)
-	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
-	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
-
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
-	uri, cred, err = azureAccessDetail(u)
-	assert.Nil(t, err)
-	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
-	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
-}
-
-func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
-	u := url.URL{
-		Host: "storageaccount",
-		Path: "/container/path/to/object",
-	}
-
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
-	uri, cred, err := azureAccessDetail(u)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to create Azure credential")
-	assert.Equal(t, uri, "")
-	assert.Equal(t, cred, nil)
-
-}
-
-func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
-	u := url.URL{
-		Host: "storageaccount",
-		Path: "/container/path/to/object",
-	}
-
-	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
-	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
-	uri, cred, err := azureAccessDetail(u)
-	assert.Nil(t, err)
-	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
-	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.SharedKeyCredential")
-
-}
-
 func Test_common_newParquetFileReader_azblob_access_fail(t *testing.T) {
 	// Make sure there is no Azure blob access
 	randBytes := make([]byte, 64)
@@ -240,6 +277,7 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "Seek: invalid offset")
 }
 
+// newFileWriter
 func Test_common_newFileWriter_invalid_uri(t *testing.T) {
 	_, err := newFileWriter("://uri")
 	assert.NotNil(t, err)
@@ -306,6 +344,7 @@ func Test_common_newFileWriter_azblob_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
+// newParquetFileWriter
 func Test_common_newParquetFileWriter_invalid_uri(t *testing.T) {
 	_, err := newParquetFileWriter("://uri", &struct{}{})
 	assert.NotNil(t, err)
@@ -319,6 +358,7 @@ func Test_common_newParquetFileWriter_good(t *testing.T) {
 	pw.PFile.Close()
 }
 
+// newCSVWriter
 func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
 	_, err := newCSVWriter("://uri", []string{"name=Id, type=INT64"})
 	assert.NotNil(t, err)
@@ -342,40 +382,4 @@ func Test_common_newCSVWriter_good(t *testing.T) {
 	pw, err := newCSVWriter(os.TempDir()+"/csv-writer.parquet", []string{"name=Id, type=INT64"})
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
-}
-
-func Test_common_toNumber_bad(t *testing.T) {
-	badValues := []interface{}{
-		string("8"),
-		[]uint{9, 10},
-		nil,
-	}
-
-	for _, iface := range badValues {
-		_, ok := toNumber(interface{}(iface))
-		assert.False(t, ok)
-	}
-}
-
-func Test_common_toNumber_good(t *testing.T) {
-	badValues := []interface{}{
-		uint(1),
-		uint8(2),
-		uint16(3),
-		uint32(4),
-		uint64(5),
-		int(6),
-		int8(7),
-		int16(8),
-		int32(9),
-		int64(10),
-		float32(11),
-		float64(12),
-	}
-
-	for i, iface := range badValues {
-		v, ok := toNumber(interface{}(iface))
-		assert.True(t, ok)
-		assert.Equal(t, v, float64(i+1))
-	}
 }
