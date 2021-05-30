@@ -14,6 +14,7 @@
     - [File System](#file-system)
     - [S3 Bucket](#s3-bucket)
     - [GCS Bucket](#gcs-bucket)
+    - [Azure Storage Container](#azure-storage-container)
   - [cat Command](#cat-command)
     - [Full Data Set](#full-data-set)
     - [Limit Number of Rows](#limit-number-of-rows)
@@ -117,7 +118,13 @@ Most commands can output JSON format result which can be processed by utilities 
 
 ### Parquet File Location
 
-`parquet-tools` can read and write parquet files from file system, AWS Simple Storage Service (S3) bucket and Google Cloud Storage (GCS) bucket, you need to have proper permission on the file you are going to process.
+`parquet-tools` can read and write parquet files from these locations:
+* file system
+* AWS Simple Storage Service (S3) bucket
+* Google Cloud Storage (GCS) bucket
+* Azure Storage Container
+
+you need to have proper permission on the file you are going to process.
 
 #### File System
 
@@ -163,6 +170,34 @@ $ parquet-tools row-count gs://REDACTED/csv.parquet
 ```
 
 Similar to S3, `parquet-tools` only downloads necessary data from GCS bucket.
+
+#### Azure Storage Container
+
+`parquet-tools` uses a self-defined scheme for Azure blob as there is no well-known one:
+* starts with `azblob://`, followed by
+* storage account, followed by
+* container, followed by
+* blob name
+
+for example:
+
+> azblob://pandemicdatalake/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+
+means the parquet file is at:
+* storage account `pandemicdatalake`
+* container `public`
+* blob `curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet`
+
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to access to the blob, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonmous access is expected.
+
+```
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count azblob://REDACTED/parquet-tools/test/csv.parquet
+7
+$ AZURE_STORAGE_ACCESS_KEY= ./build/parquet-tools row-count azblob://pandemicdatalake/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+1973310
+```
+
+Similar to S3 and GCS, `parquet-tools` only downloads necessary data from blob.
 
 ### cat Command
 

@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net/url"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -114,6 +117,113 @@ func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
 
+func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
+	u := url.URL{
+		Host: "",
+		Path: "",
+	}
+	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+
+	uri, cred, err := azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+	assert.Equal(t, uri, "")
+	assert.Equal(t, cred, nil)
+
+	u.Host = "storageacconut"
+	u.Path = "missin/leading/slash"
+	_, _, err = azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+
+	u.Host = "storageacconut"
+	u.Path = "/no-blob"
+	_, _, err = azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+
+	u.Host = "storageacconut"
+	u.Path = "/empty-blob/"
+	_, _, err = azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+}
+
+func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
+	u := url.URL{
+		Host: "storageaccount",
+		Path: "/container/path/to/object",
+	}
+	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+	uri, cred, err := azureAccessDetail(u)
+	assert.Nil(t, err)
+	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
+	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
+
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
+	uri, cred, err = azureAccessDetail(u)
+	assert.Nil(t, err)
+	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
+	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
+}
+
+func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
+	u := url.URL{
+		Host: "storageaccount",
+		Path: "/container/path/to/object",
+	}
+
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
+	uri, cred, err := azureAccessDetail(u)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to create Azure credential")
+	assert.Equal(t, uri, "")
+	assert.Equal(t, cred, nil)
+
+}
+
+func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
+	u := url.URL{
+		Host: "storageaccount",
+		Path: "/container/path/to/object",
+	}
+
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+	uri, cred, err := azureAccessDetail(u)
+	assert.Nil(t, err)
+	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
+	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.SharedKeyCredential")
+
+}
+
+func Test_common_newParquetFileReader_azblob_access_fail(t *testing.T) {
+	// Make sure there is no Azure blob access
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+
+	_, err := newParquetFileReader("azblob://bad/uri")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+}
+
+func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
+	// Make sure there is no Azure blob access
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+
+	_, err := newParquetFileReader("azblob://azureopendatastorage/censusdatacontainer/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
+	assert.NotNil(t, err)
+	// This is returned from parquet-go-source, which does not help too much
+	assert.Contains(t, err.Error(), "Seek: invalid offset")
+}
+
 func Test_common_newFileWriter_invalid_uri(t *testing.T) {
 	_, err := newFileWriter("://uri")
 	assert.NotNil(t, err)
@@ -165,6 +275,19 @@ func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
 	_, err := newFileWriter("gs://cloud-samples-data/bigquery/us-states/us-states.parquet")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open GCS object")
+}
+
+func Test_common_newFileWriter_azblob_no_permission(t *testing.T) {
+	// Make sure there is no Azure blob access
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+
+	_, err := newFileWriter("azblob://azureopendatastorage/censusdatacontainer/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
+	assert.NotNil(t, err)
+	// This is returned from parquet-go-source, which does not help too much
+	assert.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
 func Test_common_newParquetFileWriter_invalid_uri(t *testing.T) {

@@ -14,6 +14,8 @@ Some test cases are from:
 
 * https://pro.dp.la/developers/bulk-download
 * https://github.com/xitongsys/parquet-go/tree/master/example/
+* https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet
+* https://azure.microsoft.com/en-us/services/open-datasets/catalog/
 
 Tools used:
 
