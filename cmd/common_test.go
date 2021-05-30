@@ -62,9 +62,15 @@ func Test_common_parseURI_good(t *testing.T) {
 }
 
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
-	_, err := newParquetFileReader(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
+	_, err := getBucketRegion(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()))
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to find")
+}
+
+func Test_common_getBucketRegion_aws_error(t *testing.T) {
+	_, err := getBucketRegion("")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "AWS error:")
 }
 
 func Test_common_newParquetFileReader_invalid_uri(t *testing.T) {
@@ -96,6 +102,16 @@ func Test_common_newParquetFileReader_local_good(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, pr)
 	pr.PFile.Close()
+}
+
+func Test_common_newParquetFileReader_s3_aws_error(t *testing.T) {
+	// Make sure there is no AWS access
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
+
+	_, err := newParquetFileReader("s3:///path/to/object")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "AWS error:")
 }
 
 func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
