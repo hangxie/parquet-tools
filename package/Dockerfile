@@ -8,7 +8,11 @@ RUN apt update \
     && make build
 
 FROM debian:stretch-slim
-RUN adduser --home /app --disabled-password --system app
+RUN adduser --home /app --disabled-password --system app \
+ && apt update \
+ && apt install ca-certificates -y \
+ && rm -rf /var/lib/apt/lists/*
+
 USER app
 COPY --from=builder /src/build/parquet-tools /app/
 WORKDIR /app
