@@ -16,3 +16,5 @@ replace github.com/hangxie/parquet-tools/cmd => ./cmd
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
 replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1
+
+replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20210531233818-4f87c7cf556b

@@ -255,29 +255,18 @@ func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
 
-func Test_common_newParquetFileReader_azblob_access_fail(t *testing.T) {
-	// Make sure there is no Azure blob access
-	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
-	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
-
-	_, err := newParquetFileReader("wasbs://bad/uri")
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "azure blob URI format:")
-}
-
 func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
-	// Make sure there is no Azure blob access
+	// Use a faked access key so anonymous access will fail
 	randBytes := make([]byte, 64)
 	rand.Read(randBytes)
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+	t.Logf("dummyKey is [%s]", dummyKey)
 
 	_, err := newParquetFileReader("wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
 	assert.NotNil(t, err)
 	// This is returned from parquet-go-source, which does not help too much
-	assert.Contains(t, err.Error(), "Seek: invalid offset")
+	assert.Contains(t, err.Error(), "Server failed to authenticate the request")
 }
 
 // newFileWriter
