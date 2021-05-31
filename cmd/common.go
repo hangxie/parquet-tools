@@ -95,7 +95,7 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
 		}
-	case "azblob":
+	case "wasbs":
 		azURL, cred, err := azureAccessDetail(*u)
 		if err != nil {
 			return nil, err
@@ -140,7 +140,7 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
 		}
-	case "azblob":
+	case "wasbs":
 		azURL, cred, err := azureAccessDetail(*u)
 		if err != nil {
 			return nil, err
@@ -214,12 +214,12 @@ func toNumber(iface interface{}) (float64, bool) {
 	return 0.0, false
 }
 
-func azureAccessDetail(azblobURL url.URL) (string, azblob.Credential, error) {
-	pathLayers := strings.SplitN(azblobURL.Path, "/", 3)
-	if azblobURL.Host == "" || len(pathLayers) != 3 || pathLayers[0] != "" || pathLayers[1] == "" || pathLayers[2] == "" {
-		return "", nil, fmt.Errorf("azure blob URI format: azblob://storageaccount/container/blob")
+func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
+	container := azURL.User.Username()
+	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
+		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.windows.core.net/path/to/blob")
 	}
-	httpURL := fmt.Sprintf("https://%s.blob.core.windows.net%s", azblobURL.Host, azblobURL.Path)
+	httpURL := fmt.Sprintf("https://%s/%s%s", azURL.Host, container, azURL.Path)
 
 	accessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
 	if accessKey == "" {
@@ -227,7 +227,7 @@ func azureAccessDetail(azblobURL url.URL) (string, azblob.Credential, error) {
 		return httpURL, azblob.NewAnonymousCredential(), nil
 	}
 
-	credential, err := azblob.NewSharedKeyCredential(azblobURL.Host, accessKey)
+	credential, err := azblob.NewSharedKeyCredential(strings.Split(azURL.Host, ".")[0], accessKey)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to create Azure credential")
 	}

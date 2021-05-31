@@ -57,7 +57,7 @@ func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 
 	u.Host = "storageacconut"
-	u.Path = "/no-blob"
+	u.Path = "/no-container"
 	_, _, err = azureAccessDetail(u)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
@@ -73,6 +73,7 @@ func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
 	u := url.URL{
 		Host: "storageaccount",
 		Path: "/container/path/to/object",
+		User: url.User("container-name"),
 	}
 
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
@@ -85,8 +86,9 @@ func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
 
 func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	u := url.URL{
-		Host: "storageaccount",
-		Path: "/container/path/to/object",
+		Host: "storageaccount.blob.core.windows.net",
+		Path: "/path/to/object",
+		User: url.User("container"),
 	}
 	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
 	uri, cred, err := azureAccessDetail(u)
@@ -103,8 +105,9 @@ func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 
 func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 	u := url.URL{
-		Host: "storageaccount",
-		Path: "/container/path/to/object",
+		Host: "storageaccount.blob.core.windows.net",
+		Path: "/path/to/object",
+		User: url.User("container"),
 	}
 
 	randBytes := make([]byte, 64)
@@ -259,7 +262,7 @@ func Test_common_newParquetFileReader_azblob_access_fail(t *testing.T) {
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 
-	_, err := newParquetFileReader("azblob://bad/uri")
+	_, err := newParquetFileReader("wasbs://bad/uri")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 }
@@ -271,7 +274,7 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 
-	_, err := newParquetFileReader("azblob://azureopendatastorage/censusdatacontainer/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
+	_, err := newParquetFileReader("wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
 	assert.NotNil(t, err)
 	// This is returned from parquet-go-source, which does not help too much
 	assert.Contains(t, err.Error(), "Seek: invalid offset")
@@ -331,6 +334,18 @@ func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
 
+func Test_common_newFileWriter_azblob_invalid_url(t *testing.T) {
+	// Make sure there is no Azure blob access
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+
+	_, err := newFileWriter("wasbs://bad/url")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "zure blob URI format:")
+}
+
 func Test_common_newFileWriter_azblob_no_permission(t *testing.T) {
 	// Make sure there is no Azure blob access
 	randBytes := make([]byte, 64)
@@ -338,7 +353,7 @@ func Test_common_newFileWriter_azblob_no_permission(t *testing.T) {
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 
-	_, err := newFileWriter("azblob://azureopendatastorage/censusdatacontainer/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
+	_, err := newFileWriter("wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
 	assert.NotNil(t, err)
 	// This is returned from parquet-go-source, which does not help too much
 	assert.Contains(t, err.Error(), "failed to open Azure blob object")
