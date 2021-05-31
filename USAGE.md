@@ -173,27 +173,28 @@ Similar to S3, `parquet-tools` only downloads necessary data from GCS bucket.
 
 #### Azure Storage Container
 
-`parquet-tools` uses a self-defined scheme for Azure blob as there is no well-known one:
-* starts with `azblob://`, followed by
-* storage account, followed by
-* container, followed by
-* blob name
+`parquet-tools` uses the [HDFS URL format](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage#access-files-from-within-cluster):
+* starts with `wasbs://` (`wasb://` is not supported), followed by
+* container as user name, followed by
+* storage account as host, followed by
+* blob name as path
 
 for example:
 
-> azblob://pandemicdatalake/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+> wasbs://public@pandemicdatalake/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 
 means the parquet file is at:
 * storage account `pandemicdatalake`
 * container `public`
 * blob `curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet`
 
-`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to access to the blob, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonmous access is expected.
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonmous access is expected.
 
 ```
-$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count azblob://REDACTED/parquet-tools/test/csv.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://parquet-toos@REDACTED.blob.core.windows.net/test/csv.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://parquet-toos@REDACTED.blob.core.windows.net/test/csv.parquet
 7
-$ AZURE_STORAGE_ACCESS_KEY= ./build/parquet-tools row-count azblob://pandemicdatalake/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+$ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 1973310
 ```
 
