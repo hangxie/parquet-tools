@@ -49,9 +49,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	// Output rows one by one to avoid running out of memory with a jumbo list
 	fmt.Print("[")
 	rand.Seed(time.Now().UnixNano())
-	firstItem := true
-	counter := int64(0)
-	for counter < c.Limit {
+	for counter := int64(0); counter < c.Limit; {
 		rows, err := reader.ReadByNumber(c.PageSize)
 		if err != nil {
 			return fmt.Errorf("failed to cat: %s", err)
@@ -62,21 +60,20 @@ func (c *CatCmd) Run(ctx *Context) error {
 
 		for _, row := range rows {
 			buf, _ := json.Marshal(row)
-			if matched, err := matchRow(buf); err != nil {
+			matched, err := matchRow(buf)
+			if err != nil {
 				return fmt.Errorf("failed to run filter: %s", err.Error())
-			} else if !matched {
+			}
+			if !matched {
 				continue
 			}
 
 			if rand.Float64() >= c.SampleRatio {
 				continue
 			}
-			if firstItem {
-				firstItem = false
-			} else {
+			if counter != 0 {
 				fmt.Print(",")
 			}
-
 			fmt.Print(string(buf))
 
 			counter += 1
@@ -153,12 +150,12 @@ func (c *CatCmd) matchRowFunc() (func([]byte) (bool, error), error) {
 		}
 
 		for _, f := range fieldList[:(fieldCount - 1)] {
-			if v, ok := rowObj[f].(map[string]interface{}); !ok {
+			v, ok := rowObj[f].(map[string]interface{})
+			if !ok {
 				// row does not have nested layer deep enough
 				return operator == "<>", nil
-			} else {
-				rowObj = v
 			}
+			rowObj = v
 		}
 		fieldValue, ok := rowObj[fieldList[fieldCount-1]]
 		if !ok {
