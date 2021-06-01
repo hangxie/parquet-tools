@@ -1,3 +1,8 @@
+[![](https://img.shields.io/github/v/tag/hangxie/parquet-tools.svg?color=brightgreen&label=version&sort=semver)](https://github.com/hangxie/parquet-tools/releases)
+[![](https://circleci.com/gh/hangxie/parquet-tools/tree/main.svg?style=shield)](https://circleci.com/gh/hangxie/parquet-tools/tree/main)
+[![](https://goreportcard.com/badge/github.com/hangxie/parquet-tools)](https://goreportcard.com/report/github.com/hangxie/parquet-tools)
+[![](https://img.shields.io/badge/license-BSD%203-blue)](https://github.com/hangxie/parquet-tools/blob/main/LICENSE)
+
 # parquet-tools
 Utility to deal with Parquet data
 
@@ -29,5 +34,3 @@ Refer to [usage page](USAGE.md) for details of how to use the tool.
 ## TODO
 
 TODO list is tracked as enhancement in issues.
-
-CircleCI Build Status: [![parquet-tools](https://circleci.com/gh/hangxie/parquet-tools.svg?style=svg)](https://circleci.com/gh/hangxie/parquet-tools)
