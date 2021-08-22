@@ -115,14 +115,14 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 	if s.Type == nil && s.ConvertedType == nil {
 		ret.Tag = fmt.Sprintf("name=%s, repetitiontype=%s", s.Name, repetitionType)
 	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
-		// MAP has schema structure of MAP->MAP_KEY_VALUE->(Key, Value)
+		// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
 		// expected output is MAP->(Key, Value)
 		ret.Tag = fmt.Sprintf("name=%s, type=MAP, repetitiontype=%s", s.Name, repetitionType)
 		s.Children = s.Children[0].Children[0:2]
 		s.Children[0].Name = "Key"
 		s.Children[1].Name = "Value"
 	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
-		// LIST has schema structure of LIST->List->Element
+		// LIST has schema structure of LIST->List->Field1
 		// expected output is LIST->Element
 		ret.Tag = fmt.Sprintf("name=%s, type=LIST, repetitiontype=%s", s.Name, repetitionType)
 		s.Children = s.Children[0].Children[:1]
