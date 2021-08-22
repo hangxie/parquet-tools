@@ -61,7 +61,7 @@ Good for people do not want to build and all other installation approach do not 
 
 Go to [relase page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux or Mac, then run the program.
 
-The windows-arm build is experimental which does not work on Windows 10 on ARM (like Surface Pro X), you can download and run windows-386 build instead, or you can run windows-amd64 build if you are in Windows Insider program.
+For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-386 build, if you are in Windows Insider program, windows-amd64 build should work too.
 
 ### Brew Install
 
