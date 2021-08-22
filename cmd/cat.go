@@ -18,6 +18,7 @@ type CatCmd struct {
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Filter      string  `short:"f" help:"Filter to apply, support == and <>."`
+	Format      string  `help:"output format (json/stream)" enum:"json,stream" default:"json"`
 }
 
 // Run does actual cat job
@@ -39,6 +40,10 @@ func (c *CatCmd) Run(ctx *Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse filter [%s]", c.Filter)
 	}
+	if c.Format != "json" && c.Format != "stream" {
+		// should never reach here
+		return fmt.Errorf("unknown format: %s", c.Format)
+	}
 
 	reader, err := newParquetFileReader(c.URI)
 	if err != nil {
@@ -46,8 +51,17 @@ func (c *CatCmd) Run(ctx *Context) error {
 	}
 	defer reader.PFile.Close()
 
+	delimiter := map[string]struct {
+		begin string
+		line  string
+		end   string
+	}{
+		"json":   {"[", ",", "]"},
+		"stream": {"", "\n", ""},
+	}
+
 	// Output rows one by one to avoid running out of memory with a jumbo list
-	fmt.Print("[")
+	fmt.Print(delimiter[c.Format].begin)
 	rand.Seed(time.Now().UnixNano())
 	for counter := int64(0); counter < c.Limit; {
 		rows, err := reader.ReadByNumber(c.PageSize)
@@ -72,7 +86,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 				continue
 			}
 			if counter != 0 {
-				fmt.Print(",")
+				fmt.Print(delimiter[c.Format].line)
 			}
 			fmt.Print(string(buf))
 
@@ -82,7 +96,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 			}
 		}
 	}
-	fmt.Println("]")
+	fmt.Println(delimiter[c.Format].end)
 
 	return nil
 }

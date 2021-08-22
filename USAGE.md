@@ -20,6 +20,7 @@
     - [Limit Number of Rows](#limit-number-of-rows)
     - [Sampling](#sampling)
     - [Filter](#filter)
+    - [Format](#output-format)
   - [import Command](#import-command)
     - [Import from CSV](#import-from-csv)
   - [meta Command](#meta-command)
@@ -266,6 +267,26 @@ $ parquet-tools cat --filter 'Shoe_brand > "nike"' --limit 1 cmd/testdata/good.p
 $  cat --filter 'Doc.SourceResource.Date.Begin <> null' --limit 1  s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
 [{"Doc":{"Uri":"http://dp.la/api/items/3e542ba8c7e5f711ca9...
 ```
+
+#### Output format
+`cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
+
+```
+$ parquet-tools cat cmd/testdata/good.parquet
+[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+```
+
+`cat` also supports [JSON streaming](https://en.wikipedia.org/wiki/JSON_streaming) format by specifying `--format stream`, particularly, this outputs data in [line delimited format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2), allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
+
+```
+$ parquet-tools cat -format stream cmd/testdata/good.parquet
+{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
+{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+```
+
+If you do not have a toolchain to process JSON streaming format, you can read data line by line and parse every single line as a JSON object.
 
 ### import Command
 
