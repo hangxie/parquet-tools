@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,7 @@ func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "file/does/not/exist",
 		},
+		Format: "json",
 	}
 
 	err := cmd.Run(&Context{})
@@ -31,6 +33,7 @@ func Test_CatCmd_Run_invalid_limit(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
+		Format: "json",
 	}
 
 	err := cmd.Run(&Context{})
@@ -46,6 +49,7 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
@@ -65,6 +69,7 @@ func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
+		Format: "json",
 	}
 
 	err := cmd.Run(&Context{})
@@ -80,6 +85,7 @@ func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
+		Format: "json",
 	}
 
 	err := cmd.Run(&Context{})
@@ -95,6 +101,7 @@ func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/all-types.parquet",
 		},
+		Format: "json",
 	}
 
 	err := cmd.Run(&Context{})
@@ -110,6 +117,7 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
@@ -127,6 +135,62 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 	assert.Equal(t, res[3]["Shoe_brand"], "steph_curry")
 }
 
+func Test_CatCmd_Run_good_stream(t *testing.T) {
+	cmd := &CatCmd{
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
+		CommonOption: CommonOption{
+			URI: "testdata/good.parquet",
+		},
+		Format: "stream",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, stdout,
+		strings.Join([]string{
+			`{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}`,
+			`{"Shoe_brand":"nike","Shoe_name":"air_griffey"}`,
+			`{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}`,
+			`{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}`,
+			"",
+		},
+			"\n"))
+	assert.Equal(t, stderr, "")
+
+	// double check
+	items := strings.Split(stdout, "\n")
+	assert.Equal(t, len(items), 5)
+
+	res := map[string]string{}
+	err := json.Unmarshal([]byte(items[3]), &res)
+	assert.Nil(t, err)
+	assert.Equal(t, res["Shoe_brand"], "steph_curry")
+}
+
+func Test_CatCmd_Run_bad_format(t *testing.T) {
+	cmd := &CatCmd{
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
+		CommonOption: CommonOption{
+			URI: "testdata/good.parquet",
+		},
+		Format: "random-dude",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run(&Context{})
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "unknown format: random-dude")
+
+	})
+	assert.Equal(t, stdout, "")
+	assert.Equal(t, stderr, "")
+}
+
 func Test_CatCmd_Run_good_limit(t *testing.T) {
 	cmd := &CatCmd{
 		Limit:       2,
@@ -135,6 +199,7 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
@@ -160,6 +225,7 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
@@ -492,6 +558,7 @@ func Test_CatCmd_Run_invalid_filter(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
@@ -512,6 +579,7 @@ func Test_CatCmd_Run_good_filter_equal(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
@@ -538,6 +606,7 @@ func Test_CatCmd_Run_good_filter_not_equal(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
+		Format: "json",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
