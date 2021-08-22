@@ -7,7 +7,10 @@ VERSION     = $(shell git describe --tags)
 BUILD       = $(shell date +%FT%T%z)
 BUILDDIR    = $(CURDIR)/build
 GOBIN       = $(shell go env GOPATH)/bin
-REL_TARGET  = darwin-amd64 darwin-arm64 linux-amd64 linux-arm linux-arm64 windows-386 windows-amd64 windows-arm
+REL_TARGET  = \
+	darwin-amd64 darwin-arm64 \
+	linux-386 linux-amd64 linux-arm linux-arm64 \
+	windows-386 windows-amd64 windows-arm windows-arm64
 
 # go option
 GO          ?= go
@@ -41,9 +44,9 @@ deps:  ## Install prerequisite for build
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
 	@test -x $(GOBIN)/golangci-lint || \
-		(cd /tmp; GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.1)
+		(cd /tmp; GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.0)
 	@test -x $(GOBIN)/go-junit-report || \
-		(cd /tmp; go get -u github.com/jstemmer/go-junit-report)
+		(cd /tmp; go install github.com/jstemmer/go-junit-report@v0.9.1)
 
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
