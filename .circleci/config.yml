@@ -6,7 +6,7 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/golang:1.17-rc
+      - image: circleci/golang:1.17
     steps:
       - checkout
       - setup_remote_docker:
@@ -52,7 +52,7 @@ jobs:
   release-build:
     working_directory: ~/repo
     docker:
-      - image: circleci/golang:1.17-rc
+      - image: circleci/golang:1.17
     steps:
       - checkout
       - restore_cache:
@@ -111,6 +111,7 @@ jobs:
           version: 19.03.14
       - run:
           name: Build and push to docker hub
+          no_output_timeout: 30m
           command: |
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
             export DOCKER_CLI_EXPERIMENTAL=enabled
