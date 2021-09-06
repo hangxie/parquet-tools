@@ -278,17 +278,17 @@ $ parquet-tools cat cmd/testdata/good.parquet
 [{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
 ```
 
-`cat` also supports [JSON streaming](https://en.wikipedia.org/wiki/JSON_streaming) format by specifying `--format stream`, particularly, this outputs data in [line delimited format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2), allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
+`cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
 
 ```
-$ parquet-tools cat -format stream cmd/testdata/good.parquet
+$ parquet-tools cat -format jsonl cmd/testdata/good.parquet
 {"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
 ```
 
-If you do not have a toolchain to process JSON streaming format, you can read data line by line and parse every single line as a JSON object.
+If you do not have a toolchain to process JSONL format, you can read data line by line and parse every single line as a JSON object.
 
 ### import Command
 

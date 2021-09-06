@@ -143,7 +143,7 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 		CommonOption: CommonOption{
 			URI: "testdata/good.parquet",
 		},
-		Format: "stream",
+		Format: "jsonl",
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {

@@ -18,7 +18,7 @@ type CatCmd struct {
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Filter      string  `short:"f" help:"Filter to apply, support == and <>."`
-	Format      string  `help:"output format (json/stream)" enum:"json,stream" default:"json"`
+	Format      string  `help:"output format (json/jsonl)" enum:"json,jsonl" default:"json"`
 }
 
 // Run does actual cat job
@@ -40,7 +40,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse filter [%s]", c.Filter)
 	}
-	if c.Format != "json" && c.Format != "stream" {
+	if c.Format != "json" && c.Format != "jsonl" {
 		// should never reach here
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
@@ -56,8 +56,8 @@ func (c *CatCmd) Run(ctx *Context) error {
 		line  string
 		end   string
 	}{
-		"json":   {"[", ",", "]"},
-		"stream": {"", "\n", ""},
+		"json":  {"[", ",", "]"},
+		"jsonl": {"", "\n", ""},
 	}
 
 	// Output rows one by one to avoid running out of memory with a jumbo list
