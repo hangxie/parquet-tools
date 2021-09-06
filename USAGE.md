@@ -24,6 +24,7 @@
   - [import Command](#import-command)
     - [Import from CSV](#import-from-csv)
     - [Import from JSON](#import-from-json)
+    - [Import from JSONL](#import-from-jsonl)
   - [meta Command](#meta-command)
     - [Show Meta Data](#show-meta-data)
     - [Show Meta Data with base64-encoded Values](#show-meta-data-with-base64-encoded-values)
@@ -291,13 +292,14 @@ If you do not have a toolchain to process JSON streaming format, you can read da
 
 ### import Command
 
-`import` command creates a paruet file based data file in other format (JSON or CSV at this moment). The target file can be on local file system or cloud storage object like S3, you need to have permission to write to the specific location. Existing file or cloud storage object will be overwritten.
+`import` command creates a paruet file based data file in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to the specific location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be either `json` or `csv`, `--schema` points to the file holds schema.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file holds schema.
 
 Each source data file format has its own dedicated schema format:
 * CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/csv.schema).
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/json.schema).
+* JSONL: use same schema as JSON format.
 
 #### Import from CSV
 
@@ -313,6 +315,18 @@ $ parquet-tools row-count /tmp/csv.parquet
 $ parquet-tools import -f json -s cmd/testdata/json.source -m cmd/testdata/json.schema /tmp/json.parquet
 $ parquet-tools row-count /tmp/json.parquet
 1
+```
+
+As most JSON processing utilities, the whole JSON file needs to be loaded to memory and is treated as single object, so memory footprint may be significant if you try to load a large JSON file.
+
+#### Import from JSONL
+
+JSONL is [line-delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON), use JSONL if you want to load multiple JSON objects into parquet.
+
+```
+$ parquet-tools import -f jsonl -s cmd/testdata/jsonl.source -m cmd/testdata/jsonl.schema /tmp/jsonl.parquet
+$ parquet-tools row-count /tmp/jsonl.parquet
+7
 ```
 
 ### meta Command

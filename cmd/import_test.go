@@ -196,7 +196,7 @@ func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to close Parquet file")
 }
 
-func Test_ImportCmd_importJson_invalid_schema(t *testing.T) {
+func Test_ImportCmd_importJSON_invalid_schema(t *testing.T) {
 	cmd := &ImportCmd{
 		Format: "json",
 		Schema: "testdata/csv.schema",
@@ -211,7 +211,7 @@ func Test_ImportCmd_importJson_invalid_schema(t *testing.T) {
 	assert.Contains(t, err.Error(), "is not a valid schema JSON")
 }
 
-func Test_ImportCmd_importJson_invalid_source(t *testing.T) {
+func Test_ImportCmd_importJSON_invalid_source(t *testing.T) {
 	cmd := &ImportCmd{
 		Format: "json",
 		Schema: "testdata/json.schema",
@@ -226,7 +226,7 @@ func Test_ImportCmd_importJson_invalid_source(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid JSON string")
 }
 
-func Test_ImportCmd_importJson_schema_mismatch(t *testing.T) {
+func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
 	cmd := &ImportCmd{
 		Format: "json",
 		Schema: "testdata/json.schema",
@@ -241,7 +241,7 @@ func Test_ImportCmd_importJson_schema_mismatch(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to close Parquet writer")
 }
 
-func Test_ImportCmd_importJson_good(t *testing.T) {
+func Test_ImportCmd_importJSON_good(t *testing.T) {
 	cmd := &ImportCmd{
 		Format: "json",
 		Schema: "testdata/json.schema",
@@ -252,5 +252,122 @@ func Test_ImportCmd_importJson_good(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
+	assert.Nil(t, err)
+}
+
+func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
+	cmd := &ImportCmd{
+		Schema: "file/does/not/exist",
+		Format: "jsonl",
+	}
+
+	err := cmd.Run(&Context{})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to load schema from")
+}
+
+func Test_ImportCmd_importJSONL_invalid_uri(t *testing.T) {
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/jsonl.schema",
+		Source: "testdata/jsonl.source",
+		CommonOption: CommonOption{
+			URI: "://uri",
+		},
+	}
+
+	err := cmd.importJSONL()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unable to parse file location")
+}
+
+func Test_ImportCmd_importJSONL_non_existent_source(t *testing.T) {
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/jsonl.schema",
+		Source: "file/does/not/exist",
+		CommonOption: CommonOption{
+			URI: "s3://target",
+		},
+	}
+
+	// non-existent source
+	err := cmd.importJSONL()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to open source file")
+}
+
+func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
+	// fail to write
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/jsonl.schema",
+		Source: "testdata/jsonl.source",
+		CommonOption: CommonOption{
+			URI: "s3://target",
+		},
+	}
+
+	err := cmd.importJSONL()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to close Parquet file")
+}
+
+func Test_ImportCmd_importJSONL_invalid_schema(t *testing.T) {
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/csv.schema",
+		Source: "testdata/jsonl.source",
+		CommonOption: CommonOption{
+			URI: "s3://target",
+		},
+	}
+
+	err := cmd.importJSONL()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "is not a valid schema JSON")
+}
+
+func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/jsonl.schema",
+		Source: "testdata/csv.source",
+		CommonOption: CommonOption{
+			URI: "s3://target",
+		},
+	}
+
+	err := cmd.importJSONL()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "invalid JSON string")
+}
+
+func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/jsonl.schema",
+		Source: "testdata/jsonl.bad-source",
+		CommonOption: CommonOption{
+			URI: "s3://target",
+		},
+	}
+
+	err := cmd.importJSONL()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to close Parquet writer")
+}
+
+func Test_ImportCmd_importJSONL_good(t *testing.T) {
+	cmd := &ImportCmd{
+		Format: "jsonl",
+		Schema: "testdata/jsonl.schema",
+		Source: "testdata/jsonl.source",
+		CommonOption: CommonOption{
+			URI: os.TempDir() + "/import-csv.parquet",
+		},
+	}
+
+	err := cmd.importJSONL()
 	assert.Nil(t, err)
 }
