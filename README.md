@@ -6,6 +6,8 @@
 # parquet-tools
 Utility to deal with Parquet data
 
+Refer to [usage page](USAGE.md) for details of how to use the tool.
+
 ## Credit
 
 This project is inspired by:
@@ -28,8 +30,6 @@ Tools used:
 * https://github.com/golangci/golangci-lint
 * https://github.com/jstemmer/go-junit-report
 * https://circleci.com/
-
-Refer to [usage page](USAGE.md) for details of how to use the tool.
 
 ## TODO
 

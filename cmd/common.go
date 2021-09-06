@@ -174,6 +174,15 @@ func newCSVWriter(uri string, schema []string) (*writer.CSVWriter, error) {
 	return writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
 }
 
+func newJSONWriter(uri string, schema string) (*writer.JSONWriter, error) {
+	fileWriter, err := newFileWriter(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	return writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
+
+}
 func toNumber(iface interface{}) (float64, bool) {
 	if v, ok := iface.(int); ok {
 		return float64(v), true

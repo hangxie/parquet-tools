@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,49 +14,45 @@ import (
 type ImportCmd struct {
 	CommonOption
 	Source string `required:"" short:"s" help:"Source file name."`
-	Format string `help:"Source file format (csv/json)." short:"f" enum:"csv,json" default:"csv"`
+	Format string `help:"Source file format." short:"f" enum:"csv,json"`
 	Schema string `required:"" short:"m" help:"Schema file name."`
 }
 
 // Run does actual import job
 func (c *ImportCmd) Run(ctx *Context) error {
+
+	switch c.Format {
+	case "csv":
+		return c.importCSV()
+	case "json":
+		return c.importJSON()
+	}
+	return fmt.Errorf("[%s] is not a recognized source format", c.Format)
+}
+
+func (c *ImportCmd) importCSV() error {
 	schemaData, err := ioutil.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
 	}
-
-	switch c.Format {
-	case "csv":
-		return c.importCSV(c.Source, c.URI, string(schemaData))
-	case "json":
-		fmt.Println("To be implemented.")
-	default:
-		return fmt.Errorf("[%s] is not a recognized source format", c.Format)
-	}
-	return nil
-}
-
-func (c *ImportCmd) importCSV(source string, target string, schemaData string) error {
 	schema := []string{}
 	for _, line := range strings.Split(string(schemaData), "\n") {
-		line = strings.TrimFunc(line, func(r rune) bool {
-			return r == ' ' || r == '\r' || r == '\t' || r == '\n'
-		})
+		line = strings.Trim(line, "\r\n\t ")
 		if line != "" {
 			schema = append(schema, line)
 		}
 	}
 
-	csvFile, err := os.Open(source)
+	csvFile, err := os.Open(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to open CSV file %s: %s", source, err.Error())
+		return fmt.Errorf("failed to open CSV file %s: %s", c.Source, err.Error())
 	}
 	defer csvFile.Close()
 	csvReader := csv.NewReader(csvFile)
 
-	parquetWriter, err := newCSVWriter(target, schema)
+	parquetWriter, err := newCSVWriter(c.URI, schema)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create CSV writer: %s", err.Error())
 	}
 
 	for {
@@ -73,10 +70,48 @@ func (c *ImportCmd) importCSV(source string, target string, schemaData string) e
 		}
 	}
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %s", target, err.Error())
+		return fmt.Errorf("failed to close Parquet writer %s: %s", c.URI, err.Error())
 	}
 	if err := parquetWriter.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %s", target, err.Error())
+		return fmt.Errorf("failed to close Parquet file %s: %s", c.URI, err.Error())
+	}
+
+	return nil
+}
+
+func (c *ImportCmd) importJSON() error {
+	schemaData, err := ioutil.ReadFile(c.Schema)
+	if err != nil {
+		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
+	}
+
+	jsonData, err := ioutil.ReadFile(c.Source)
+	if err != nil {
+		return fmt.Errorf("failed to load source from %s: %s", c.Source, err.Error())
+	}
+
+	var dummy map[string]interface{}
+	if err := json.Unmarshal([]byte(schemaData), &dummy); err != nil {
+		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
+	}
+	if err := json.Unmarshal(jsonData, &dummy); err != nil {
+		return fmt.Errorf("invalid JSON string: %s", string(jsonData))
+	}
+
+	parquetWriter, err := newJSONWriter(c.URI, string(schemaData))
+	if err != nil {
+		return fmt.Errorf("failed to create CSV writer: %s", err.Error())
+	}
+
+	if err := parquetWriter.Write(string(jsonData)); err != nil {
+		return fmt.Errorf("failed to write to parquet file: %s", err.Error())
+	}
+
+	if err := parquetWriter.WriteStop(); err != nil {
+		return fmt.Errorf("failed to close Parquet writer %s: %s", c.URI, err.Error())
+	}
+	if err := parquetWriter.PFile.Close(); err != nil {
+		return fmt.Errorf("failed to close Parquet file %s: %s", c.URI, err.Error())
 	}
 
 	return nil
