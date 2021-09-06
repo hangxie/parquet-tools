@@ -1,0 +1,20 @@
+{
+  "Tag": "name=parquet-go-root",
+  "Fields": [
+    {
+      "Tag": "name=Id, type=INT64"
+    },
+    {
+      "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"
+    },
+    {
+      "Tag": "name=Age, type=INT32"
+    },
+    {
+      "Tag": "name=Temperature, type=FLOAT"
+    },
+    {
+      "Tag": "name=Vaccinated, type=BOOLEAN"
+    }
+  ]
+}
