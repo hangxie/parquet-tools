@@ -111,7 +111,7 @@ jobs:
           version: 19.03.14
       - run:
           name: Build and push to docker hub
-          no_output_timeout: 30m
+          no_output_timeout: 60m
           command: |
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
             export DOCKER_CLI_EXPERIMENTAL=enabled
