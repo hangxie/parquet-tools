@@ -1,0 +1,47 @@
+{
+  "name": "John Smith",
+  "age": 23,
+  "id": 45,
+  "weight": 67.8,
+  "sex": true,
+  "ignored": "ignored",
+  "classes": [
+    "Math",
+    "Computer",
+    "English"
+  ],
+  "scores": {
+    "Math": [
+      99.5,
+      98.5,
+      97
+    ],
+    "Computer": [
+      98,
+      97.5
+    ],
+    "English": [
+      100
+    ]
+  },
+  "friends": [
+    {
+      "name": "friend1",
+      "id": 1
+    },
+    {
+      "name": "friend2",
+      "id": 2
+    }
+  ],
+  "teachers": [
+    {
+      "name": "teacher1",
+      "id": 1
+    },
+    {
+      "name": "teacher2",
+      "id": 2
+    }
+  ]
+}

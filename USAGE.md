@@ -23,6 +23,7 @@
     - [Format](#output-format)
   - [import Command](#import-command)
     - [Import from CSV](#import-from-csv)
+    - [Import from JSON](#import-from-json)
   - [meta Command](#meta-command)
     - [Show Meta Data](#show-meta-data)
     - [Show Meta Data with base64-encoded Values](#show-meta-data-with-base64-encoded-values)
@@ -290,16 +291,28 @@ If you do not have a toolchain to process JSON streaming format, you can read da
 
 ### import Command
 
-`import` command creates a paruet file based data file in other format, right now only CSV is supported. The target file can be on local file system or S3 bucket, you need to have permission to write to the specific location. Existing file or S3 object will be overwritten.
+`import` command creates a paruet file based data file in other format (JSON or CSV at this moment). The target file can be on local file system or cloud storage object like S3, you need to have permission to write to the specific location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file (only `csv` is supported at this moment), `--schema` points to the file holds schema. The schema file follow parquet-go CSV meta data format, you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/csv.schema).
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be either `json` or `csv`, `--schema` points to the file holds schema.
+
+Each source data file format has its own dedicated schema format:
+* CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/csv.schema).
+* JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/json.schema).
 
 #### Import from CSV
 
 ```
-$ parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema /tmp/csv.parquet
+$ parquet-tools import -f csv -s cmd/testdata/csv.source -m cmd/testdata/csv.schema /tmp/csv.parquet
 $ parquet-tools row-count /tmp/csv.parquet
 7
+```
+
+#### Import from JSON
+
+```
+$ parquet-tools import -f json -s cmd/testdata/json.source -m cmd/testdata/json.schema /tmp/json.parquet
+$ parquet-tools row-count /tmp/json.parquet
+1
 ```
 
 ### meta Command
