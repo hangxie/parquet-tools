@@ -26,6 +26,7 @@ require (
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/klauspost/compress v1.10.5 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
+	github.com/pierrec/lz4/v4 v4.1.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
@@ -49,4 +50,4 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
 replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.2
 
-replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1
+replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.2

@@ -372,14 +372,13 @@ func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
 func Test_common_newCSVWriter_invalid_schema(t *testing.T) {
 	// invalid schema will cause panic
 	testFile := os.TempDir() + "/csv-writer.parquet"
-	assert.Panics(t, func() {
-		_, err := newCSVWriter(testFile, []string{"invalid schema"})
-		assert.NotNil(t, err)
-	})
-	assert.Panics(t, func() {
-		_, err := newCSVWriter(testFile, []string{"name=Id"})
-		assert.NotNil(t, err)
-	})
+	_, err := newCSVWriter(testFile, []string{"invalid schema"})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "expect 'key=value'")
+
+	_, err = newCSVWriter(testFile, []string{"name=Id"})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "not a valid Type string")
 }
 
 func Test_common_newCSVWriter_good(t *testing.T) {
