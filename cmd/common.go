@@ -126,7 +126,7 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 			return nil, err
 		}
 
-		fileWriter, err = s3.NewS3FileWriter(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), nil, &aws.Config{Region: aws.String(region)})
+		fileWriter, err = s3.NewS3FileWriter(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), "bucket-owner-full-control", nil, &aws.Config{Region: aws.String(region)})
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
 		}

@@ -3,19 +3,19 @@ module github.com/hangxie/parquet-tools
 go 1.17
 
 require (
-	github.com/Azure/azure-storage-blob-go v0.13.0
+	github.com/Azure/azure-storage-blob-go v0.10.0
 	github.com/alecthomas/kong v0.2.16
 	github.com/aws/aws-sdk-go v1.38.45
 	github.com/stretchr/testify v1.6.1
-	github.com/xitongsys/parquet-go v1.6.1-0.20210531003158-8ed615220b7d
-	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be
+	github.com/xitongsys/parquet-go v1.6.2-0.20210926024608-055d06dd4609
+	github.com/xitongsys/parquet-go-source v0.0.0-20210926040251-45ca274c55d4
 )
 
 require (
 	cloud.google.com/go v0.81.0 // indirect
 	cloud.google.com/go/storage v1.15.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
-	github.com/apache/thrift v0.14.1 // indirect
+	github.com/apache/thrift v0.14.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -47,7 +47,3 @@ require (
 )
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
-
-replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.2
-
-replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.2
