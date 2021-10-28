@@ -6,7 +6,16 @@
 # parquet-tools
 Utility to deal with Parquet data
 
-Refer to [usage page](USAGE.md) for details of how to use the tool.
+## Installation
+
+`parquet-tools` support following methods to install:
+
+* [Download pre-built binaries](USAGE.md#download-pre-built-binaries)
+* [brew install on Mac](USAGE.md#brew-install)
+* [Docker](USAGE.md#docker)
+* [Install from source](USAGE.md#install-from-source)
+
+Once it is installed you can refer to [usage page](USAGE.md#usage) for details of how to use the tool.
 
 ## Credit
 
