@@ -78,7 +78,7 @@ release-build: deps ## Build release binaries
 	for TARGET in $(REL_TARGET); do \
 		echo "    $${TARGET}"; \
 		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
-		rm -f $${BINARY} $${BINARY}.gz; \
+		rm -f $${BINARY} $${BINARY}.gz $${BINARY}.zip; \
 		GOOS=$$(echo $${TARGET} | cut -f 1 -d \-); \
 		GOARCH=$$(echo $${TARGET} | cut -f 2 -d \-); \
 		\
@@ -95,6 +95,8 @@ release-build: deps ## Build release binaries
 			gzip $${BINARY}; \
 		fi; \
 	done; \
+	(cd $(BUILDDIR)/release; \
+		sha512sum parquet-tools-$(VERSION)-* > checksum.txt); \
 	\
 	echo "==> generate build meta data"; \
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
