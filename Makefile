@@ -96,7 +96,8 @@ release-build: deps ## Build release binaries
 		fi; \
 	done; \
 	(cd $(BUILDDIR)/release; \
-		sha512sum parquet-tools-$(VERSION)-* > checksum.txt); \
+		sha512sum parquet-tools-$(VERSION)-* > checksum-sha512.txt; \
+		md5sum parquet-tools-$(VERSION)-* > checksum-md5.txt); \
 	\
 	echo "==> generate build meta data"; \
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
