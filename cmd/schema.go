@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
@@ -38,7 +40,10 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 		res, _ := json.Marshal(s)
 		fmt.Printf("%s\n", res)
 	case formatGo:
-		fmt.Printf("%s\n", schemaRoot.goStruct())
+		snippet := schemaRoot.goStruct(true)
+		// remove annotation for top level
+		re := regexp.MustCompile("} `[^`\n]*`$")
+		fmt.Printf("type %s\n", re.ReplaceAll([]byte(snippet), []byte("}")))
 	default:
 		return fmt.Errorf("unknown schema format [%s]", c.Format)
 	}
@@ -103,6 +108,28 @@ func repetitionTyeStr(se parquet.SchemaElement) string {
 	return repetitionType
 }
 
+var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
+	parquet.Type_BOOLEAN:              "bool",
+	parquet.Type_INT32:                "int32",
+	parquet.Type_INT64:                "int64",
+	parquet.Type_INT96:                "string",
+	parquet.Type_FLOAT:                "float32",
+	parquet.Type_DOUBLE:               "float64",
+	parquet.Type_BYTE_ARRAY:           "string",
+	parquet.Type_FIXED_LEN_BYTE_ARRAY: "string",
+}
+
+func goTypeStr(se parquet.SchemaElement) string {
+	if se.Type == nil {
+		return ""
+	}
+
+	if typeStr, ok := goTypeStrMap[*se.Type]; ok {
+		return typeStr
+	}
+	return ""
+}
+
 type jsonSchemaNode struct {
 	Tag    string
 	Fields []*jsonSchemaNode `json:",omitempty"`
@@ -157,7 +184,94 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 	return ret
 }
 
-func (s *schemaNode) goStruct() string {
-	// TODO output go struct with tags
-	return "To be implemented."
+func (s *schemaNode) goStruct(withName bool) string {
+	res := ""
+	if withName {
+		res = strings.Title(s.GetName())
+	}
+
+	repetitionStr := ""
+	if s.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
+		repetitionStr = "*"
+	} else if s.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
+		repetitionStr = "[]"
+	}
+	if withName {
+		repetitionStr = " " + repetitionStr
+	}
+
+	// regexp for removing uncessary value type tag
+	re := regexp.MustCompile("([^}]) `.*`")
+
+	if s.Type == nil && s.ConvertedType == nil {
+		res += repetitionStr + "struct {\n"
+		for _, cNode := range s.Children {
+			res += cNode.goStruct(true) + "\n"
+		}
+		res += "}"
+	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
+		res += repetitionStr + "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + s.Children[0].Children[1].goStruct(false)
+		res = string(re.ReplaceAll([]byte(res), []byte("$1")))
+	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
+		cNode := s.Children[0].Children[0]
+		res += repetitionStr + "[]" + cNode.goStruct(false)
+		res = string(re.ReplaceAll([]byte(res), []byte("$1")))
+	} else {
+		res += repetitionStr + goTypeStr(s.SchemaElement)
+	}
+
+	res += " " + s.getStructTags()
+	return res
+}
+
+func (s *schemaNode) getStructTags() string {
+	repetitionStr := "REQUIRED"
+	if s.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
+		repetitionStr = "OPTIONAL"
+	} else if s.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
+		repetitionStr = "REPEATED"
+	}
+
+	if s.Type == nil && s.ConvertedType == nil {
+		// STRUCT
+		return fmt.Sprintf("`parquet:\"name=%s, repetitiontype=%s\"`", s.Name, repetitionStr)
+	}
+
+	if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
+		// MAP
+		return fmt.Sprintf("`parquet:\"name=%s, type=MAP, repetitiontype=%s, keytype=%s, valuetype=%s\"`",
+			s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement), typeStr(s.Children[0].Children[1].SchemaElement))
+	}
+
+	if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
+		// LIST
+		return fmt.Sprintf("`parquet:\"name=%s, type=LIST, repetitiontype=%s, valuetype=%s\"`",
+			s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement))
+	}
+
+	if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
+		// plain FIXED_LEN_BYTE_ARRAY
+		return fmt.Sprintf("`parquet:\"name=%s, type=%s, length=%d, repetitiontype=%s\"`",
+			s.Name, s.Type, s.GetTypeLength(), repetitionStr)
+	}
+
+	if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_DECIMAL {
+		// DECIMAL with FIXED_LEN_BYTE_ARRAY
+		if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s\"`",
+				s.Name, s.Type, s.ConvertedType, s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionStr)
+		}
+		// DECIMAL
+		return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s\"`",
+			s.Name, s.Type, s.Type, s.GetScale(), s.GetPrecision(), repetitionStr)
+	}
+
+	if s.ConvertedType != nil {
+		// with type and converted type
+		return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, repetitiontype=%s\"`",
+			s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
+	}
+
+	// with type only
+	return fmt.Sprintf("`parquet:\"name=%s, type=%s, repetitiontype=%s\"`", s.Name, typeStr(s.SchemaElement), repetitionStr)
 }
