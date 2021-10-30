@@ -33,6 +33,7 @@
   - [schema Command](#schema-command)
     - [JSON Format](#json-format)
     - [Raw Format](#raw-format)
+    - [go struct Format](#go-struct-format)
   - [size Command](#size-command)
     - [Show Raw Size](#show-raw-size)
     - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
@@ -380,6 +381,19 @@ Raw format is the schema directly dumped from parquet file, all other formats ar
 $ parquet-tools schema --format raw cmd/testdata/good.parquet
 {"repetition_type":"REQUIRED","name":"Parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
 ```
+
+#### go struct Format
+
+go struct format generate go struct definition snippet that can be used in go code, note that the code is not formatted by `go fmt`, also most likely you want to rename name of the type:
+
+```
+$ parquet-tools schema --format go cmd/testdata/good.parquet
+type Parquet_go_root struct {
+Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
+Shoe_name string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
+}
+```
+
 
 ### size Command
 
