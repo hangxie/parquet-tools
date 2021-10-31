@@ -43,7 +43,8 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 		snippet := schemaRoot.goStruct(true)
 		// remove annotation for top level
 		re := regexp.MustCompile("} `[^`\n]*`$")
-		fmt.Printf("type %s\n", re.ReplaceAll([]byte(snippet), []byte("}")))
+		snippet = re.ReplaceAllString(snippet, "}")
+		fmt.Printf("type %s\n", snippet)
 	default:
 		return fmt.Errorf("unknown schema format [%s]", c.Format)
 	}
@@ -91,13 +92,13 @@ func newSchemaTree(reader *reader.ParquetReader) *schemaNode {
 }
 
 func typeStr(se parquet.SchemaElement) string {
-	ret := ""
 	if se.Type != nil {
-		ret = se.Type.String()
-	} else if se.ConvertedType != nil {
-		ret = se.ConvertedType.String()
+		return se.Type.String()
 	}
-	return ret
+	if se.ConvertedType != nil {
+		return se.ConvertedType.String()
+	}
+	return "STRUCT"
 }
 
 func repetitionTyeStr(se parquet.SchemaElement) string {
@@ -200,9 +201,6 @@ func (s *schemaNode) goStruct(withName bool) string {
 		repetitionStr = " " + repetitionStr
 	}
 
-	// regexp for removing uncessary value type tag
-	re := regexp.MustCompile("([^}]) `.*`")
-
 	if s.Type == nil && s.ConvertedType == nil {
 		res += repetitionStr + "struct {\n"
 		for _, cNode := range s.Children {
@@ -211,16 +209,16 @@ func (s *schemaNode) goStruct(withName bool) string {
 		res += "}"
 	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
 		res += repetitionStr + "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + s.Children[0].Children[1].goStruct(false)
-		res = string(re.ReplaceAll([]byte(res), []byte("$1")))
 	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
 		cNode := s.Children[0].Children[0]
 		res += repetitionStr + "[]" + cNode.goStruct(false)
-		res = string(re.ReplaceAll([]byte(res), []byte("$1")))
 	} else {
 		res += repetitionStr + goTypeStr(s.SchemaElement)
 	}
 
-	res += " " + s.getStructTags()
+	if withName {
+		res += " " + s.getStructTags()
+	}
 	return res
 }
 
