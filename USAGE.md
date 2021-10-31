@@ -428,20 +428,19 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 ```
 $ parquet-tools version
-v1.2.0
+v1.8.0
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```
 $ parquet-tools version --build-time --json
-v1.2.0
-2021-05-26T18:13:55-07:00
+{"Version":"v1.8.0","BuildTime":"2021-10-31T14:10:03+00:00"}
 ```
 
 #### Print Version in JSON Format
 
 ```
 parquet-tools version -j
-{"Version":"v1.2.0"}
+{"Version":"v1.8.0"}
 ```
