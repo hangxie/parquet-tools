@@ -37,11 +37,8 @@ jobs:
           name: Run tests
           command: make test
       - run:
-          name: Run docker build
+          name: Test docker build
           command: make docker-build
-      - run:
-          name: Run release build
-          command: make release-build
       - store_test_results:
           path: build/junit
       - store_artifacts:
