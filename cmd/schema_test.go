@@ -21,10 +21,52 @@ func Test_SchemaCmd_typeStr_type_nil(t *testing.T) {
 	cType := parquet.ConvertedType_LIST
 	assert.Equal(t, typeStr(parquet.SchemaElement{Type: nil, ConvertedType: &cType}), "LIST")
 }
+
 func Test_SchemaCmd_typeStr_both_non_nil(t *testing.T) {
 	pType := parquet.Type_FIXED_LEN_BYTE_ARRAY
 	cType := parquet.ConvertedType_LIST
 	assert.Equal(t, typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: &cType}), "FIXED_LEN_BYTE_ARRAY")
+}
+
+func Test_SchemaCmd_repetitionTyeStr_good(t *testing.T) {
+	assert.Equal(t, repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}), "REQUIRED")
+
+	rType := parquet.FieldRepetitionType_OPTIONAL
+	assert.Equal(t, repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}), "OPTIONAL")
+
+	rType = parquet.FieldRepetitionType_REQUIRED
+	assert.Equal(t, repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}), "REQUIRED")
+
+	rType = parquet.FieldRepetitionType_REPEATED
+	assert.Equal(t, repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}), "REPEATED")
+}
+
+func Test_SchemaCmd_goTypeStr_good(t *testing.T) {
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: nil}), "")
+
+	pType := parquet.Type_BOOLEAN
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "bool")
+
+	pType = parquet.Type_INT32
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "int32")
+
+	pType = parquet.Type_INT64
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "int64")
+
+	pType = parquet.Type_INT96
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "string")
+
+	pType = parquet.Type_FLOAT
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "float32")
+
+	pType = parquet.Type_DOUBLE
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "float64")
+
+	pType = parquet.Type_BYTE_ARRAY
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "string")
+
+	pType = parquet.Type_FIXED_LEN_BYTE_ARRAY
+	assert.Equal(t, goTypeStr(parquet.SchemaElement{Type: &pType}), "string")
 }
 
 func Test_SchemaCmd_Run_non_existent(t *testing.T) {
