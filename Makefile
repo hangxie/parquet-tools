@@ -95,9 +95,10 @@ release-build: deps ## Build release binaries
 			gzip $${BINARY}; \
 		fi; \
 	done; \
+	.circleci/build-rpm.sh $(VERSION); \
 	(cd $(BUILDDIR)/release; \
-		sha512sum parquet-tools-$(VERSION)-* > checksum-sha512.txt; \
-		md5sum parquet-tools-$(VERSION)-* > checksum-md5.txt); \
+		sha512sum parquet-tools-* > checksum-sha512.txt; \
+		md5sum parquet-tools-* > checksum-md5.txt); \
 	\
 	echo "==> generate build meta data"; \
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
