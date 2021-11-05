@@ -1,0 +1,5 @@
+#!/bin/sh
+
+chmod +x /usr/bin/parquet-tools
+
+exit 0

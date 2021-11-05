@@ -92,12 +92,15 @@ release-build: deps ## Build release binaries
 			gzip $${BINARY}; \
 		fi; \
 	done; \
+	echo "==> generate RPM and deb packages"; \
 	.circleci/build-rpm.sh $(VERSION); \
-	(cd $(BUILDDIR)/release; \
-		sha512sum parquet-tools-* > checksum-sha512.txt; \
-		md5sum parquet-tools-* > checksum-md5.txt); \
-	\
+	.circleci/build-deb.sh $(VERSION); \
+	ls -asl $(BUILDDIR)/release; \
 	echo "==> generate build meta data"; \
+	(cd $(BUILDDIR)/release; \
+		sha512sum parquet-tools* > checksum-sha512.txt; \
+		md5sum parquet-tools* > checksum-md5.txt); \
+	\
 	echo $(VERSION) > $(BUILDDIR)/VERSION; \
 	PREV_VERSION=$$(git tag --sort=-committerdate | head -2 | tail -1); \
 	echo "Changes since [$${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/$${PREV_VERSION}):" > $(BUILDDIR)/CHANGELOG; \
