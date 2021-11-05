@@ -1,5 +1,5 @@
 Name:           parquet-tools
-Version:        1.8.1
+Version:        CHANGEME
 Release:        1%{?dist}
 Summary:        Utility to deal with Parquet data
 
@@ -30,7 +30,7 @@ install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
 
 * Wed Nov 03 2021 Hang Xie <7977860+hangxie@users.noreply.github.com> 1.8.2
 
- - release v1.8.2
+ - fix CCI config for release build
  - build rpm package
 
 * Sun Oct 31 2021 Hang Xie <7977860+hangxie@users.noreply.github.com> 1.8.1
