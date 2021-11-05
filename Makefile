@@ -9,8 +9,8 @@ BUILDDIR    = $(CURDIR)/build
 GOBIN       = $(shell go env GOPATH)/bin
 REL_TARGET  = \
 	darwin-amd64 darwin-arm64 \
-	linux-386 linux-amd64 linux-arm linux-arm64 \
-	windows-386 windows-amd64 windows-arm windows-arm64
+	linux-amd64 linux-arm linux-arm64 \
+	windows-amd64 windows-arm windows-arm64
 
 # go option
 GO          ?= go
@@ -35,7 +35,7 @@ format:  ## Format all golang code
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
-	@$(GOBIN)/golangci-lint run ./...
+	@$(GOBIN)/golangci-lint run --timeout 5m ./...
 
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
@@ -66,24 +66,21 @@ docker-build:  ## Build docker image
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
-	@set -eou pipefail \
-		&& go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
+	@set -eou pipefail; \
+	go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
 	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
 		&& go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
 
 release-build: deps ## Build release binaries
-	@mkdir -p $(BUILDDIR)/release/
 	@echo "==> Building release binaries"
+	@mkdir -p $(BUILDDIR)/release/
 	@set -eou pipefail; \
 	for TARGET in $(REL_TARGET); do \
 		echo "    $${TARGET}"; \
 		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
 		rm -f $${BINARY} $${BINARY}.gz $${BINARY}.zip; \
-		GOOS=$$(echo $${TARGET} | cut -f 1 -d \-); \
-		GOARCH=$$(echo $${TARGET} | cut -f 2 -d \-); \
-		\
-		export GOOS=$${GOOS}; \
-		export GOARCH=$${GOARCH}; \
+		export GOOS=$$(echo $${TARGET} | cut -f 1 -d \-); \
+		export GOARCH=$$(echo $${TARGET} | cut -f 2 -d \-); \
 		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
 		\
 		if [ $${GOOS} == "windows" ]; then \
