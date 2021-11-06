@@ -87,7 +87,7 @@ release-build: deps ## Build release binaries
 			(cd $$(dirname $${BINARY}); \
 				BASE_NAME=$$(basename $${BINARY}); \
 				mv $${BASE_NAME} $${BASE_NAME}.exe; \
-				zip -m $${BASE_NAME}.zip $${BASE_NAME}.exe); \
+				zip -qm $${BASE_NAME}.zip $${BASE_NAME}.exe); \
 		else \
 			gzip $${BINARY}; \
 		fi; \
