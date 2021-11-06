@@ -97,7 +97,7 @@ Current this project builds docker image for amd64, arm64, and arm/v7.
 
 ### Prebuilt Packages
 
-RPM and deb package are work in progress.
+RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases) since v1.8.3, only amd64/x86_64 arch is available at this moment.
 
 ## Usage
 
@@ -160,7 +160,7 @@ $ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-000
 14145923
 ```
 
-Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `prquet-tools` only load necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run  `parquet-tools` on a local file. The S3 object used in above sample is more 4GB, but the `row-count` command only takes several seconds to finish.
+Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. The S3 object used in above sample is more 4GB, but the `row-count` command takes just several seconds to finish.
 
 #### GCS Bucket
 
@@ -173,7 +173,7 @@ $ parquet-tools row-count gs://REDACTED/csv.parquet
 7
 ```
 
-Similar to S3, `parquet-tools` only downloads necessary data from GCS bucket.
+Similar to S3, `parquet-tools` downloads only necessary data from GCS bucket.
 
 #### Azure Storage Container
 
@@ -185,7 +185,7 @@ Similar to S3, `parquet-tools` only downloads necessary data from GCS bucket.
 
 for example:
 
-> wasbs://public@pandemicdatalake/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+> wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 
 means the parquet file is at:
 * storage account `pandemicdatalake`
@@ -195,14 +195,14 @@ means the parquet file is at:
 `parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonmous access is expected.
 
 ```
-$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://parquet-toos@REDACTED.blob.core.windows.net/test/csv.parquet
-$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://parquet-toos@REDACTED.blob.core.windows.net/test/csv.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://parquet-tools@REDACTED.blob.core.windows.net/test/csv.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 7
 $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 1973310
 ```
 
-Similar to S3 and GCS, `parquet-tools` only downloads necessary data from blob.
+Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
 
 ### cat Command
 
@@ -252,13 +252,13 @@ $ parquet-tools cat --sample-ratio 0.0 cmd/testdata/good.parquet
 
 #### Filter
 
-`--filter` is an experimental feature that tells `parquet-tools` to output rows conditionally, only rows meet condition of the filter expression will be output, the filter expression is as simple as `field <operator> value`.
+`--filter` is an experimental feature that tells `parquet-tools` to output rows conditionally, only those rows meet criterias of the filter expression will be output, the filter expression is as simple as `field <operator> value`.
 
-Field uses `.` to delimit nested fields, so it can be `topLevel` or `topLevel.secondLevel.thirdLevel`, it currenly does not support field names with `.` inside. If the field does not exist in the row then it is true for not equal to, and false for any other comparisons.
+Field uses `.` to delimit nested fields, so it can be `topLevel` or `topLevel.secondLevel.thirdLevel`, it currenly does not support field names with `.` inside. If the field does not exist in the row then it is true for not equal to any value, and false for any other comparisons.
 
 Operator can be `==`, `<>`, `>`, `>=`, `<` and `<=`.
 
-Value can be number (float or integer), string, or `nil`/`null`. `parquet-tools` convert numeric value to float to compare so be aware that `==` sometime may not output the result you want whenever you are dealing with high precision values. String value needs to be quoted by `"`, there is no escape function provided. `nil` or `null` represent a NULL value, a NULL value equals to another NULL value, does not equal to a non-NULL value, everything else will be simply `false`.
+Value can be number (float or integer), string, or `nil`/`null`. `parquet-tools` converts numeric value to float to compare so be aware that `==` sometime may not output the result you want whenever you are dealing with high precision values. String value needs to be quoted by `"`, there is no escape function provided. `nil` or `null` represent a NULL value, a NULL value equals to another NULL value, does not equal to a non-NULL value, everything else will be simply `false`.
 
 ```
 $ parquet-tools cat --filter 'Shoe_brand == "nike"' cmd/testdata/good.parquet
@@ -267,7 +267,7 @@ $ parquet-tools cat --filter 'Shoe_brand <> "nike"' cmd/testdata/good.parquet
 [{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
 $ parquet-tools cat --filter 'Shoe_brand > "nike"' --limit 1 cmd/testdata/good.parquet
 [{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}]
-$  cat --filter 'Doc.SourceResource.Date.Begin <> null' --limit 1  s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
+$ cat --filter 'Doc.SourceResource.Date.Begin <> null' --limit 1 s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
 [{"Doc":{"Uri":"http://dp.la/api/items/3e542ba8c7e5f711ca9...
 ```
 
@@ -289,15 +289,16 @@ $ parquet-tools cat -format jsonl cmd/testdata/good.parquet
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
 ```
 
-If you do not have a toolchain to process JSONL format, you can read data line by line and parse every single line as a JSON object.
+You can read data line by line and parse every single line as a JSON object if you do not have a toolchain to process JSONL format.
 
 ### import Command
 
-`import` command creates a paruet file based data file in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to the specific location. Existing file or cloud storage object will be overwritten.
+`import` command creates a paruet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
 The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file holds schema.
 
 Each source data file format has its own dedicated schema format:
+
 * CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/csv.schema).
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/json.schema).
 * JSONL: use same schema as JSON format.
@@ -318,7 +319,7 @@ $ parquet-tools row-count /tmp/json.parquet
 1
 ```
 
-As most JSON processing utilities, the whole JSON file needs to be loaded to memory and is treated as single object, so memory footprint may be significant if you try to load a large JSON file.
+As most JSON processing utilities, the whole JSON file needs to be loaded to memory and is treated as single object, so memory footprint may be significant if you try to load a large JSON file. You should use JSONL format if you deal with large amount of data.
 
 #### Import from JSONL
 
