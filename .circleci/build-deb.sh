@@ -23,7 +23,7 @@ docker exec -t ${DOCKER_NAME} bash -c "
     set -eou pipefail;
     mkdir -p /tmp/deb/usr/bin;
     gunzip /tmp/${PKG_NAME}-${VERSION}-linux-amd64.gz;
-    mv /tmp/${PKG_NAME}-${VERSION}-linux-amd64 /tmp/deb/usr/bin/;
+    mv /tmp/${PKG_NAME}-${VERSION}-linux-amd64 /tmp/deb/usr/bin/${PKG_NAME};
     cd /tmp;
     dpkg-deb --build /tmp/deb;
 "
