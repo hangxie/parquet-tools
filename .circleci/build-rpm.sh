@@ -22,7 +22,8 @@ docker cp /tmp/${PKG_NAME}.spec ${DOCKER_NAME}:/tmp/${PKG_NAME}.spec
 # Build RPM
 docker exec -t ${DOCKER_NAME} bash -c "
     set -eou pipefail;
-    apt update && DEBIAN_FRONTEND=noninteractive apt install -y git rpm file binutils;
+    apt-get update -qq;
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git rpm file binutils;
     mkdir -p ~/rpmbuild/SOURCES;
     cp /tmp/${PKG_NAME}-${VERSION}.tar.gz ~/rpmbuild/SOURCES/;
     rpmbuild -bb --target x86_64 /tmp/${PKG_NAME}.spec;
