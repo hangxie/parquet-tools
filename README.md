@@ -14,6 +14,7 @@ Utility to deal with Parquet data
 * [brew install on Mac](USAGE.md#brew-install)
 * [Docker](USAGE.md#docker)
 * [Install from source](USAGE.md#install-from-source)
+* [Prebuilt packages](USAGE.md#prebuilt-packages)
 
 Once it is installed you can refer to [usage page](USAGE.md#usage) for details of how to use the tool.
 
