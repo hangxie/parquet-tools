@@ -17,7 +17,7 @@ Utility to deal with Parquet data, for changelog visit https://github.com/hangxi
 %autosetup
 
 %build
-cp /tmp/%{name}-%{version}-linux-amd64.gz %{name}.gz
+cp /tmp/%{name}.gz %{name}.gz
 gunzip %{name}.gz
 
 %install
