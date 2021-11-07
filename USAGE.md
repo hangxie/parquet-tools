@@ -333,9 +333,12 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 
 ### meta Command
 
-`meta` command shows meta data of every row group in a parquet file, the `--base64` flag tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as string.
+`meta` command shows meta data of every row group in a parquet file.
+
+Note that MinValue and MaxValue always show value with base type instead of converted type, i.e. INT32 instead of UINT_8. The `--base64` flag applies to colume type of `BYTE_ARRAY` or `FIXED_LEN_BYTE_ARRAY` only, it tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as string.
 
 #### Show Meta Data
+
 ```
 $ parquet-tools meta cmd/testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"shoe_name","MinValue":"air_griffey"}]}]}
