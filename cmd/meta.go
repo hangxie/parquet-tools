@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
+
+	"github.com/xitongsys/parquet-go/parquet"
 )
 
 // MetaCmd is a kong command for meta
@@ -19,11 +23,11 @@ type columnMeta struct {
 	CompressedSize   int64
 	UncompressedSize int64
 	NumValues        int64
-	NullCount        *int64  `json:",omitempty"`
-	DistinctCount    *int64  `json:",omitempty"`
-	MaxValue         *string `json:",omitempty"`
-	MinValue         *string `json:",omitempty"`
-	Index            *string `json:",omitempty"`
+	NullCount        *int64      `json:",omitempty"`
+	DistinctCount    *int64      `json:",omitempty"`
+	MaxValue         interface{} `json:",omitempty"`
+	MinValue         interface{} `json:",omitempty"`
+	Index            *string     `json:",omitempty"`
 }
 
 type rowGroupMeta struct {
@@ -62,8 +66,8 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				Index:            nil,
 			}
 			if col.MetaData.Statistics != nil {
-				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, c.Base64)
-				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, c.Base64)
+				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
+				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
 				columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
 				columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
 			}
@@ -100,16 +104,49 @@ func (c *MetaCmd) Run(ctx *Context) error {
 	return nil
 }
 
-func (c *MetaCmd) retrieveValue(value []byte, base64Encode bool) *string {
+func (c *MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Encode bool) interface{} {
 	if value == nil {
 		return nil
 	}
 
-	if !base64Encode {
-		ret := string(value)
-		return &ret
+	buf := bytes.NewReader(value)
+	var ret string
+	switch parquetType {
+	case parquet.Type_BOOLEAN:
+		var b bool
+		if err := binary.Read(buf, binary.LittleEndian, &b); err != nil {
+			return "failed to read data as BOOLEAN"
+		}
+		return b
+	case parquet.Type_INT32:
+		var i32 int32
+		if err := binary.Read(buf, binary.LittleEndian, &i32); err != nil {
+			return "failed to read data as INT32"
+		}
+		return i32
+	case parquet.Type_INT64:
+		var i64 int64
+		if err := binary.Read(buf, binary.LittleEndian, &i64); err != nil {
+			return "failed to read data as INT64"
+		}
+		return i64
+	case parquet.Type_FLOAT:
+		var f32 float32
+		if err := binary.Read(buf, binary.LittleEndian, &f32); err != nil {
+			return "failed to read data as FLOAT"
+		}
+		return f32
+	case parquet.Type_DOUBLE:
+		var f64 float64
+		if err := binary.Read(buf, binary.LittleEndian, &f64); err != nil {
+			return "failed to read data as DOUBLE"
+		}
+		return f64
 	}
-
-	ret := base64.StdEncoding.EncodeToString(value)
-	return &ret
+	if !base64Encode {
+		ret = string(value)
+	} else {
+		ret = base64.StdEncoding.EncodeToString(value)
+	}
+	return ret
 }
