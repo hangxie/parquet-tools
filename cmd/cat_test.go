@@ -175,6 +175,59 @@ func Test_CatCmd_Run_bad_format(t *testing.T) {
 	assert.Equal(t, stderr, "")
 }
 
+func Test_CatCmd_Run_good_skip(t *testing.T) {
+	cmd := &CatCmd{
+		Skip:        2,
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
+		CommonOption: CommonOption{
+			URI: "testdata/good.parquet",
+		},
+		Format: "json",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, stdout, `[{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]`+
+		"\n")
+	assert.Equal(t, stderr, "")
+
+	// double check
+	res := []map[string]string{}
+	err := json.Unmarshal([]byte(stdout), &res)
+	assert.Nil(t, err)
+	assert.Equal(t, len(res), 2)
+	assert.Equal(t, res[1]["Shoe_brand"], "steph_curry")
+}
+
+func Test_CatCmd_Run_good_all_skip(t *testing.T) {
+	cmd := &CatCmd{
+		Skip:        12,
+		Limit:       10,
+		PageSize:    10,
+		SampleRatio: 1.0,
+		CommonOption: CommonOption{
+			URI: "testdata/good.parquet",
+		},
+		Format: "json",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, stdout, `[]`+
+		"\n")
+	assert.Equal(t, stderr, "")
+
+	// double check
+	res := []map[string]string{}
+	err := json.Unmarshal([]byte(stdout), &res)
+	assert.Nil(t, err)
+	assert.Equal(t, len(res), 0)
+}
+
 func Test_CatCmd_Run_good_limit(t *testing.T) {
 	cmd := &CatCmd{
 		Limit:       2,

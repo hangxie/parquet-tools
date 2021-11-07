@@ -14,6 +14,7 @@ import (
 // CatCmd is a kong command for cat
 type CatCmd struct {
 	CommonOption
+	Skip        uint32  `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
@@ -55,6 +56,15 @@ func (c *CatCmd) Run(ctx *Context) error {
 	}{
 		"json":  {"[", ",", "]"},
 		"jsonl": {"", "\n", ""},
+	}
+
+	// deal with skip
+	if c.Skip != 0 {
+		// Do not abort if c.Skip is greater than total number of rows
+		// This gives users flexibility to handle this scenario by themselves
+		if err := reader.SkipRows(int64(c.Skip)); err != nil {
+			return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
+		}
 	}
 
 	// Output rows one by one to avoid running out of memory with a jumbo list
