@@ -206,20 +206,41 @@ Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
 
 ### cat Command
 
-`cat` command output data in parquet file in JSON format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--limit`, `--sample-ration` and the experimental `--filter` flags to reduces the output to a certain level, these flags can be used together.
+`cat` command output data in parquet file in JSON format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit`, `--sample-ration` and the experimental `--filter` flags to reduces the output to a certain level, these flags can be used together.
 
 There is a `page-size` parameter that you probably will never touch it, it tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 
 #### Full Data Set
 
 ```
-$ parquet-tools cat cmd/testdata/good.parquet
-[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+$ parquet-tools cat --format jsonl cmd/testdata/good.parquet
+{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
+{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+```
+
+#### Skip Rows
+
+`--skip` is similar to OFFSET in SQL, `parquet-tools` will skip this many rows from beginning of the parquet file before applying other logics.
+
+```
+$ parquet-tools cat --skip 2 --format jsonl cmd/testdata/good.parquet
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+```
+
+`parquet-tools` will not report error if `--skip` is greater than total number of rows in parquet file.
+
+```
+$ parquet-tools cat --skip 20 cmd/testdata/good.parquet
+[]
 ```
 
 #### Limit Number of Rows
 
 `--limit` is similar to LIMIT in SQL, or `head` in Linux shell, `parquet-tools` will stop running after this many rows outputs.
+
 ```
 $ parquet-tools cat --limit 2 cmd/testdata/good.parquet
 [{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
