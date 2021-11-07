@@ -14,7 +14,7 @@ import (
 // CatCmd is a kong command for cat
 type CatCmd struct {
 	CommonOption
-	Limit       int64   `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
+	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Filter      string  `short:"f" help:"Filter to apply, support == and <>."`
@@ -23,11 +23,8 @@ type CatCmd struct {
 
 // Run does actual cat job
 func (c *CatCmd) Run(ctx *Context) error {
-	if c.Limit < 0 {
-		return fmt.Errorf("invalid limit %d, needs to be a positive number (0 for unlimited)", c.Limit)
-	}
 	if c.Limit == 0 {
-		c.Limit = int64(1<<63 - 1)
+		c.Limit = ^uint64(0)
 	}
 	if c.PageSize < 1 {
 		return fmt.Errorf("invalid page size %d, needs to be at least 1", c.PageSize)
@@ -63,7 +60,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	// Output rows one by one to avoid running out of memory with a jumbo list
 	fmt.Print(delimiter[c.Format].begin)
 	rand.Seed(time.Now().UnixNano())
-	for counter := int64(0); counter < c.Limit; {
+	for counter := uint64(0); counter < c.Limit; {
 		rows, err := reader.ReadByNumber(c.PageSize)
 		if err != nil {
 			return fmt.Errorf("failed to cat: %s", err)

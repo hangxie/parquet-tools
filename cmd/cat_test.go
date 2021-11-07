@@ -25,22 +25,6 @@ func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open local")
 }
 
-func Test_CatCmd_Run_invalid_limit(t *testing.T) {
-	cmd := &CatCmd{
-		Limit:       -10,
-		PageSize:    10,
-		SampleRatio: 0.5,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
-		},
-		Format: "json",
-	}
-
-	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid limit")
-}
-
 func Test_CatCmd_Run_default_limit(t *testing.T) {
 	cmd := &CatCmd{
 		Limit:       0,
@@ -55,7 +39,7 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		err := cmd.Run(&Context{})
 		assert.Nil(t, err)
-		assert.Equal(t, cmd.Limit, int64(1<<63-1))
+		assert.Equal(t, cmd.Limit, ^uint64(0))
 	})
 	assert.NotEqual(t, stdout, "")
 	assert.Equal(t, stderr, "")
