@@ -19,7 +19,6 @@
     - [Full Data Set](#full-data-set)
     - [Limit Number of Rows](#limit-number-of-rows)
     - [Sampling](#sampling)
-    - [Filter](#filter)
     - [Format](#output-format)
   - [import Command](#import-command)
     - [Import from CSV](#import-from-csv)
@@ -206,9 +205,9 @@ Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
 
 ### cat Command
 
-`cat` command output data in parquet file in JSON format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit`, `--sample-ration` and the experimental `--filter` flags to reduces the output to a certain level, these flags can be used together.
+`cat` command output data in parquet file in JSON or JSONL format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduces the output to a certain level, these flags can be used together.
 
-There is a `page-size` parameter that you probably will never touch it, it tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
+There is a `--page-size` parameter that you probably will never touch it, it tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 
 #### Full Data Set
 
@@ -271,27 +270,6 @@ $ parquet-tools cat --sample-ratio 0.0 cmd/testdata/good.parquet
 []
 ```
 
-#### Filter
-
-`--filter` is an experimental feature that tells `parquet-tools` to output rows conditionally, only those rows meet criterias of the filter expression will be output, the filter expression is as simple as `field <operator> value`.
-
-Field uses `.` to delimit nested fields, so it can be `topLevel` or `topLevel.secondLevel.thirdLevel`, it currenly does not support field names with `.` inside. If the field does not exist in the row then it is true for not equal to any value, and false for any other comparisons.
-
-Operator can be `==`, `<>`, `>`, `>=`, `<` and `<=`.
-
-Value can be number (float or integer), string, or `nil`/`null`. `parquet-tools` converts numeric value to float to compare so be aware that `==` sometime may not output the result you want whenever you are dealing with high precision values. String value needs to be quoted by `"`, there is no escape function provided. `nil` or `null` represent a NULL value, a NULL value equals to another NULL value, does not equal to a non-NULL value, everything else will be simply `false`.
-
-```
-$ parquet-tools cat --filter 'Shoe_brand == "nike"' cmd/testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
-$ parquet-tools cat --filter 'Shoe_brand <> "nike"' cmd/testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
-$ parquet-tools cat --filter 'Shoe_brand > "nike"' --limit 1 cmd/testdata/good.parquet
-[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}]
-$ cat --filter 'Doc.SourceResource.Date.Begin <> null' --limit 1 s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
-[{"Doc":{"Uri":"http://dp.la/api/items/3e542ba8c7e5f711ca9...
-```
-
 #### Output format
 `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
@@ -301,6 +279,8 @@ $ parquet-tools cat cmd/testdata/good.parquet
 ```
 
 `cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
+
+When you want to filter data, use JSONL format output and pipe to `jq`.
 
 ```
 $ parquet-tools cat -format jsonl cmd/testdata/good.parquet
