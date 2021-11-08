@@ -27,6 +27,7 @@ docker exec -t ${DOCKER_NAME} bash -c "
     set -eou pipefail;
     mkdir -p /tmp/deb/usr/bin;
     gunzip /tmp/${PKG_NAME}.gz;
+    mv /tmp/${PKG_NAME} /tmp/deb/usr/bin/${PKG_NAME};
     cd /tmp;
     dpkg-deb --build /tmp/deb;
 "
