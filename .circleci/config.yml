@@ -36,9 +36,6 @@ jobs:
       - run:
           name: Run tests
           command: make test
-      - run:
-          name: Test docker build
-          command: make docker-build
       - store_test_results:
           path: build/junit
       - store_artifacts:
