@@ -25,6 +25,8 @@ CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
 LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
 
+.EXPORT_ALL_VARIABLES:
+
 .PHONY: all deps tools format lint test build docker-build clean release-build help
 
 all: deps tools format lint test build  ## Build all common targets
@@ -61,7 +63,7 @@ clean:  ## Clean up the build dirs
 
 docker-build:  ## Build docker image
 	@echo "==> Building docker image"
-	@docker build . -f package/Dockerfile -t parquet-tools:latest
+	@.circleci/build-img.sh
 
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
@@ -74,40 +76,19 @@ test: deps tools  ## Run unit tests
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
 	@mkdir -p $(BUILDDIR)/release/
-	@set -eou pipefail; \
-	for TARGET in $(REL_TARGET); do \
-		echo "    $${TARGET}"; \
-		BINARY=$(BUILDDIR)/release/parquet-tools-$(VERSION)-$${TARGET}; \
-		rm -f $${BINARY} $${BINARY}.gz $${BINARY}.zip; \
-		export GOOS=$$(echo $${TARGET} | cut -f 1 -d \-); \
-		export GOARCH=$$(echo $${TARGET} | cut -f 2 -d \-); \
-		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $${BINARY} ./; \
-		\
-		if [ $${GOOS} == "windows" ]; then \
-			(cd $$(dirname $${BINARY}); \
-				BASE_NAME=$$(basename $${BINARY}); \
-				mv $${BASE_NAME} $${BASE_NAME}.exe; \
-				zip -qm $${BASE_NAME}.zip $${BASE_NAME}.exe); \
-		else \
-			gzip $${BINARY}; \
-		fi; \
-	done; \
-	echo "==> generate RPM and deb packages"; \
-	.circleci/build-rpm.sh $(VERSION); \
-	.circleci/build-deb.sh $(VERSION); \
-	ls -asl $(BUILDDIR)/release; \
-	echo "==> generate build meta data"; \
-	(cd $(BUILDDIR)/release; \
-		sha512sum parquet-tools* > checksum-sha512.txt; \
-		md5sum parquet-tools* > checksum-md5.txt); \
-	\
-	echo $(VERSION) > $(BUILDDIR)/VERSION; \
-	PREV_VERSION=$$(git tag --sort=-committerdate | head -2 | tail -1); \
-	echo "Changes since [$${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/$${PREV_VERSION}):" > $(BUILDDIR)/CHANGELOG; \
-	echo >> $(BUILDDIR)/CHANGELOG; \
-	git log --pretty=format:"* %h %s" $(VERISON)...$${PREV_VERSION} >> $(BUILDDIR)/CHANGELOG; \
-	cp LICENSE $(BUILDDIR)/release/LICENSE; \
-	cat $(BUILDDIR)/CHANGELOG
+	@.circleci/build-bin.sh
+
+	@echo "==> generate RPM and deb packages"
+	@.circleci/build-rpm.sh
+	@.circleci/build-deb.sh
+
+	@echo "==> generate build meta data"
+	@.circleci/gen-meta.sh
+
+	@echo "==> release info"
+	@cat $(BUILDDIR)/release/checksum-md5.txt
+	@echo
+	@cat $(BUILDDIR)/CHANGELOG
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
