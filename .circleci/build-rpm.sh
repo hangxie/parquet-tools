@@ -13,7 +13,7 @@ SOURCE_DIR=$(dirname $0)/..
 
 # Launch build container
 docker ps | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-docker run -dit --rm --name ${DOCKER_NAME} ubuntu:20.04
+docker run -dit --rm --name ${DOCKER_NAME} debian:stretch-slim
 
 # CCI does not support volume mount, so use docker cp instead
 git -C ${SOURCE_DIR} archive --format=tar.gz --prefix=${PKG_NAME}-${RPM_VER}/ -o /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ${VERSION}
