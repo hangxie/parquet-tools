@@ -2,45 +2,49 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
-  - [Install from Source](#install-from-source)
-  - [Download Pre-built Binaries](#download-pre-built-binaries)
-  - [Brew Install](#brew-install)
-  - [Docker](#docker)
-  - [Prebuilt Packages](#prebuilt-packages)
-- [Usage](#usage)
-  - [Obtain Help](#obtain-help)
-  - [Parquet File Location](#parquet-file-location)
-    - [File System](#file-system)
-    - [S3 Bucket](#s3-bucket)
-    - [GCS Bucket](#gcs-bucket)
-    - [Azure Storage Container](#azure-storage-container)
-  - [cat Command](#cat-command)
-    - [Full Data Set](#full-data-set)
-    - [Limit Number of Rows](#limit-number-of-rows)
-    - [Sampling](#sampling)
-    - [Format](#output-format)
-  - [import Command](#import-command)
-    - [Import from CSV](#import-from-csv)
-    - [Import from JSON](#import-from-json)
-    - [Import from JSONL](#import-from-jsonl)
-  - [meta Command](#meta-command)
-    - [Show Meta Data](#show-meta-data)
-    - [Show Meta Data with base64-encoded Values](#show-meta-data-with-base64-encoded-values)
-  - [row-count Command](#row-count-command)
-    - [Show Number of Rows](#show-number-of-rows)
-  - [schema Command](#schema-command)
-    - [JSON Format](#json-format)
-    - [Raw Format](#raw-format)
-    - [go struct Format](#go-struct-format)
-  - [size Command](#size-command)
-    - [Show Raw Size](#show-raw-size)
-    - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
-    - [Show All Sizes in JSON Format](#show-all-sizes-in-json-format)
-  - [version Command](#version-command)
-    - [Print Version](#print-version)
-    - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
-    - [Print Version in JSON Format](#print-version-in-json-format)
+- [Installation and Usage of parquet-tools](#installation-and-usage-of-parquet-tools)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Install from Source](#install-from-source)
+    - [Download Pre-built Binaries](#download-pre-built-binaries)
+    - [Brew Install](#brew-install)
+    - [Docker](#docker)
+    - [Prebuilt Packages](#prebuilt-packages)
+  - [Usage](#usage)
+    - [Obtain Help](#obtain-help)
+    - [Parquet File Location](#parquet-file-location)
+      - [File System](#file-system)
+      - [S3 Bucket](#s3-bucket)
+      - [GCS Bucket](#gcs-bucket)
+      - [Azure Storage Container](#azure-storage-container)
+    - [cat Command](#cat-command)
+      - [Full Data Set](#full-data-set)
+      - [Skip Rows](#skip-rows)
+      - [Limit Number of Rows](#limit-number-of-rows)
+      - [Sampling](#sampling)
+      - [Compound Rule](#compound-rule)
+      - [Output format](#output-format)
+    - [import Command](#import-command)
+      - [Import from CSV](#import-from-csv)
+      - [Import from JSON](#import-from-json)
+      - [Import from JSONL](#import-from-jsonl)
+    - [meta Command](#meta-command)
+      - [Show Meta Data](#show-meta-data)
+      - [Show Meta Data with base64-encoded Values](#show-meta-data-with-base64-encoded-values)
+    - [row-count Command](#row-count-command)
+      - [Show Number of Rows](#show-number-of-rows)
+    - [schema Command](#schema-command)
+      - [JSON Format](#json-format)
+      - [Raw Format](#raw-format)
+      - [go struct Format](#go-struct-format)
+    - [size Command](#size-command)
+      - [Show Raw Size](#show-raw-size)
+      - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
+      - [Show All Sizes in JSON Format](#show-all-sizes-in-json-format)
+    - [version Command](#version-command)
+      - [Print Version](#print-version)
+      - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
+      - [Print Version in JSON Format](#print-version-in-json-format)
 
 ## Installation
 
@@ -48,10 +52,10 @@ You can choose one of the installation methods from below, the functionality wil
 
 ### Install from Source
 
-Good for people who are familiar with [Go](https://golang.org/).
+Good for people who are familiar with [Go](https://golang.org/), you need 1.17 or newer version.
 
 ```
-go get github.com/hangxie/parquet-tools
+$ go get github.com/hangxie/parquet-tools
 ```
 
 it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go evn GOPATH`, usually it is `go/` directory under your home directory.
@@ -71,9 +75,9 @@ For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-
 Mac user can use [Homebrew](https://brew.sh/) to install, it is not part of core formula yet but you can run:
 
 ```
-brew uninstall parquet-tools
-brew tap hangxie/tap
-brew install go-parquet-tools
+$ brew uninstall parquet-tools
+$ brew tap hangxie/tap
+$ brew install go-parquet-tools
 ```
 
 `parquet-tools` installed by brew is a similar tool built by Java, however, it is [deprecated](https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools-deprecated), since both packages install same `parquet-tools` utility so you need to remove one before installing the other one.
@@ -81,7 +85,7 @@ brew install go-parquet-tools
 Whenever you want to upgrade to latest version which you should:
 
 ```
-brew upgrade go-parquet-tools
+$ brew upgrade go-parquet-tools
 ```
 
 ### Docker
@@ -89,14 +93,33 @@ brew upgrade go-parquet-tools
 Docker image is hosted on [Docker Hub](https://hub.docker.com/r/hangxie/parquet-tools), you can pull the image:
 
 ```
-docker pull hangxie/parquet-tools
+$ docker pull hangxie/parquet-tools
 ```
 
 Current this project builds docker image for amd64, arm64, and arm/v7.
 
 ### Prebuilt Packages
 
-RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases) since v1.8.3, only amd64/x86_64 arch is available at this moment.
+RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases) since v1.10.2, only amd64/x86_64 arch is available at this moment, download the proper package and run corresponding installation command:
+
+* On Debian/Ubuntu:
+
+```
+$ sudo dpkg -i  parquet-tools_1.10.2_amd64.deb
+Preparing to unpack parquet-tools_1.10.2_amd64.deb ...
+Unpacking parquet-tools (1.10.2) ...
+Setting up parquet-tools (1.10.2) ...
+```
+
+* On CentOS/Fedora:
+
+```
+$ sudo rpm -Uhv parquet-tools-1.10.2-1.x86_64.rpm
+Verifying...                          ################################# [100%]
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:parquet-tools-1.10.2-1            ################################# [100%]
+```
 
 ## Usage
 
@@ -104,12 +127,13 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 `parquet-tools` provides help information through `-h` flag, whenever you are not sure about parmater for a command, just add `-h` to the end of the line then it will give you all available options, for example:
 
 ```
+$ parquet-tools meta -h
 Usage: parquet-tools meta <uri>
 
 Prints the metadata.
 
 Arguments:
-  <uri>    URI of Parquet file, support s3:// and file://.
+  <uri>    URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details.
 
 Flags:
   -h, --help       Show context-sensitive help.
@@ -159,7 +183,7 @@ $ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-000
 14145923
 ```
 
-Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. The S3 object used in above sample is more 4GB, but the `row-count` command takes just several seconds to finish.
+Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 
 #### GCS Bucket
 
@@ -198,7 +222,7 @@ $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.sou
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 7
 $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
-1973310
+2786653
 ```
 
 Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
@@ -270,6 +294,15 @@ $ parquet-tools cat --sample-ratio 0.0 cmd/testdata/good.parquet
 []
 ```
 
+#### Compound Rule
+
+`--skip`, `--limit` and `--sample-ratio` can be used together to achieve certain goals, for example, to get the 3rd row from the parquet file:
+
+```
+$ parquet-tools cat --skip 2 --limit 1 cmd/testdata/good.parquet
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+```
+
 #### Output format
 `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
@@ -283,7 +316,7 @@ $ parquet-tools cat cmd/testdata/good.parquet
 When you want to filter data, use JSONL format output and pipe to `jq`.
 
 ```
-$ parquet-tools cat -format jsonl cmd/testdata/good.parquet
+$ parquet-tools cat --format jsonl cmd/testdata/good.parquet
 {"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
@@ -336,7 +369,7 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 
 `meta` command shows meta data of every row group in a parquet file.
 
-Note that MinValue and MaxValue always show value with base type instead of converted type, i.e. INT32 instead of UINT_8. The `--base64` flag applies to colume type of `BYTE_ARRAY` or `FIXED_LEN_BYTE_ARRAY` only, it tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as string.
+Note that MinValue and MaxValue always show value with base type instead of converted type, i.e. INT32 instead of UINT_8. The `--base64` flag applies to column with type `BYTE_ARRAY` or `FIXED_LEN_BYTE_ARRAY` only, it tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as UTF8 string.
 
 #### Show Meta Data
 
@@ -389,7 +422,7 @@ $ parquet-tools schema --format raw cmd/testdata/good.parquet
 
 #### go struct Format
 
-go struct format generate go struct definition snippet that can be used in go code, note that the code is not formatted by `go fmt`, also most likely you want to rename name of the type:
+go struct format generate go struct definition snippet that can be used in go:
 
 ```
 $ parquet-tools schema --format go cmd/testdata/good.parquet
@@ -399,6 +432,7 @@ Shoe_name string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, 
 }
 ```
 
+the code snippet is not well-formatted, also most likely you want to rename name of the type `Parquet_go_root`.
 
 ### size Command
 
@@ -433,19 +467,19 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 ```
 $ parquet-tools version
-v1.8.0
+v1.10.2
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```
 $ parquet-tools version --build-time --json
-{"Version":"v1.8.0","BuildTime":"2021-10-31T14:10:03+00:00"}
+{"Version":"v1.10.2","BuildTime":"2021-11-12T02:43:40+00:00"}
 ```
 
 #### Print Version in JSON Format
 
 ```
-parquet-tools version -j
-{"Version":"v1.8.0"}
+$ parquet-tools version -j
+{"Version":"v1.10.2"}
 ```
