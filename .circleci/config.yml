@@ -113,6 +113,7 @@ jobs:
           no_output_timeout: 60m
           command: |
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
+            echo "${GITHUB_TOKEN}" | docker login -u baldemort-bot --password-stdin ghcr.io
             export DOCKER_CLI_EXPERIMENTAL=enabled
             docker context create multi-platform
             docker buildx create multi-platform --platform ${PLATFORM} --use
@@ -121,6 +122,8 @@ jobs:
                 --platform ${PLATFORM} \
                 -t hangxie/parquet-tools:${CIRCLE_TAG} \
                 -t hangxie/parquet-tools:latest \
+                -t ghcr.io/hangxie/parquet-tools:${CIRCLE_TAG} \
+                -t ghcr.io/hangxie/parquet-tools:latest \
                 .
       - slack/notify:
           event: fail
