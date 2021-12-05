@@ -71,13 +71,14 @@ func (c *CatCmd) Run(ctx *Context) error {
 		}
 
 		for _, row := range rows {
-			buf, _ := json.Marshal(row)
 			if rand.Float64() >= c.SampleRatio {
 				continue
 			}
 			if counter != 0 {
 				fmt.Print(delimiter[c.Format].line)
 			}
+
+			buf, _ := json.Marshal(row)
 			fmt.Print(string(buf))
 
 			counter += 1
