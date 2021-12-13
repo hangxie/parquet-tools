@@ -7,6 +7,8 @@ require (
 	github.com/alecthomas/kong v0.2.16
 	github.com/aws/aws-sdk-go v1.38.45
 	github.com/stretchr/testify v1.7.0
+	github.com/tidwall/gjson v1.12.1
+	github.com/tidwall/sjson v1.2.4
 	github.com/xitongsys/parquet-go v1.6.2
 	github.com/xitongsys/parquet-go-source v0.0.0-20210926040251-45ca274c55d4
 )
@@ -30,6 +32,8 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
 	golang.org/x/mod v0.4.1 // indirect
@@ -48,3 +52,5 @@ require (
 )
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
+
+replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20211213025104-b091a22ad0d0

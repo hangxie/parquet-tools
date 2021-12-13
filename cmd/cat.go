@@ -3,8 +3,16 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
+	"reflect"
+	"strconv"
 	"time"
+
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
+	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/types"
 )
 
 // CatCmd is a kong command for cat
@@ -39,6 +47,10 @@ func (c *CatCmd) Run(ctx *Context) error {
 		return err
 	}
 	defer reader.PFile.Close()
+
+	// retrieve schema for better formatting
+	schemaRoot := newSchemaTree(reader)
+	decimalFields := getAllDecimalFields("", schemaRoot)
 
 	delimiter := map[string]struct {
 		begin string
@@ -78,8 +90,38 @@ func (c *CatCmd) Run(ctx *Context) error {
 				fmt.Print(delimiter[c.Format].line)
 			}
 
+			// convert binary formation of DECIMAL to human readable string
+			// TODO handle nested fields
+			rowValue := reflect.ValueOf(&row).Elem()
+			tmp := reflect.New(rowValue.Elem().Type()).Elem()
+			tmp.Set(rowValue.Elem())
+			for k, v := range decimalFields {
+				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+					newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(tmp.FieldByName(k).String()), v.precision, v.scale)
+					tmp.FieldByName(k).SetString(newValue)
+				}
+			}
+			rowValue.Set(tmp)
+
+			// convert int or string based decimal to number
 			buf, _ := json.Marshal(row)
-			fmt.Print(string(buf))
+			jsonString := string(buf)
+			for k, v := range decimalFields {
+				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+					strValue := gjson.Get(jsonString, k).String()
+					decimalValue, err := strconv.ParseFloat(strValue, 64)
+					if err != nil {
+						return err
+					}
+					jsonString, _ = sjson.Set(jsonString, k, decimalValue)
+				} else if v.parquetType == parquet.Type_INT32 || v.parquetType == parquet.Type_INT64 {
+					intValue := gjson.Get(jsonString, k).Int()
+					decimalValue := float64(intValue) / math.Pow10(v.scale)
+					jsonString, _ = sjson.Set(jsonString, k, decimalValue)
+				}
+			}
+
+			fmt.Print(jsonString)
 
 			counter += 1
 			if counter >= c.Limit {
@@ -90,4 +132,40 @@ func (c *CatCmd) Run(ctx *Context) error {
 	fmt.Println(delimiter[c.Format].end)
 
 	return nil
+}
+
+type DecimalField struct {
+	parquetType parquet.Type
+	precision   int
+	scale       int
+}
+
+func getAllDecimalFields(rootPath string, schemaRoot *schemaNode) map[string]DecimalField {
+	decimalFields := make(map[string]DecimalField)
+	for _, child := range schemaRoot.Children {
+		currentPath := rootPath + "." + child.Name
+		if rootPath == "" {
+			currentPath = child.Name
+		}
+		if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_DECIMAL {
+			decimalFields[currentPath] = DecimalField{
+				parquetType: *child.Type,
+				precision:   int(*child.Precision),
+				scale:       int(*child.Scale),
+			}
+		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_MAP {
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0].Children[0]) {
+				decimalFields[k] = v
+			}
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0].Children[1]) {
+				decimalFields[k] = v
+			}
+		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_LIST {
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0].Children[0]) {
+				decimalFields[k] = v
+			}
+		}
+	}
+
+	return decimalFields
 }
