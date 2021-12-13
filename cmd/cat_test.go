@@ -270,3 +270,21 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 	assert.Equal(t, stdout, "[]\n")
 	assert.Equal(t, stderr, "")
 }
+
+func Test_CatCmd_Run_good_decimal(t *testing.T) {
+	cmd := &CatCmd{
+		Limit:       1,
+		PageSize:    10,
+		SampleRatio: 1.0,
+		CommonOption: CommonOption{
+			URI: "testdata/all-types.parquet",
+		},
+		Format: "jsonl",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, stdout, `{"Bool":true,"Int32":0,"Int64":0,"Int96":"90\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","Float":0,"Double":0,"Bytearray":"ByteArray","FixedLenByteArray":"HelloWorld","Utf8":"utf8","Int_8":0,"Int_16":0,"Int_32":0,"Int_64":0,"Uint_8":0,"Uint_16":0,"Uint_32":0,"Uint_64":0,"Date":0,"Date2":0,"Timemillis":0,"Timemillis2":0,"Timemicros":0,"Timemicros2":0,"Timestampmillis":0,"Timestampmillis2":0,"Timestampmicros":0,"Timestampmicros2":0,"Interval":"90\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","Decimal1":123.45,"Decimal2":123.45,"Decimal3":-123.45,"Decimal4":123.45,"Decimal5":0,"Map":{"One":1,"Two":2},"List":["item1","item2"],"Repeated":[1,2,3],"NestedMap":{},"NestedList":[]}`+"\n")
+	assert.Equal(t, stderr, "")
+}
