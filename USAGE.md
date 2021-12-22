@@ -425,14 +425,14 @@ $ parquet-tools schema --format raw cmd/testdata/good.parquet
 go struct format generate go struct definition snippet that can be used in go:
 
 ```
-$ parquet-tools schema --format go cmd/testdata/good.parquet
+$ parquet-tools schema --format go cmd/testdata/good.parquet | gofmt
 type Parquet_go_root struct {
-Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
-Shoe_name string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
+	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
+	Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
 }
 ```
 
-the code snippet is not well-formatted, also most likely you want to rename name of the type `Parquet_go_root`.
+based on your use case, type `Parquet_go_root` may need to be renamed.
 
 ### size Command
 
