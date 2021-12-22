@@ -70,7 +70,8 @@ test: deps tools  ## Run unit tests
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
 	@set -eou pipefail; \
 	go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
-	   	| $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
+		| tee /tmp/go-test.output \
+		&& cat /tmp/go-test.output | $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
 		&& go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
 
 release-build: deps ## Build release binaries
