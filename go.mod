@@ -53,4 +53,4 @@ require (
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
-replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20211213025104-b091a22ad0d0
+replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20211219201751-381ad81bb12d
