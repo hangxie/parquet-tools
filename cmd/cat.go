@@ -98,6 +98,9 @@ func (c *CatCmd) Run(ctx *Context) error {
 			for k, v := range decimalFields {
 				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
 					field := tmp.FieldByName(k)
+					if !field.IsValid() {
+						continue
+					}
 					if field.Kind() == reflect.Ptr {
 						if !field.IsNil() {
 							newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(field.Elem().String()), v.precision, v.scale)
@@ -165,14 +168,16 @@ func getAllDecimalFields(rootPath string, schemaRoot *schemaNode) map[string]Dec
 				scale:       int(*child.Scale),
 			}
 		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_MAP {
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0].Children[0]) {
-				decimalFields[k] = v
-			}
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0].Children[1]) {
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
 				decimalFields[k] = v
 			}
 		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_LIST {
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0].Children[0]) {
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
+				decimalFields[k] = v
+			}
+		} else if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
+			// STRUCT
+			for k, v := range getAllDecimalFields(currentPath, child) {
 				decimalFields[k] = v
 			}
 		}
