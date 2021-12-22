@@ -97,8 +97,16 @@ func (c *CatCmd) Run(ctx *Context) error {
 			tmp.Set(rowValue.Elem())
 			for k, v := range decimalFields {
 				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(tmp.FieldByName(k).String()), v.precision, v.scale)
-					tmp.FieldByName(k).SetString(newValue)
+					field := tmp.FieldByName(k)
+					if field.Kind() == reflect.Ptr {
+						if !field.IsNil() {
+							newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(field.Elem().String()), v.precision, v.scale)
+							field.Elem().SetString(newValue)
+						}
+					} else {
+						newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(field.String()), v.precision, v.scale)
+						field.SetString(newValue)
+					}
 				}
 			}
 			rowValue.Set(tmp)
@@ -108,8 +116,11 @@ func (c *CatCmd) Run(ctx *Context) error {
 			jsonString := string(buf)
 			for k, v := range decimalFields {
 				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					strValue := gjson.Get(jsonString, k).String()
-					decimalValue, err := strconv.ParseFloat(strValue, 64)
+					value := gjson.Get(jsonString, k)
+					if value.Type == gjson.Null {
+						continue
+					}
+					decimalValue, err := strconv.ParseFloat(value.String(), 64)
 					if err != nil {
 						return err
 					}
