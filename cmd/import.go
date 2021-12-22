@@ -15,7 +15,7 @@ import (
 type ImportCmd struct {
 	CommonOption
 	Source string `required:"" short:"s" help:"Source file name."`
-	Format string `help:"Source file format." short:"f" enum:"csv,json,jsonl" default:"csv"`
+	Format string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
 	Schema string `required:"" short:"m" help:"Schema file name."`
 }
 
