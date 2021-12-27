@@ -37,6 +37,10 @@
       - [JSON Format](#json-format)
       - [Raw Format](#raw-format)
       - [go struct Format](#go-struct-format)
+    - [shell-completions Command (experimental)](#shell-completions-command-experimental)
+      - [Install shell completions](#install-shell-completions)
+      - [Uninstall shell completions](#uninstall-shell-completions)
+      - [Use shell completions](#use-shell-completions)
     - [size Command](#size-command)
       - [Show Raw Size](#show-raw-size)
       - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
@@ -433,6 +437,38 @@ type Parquet_go_root struct {
 ```
 
 based on your use case, type `Parquet_go_root` may need to be renamed.
+
+### shell-completions Command (experimental)
+
+`shell-completions` is an experimental command to install or uninstall auto-completions to your default shell, this is an experimental feature at this moment, only bash is tested.
+
+#### Install shell completions
+
+To install shell completions. run:
+
+```
+$ parquet-tools shell-completions
+```
+
+There will be no output upon successful run, there will be a line appended to `.bash_profile` under your home directory.
+
+This command will return error if the same line is in `.bash_profile` already.
+
+#### Uninstall shell completions
+
+To uninstall shell completions, run:
+
+```
+$ parquet-tools shell-completions --uninstall
+```
+
+There will be no output upon successful run, the line in `.bash_profile` that was added by installation will be removed.
+
+This command will return error if the line does not exist in `.bash_profile`.
+
+#### Use shell completions
+
+Hit `<TAB>` key in command line when you need hint or want to auto complete current option.
 
 ### size Command
 
