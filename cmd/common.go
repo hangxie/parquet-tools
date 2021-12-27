@@ -25,7 +25,7 @@ import (
 
 // CommonOption represents common options across most commands
 type CommonOption struct {
-	URI string `arg:"" help:"URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details."`
+	URI string `arg:"" predictor:"file" help:"URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details."`
 }
 
 // Context represents command's context

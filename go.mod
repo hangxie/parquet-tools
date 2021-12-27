@@ -6,10 +6,12 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.10.0
 	github.com/alecthomas/kong v0.2.16
 	github.com/aws/aws-sdk-go v1.38.45
+	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.12.1
 	github.com/tidwall/sjson v1.2.4
-	github.com/xitongsys/parquet-go v1.6.2
+	github.com/willabides/kongplete v0.2.0
+	github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
 	github.com/xitongsys/parquet-go-source v0.0.0-20210926040251-45ca274c55d4
 )
 
@@ -25,6 +27,8 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/klauspost/compress v1.13.1 // indirect
@@ -53,4 +57,4 @@ require (
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
-replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20211219201751-381ad81bb12d
+replace github.com/xitongsys/parquet-go => github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
