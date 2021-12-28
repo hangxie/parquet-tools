@@ -23,24 +23,24 @@
       - [Limit Number of Rows](#limit-number-of-rows)
       - [Sampling](#sampling)
       - [Compound Rule](#compound-rule)
-      - [Output format](#output-format)
+      - [Output Format](#output-format)
     - [import Command](#import-command)
       - [Import from CSV](#import-from-csv)
       - [Import from JSON](#import-from-json)
       - [Import from JSONL](#import-from-jsonl)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
-      - [Show Meta Data with base64-encoded Values](#show-meta-data-with-base64-encoded-values)
+      - [Show Meta Data with Base64-encoded Values](#show-meta-data-with-base64-encoded-values)
     - [row-count Command](#row-count-command)
       - [Show Number of Rows](#show-number-of-rows)
     - [schema Command](#schema-command)
       - [JSON Format](#json-format)
       - [Raw Format](#raw-format)
-      - [go struct Format](#go-struct-format)
-    - [shell-completions Command (experimental)](#shell-completions-command-experimental)
-      - [Install shell completions](#install-shell-completions)
-      - [Uninstall shell completions](#uninstall-shell-completions)
-      - [Use shell completions](#use-shell-completions)
+      - [Go Struct Format](#go-struct-format)
+    - [shell-completions Command (Experimental)](#shell-completions-command-experimental)
+      - [Install Shell Completions](#install-shell-completions)
+      - [Uninstall Shell Completions](#uninstall-shell-completions)
+      - [Use Shell Completions](#use-shell-completions)
     - [size Command](#size-command)
       - [Show Raw Size](#show-raw-size)
       - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
@@ -307,7 +307,7 @@ $ parquet-tools cat --skip 2 --limit 1 cmd/testdata/good.parquet
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 ```
 
-#### Output format
+#### Output Format
 `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
 ```
@@ -382,7 +382,7 @@ $ parquet-tools meta cmd/testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"shoe_name","MinValue":"air_griffey"}]}]}
 ```
 
-#### Show Meta Data with base64-encoded Values
+#### Show Meta Data with Base64-encoded Values
 
 ```
 $ parquet-tools meta --base64 cmd/testdata/good.parquet
@@ -424,7 +424,7 @@ $ parquet-tools schema --format raw cmd/testdata/good.parquet
 {"repetition_type":"REQUIRED","name":"Parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
 ```
 
-#### go struct Format
+#### Go Struct Format
 
 go struct format generate go struct definition snippet that can be used in go:
 
@@ -438,11 +438,11 @@ type Parquet_go_root struct {
 
 based on your use case, type `Parquet_go_root` may need to be renamed.
 
-### shell-completions Command (experimental)
+### shell-completions Command (Experimental)
 
-`shell-completions` is an experimental command to install or uninstall auto-completions to your default shell, this is an experimental feature at this moment, only bash is tested.
+`shell-completions` updates shell's rcfile with proper shell completions setting, this is an experimental feature at this moment, only bash is tested.
 
-#### Install shell completions
+#### Install Shell Completions
 
 To install shell completions. run:
 
@@ -450,11 +450,11 @@ To install shell completions. run:
 $ parquet-tools shell-completions
 ```
 
-There will be no output upon successful run, there will be a line appended to `.bash_profile` under your home directory.
+You will not get output if everything runs well, you can check shell's rcfile, for example, `.bash_profile` or `.bashrc` for bash, to see what it added.
 
-This command will return error if the same line is in `.bash_profile` already.
+This command will return error if the same line is in shell's rcfile already.
 
-#### Uninstall shell completions
+#### Uninstall Shell Completions
 
 To uninstall shell completions, run:
 
@@ -462,11 +462,11 @@ To uninstall shell completions, run:
 $ parquet-tools shell-completions --uninstall
 ```
 
-There will be no output upon successful run, the line in `.bash_profile` that was added by installation will be removed.
+You will not get output if everything runs well, you can check shell's rcfile, for example, `.bash_profile` or `.bashrc` for bash, to see what it removed.
 
-This command will return error if the line does not exist in `.bash_profile`.
+This command will return error if the line does not exist in shell rcfile.
 
-#### Use shell completions
+#### Use Shell Completions
 
 Hit `<TAB>` key in command line when you need hint or want to auto complete current option.
 
