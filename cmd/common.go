@@ -6,7 +6,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -18,8 +20,10 @@ import (
 	"github.com/xitongsys/parquet-go-source/gcs"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3"
+	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/source"
+	"github.com/xitongsys/parquet-go/types"
 	"github.com/xitongsys/parquet-go/writer"
 )
 
@@ -32,6 +36,13 @@ type CommonOption struct {
 type Context struct {
 	Version string
 	Build   string
+}
+
+// DecimalField represents a field with DECIMAL converted type
+type DecimalField struct {
+	parquetType parquet.Type
+	precision   int
+	scale       int
 }
 
 func parseURI(uri string) (*url.URL, error) {
@@ -242,4 +253,65 @@ func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
 	}
 
 	return httpURL, credential, nil
+}
+
+func getAllDecimalFields(rootPath string, schemaRoot *schemaNode) map[string]DecimalField {
+	decimalFields := make(map[string]DecimalField)
+	for _, child := range schemaRoot.Children {
+		currentPath := rootPath + "." + child.Name
+		if rootPath == "" {
+			currentPath = child.Name
+		}
+		if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_DECIMAL {
+			decimalFields[currentPath] = DecimalField{
+				parquetType: *child.Type,
+				precision:   int(*child.Precision),
+				scale:       int(*child.Scale),
+			}
+		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_MAP {
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
+				decimalFields[k] = v
+			}
+		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_LIST {
+			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
+				decimalFields[k] = v
+			}
+		} else if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
+			// STRUCT
+			for k, v := range getAllDecimalFields(currentPath, child) {
+				decimalFields[k] = v
+			}
+		}
+	}
+
+	return decimalFields
+}
+
+func reformatStringDecimalValue(fieldAttr DecimalField, value reflect.Value) {
+	if !value.IsValid() {
+		return
+	}
+
+	if value.Kind() != reflect.Ptr {
+		newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(value.String()), fieldAttr.precision, fieldAttr.scale)
+		value.SetString(newValue)
+		return
+	}
+
+	if !value.IsNil() {
+		newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(value.Elem().String()), fieldAttr.precision, fieldAttr.scale)
+		value.Elem().SetString(newValue)
+	}
+}
+
+func decimalStringToFloat64(fieldAttr DecimalField, value interface{}) (*float64, error) {
+	v := reflect.ValueOf(value)
+	newValue := reflect.New(v.Type()).Elem()
+	newValue.Set(v)
+	reformatStringDecimalValue(fieldAttr, newValue)
+	decimalValue, err := strconv.ParseFloat(newValue.String(), 64)
+	if err != nil {
+		return nil, err
+	}
+	return &decimalValue, nil
 }

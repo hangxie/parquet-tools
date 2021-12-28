@@ -12,7 +12,6 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/types"
 )
 
 // CatCmd is a kong command for cat
@@ -91,26 +90,17 @@ func (c *CatCmd) Run(ctx *Context) error {
 			}
 
 			// convert binary formation of DECIMAL to human readable string
-			// TODO handle nested fields
 			rowValue := reflect.ValueOf(&row).Elem()
 			tmp := reflect.New(rowValue.Elem().Type()).Elem()
 			tmp.Set(rowValue.Elem())
 			for k, v := range decimalFields {
-				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					field := tmp.FieldByName(k)
-					if !field.IsValid() {
-						continue
-					}
-					if field.Kind() == reflect.Ptr {
-						if !field.IsNil() {
-							newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(field.Elem().String()), v.precision, v.scale)
-							field.Elem().SetString(newValue)
-						}
-					} else {
-						newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(field.String()), v.precision, v.scale)
-						field.SetString(newValue)
-					}
+				if v.parquetType != parquet.Type_BYTE_ARRAY && v.parquetType != parquet.Type_FIXED_LEN_BYTE_ARRAY {
+					continue
 				}
+
+				// TODO handle nested fields
+				value := tmp.FieldByName(k)
+				reformatStringDecimalValue(v, value)
 			}
 			rowValue.Set(tmp)
 
@@ -146,42 +136,4 @@ func (c *CatCmd) Run(ctx *Context) error {
 	fmt.Println(delimiter[c.Format].end)
 
 	return nil
-}
-
-type DecimalField struct {
-	parquetType parquet.Type
-	precision   int
-	scale       int
-}
-
-func getAllDecimalFields(rootPath string, schemaRoot *schemaNode) map[string]DecimalField {
-	decimalFields := make(map[string]DecimalField)
-	for _, child := range schemaRoot.Children {
-		currentPath := rootPath + "." + child.Name
-		if rootPath == "" {
-			currentPath = child.Name
-		}
-		if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_DECIMAL {
-			decimalFields[currentPath] = DecimalField{
-				parquetType: *child.Type,
-				precision:   int(*child.Precision),
-				scale:       int(*child.Scale),
-			}
-		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_MAP {
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
-				decimalFields[k] = v
-			}
-		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_LIST {
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
-				decimalFields[k] = v
-			}
-		} else if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
-			// STRUCT
-			for k, v := range getAllDecimalFields(currentPath, child) {
-				decimalFields[k] = v
-			}
-		}
-	}
-
-	return decimalFields
 }

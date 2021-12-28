@@ -6,6 +6,8 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math"
+	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
 )
@@ -48,6 +50,9 @@ func (c *MetaCmd) Run(ctx *Context) error {
 		return err
 	}
 
+	schemaRoot := newSchemaTree(reader)
+	decimalFields := getAllDecimalFields("", schemaRoot)
+
 	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
 	for rgIndex, rg := range reader.Footer.RowGroups {
 		columns := make([]columnMeta, len(rg.Columns))
@@ -66,8 +71,55 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				Index:            nil,
 			}
 			if col.MetaData.Statistics != nil {
-				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
-				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
+				path := strings.Join(columns[colIndex].PathInSchema, ".")
+				// TODO find a better solution to deal with interim layers for MAP and LIST
+				// approach below is a hack and will be broken if parquet file has these fields
+				path = strings.ReplaceAll(path, ".Key_value.Key", ".Key")
+				path = strings.ReplaceAll(path, ".Key_value.Value", ".Value")
+				path = strings.ReplaceAll(path, ".List.Element", ".Element")
+				if field, found := decimalFields[path]; found {
+					switch field.parquetType {
+					case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
+						maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
+						if maxValue != nil {
+							if newValue, err := decimalStringToFloat64(field, maxValue); err != nil {
+								return err
+							} else {
+								columns[colIndex].MaxValue = *newValue
+							}
+						}
+
+						minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
+						if minValue != nil {
+							if newValue, err := decimalStringToFloat64(field, minValue); err != nil {
+								return err
+							} else {
+								columns[colIndex].MinValue = *newValue
+							}
+						}
+					case parquet.Type_INT32, parquet.Type_INT64:
+						maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
+						if maxValue != nil {
+							int64Value, ok := maxValue.(int64)
+							if !ok {
+								int64Value = int64(maxValue.(int32))
+							}
+							columns[colIndex].MaxValue = float64(int64Value) / math.Pow10(field.scale)
+						}
+
+						minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
+						if minValue != nil {
+							int64Value, ok := minValue.(int64)
+							if !ok {
+								int64Value = int64(minValue.(int32))
+							}
+							columns[colIndex].MinValue = float64(int64Value) / math.Pow10(field.scale)
+						}
+					}
+				} else {
+					columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
+					columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
+				}
 				columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
 				columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
 			}
