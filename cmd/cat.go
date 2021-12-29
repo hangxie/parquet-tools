@@ -49,7 +49,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 
 	// retrieve schema for better formatting
 	schemaRoot := newSchemaTree(reader)
-	decimalFields := getAllDecimalFields("", schemaRoot)
+	decimalFields := getAllDecimalFields("", schemaRoot, true)
 
 	delimiter := map[string]struct {
 		begin string

@@ -255,31 +255,37 @@ func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
 	return httpURL, credential, nil
 }
 
-func getAllDecimalFields(rootPath string, schemaRoot *schemaNode) map[string]DecimalField {
+func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer bool) map[string]DecimalField {
 	decimalFields := make(map[string]DecimalField)
 	for _, child := range schemaRoot.Children {
 		currentPath := rootPath + "." + child.Name
 		if rootPath == "" {
 			currentPath = child.Name
 		}
+
+		if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
+			// STRUCT
+			for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
+				decimalFields[k] = v
+			}
+			continue
+		}
+
+		if child.ConvertedType != nil && (*child.ConvertedType == parquet.ConvertedType_MAP || *child.ConvertedType == parquet.ConvertedType_LIST) {
+			if noInterimLayer {
+				child = child.Children[0]
+			}
+			for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
+				decimalFields[k] = v
+			}
+			continue
+		}
+
 		if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_DECIMAL {
 			decimalFields[currentPath] = DecimalField{
 				parquetType: *child.Type,
 				precision:   int(*child.Precision),
 				scale:       int(*child.Scale),
-			}
-		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_MAP {
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
-				decimalFields[k] = v
-			}
-		} else if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_LIST {
-			for k, v := range getAllDecimalFields(currentPath, child.Children[0]) {
-				decimalFields[k] = v
-			}
-		} else if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
-			// STRUCT
-			for k, v := range getAllDecimalFields(currentPath, child) {
-				decimalFields[k] = v
 			}
 		}
 	}
