@@ -51,7 +51,7 @@ func (c *MetaCmd) Run(ctx *Context) error {
 	}
 
 	schemaRoot := newSchemaTree(reader)
-	decimalFields := getAllDecimalFields("", schemaRoot)
+	decimalFields := getAllDecimalFields("", schemaRoot, false)
 
 	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
 	for rgIndex, rg := range reader.Footer.RowGroups {
@@ -72,11 +72,6 @@ func (c *MetaCmd) Run(ctx *Context) error {
 			}
 			if col.MetaData.Statistics != nil {
 				path := strings.Join(columns[colIndex].PathInSchema, ".")
-				// TODO find a better solution to deal with interim layers for MAP and LIST
-				// approach below is a hack and will be broken if parquet file has these fields
-				path = strings.ReplaceAll(path, ".Key_value.Key", ".Key")
-				path = strings.ReplaceAll(path, ".Key_value.Value", ".Value")
-				path = strings.ReplaceAll(path, ".List.Element", ".Element")
 				if field, found := decimalFields[path]; found {
 					switch field.parquetType {
 					case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
