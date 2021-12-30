@@ -24,19 +24,28 @@ type CatCmd struct {
 	Format      string  `help:"output format (json/jsonl)" enum:"json,jsonl" default:"json"`
 }
 
+var delimiter = map[string]struct {
+	begin string
+	line  string
+	end   string
+}{
+	"json":  {"[", ",", "]"},
+	"jsonl": {"", "\n", ""},
+}
+
 // Run does actual cat job
 func (c *CatCmd) Run(ctx *Context) error {
-	if c.Limit == 0 {
-		c.Limit = ^uint64(0)
-	}
 	if c.PageSize < 1 {
 		return fmt.Errorf("invalid page size %d, needs to be at least 1", c.PageSize)
+	}
+	if c.Limit == 0 {
+		c.Limit = ^uint64(0)
 	}
 	// note that sampling rate at 0.0 is allowed, while it does not output anything
 	if c.SampleRatio < 0.0 || c.SampleRatio > 1.0 {
 		return fmt.Errorf("invalid sampling %f, needs to be between 0.0 and 1.0", c.SampleRatio)
 	}
-	if c.Format != "json" && c.Format != "jsonl" {
+	if _, ok := delimiter[c.Format]; !ok {
 		// should never reach here
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
@@ -51,22 +60,10 @@ func (c *CatCmd) Run(ctx *Context) error {
 	schemaRoot := newSchemaTree(reader)
 	decimalFields := getAllDecimalFields("", schemaRoot, true)
 
-	delimiter := map[string]struct {
-		begin string
-		line  string
-		end   string
-	}{
-		"json":  {"[", ",", "]"},
-		"jsonl": {"", "\n", ""},
-	}
-
-	// deal with skip
-	if c.Skip != 0 {
-		// Do not abort if c.Skip is greater than total number of rows
-		// This gives users flexibility to handle this scenario by themselves
-		if err := reader.SkipRows(int64(c.Skip)); err != nil {
-			return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
-		}
+	// Do not abort if c.Skip is greater than total number of rows
+	// This gives users flexibility to handle this scenario by themselves
+	if err := reader.SkipRows(int64(c.Skip)); err != nil {
+		return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
 	}
 
 	// Output rows one by one to avoid running out of memory with a jumbo list
@@ -89,18 +86,15 @@ func (c *CatCmd) Run(ctx *Context) error {
 				fmt.Print(delimiter[c.Format].line)
 			}
 
-			// convert binary formation of DECIMAL to human readable string
+			// convert binary DECIMAL to human readable string
 			rowValue := reflect.ValueOf(&row).Elem()
 			tmp := reflect.New(rowValue.Elem().Type()).Elem()
 			tmp.Set(rowValue.Elem())
 			for k, v := range decimalFields {
-				if v.parquetType != parquet.Type_BYTE_ARRAY && v.parquetType != parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					continue
+				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+					// TODO handle nested fields
+					reformatStringDecimalValue(v, tmp.FieldByName(k))
 				}
-
-				// TODO handle nested fields
-				value := tmp.FieldByName(k)
-				reformatStringDecimalValue(v, value)
 			}
 			rowValue.Set(tmp)
 
@@ -108,25 +102,23 @@ func (c *CatCmd) Run(ctx *Context) error {
 			buf, _ := json.Marshal(row)
 			jsonString := string(buf)
 			for k, v := range decimalFields {
-				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					value := gjson.Get(jsonString, k)
-					if value.Type == gjson.Null {
-						continue
-					}
+				value := gjson.Get(jsonString, k)
+				if value.Type == gjson.Null {
+					continue
+				}
+				switch v.parquetType {
+				case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 					decimalValue, err := strconv.ParseFloat(value.String(), 64)
 					if err != nil {
 						return err
 					}
 					jsonString, _ = sjson.Set(jsonString, k, decimalValue)
-				} else if v.parquetType == parquet.Type_INT32 || v.parquetType == parquet.Type_INT64 {
-					intValue := gjson.Get(jsonString, k).Int()
-					decimalValue := float64(intValue) / math.Pow10(v.scale)
-					jsonString, _ = sjson.Set(jsonString, k, decimalValue)
+				case parquet.Type_INT32, parquet.Type_INT64:
+					jsonString, _ = sjson.Set(jsonString, k, float64(value.Int())/math.Pow10(v.scale))
 				}
 			}
 
 			fmt.Print(jsonString)
-
 			counter += 1
 			if counter >= c.Limit {
 				break
