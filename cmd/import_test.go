@@ -28,7 +28,6 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 
 	_, err := os.Stat(testFile)
 	assert.Nil(t, err)
-
 }
 
 func Test_ImportCmd_Run_JSON_good(t *testing.T) {
@@ -52,7 +51,6 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 
 	_, err := os.Stat(testFile)
 	assert.Nil(t, err)
-
 }
 
 func Test_ImportCmd_Run_invalid_format(t *testing.T) {

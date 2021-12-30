@@ -22,7 +22,6 @@ func Test_retrieveValue_boolean(t *testing.T) {
 	assert.Equal(t, s, true)
 	s = cmd.retrieveValue([]byte{}, parquet.Type_BOOLEAN, false)
 	assert.Equal(t, s, "failed to read data as BOOLEAN")
-
 }
 
 func Test_retrieveValue_int32(t *testing.T) {

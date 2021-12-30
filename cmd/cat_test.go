@@ -168,7 +168,6 @@ func Test_CatCmd_Run_bad_format(t *testing.T) {
 		err := cmd.Run(&Context{})
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Error(), "unknown format: random-dude")
-
 	})
 	assert.Equal(t, stdout, "")
 	assert.Equal(t, stderr, "")
