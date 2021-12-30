@@ -21,7 +21,6 @@ type ImportCmd struct {
 
 // Run does actual import job
 func (c *ImportCmd) Run(ctx *Context) error {
-
 	switch c.Format {
 	case "csv":
 		return c.importCSV()

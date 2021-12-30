@@ -31,9 +31,9 @@ LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
 
 all: deps tools format lint test build  ## Build all common targets
 
-format:  ## Format all golang code
+format: tools  ## Format all golang code
 	@echo "==> Formatting all golang code"
-	@gofmt -w -s $(GOSOURCES)
+	@$(GOBIN)/gofumpt -w -extra $(GOSOURCES)
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
@@ -49,7 +49,8 @@ tools:  ## Install build tools
 		(cd /tmp; GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.0)
 	@test -x $(GOBIN)/go-junit-report || \
 		(cd /tmp; go install github.com/jstemmer/go-junit-report@v0.9.1)
-
+	@test -x $(GOBIN)/gofumpt || \
+		(cd /tmp; go install mvdan.cc/gofumpt@latest)
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@echo "==> Building executable"

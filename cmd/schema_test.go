@@ -80,6 +80,7 @@ func Test_SchemaCmd_Run_non_existent(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), string("failed to open local file"))
 }
+
 func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 	cmd := &SchemaCmd{
 		CommonOption: CommonOption{
