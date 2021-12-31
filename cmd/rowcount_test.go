@@ -28,6 +28,6 @@ func Test_RowCountCmd_Run_good(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, "4\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "4\n", stdout)
+	assert.Equal(t, "", stderr)
 }
