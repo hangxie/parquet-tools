@@ -48,8 +48,8 @@ func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
 	uri, cred, err := azureAccessDetail(u)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
-	assert.Equal(t, uri, "")
-	assert.Equal(t, cred, nil)
+	assert.Equal(t, "", uri)
+	assert.Nil(t, cred)
 
 	u.Host = "storageacconut"
 	u.Path = "missin/leading/slash"
@@ -81,8 +81,8 @@ func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
 	uri, cred, err := azureAccessDetail(u)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to create Azure credential")
-	assert.Equal(t, uri, "")
-	assert.Equal(t, cred, nil)
+	assert.Equal(t, "", uri)
+	assert.Nil(t, cred)
 }
 
 func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
@@ -94,14 +94,14 @@ func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
 	uri, cred, err := azureAccessDetail(u)
 	assert.Nil(t, err)
-	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
-	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
+	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
+	assert.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
 
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err = azureAccessDetail(u)
 	assert.Nil(t, err)
-	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
-	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.anonymousCredentialPolicyFactory")
+	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
+	assert.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
 }
 
 func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
@@ -117,8 +117,8 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	uri, cred, err := azureAccessDetail(u)
 	assert.Nil(t, err)
-	assert.Equal(t, uri, "https://storageaccount.blob.core.windows.net/container/path/to/object")
-	assert.Equal(t, reflect.TypeOf(cred).String(), "*azblob.SharedKeyCredential")
+	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
+	assert.Equal(t, "*azblob.SharedKeyCredential", reflect.TypeOf(cred).String())
 }
 
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
@@ -142,21 +142,21 @@ func Test_common_parseURI_invalid_uri(t *testing.T) {
 func Test_common_parseURI_good(t *testing.T) {
 	u, err := parseURI("scheme://path/to/file")
 	assert.Nil(t, err)
-	assert.Equal(t, u.Scheme, "scheme")
-	assert.Equal(t, u.Host, "path")
-	assert.Equal(t, u.Path, "/to/file")
+	assert.Equal(t, "scheme", u.Scheme)
+	assert.Equal(t, "path", u.Host)
+	assert.Equal(t, "/to/file", u.Path)
 
 	u, err = parseURI("path/to/file")
 	assert.Nil(t, err)
-	assert.Equal(t, u.Scheme, "file")
-	assert.Equal(t, u.Host, "")
-	assert.Equal(t, u.Path, "path/to/file")
+	assert.Equal(t, "file", u.Scheme)
+	assert.Equal(t, "", u.Host)
+	assert.Equal(t, "path/to/file", u.Path)
 
 	u, err = parseURI("file://path/to/file")
 	assert.Nil(t, err)
-	assert.Equal(t, u.Scheme, "file")
-	assert.Equal(t, u.Host, "")
-	assert.Equal(t, u.Path, "path/to/file")
+	assert.Equal(t, "file", u.Scheme)
+	assert.Equal(t, "", u.Host)
+	assert.Equal(t, "path/to/file", u.Path)
 }
 
 func Test_common_toNumber_bad(t *testing.T) {
@@ -191,7 +191,7 @@ func Test_common_toNumber_good(t *testing.T) {
 	for i, iface := range badValues {
 		v, ok := toNumber(interface{}(iface))
 		assert.True(t, ok)
-		assert.Equal(t, v, float64(i+1))
+		assert.Equal(t, float64(i+1), v)
 	}
 }
 
@@ -516,16 +516,16 @@ func Test_decimalToFloat_invalid_type(t *testing.T) {
 
 	f64, err := decimalToFloat(fieldAttr, int(0))
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "unknown type: int")
+	assert.Equal(t, "unknown type: int", err.Error())
 	assert.Nil(t, f64)
 
 	f64, err = decimalToFloat(fieldAttr, float32(0.0))
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "unknown type: float32")
+	assert.Equal(t, "unknown type: float32", err.Error())
 	assert.Nil(t, f64)
 
 	f64, err = decimalToFloat(fieldAttr, float64(0.0))
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "unknown type: float64")
+	assert.Equal(t, "unknown type: float64", err.Error())
 	assert.Nil(t, f64)
 }

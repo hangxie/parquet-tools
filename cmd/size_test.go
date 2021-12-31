@@ -42,8 +42,8 @@ func Test_SizeCmd_Run_good_raw(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, "11570\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "11570\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
@@ -58,8 +58,8 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Raw":11570}`+"\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, `{"Raw":11570}`+"\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
@@ -73,8 +73,8 @@ func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, "12189\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "12189\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
@@ -89,8 +89,8 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Uncompressed":12189}`+"\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, `{"Uncompressed":12189}`+"\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_footer(t *testing.T) {
@@ -104,8 +104,8 @@ func Test_SizeCmd_Run_good_footer(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, "5543\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "5543\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
@@ -120,8 +120,8 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Footer":5543}`+"\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, `{"Footer":5543}`+"\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_all(t *testing.T) {
@@ -135,8 +135,8 @@ func Test_SizeCmd_Run_good_all(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, "11570 12189 5543\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "11570 12189 5543\n", stdout)
+	assert.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_all_json(t *testing.T) {
@@ -151,6 +151,6 @@ func Test_SizeCmd_Run_good_all_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Raw":11570,"Uncompressed":12189,"Footer":5543}`+"\n")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, `{"Raw":11570,"Uncompressed":12189,"Footer":5543}`+"\n", stdout)
+	assert.Equal(t, "", stderr)
 }

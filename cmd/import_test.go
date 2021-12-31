@@ -23,8 +23,8 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 
-	assert.Equal(t, stdout, "")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "", stdout)
+	assert.Equal(t, "", stderr)
 
 	_, err := os.Stat(testFile)
 	assert.Nil(t, err)
@@ -46,8 +46,8 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 
-	assert.Equal(t, stdout, "")
-	assert.Equal(t, stderr, "")
+	assert.Equal(t, "", stdout)
+	assert.Equal(t, "", stderr)
 
 	_, err := os.Stat(testFile)
 	assert.Nil(t, err)
