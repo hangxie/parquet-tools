@@ -284,7 +284,7 @@ func Test_CatCmd_Run_good_decimal_zero(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Decimal1":0,"Decimal2":0,"Decimal3":0,"Decimal4":0,"Decimal_pointer":null}`+"\n")
+	assert.Equal(t, stdout, `{"V1":0,"V2":0,"V3":0,"V4":0,"Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n")
 	assert.Equal(t, stderr, "")
 }
 
@@ -303,7 +303,7 @@ func Test_CatCmd_Run_good_decimal_fraction(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Decimal1":0.11,"Decimal2":0.11,"Decimal3":0.11,"Decimal4":0.11,"Decimal_pointer":0.11}`+"\n")
+	assert.Equal(t, stdout, `{"V1":0.11,"V2":0.11,"V3":0.11,"V4":0.11,"Ptr":0.11,"List":["0.11"],"MapK":{"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000b":"value1"},"MapV":{"value1":"0.11"}}`+"\n")
 	assert.Equal(t, stderr, "")
 }
 
@@ -322,7 +322,7 @@ func Test_CatCmd_Run_good_decimal_normal(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Decimal1":2.22,"Decimal2":2.22,"Decimal3":2.22,"Decimal4":2.22,"Decimal_pointer":2.22}`+"\n")
+	assert.Equal(t, stdout, `{"V1":2.22,"V2":2.22,"V3":2.22,"V4":2.22,"Ptr":2.22,"List":["2.22","2.22"],"MapK":{"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd":"value2"},"MapV":{"value1":"2.22","value2":"2.22"}}`+"\n")
 	assert.Equal(t, stderr, "")
 }
 
@@ -341,7 +341,7 @@ func Test_CatCmd_Run_good_decimal_negative_zero(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Decimal1":0,"Decimal2":0,"Decimal3":0,"Decimal4":0,"Decimal_pointer":null}`+"\n")
+	assert.Equal(t, stdout, `{"V1":0,"V2":0,"V3":0,"V4":0,"Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n")
 	assert.Equal(t, stderr, "")
 }
 
@@ -360,7 +360,7 @@ func Test_CatCmd_Run_good_decimal_negative_fraction(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Decimal1":-0.11,"Decimal2":-0.11,"Decimal3":-0.11,"Decimal4":-0.11,"Decimal_pointer":-0.11}`+"\n")
+	assert.Equal(t, stdout, `{"V1":-0.11,"V2":-0.11,"V3":-0.11,"V4":-0.11,"Ptr":-0.11,"List":["-0.11"],"MapK":{"\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd":"value1"},"MapV":{"value1":"-0.11"}}`+"\n")
 	assert.Equal(t, stderr, "")
 }
 
@@ -379,6 +379,6 @@ func Test_CatCmd_Run_good_decimal_negative_normal(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, stdout, `{"Decimal1":-2.22,"Decimal2":-2.22,"Decimal3":-2.22,"Decimal4":-2.22,"Decimal_pointer":-2.22}`+"\n")
+	assert.Equal(t, stdout, `{"V1":-2.22,"V2":-2.22,"V3":-2.22,"V4":-2.22,"Ptr":-2.22,"List":["-2.22","-2.22"],"MapK":{"\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\"":"value2"},"MapV":{"value1":"-2.22","value2":"-2.22"}}`+"\n")
 	assert.Equal(t, stderr, "")
 }

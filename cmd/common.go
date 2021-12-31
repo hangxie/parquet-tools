@@ -271,21 +271,25 @@ func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer
 			continue
 		}
 
-		if child.ConvertedType != nil && (*child.ConvertedType == parquet.ConvertedType_MAP || *child.ConvertedType == parquet.ConvertedType_LIST) {
-			if noInterimLayer {
-				child = child.Children[0]
-			}
-			for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
-				decimalFields[k] = v
-			}
-			continue
-		}
-
-		if child.ConvertedType != nil && *child.ConvertedType == parquet.ConvertedType_DECIMAL {
-			decimalFields[currentPath] = DecimalField{
-				parquetType: *child.Type,
-				precision:   int(*child.Precision),
-				scale:       int(*child.Scale),
+		if child.ConvertedType != nil {
+			switch *child.ConvertedType {
+			case parquet.ConvertedType_MAP, parquet.ConvertedType_LIST:
+				if noInterimLayer {
+					child = child.Children[0]
+				}
+				for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
+					decimalFields[k] = v
+				}
+			case parquet.ConvertedType_MAP_KEY_VALUE:
+				for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
+					decimalFields[k] = v
+				}
+			case parquet.ConvertedType_DECIMAL:
+				decimalFields[currentPath] = DecimalField{
+					parquetType: *child.Type,
+					precision:   int(*child.Precision),
+					scale:       int(*child.Scale),
+				}
 			}
 		}
 	}

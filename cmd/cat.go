@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -92,8 +93,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 			tmp.Set(rowValue.Elem())
 			for k, v := range decimalFields {
 				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					// TODO handle nested fields
-					reformatStringDecimalValue(v, tmp.FieldByName(k))
+					reformatNestedDecimal(tmp, strings.Split(k, "."), v)
 				}
 			}
 			rowValue.Set(tmp)
@@ -128,4 +128,37 @@ func (c *CatCmd) Run(ctx *Context) error {
 	fmt.Println(delimiter[c.Format].end)
 
 	return nil
+}
+
+func reformatNestedDecimal(value reflect.Value, locator []string, attr DecimalField) {
+	if len(locator) == 0 {
+		reformatStringDecimalValue(attr, value)
+		return
+	}
+
+	v := value.FieldByName(locator[0])
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	switch v.Kind() {
+	case reflect.Array, reflect.Slice:
+		for elementIndex := 0; elementIndex < v.Len(); elementIndex++ {
+			reformatNestedDecimal(v.Index(elementIndex), locator[2:], attr)
+		}
+	case reflect.Map:
+		iter := v.MapRange()
+		for iter.Next() {
+			if locator[1] == "Key" {
+				// TODO handle DECIMAL as map key
+			} else {
+				newValue := reflect.New(iter.Value().Type()).Elem()
+				newValue.Set(iter.Value())
+				reformatNestedDecimal(newValue, locator[2:], attr)
+				v.SetMapIndex(iter.Key(), newValue)
+			}
+		}
+	default:
+		reformatNestedDecimal(v, locator[1:], attr)
+	}
 }
