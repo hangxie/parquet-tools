@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"math"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -314,14 +315,24 @@ func reformatStringDecimalValue(fieldAttr DecimalField, value reflect.Value) {
 	}
 }
 
-func decimalStringToFloat64(fieldAttr DecimalField, value interface{}) (*float64, error) {
-	v := reflect.ValueOf(value)
-	newValue := reflect.New(v.Type()).Elem()
-	newValue.Set(v)
-	reformatStringDecimalValue(fieldAttr, newValue)
-	decimalValue, err := strconv.ParseFloat(newValue.String(), 64)
-	if err != nil {
-		return nil, err
+func decimalToFloat(fieldAttr DecimalField, iface interface{}) (*float64, error) {
+	if iface == nil {
+		return nil, nil
 	}
-	return &decimalValue, nil
+
+	switch value := iface.(type) {
+	case int64:
+		float64Value := float64(value) / math.Pow10(fieldAttr.scale)
+		return &float64Value, nil
+	case int32:
+		float64Value := float64(value) / math.Pow10(fieldAttr.scale)
+		return &float64Value, nil
+	case string:
+		float64Value, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString([]byte(value), fieldAttr.precision, fieldAttr.scale), 64)
+		if err != nil {
+			return nil, err
+		}
+		return &float64Value, nil
+	}
+	return nil, fmt.Errorf("unknown type: %s", reflect.TypeOf(iface))
 }
