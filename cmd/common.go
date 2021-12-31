@@ -41,9 +41,10 @@ type Context struct {
 
 // DecimalField represents a field with DECIMAL converted type
 type DecimalField struct {
-	parquetType parquet.Type
-	precision   int
-	scale       int
+	parquetType   parquet.Type
+	convertedType parquet.ConvertedType
+	precision     int
+	scale         int
 }
 
 func parseURI(uri string) (*url.URL, error) {
@@ -287,9 +288,17 @@ func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer
 				}
 			case parquet.ConvertedType_DECIMAL:
 				decimalFields[currentPath] = DecimalField{
-					parquetType: *child.Type,
-					precision:   int(*child.Precision),
-					scale:       int(*child.Scale),
+					parquetType:   *child.Type,
+					convertedType: parquet.ConvertedType_DECIMAL,
+					precision:     int(*child.Precision),
+					scale:         int(*child.Scale),
+				}
+			case parquet.ConvertedType_INTERVAL:
+				decimalFields[currentPath] = DecimalField{
+					parquetType:   *child.Type,
+					convertedType: parquet.ConvertedType_INTERVAL,
+					precision:     0,
+					scale:         0,
 				}
 			}
 		}
@@ -304,13 +313,15 @@ func reformatStringDecimalValue(fieldAttr DecimalField, value reflect.Value) {
 	}
 
 	if value.Kind() != reflect.Ptr {
-		newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(value.String()), fieldAttr.precision, fieldAttr.scale)
+		buf := stringToBytes(fieldAttr, value.String())
+		newValue := types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale)
 		value.SetString(newValue)
 		return
 	}
 
 	if !value.IsNil() && value.Elem().IsValid() {
-		newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(value.Elem().String()), fieldAttr.precision, fieldAttr.scale)
+		buf := stringToBytes(fieldAttr, value.Elem().String())
+		newValue := types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale)
 		value.Elem().SetString(newValue)
 	}
 }
@@ -328,11 +339,22 @@ func decimalToFloat(fieldAttr DecimalField, iface interface{}) (*float64, error)
 		float64Value := float64(value) / math.Pow10(fieldAttr.scale)
 		return &float64Value, nil
 	case string:
-		float64Value, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString([]byte(value), fieldAttr.precision, fieldAttr.scale), 64)
+		buf := stringToBytes(fieldAttr, value)
+		float64Value, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale), 64)
 		if err != nil {
 			return nil, err
 		}
 		return &float64Value, nil
 	}
 	return nil, fmt.Errorf("unknown type: %s", reflect.TypeOf(iface))
+}
+
+func stringToBytes(fieldAttr DecimalField, value string) []byte {
+	buf := []byte(value)
+	if fieldAttr.convertedType == parquet.ConvertedType_INTERVAL {
+		for i, j := 0, len(buf)-1; i < j; i, j = i+1, j-1 {
+			buf[i], buf[j] = buf[j], buf[i]
+		}
+	}
+	return buf
 }
