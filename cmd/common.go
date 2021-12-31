@@ -309,7 +309,7 @@ func reformatStringDecimalValue(fieldAttr DecimalField, value reflect.Value) {
 		return
 	}
 
-	if !value.IsNil() {
+	if !value.IsNil() && value.Elem().IsValid() {
 		newValue := types.DECIMAL_BYTE_ARRAY_ToString([]byte(value.Elem().String()), fieldAttr.precision, fieldAttr.scale)
 		value.Elem().SetString(newValue)
 	}

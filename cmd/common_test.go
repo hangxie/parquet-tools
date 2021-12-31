@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xitongsys/parquet-go/types"
 )
 
 // this for unit test only
@@ -385,4 +386,146 @@ func Test_common_newCSVWriter_good(t *testing.T) {
 	pw, err := newCSVWriter(os.TempDir()+"/csv-writer.parquet", []string{"name=Id, type=INT64"})
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
+}
+
+func Test_common_getAllDecimalFields_good(t *testing.T) {
+	// TODO
+	// this is currently covered by high level test cases but eventually needs unit test cases
+}
+
+func Test_reformatStringDecimalValue_good(t *testing.T) {
+	fieldAttr := DecimalField{
+		scale:     2,
+		precision: 10,
+	}
+
+	decimalValue := types.StrIntToBinary("-011", "BigEndian", 0, true)
+	reformatStringDecimalValue(fieldAttr, reflect.ValueOf(&decimalValue).Elem())
+	assert.Equal(t, "-0.11", decimalValue)
+
+	decimalPtr := new(string)
+	*decimalPtr = types.StrIntToBinary("222", "BigEndian", 0, true)
+	reformatStringDecimalValue(fieldAttr, reflect.ValueOf(&decimalPtr).Elem())
+	assert.Equal(t, "2.22", *decimalPtr)
+
+	var nilPtr *string
+	reformatStringDecimalValue(fieldAttr, reflect.ValueOf(&nilPtr).Elem())
+	assert.Nil(t, nilPtr)
+}
+
+func Test_decimalToFloat_nil(t *testing.T) {
+	f64, err := decimalToFloat(DecimalField{}, nil)
+	assert.Nil(t, err)
+	assert.Nil(t, f64)
+}
+
+func Test_decimalToFloat_int32(t *testing.T) {
+	fieldAttr := DecimalField{
+		scale: 2,
+	}
+	f64, err := decimalToFloat(fieldAttr, int32(0))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 0.0, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int32(11))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 0.11, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int32(222))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 2.22, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int32(-11))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, -0.11, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int32(-222))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, -2.22, *f64)
+}
+
+func Test_decimalToFloat_int64(t *testing.T) {
+	fieldAttr := DecimalField{
+		scale: 2,
+	}
+	f64, err := decimalToFloat(fieldAttr, int64(0))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 0.0, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int64(11))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 0.11, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int64(222))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 2.22, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int64(-11))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, -0.11, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, int64(-222))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, -2.22, *f64)
+}
+
+func Test_decimalToFloat_string(t *testing.T) {
+	fieldAttr := DecimalField{
+		scale:     2,
+		precision: 10,
+	}
+
+	f64, err := decimalToFloat(fieldAttr, types.StrIntToBinary("000", "BigEndian", 0, true))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 0.0, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, types.StrIntToBinary("011", "BigEndian", 0, true))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 0.11, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, types.StrIntToBinary("222", "BigEndian", 0, true))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, 2.22, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, types.StrIntToBinary("-011", "BigEndian", 0, true))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, -0.11, *f64)
+
+	f64, err = decimalToFloat(fieldAttr, types.StrIntToBinary("-222", "BigEndian", 0, true))
+	assert.Nil(t, err)
+	assert.NotNil(t, f64)
+	assert.Equal(t, -2.22, *f64)
+}
+
+func Test_decimalToFloat_invalid_type(t *testing.T) {
+	fieldAttr := DecimalField{}
+
+	f64, err := decimalToFloat(fieldAttr, int(0))
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "unknown type: int")
+	assert.Nil(t, f64)
+
+	f64, err = decimalToFloat(fieldAttr, float32(0.0))
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "unknown type: float32")
+	assert.Nil(t, f64)
+
+	f64, err = decimalToFloat(fieldAttr, float64(0.0))
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "unknown type: float64")
+	assert.Nil(t, f64)
 }
