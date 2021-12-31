@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"math"
 	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
@@ -60,7 +59,7 @@ func (c *MetaCmd) Run(ctx *Context) error {
 			columns[colIndex] = columnMeta{
 				PathInSchema:     col.MetaData.PathInSchema,
 				Type:             col.MetaData.Type.String(),
-				Encodings:        make([]string, len(col.MetaData.Encodings)),
+				Encodings:        encodingToString(col.MetaData.Encodings),
 				CompressedSize:   col.MetaData.TotalCompressedSize,
 				UncompressedSize: col.MetaData.TotalUncompressedSize,
 				NumValues:        col.MetaData.NumValues,
@@ -68,72 +67,36 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				MinValue:         nil,
 				NullCount:        nil,
 				DistinctCount:    nil,
-				Index:            nil,
+				Index:            sortingToString(rg.SortingColumns, colIndex),
 			}
-			if col.MetaData.Statistics != nil {
-				path := strings.Join(columns[colIndex].PathInSchema, ".")
-				if field, found := decimalFields[path]; found {
-					switch field.parquetType {
-					case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
-						maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-						if maxValue != nil {
-							if newValue, err := decimalStringToFloat64(field, maxValue); err != nil {
-								return err
-							} else {
-								columns[colIndex].MaxValue = *newValue
-							}
-						}
 
-						minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-						if minValue != nil {
-							if newValue, err := decimalStringToFloat64(field, minValue); err != nil {
-								return err
-							} else {
-								columns[colIndex].MinValue = *newValue
-							}
-						}
-					case parquet.Type_INT32, parquet.Type_INT64:
-						maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-						if maxValue != nil {
-							int64Value, ok := maxValue.(int64)
-							if !ok {
-								int64Value = int64(maxValue.(int32))
-							}
-							columns[colIndex].MaxValue = float64(int64Value) / math.Pow10(field.scale)
-						}
+			if col.MetaData.Statistics == nil {
+				// no statistics info
+				continue
+			}
 
-						minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-						if minValue != nil {
-							int64Value, ok := minValue.(int64)
-							if !ok {
-								int64Value = int64(minValue.(int32))
-							}
-							columns[colIndex].MinValue = float64(int64Value) / math.Pow10(field.scale)
-						}
-					}
-				} else {
-					columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
-					columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
+			columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
+			columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
+
+			if field, found := decimalFields[strings.Join(columns[colIndex].PathInSchema, ".")]; !found {
+				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
+				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
+				continue
+			} else {
+				// reformat decimal values
+				var err error
+				maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
+				if columns[colIndex].MaxValue, err = decimalToFloat(field, maxValue); err != nil {
+					return err
 				}
-				columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
-				columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
-			}
-			for i, encoding := range col.MetaData.Encodings {
-				columns[colIndex].Encodings[i] = encoding.String()
-			}
 
-			for _, indexCol := range rg.SortingColumns {
-				if indexCol.ColumnIdx == int32(colIndex) {
-					columns[colIndex].Index = new(string)
-					if indexCol.Descending {
-						*columns[colIndex].Index = "DESC"
-					} else {
-						*columns[colIndex].Index = "ASC"
-					}
-					break
+				minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
+				if columns[colIndex].MinValue, err = decimalToFloat(field, minValue); err != nil {
+					return err
 				}
 			}
 		}
+
 		rowGroups[rgIndex] = rowGroupMeta{
 			NumRows:       rg.NumRows,
 			TotalByteSize: rg.TotalByteSize,
@@ -196,4 +159,27 @@ func (c *MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64En
 		ret = base64.StdEncoding.EncodeToString(value)
 	}
 	return ret
+}
+
+func encodingToString(encodings []parquet.Encoding) []string {
+	ret := make([]string, len(encodings))
+	for i := range encodings {
+		ret[i] = encodings[i].String()
+	}
+	return ret
+}
+
+func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {
+	for _, indexCol := range sortingColumns {
+		if indexCol.ColumnIdx == int32(columnIndex) {
+			var ret string
+			if indexCol.Descending {
+				ret = "DESC"
+			} else {
+				ret = "ASC"
+			}
+			return &ret
+		}
+	}
+	return nil
 }
