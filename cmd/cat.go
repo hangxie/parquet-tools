@@ -59,7 +59,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 
 	// retrieve schema for better formatting
 	schemaRoot := newSchemaTree(reader)
-	decimalFields := getAllDecimalFields("", schemaRoot, true)
+	reinterpretFields := getReinterpretFields("", schemaRoot, true)
 
 	// Do not abort if c.Skip is greater than total number of rows
 	// This gives users flexibility to handle this scenario by themselves
@@ -91,9 +91,9 @@ func (c *CatCmd) Run(ctx *Context) error {
 			rowValue := reflect.ValueOf(&row).Elem()
 			tmp := reflect.New(rowValue.Elem().Type()).Elem()
 			tmp.Set(rowValue.Elem())
-			for k, v := range decimalFields {
-				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-					reformatNestedDecimal(tmp, strings.Split(k, "."), v)
+			for k, v := range reinterpretFields {
+				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
+					reformatNestedString(tmp, strings.Split(k, "."), v)
 				}
 			}
 			rowValue.Set(tmp)
@@ -101,7 +101,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 			// convert int or string based decimal to number
 			buf, _ := json.Marshal(row)
 			jsonString := string(buf)
-			for k, v := range decimalFields {
+			for k, v := range reinterpretFields {
 				value := gjson.Get(jsonString, k)
 				if value.Type == gjson.Null {
 					continue
@@ -130,9 +130,9 @@ func (c *CatCmd) Run(ctx *Context) error {
 	return nil
 }
 
-func reformatNestedDecimal(value reflect.Value, locator []string, attr DecimalField) {
+func reformatNestedString(value reflect.Value, locator []string, attr ReinterpretField) {
 	if len(locator) == 0 {
-		reformatStringDecimalValue(attr, value)
+		reformatStringValue(attr, value)
 		return
 	}
 
@@ -144,7 +144,7 @@ func reformatNestedDecimal(value reflect.Value, locator []string, attr DecimalFi
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
 		for elementIndex := 0; elementIndex < v.Len(); elementIndex++ {
-			reformatNestedDecimal(v.Index(elementIndex), locator[2:], attr)
+			reformatNestedString(v.Index(elementIndex), locator[2:], attr)
 		}
 	case reflect.Map:
 		iter := v.MapRange()
@@ -154,11 +154,11 @@ func reformatNestedDecimal(value reflect.Value, locator []string, attr DecimalFi
 			} else {
 				newValue := reflect.New(iter.Value().Type()).Elem()
 				newValue.Set(iter.Value())
-				reformatNestedDecimal(newValue, locator[2:], attr)
+				reformatNestedString(newValue, locator[2:], attr)
 				v.SetMapIndex(iter.Key(), newValue)
 			}
 		}
 	default:
-		reformatNestedDecimal(v, locator[1:], attr)
+		reformatNestedString(v, locator[1:], attr)
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/aws/aws-sdk-go/aws"
@@ -39,8 +40,8 @@ type Context struct {
 	Build   string
 }
 
-// DecimalField represents a field with DECIMAL converted type
-type DecimalField struct {
+// ReinterpretField represents a field that needs to be re-interpretted before output
+type ReinterpretField struct {
 	parquetType   parquet.Type
 	convertedType parquet.ConvertedType
 	precision     int
@@ -257,8 +258,8 @@ func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
 	return httpURL, credential, nil
 }
 
-func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer bool) map[string]DecimalField {
-	decimalFields := make(map[string]DecimalField)
+func getReinterpretFields(rootPath string, schemaRoot *schemaNode, noInterimLayer bool) map[string]ReinterpretField {
+	reinterpretFields := make(map[string]ReinterpretField)
 	for _, child := range schemaRoot.Children {
 		currentPath := rootPath + "." + child.Name
 		if rootPath == "" {
@@ -267,8 +268,18 @@ func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer
 
 		if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
 			// STRUCT
-			for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
-				decimalFields[k] = v
+			for k, v := range getReinterpretFields(currentPath, child, noInterimLayer) {
+				reinterpretFields[k] = v
+			}
+			continue
+		}
+
+		if child.Type != nil && *child.Type == parquet.Type_INT96 {
+			reinterpretFields[currentPath] = ReinterpretField{
+				parquetType:   parquet.Type_INT96,
+				convertedType: parquet.ConvertedType_TIMESTAMP_MICROS,
+				precision:     0,
+				scale:         0,
 			}
 			continue
 		}
@@ -279,22 +290,22 @@ func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer
 				if noInterimLayer {
 					child = child.Children[0]
 				}
-				for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
-					decimalFields[k] = v
+				for k, v := range getReinterpretFields(currentPath, child, noInterimLayer) {
+					reinterpretFields[k] = v
 				}
 			case parquet.ConvertedType_MAP_KEY_VALUE:
-				for k, v := range getAllDecimalFields(currentPath, child, noInterimLayer) {
-					decimalFields[k] = v
+				for k, v := range getReinterpretFields(currentPath, child, noInterimLayer) {
+					reinterpretFields[k] = v
 				}
 			case parquet.ConvertedType_DECIMAL:
-				decimalFields[currentPath] = DecimalField{
+				reinterpretFields[currentPath] = ReinterpretField{
 					parquetType:   *child.Type,
 					convertedType: parquet.ConvertedType_DECIMAL,
 					precision:     int(*child.Precision),
 					scale:         int(*child.Scale),
 				}
 			case parquet.ConvertedType_INTERVAL:
-				decimalFields[currentPath] = DecimalField{
+				reinterpretFields[currentPath] = ReinterpretField{
 					parquetType:   *child.Type,
 					convertedType: parquet.ConvertedType_INTERVAL,
 					precision:     0,
@@ -304,29 +315,34 @@ func getAllDecimalFields(rootPath string, schemaRoot *schemaNode, noInterimLayer
 		}
 	}
 
-	return decimalFields
+	return reinterpretFields
 }
 
-func reformatStringDecimalValue(fieldAttr DecimalField, value reflect.Value) {
+func reformatStringValue(fieldAttr ReinterpretField, value reflect.Value) {
+	if value.Kind() == reflect.Ptr {
+		if value.IsNil() {
+			return
+		}
+		value = value.Elem()
+	}
+
 	if !value.IsValid() {
 		return
 	}
 
-	if value.Kind() != reflect.Ptr {
+	switch fieldAttr.parquetType {
+	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 		buf := stringToBytes(fieldAttr, value.String())
 		newValue := types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale)
 		value.SetString(newValue)
-		return
-	}
-
-	if !value.IsNil() && value.Elem().IsValid() {
-		buf := stringToBytes(fieldAttr, value.Elem().String())
-		newValue := types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale)
-		value.Elem().SetString(newValue)
+	case parquet.Type_INT96:
+		buf := value.String()
+		newValue := types.INT96ToTime(buf).Format(time.RFC3339Nano)
+		value.SetString(newValue)
 	}
 }
 
-func decimalToFloat(fieldAttr DecimalField, iface interface{}) (*float64, error) {
+func decimalToFloat(fieldAttr ReinterpretField, iface interface{}) (*float64, error) {
 	if iface == nil {
 		return nil, nil
 	}
@@ -349,7 +365,7 @@ func decimalToFloat(fieldAttr DecimalField, iface interface{}) (*float64, error)
 	return nil, fmt.Errorf("unknown type: %s", reflect.TypeOf(iface))
 }
 
-func stringToBytes(fieldAttr DecimalField, value string) []byte {
+func stringToBytes(fieldAttr ReinterpretField, value string) []byte {
 	buf := []byte(value)
 	if fieldAttr.convertedType == parquet.ConvertedType_INTERVAL {
 		for i, j := 0, len(buf)-1; i < j; i, j = i+1, j-1 {
