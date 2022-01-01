@@ -9,8 +9,10 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/types"
 )
 
@@ -393,34 +395,67 @@ func Test_common_getAllDecimalFields_good(t *testing.T) {
 	// this is currently covered by high level test cases but eventually needs unit test cases
 }
 
-func Test_reformatStringDecimalValue_good(t *testing.T) {
-	fieldAttr := DecimalField{
-		scale:     2,
-		precision: 10,
+func Test_reformatStringDecimalValue_good_decimal(t *testing.T) {
+	fieldAttr := ReinterpretField{
+		parquetType:   parquet.Type_BYTE_ARRAY,
+		convertedType: parquet.ConvertedType_DECIMAL,
+		scale:         2,
+		precision:     10,
 	}
 
 	decimalValue := types.StrIntToBinary("-011", "BigEndian", 0, true)
-	reformatStringDecimalValue(fieldAttr, reflect.ValueOf(&decimalValue).Elem())
+	reformatStringValue(fieldAttr, reflect.ValueOf(&decimalValue).Elem())
 	assert.Equal(t, "-0.11", decimalValue)
 
 	decimalPtr := new(string)
 	*decimalPtr = types.StrIntToBinary("222", "BigEndian", 0, true)
-	reformatStringDecimalValue(fieldAttr, reflect.ValueOf(&decimalPtr).Elem())
+	reformatStringValue(fieldAttr, reflect.ValueOf(&decimalPtr).Elem())
 	assert.Equal(t, "2.22", *decimalPtr)
 
 	var nilPtr *string
-	reformatStringDecimalValue(fieldAttr, reflect.ValueOf(&nilPtr).Elem())
+	reformatStringValue(fieldAttr, reflect.ValueOf(&nilPtr).Elem())
 	assert.Nil(t, nilPtr)
 }
 
+func Test_reformatStringDecimalValue_good_interval(t *testing.T) {
+	fieldAttr := ReinterpretField{
+		parquetType:   parquet.Type_BYTE_ARRAY,
+		convertedType: parquet.ConvertedType_INTERVAL,
+		scale:         0,
+		precision:     10,
+	}
+
+	intervalValue := types.StrIntToBinary("54321", "LittleEndian", 10, false)
+	assert.NotEqual(t, "54321", intervalValue)
+
+	reformatStringValue(fieldAttr, reflect.ValueOf(&intervalValue).Elem())
+	assert.Equal(t, "54321", intervalValue)
+}
+
+func Test_reformatStringDecimalValue_good_int96(t *testing.T) {
+	fieldAttr := ReinterpretField{
+		parquetType:   parquet.Type_INT96,
+		convertedType: parquet.ConvertedType_TIMESTAMP_MICROS,
+		scale:         0,
+		precision:     0,
+	}
+
+	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
+	int96Value := types.TimeToINT96(timeValue)
+	assert.NotEqual(t, "2022-01-01T00:00:00Z", int96Value)
+
+	reformatStringValue(fieldAttr, reflect.ValueOf(&int96Value).Elem())
+	assert.Equal(t, "2022-01-01T00:00:00Z", int96Value)
+}
+
 func Test_decimalToFloat_nil(t *testing.T) {
-	f64, err := decimalToFloat(DecimalField{}, nil)
+	f64, err := decimalToFloat(ReinterpretField{}, nil)
 	assert.Nil(t, err)
 	assert.Nil(t, f64)
 }
 
 func Test_decimalToFloat_int32(t *testing.T) {
-	fieldAttr := DecimalField{
+	fieldAttr := ReinterpretField{
 		scale: 2,
 	}
 	f64, err := decimalToFloat(fieldAttr, int32(0))
@@ -450,7 +485,7 @@ func Test_decimalToFloat_int32(t *testing.T) {
 }
 
 func Test_decimalToFloat_int64(t *testing.T) {
-	fieldAttr := DecimalField{
+	fieldAttr := ReinterpretField{
 		scale: 2,
 	}
 	f64, err := decimalToFloat(fieldAttr, int64(0))
@@ -480,7 +515,7 @@ func Test_decimalToFloat_int64(t *testing.T) {
 }
 
 func Test_decimalToFloat_string(t *testing.T) {
-	fieldAttr := DecimalField{
+	fieldAttr := ReinterpretField{
 		scale:     2,
 		precision: 10,
 	}
@@ -512,7 +547,7 @@ func Test_decimalToFloat_string(t *testing.T) {
 }
 
 func Test_decimalToFloat_invalid_type(t *testing.T) {
-	fieldAttr := DecimalField{}
+	fieldAttr := ReinterpretField{}
 
 	f64, err := decimalToFloat(fieldAttr, int(0))
 	assert.NotNil(t, err)
