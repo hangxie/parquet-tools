@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/types"
 )
 
 // MetaCmd is a kong command for meta
@@ -78,22 +79,32 @@ func (c *MetaCmd) Run(ctx *Context) error {
 			columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
 			columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
 
-			if field, found := decimalFields[strings.Join(columns[colIndex].PathInSchema, ".")]; !found {
+			if col.MetaData.Type == parquet.Type_INT96 {
+				// INT96 (deprecated) is used for timestamp only
+				maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
+				columns[colIndex].MaxValue = types.INT96ToTime(maxValue.(string))
+				minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
+				columns[colIndex].MinValue = types.INT96ToTime(minValue.(string))
+				continue
+			}
+
+			field, found := decimalFields[strings.Join(columns[colIndex].PathInSchema, ".")]
+			if !found {
 				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
 				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
 				continue
-			} else {
-				// reformat decimal values
-				var err error
-				maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-				if columns[colIndex].MaxValue, err = decimalToFloat(field, maxValue); err != nil {
-					return err
-				}
+			}
 
-				minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-				if columns[colIndex].MinValue, err = decimalToFloat(field, minValue); err != nil {
-					return err
-				}
+			// reformat decimal values
+			var err error
+			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
+			if columns[colIndex].MaxValue, err = decimalToFloat(field, maxValue); err != nil {
+				return err
+			}
+
+			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
+			if columns[colIndex].MinValue, err = decimalToFloat(field, minValue); err != nil {
+				return err
 			}
 		}
 
