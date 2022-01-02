@@ -2,10 +2,14 @@ package cmd
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/types"
 )
 
 func Test_CatCmd_Run_non_existent_file(t *testing.T) {
@@ -411,4 +415,57 @@ func Test_CatCmd_Run_good_reinterpret_decimal_negative_normal(t *testing.T) {
 		`{"V1":-2.22,"V2":-2.22,"V3":-2.22,"V4":-2.22,"V5":222,"V6":"2022-01-01T05:05:05.005005Z","Ptr":-2.22,"List":["-2.22","-2.22"],"MapK":{"\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\"":"value2"},"MapV":{"value1":"-2.22","value2":"-2.22"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
+}
+
+func Test_cat_reformatStringDecimalValue_good_decimal(t *testing.T) {
+	fieldAttr := ReinterpretField{
+		parquetType:   parquet.Type_BYTE_ARRAY,
+		convertedType: parquet.ConvertedType_DECIMAL,
+		scale:         2,
+		precision:     10,
+	}
+
+	decimalValue := types.StrIntToBinary("-011", "BigEndian", 0, true)
+	reformatStringValue(fieldAttr, reflect.ValueOf(&decimalValue).Elem())
+	assert.Equal(t, "-0.11", decimalValue)
+
+	decimalPtr := new(string)
+	*decimalPtr = types.StrIntToBinary("222", "BigEndian", 0, true)
+	reformatStringValue(fieldAttr, reflect.ValueOf(&decimalPtr).Elem())
+	assert.Equal(t, "2.22", *decimalPtr)
+
+	var nilPtr *string
+	reformatStringValue(fieldAttr, reflect.ValueOf(&nilPtr).Elem())
+	assert.Nil(t, nilPtr)
+}
+
+func Test_cat_reformatStringDecimalValue_good_interval(t *testing.T) {
+	fieldAttr := ReinterpretField{
+		parquetType:   parquet.Type_BYTE_ARRAY,
+		convertedType: parquet.ConvertedType_INTERVAL,
+		scale:         0,
+		precision:     10,
+	}
+
+	intervalValue := types.StrIntToBinary("54321", "LittleEndian", 10, false)
+	assert.NotEqual(t, "54321", intervalValue)
+
+	reformatStringValue(fieldAttr, reflect.ValueOf(&intervalValue).Elem())
+	assert.Equal(t, "54321", intervalValue)
+}
+
+func Test_cat_reformatStringDecimalValue_good_int96(t *testing.T) {
+	fieldAttr := ReinterpretField{
+		parquetType:   parquet.Type_INT96,
+		convertedType: parquet.ConvertedType_TIMESTAMP_MICROS,
+		scale:         0,
+		precision:     0,
+	}
+
+	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
+	int96Value := types.TimeToINT96(timeValue)
+	assert.NotEqual(t, "2022-01-01T00:00:00Z", int96Value)
+
+	reformatStringValue(fieldAttr, reflect.ValueOf(&int96Value).Elem())
+	assert.Equal(t, "2022-01-01T00:00:00Z", int96Value)
 }
