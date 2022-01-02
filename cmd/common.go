@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/aws/aws-sdk-go/aws"
@@ -316,30 +315,6 @@ func getReinterpretFields(rootPath string, schemaRoot *schemaNode, noInterimLaye
 	}
 
 	return reinterpretFields
-}
-
-func reformatStringValue(fieldAttr ReinterpretField, value reflect.Value) {
-	if value.Kind() == reflect.Ptr {
-		if value.IsNil() {
-			return
-		}
-		value = value.Elem()
-	}
-
-	if !value.IsValid() {
-		return
-	}
-
-	switch fieldAttr.parquetType {
-	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
-		buf := stringToBytes(fieldAttr, value.String())
-		newValue := types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale)
-		value.SetString(newValue)
-	case parquet.Type_INT96:
-		buf := value.String()
-		newValue := types.INT96ToTime(buf).Format(time.RFC3339Nano)
-		value.SetString(newValue)
-	}
 }
 
 func decimalToFloat(fieldAttr ReinterpretField, iface interface{}) (*float64, error) {

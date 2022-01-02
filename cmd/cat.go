@@ -13,6 +13,7 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/types"
 )
 
 // CatCmd is a kong command for cat
@@ -165,5 +166,29 @@ func reformatNestedString(value reflect.Value, locator []string, attr Reinterpre
 		}
 	default:
 		reformatNestedString(v, locator[1:], attr)
+	}
+}
+
+func reformatStringValue(fieldAttr ReinterpretField, value reflect.Value) {
+	if value.Kind() == reflect.Ptr {
+		if value.IsNil() {
+			return
+		}
+		value = value.Elem()
+	}
+
+	if !value.IsValid() {
+		return
+	}
+
+	switch fieldAttr.parquetType {
+	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
+		buf := stringToBytes(fieldAttr, value.String())
+		newValue := types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale)
+		value.SetString(newValue)
+	case parquet.Type_INT96:
+		buf := value.String()
+		newValue := types.INT96ToTime(buf).Format(time.RFC3339Nano)
+		value.SetString(newValue)
 	}
 }
