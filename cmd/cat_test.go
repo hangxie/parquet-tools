@@ -270,6 +270,24 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 	assert.Equal(t, "", stderr)
 }
 
+func Test_CatCmd_Run_good_empty(t *testing.T) {
+	cmd := &CatCmd{
+		Limit:       2,
+		PageSize:    10,
+		SampleRatio: 0.0,
+		CommonOption: CommonOption{
+			URI: "testdata/empty.parquet",
+		},
+		Format: "json",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, "[]\n", stdout)
+	assert.Equal(t, "", stderr)
+}
+
 func Test_CatCmd_Run_good_reinterpret_decimal_zero(t *testing.T) {
 	cmd := &CatCmd{
 		Limit:       1,

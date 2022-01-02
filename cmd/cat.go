@@ -61,6 +61,11 @@ func (c *CatCmd) Run(ctx *Context) error {
 	schemaRoot := newSchemaTree(reader)
 	reinterpretFields := getReinterpretFields("", schemaRoot, true)
 
+	// this is hack for https://github.com/xitongsys/parquet-go/issues/438
+	if reader.GetNumRows() == 0 {
+		c.Limit = 0
+	}
+
 	// Do not abort if c.Skip is greater than total number of rows
 	// This gives users flexibility to handle this scenario by themselves
 	if err := reader.SkipRows(int64(c.Skip)); err != nil {
