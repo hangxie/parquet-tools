@@ -182,7 +182,7 @@ func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 	assert.Nil(t, meta.RowGroups[0].Columns[2].Index)
 }
 
-func Test_MetaCmd_Run_good_reinterpret_fields(t *testing.T) {
+func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
 		CommonOption: CommonOption{
@@ -197,36 +197,68 @@ func Test_MetaCmd_Run_good_reinterpret_fields(t *testing.T) {
 		`{"NumRowGroups":1,"RowGroups":[{"NumRows":11,"TotalByteSize":2063,"Columns":[{"PathInSchema":["V1"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":232,"UncompressedSize":224,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V2"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":331,"UncompressedSize":332,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V3"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":399,"UncompressedSize":440,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V4"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":195,"UncompressedSize":187,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V5"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":399,"UncompressedSize":440,"NumValues":11,"NullCount":0,"MaxValue":125,"MinValue":0},{"PathInSchema":["V6"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":439,"UncompressedSize":440,"NumValues":11,"NullCount":0,"MaxValue":"2022-01-01T11:11:11.011011Z","MinValue":"2022-01-01T01:01:01.001001Z"}]}]}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
+}
 
-	cmd.URI = "testdata/reinterpret-pointer.parquet"
-	stdout, stderr = captureStdoutStderr(func() {
+func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: false,
+		CommonOption: CommonOption{
+			URI: "testdata/reinterpret-pointer.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
 		`{"NumRowGroups":1,"RowGroups":[{"NumRows":12,"TotalByteSize":2219,"Columns":[{"PathInSchema":["V1"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":258,"UncompressedSize":250,"NumValues":12,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V2"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":357,"UncompressedSize":358,"NumValues":12,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V3"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":424,"UncompressedSize":466,"NumValues":12,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V4"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":221,"UncompressedSize":213,"NumValues":12,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V5"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":425,"UncompressedSize":466,"NumValues":12,"NullCount":1,"MaxValue":125,"MinValue":0},{"PathInSchema":["V6"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":465,"UncompressedSize":466,"NumValues":12,"NullCount":1,"MaxValue":"2022-01-01T11:11:11.011011Z","MinValue":"2022-01-01T01:01:01.001001Z"}]}]}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
+}
 
-	cmd.URI = "testdata/reinterpret-list.parquet"
-	stdout, stderr = captureStdoutStderr(func() {
+func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: false,
+		CommonOption: CommonOption{
+			URI: "testdata/reinterpret-list.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
 		`{"NumRowGroups":1,"RowGroups":[{"NumRows":11,"TotalByteSize":3541,"Columns":[{"PathInSchema":["V1","List","Element"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":338,"UncompressedSize":377,"NumValues":31,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V2","List","Element"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":398,"UncompressedSize":563,"NumValues":31,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V3","List","Element"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":501,"UncompressedSize":747,"NumValues":31,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V4","List","Element"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":298,"UncompressedSize":359,"NumValues":31,"NullCount":1,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V5","List","Element"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":469,"UncompressedSize":747,"NumValues":31,"NullCount":1,"MaxValue":125,"MinValue":25},{"PathInSchema":["V6","List","Element"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":525,"UncompressedSize":748,"NumValues":31,"NullCount":1,"MaxValue":"2022-01-01T11:11:11.011011Z","MinValue":"2022-01-01T01:01:01.001001Z"}]}]}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
+}
 
-	cmd.URI = "testdata/reinterpret-map-key.parquet"
-	stdout, stderr = captureStdoutStderr(func() {
+func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: false,
+		CommonOption: CommonOption{
+			URI: "testdata/reinterpret-map-key.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"NumRowGroups":1,"RowGroups":[{"NumRows":1,"TotalByteSize":1279,"Columns":[{"PathInSchema":["V1","Key_value","Key"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":105,"UncompressedSize":103,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V1","Key_value","Value"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":51,"UncompressedSize":49,"NumValues":11,"NullCount":0,"MaxValue":true,"MinValue":false},{"PathInSchema":["V2","Key_value","Key"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":133,"UncompressedSize":165,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V2","Key_value","Value"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":51,"UncompressedSize":49,"NumValues":11,"NullCount":0,"MaxValue":true,"MinValue":false},{"PathInSchema":["V3","Key_value","Key"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":151,"UncompressedSize":225,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V3","Key_value","Value"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":51,"UncompressedSize":49,"NumValues":11,"NullCount":0,"MaxValue":true,"MinValue":false},{"PathInSchema":["V4","Key_value","Key"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":100,"UncompressedSize":104,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V4","Key_value","Value"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":51,"UncompressedSize":49,"NumValues":11,"NullCount":0,"MaxValue":true,"MinValue":false},{"PathInSchema":["V5","Key_value","Key"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":124,"UncompressedSize":164,"NumValues":6,"NullCount":0,"MaxValue":125,"MinValue":0},{"PathInSchema":["V5","Key_value","Value"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":50,"UncompressedSize":48,"NumValues":6,"NullCount":0,"MaxValue":true,"MinValue":false},{"PathInSchema":["V6","Key_value","Key"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":201,"UncompressedSize":225,"NumValues":11,"NullCount":0,"MaxValue":"2022-01-01T11:11:11.011011Z","MinValue":"2022-01-01T01:01:01.001001Z"},{"PathInSchema":["V6","Key_value","Value"],"Type":"BOOLEAN","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":51,"UncompressedSize":49,"NumValues":11,"NullCount":0,"MaxValue":true,"MinValue":false}]}]}`+"\n",
+		`{"NumRowGroups":1,"RowGroups":[{"NumRows":1,"TotalByteSize":3201,"Columns":[{"PathInSchema":["V1","Key_value","Key"],"Type":"INT32","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":105,"UncompressedSize":103,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V1","Key_value","Value"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":177,"UncompressedSize":276,"NumValues":11,"NullCount":0,"MaxValue":"INT32-[1.25]","MinValue":"INT32-[-0.25]"},{"PathInSchema":["V2","Key_value","Key"],"Type":"INT64","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":133,"UncompressedSize":165,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V2","Key_value","Value"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":170,"UncompressedSize":276,"NumValues":11,"NullCount":0,"MaxValue":"INT64-[1.25]","MinValue":"INT64-[-0.25]"},{"PathInSchema":["V3","Key_value","Key"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":151,"UncompressedSize":225,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V3","Key_value","Value"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":247,"UncompressedSize":501,"NumValues":11,"NullCount":0,"MaxValue":"FIXED_LEN_BYTE_ARRAY-[1.25]","MinValue":"FIXED_LEN_BYTE_ARRAY-[-0.25]"},{"PathInSchema":["V4","Key_value","Key"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":99,"UncompressedSize":104,"NumValues":11,"NullCount":0,"MaxValue":1.25,"MinValue":-1.25},{"PathInSchema":["V4","Key_value","Value"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":202,"UncompressedSize":351,"NumValues":11,"NullCount":0,"MaxValue":"BYTE_ARRAY-[1.25]","MinValue":"BYTE_ARRAY-[-0.25]"},{"PathInSchema":["V5","Key_value","Key"],"Type":"FIXED_LEN_BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":127,"UncompressedSize":164,"NumValues":6,"NullCount":0,"MaxValue":125,"MinValue":0},{"PathInSchema":["V5","Key_value","Value"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":149,"UncompressedSize":198,"NumValues":6,"NullCount":0,"MaxValue":"INTERVAL-[75]","MinValue":"INTERVAL-[0]"},{"PathInSchema":["V6","Key_value","Key"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":201,"UncompressedSize":225,"NumValues":11,"NullCount":0,"MaxValue":"2022-01-01T11:11:11.011011Z","MinValue":"2022-01-01T01:01:01.001001Z"},{"PathInSchema":["V6","Key_value","Value"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":395,"UncompressedSize":613,"NumValues":11,"NullCount":0,"MaxValue":"INT96-[2022-01-01T11:11:11.011011Z]","MinValue":"INT96-[2022-01-01T01:01:01.001001Z]"}]}]}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
+}
 
-	cmd.URI = "testdata/reinterpret-map-value.parquet"
-	stdout, stderr = captureStdoutStderr(func() {
+func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: false,
+		CommonOption: CommonOption{
+			URI: "testdata/reinterpret-map-value.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
@@ -234,8 +266,17 @@ func Test_MetaCmd_Run_good_reinterpret_fields(t *testing.T) {
 		stdout)
 	assert.Equal(t, "", stderr)
 
-	cmd.URI = "testdata/reinterpret-composite.parquet"
-	stdout, stderr = captureStdoutStderr(func() {
+}
+
+func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: false,
+		CommonOption: CommonOption{
+			URI: "testdata/reinterpret-composite.parquet",
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
