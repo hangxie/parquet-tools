@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/reader"
 )
 
 var (
@@ -58,37 +57,6 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 type schemaNode struct {
 	parquet.SchemaElement
 	Children []*schemaNode `json:"children,omitempty"`
-}
-
-func newSchemaTree(reader *reader.ParquetReader) *schemaNode {
-	schemas := reader.SchemaHandler.SchemaElements
-	stack := []*schemaNode{}
-	root := &schemaNode{
-		SchemaElement: *schemas[0],
-		Children:      []*schemaNode{},
-	}
-	stack = append(stack, root)
-
-	pos := 1
-	for len(stack) > 0 {
-		node := stack[len(stack)-1]
-		if len(node.Children) < int(node.SchemaElement.GetNumChildren()) {
-			childNode := &schemaNode{
-				SchemaElement: *schemas[pos],
-				Children:      []*schemaNode{},
-			}
-			node.Children = append(node.Children, childNode)
-			stack = append(stack, childNode)
-			pos++
-		} else {
-			stack = stack[:len(stack)-1]
-			if len(node.Children) == 0 {
-				node.Children = nil
-			}
-		}
-	}
-
-	return root
 }
 
 func typeStr(se parquet.SchemaElement) string {
