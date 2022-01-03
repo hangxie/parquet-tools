@@ -2,14 +2,10 @@ package cmd
 
 import (
 	"encoding/json"
-	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/types"
 )
 
 func Test_CatCmd_Run_non_existent_file(t *testing.T) {
@@ -292,13 +288,12 @@ func Test_CatCmd_Run_good_empty(t *testing.T) {
 	assert.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_good_reinterpret_decimal_zero(t *testing.T) {
+func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	cmd := &CatCmd{
-		Limit:       1,
 		PageSize:    10,
 		SampleRatio: 1.0,
 		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-fields.parquet",
+			URI: "testdata/reinterpret-scalar.parquet",
 		},
 		Format: "jsonl",
 	}
@@ -307,19 +302,30 @@ func Test_CatCmd_Run_good_reinterpret_decimal_zero(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":[0],"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T00:00:00Z","Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n",
+		strings.Join([]string{
+			`{"V1":-1.25,"V2":-1.25,"V3":-1.25,"V4":-1.25,"V5":125,"V6":"2022-01-01T01:01:01.001001Z"}`,
+			`{"V1":-1,"V2":-1,"V3":-1,"V4":-1,"V5":100,"V6":"2022-01-01T02:02:02.002002Z"}`,
+			`{"V1":-0.75,"V2":-0.75,"V3":-0.75,"V4":-0.75,"V5":75,"V6":"2022-01-01T03:03:03.003003Z"}`,
+			`{"V1":-0.5,"V2":-0.5,"V3":-0.5,"V4":-0.5,"V5":50,"V6":"2022-01-01T04:04:04.004004Z"}`,
+			`{"V1":-0.25,"V2":-0.25,"V3":-0.25,"V4":-0.25,"V5":25,"V6":"2022-01-01T05:05:05.005005Z"}`,
+			`{"V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T06:06:06.006006Z"}`,
+			`{"V1":0.25,"V2":0.25,"V3":0.25,"V4":0.25,"V5":25,"V6":"2022-01-01T07:07:07.007007Z"}`,
+			`{"V1":0.5,"V2":0.5,"V3":0.5,"V4":0.5,"V5":50,"V6":"2022-01-01T08:08:08.008008Z"}`,
+			`{"V1":0.75,"V2":0.75,"V3":0.75,"V4":0.75,"V5":75,"V6":"2022-01-01T09:09:09.009009Z"}`,
+			`{"V1":1,"V2":1,"V3":1,"V4":1,"V5":100,"V6":"2022-01-01T10:10:10.01001Z"}`,
+			`{"V1":1.25,"V2":1.25,"V3":1.25,"V4":1.25,"V5":125,"V6":"2022-01-01T11:11:11.011011Z"}`,
+			``,
+		}, "\n"),
 		stdout)
 	assert.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_good_reinterpret_decimal_fraction(t *testing.T) {
+func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 	cmd := &CatCmd{
-		Skip:        1,
-		Limit:       1,
 		PageSize:    10,
 		SampleRatio: 1.0,
 		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-fields.parquet",
+			URI: "testdata/reinterpret-pointer.parquet",
 		},
 		Format: "jsonl",
 	}
@@ -328,19 +334,31 @@ func Test_CatCmd_Run_good_reinterpret_decimal_fraction(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":[11,5],"V2":0.11,"V3":0.11,"V4":0.11,"V5":11,"V6":"2022-01-01T01:01:01.001001Z","Ptr":0.11,"List":["0.11"],"MapK":{"0.11":"value1"},"MapV":{"value1":"0.11"}}`+"\n",
+		strings.Join([]string{
+			`{"V1":-1.25,"V2":-1.25,"V3":-1.25,"V4":-1.25,"V5":125,"V6":"2022-01-01T01:01:01.001001Z"}`,
+			`{"V1":-1,"V2":-1,"V3":-1,"V4":-1,"V5":100,"V6":"2022-01-01T02:02:02.002002Z"}`,
+			`{"V1":-0.75,"V2":-0.75,"V3":-0.75,"V4":-0.75,"V5":75,"V6":"2022-01-01T03:03:03.003003Z"}`,
+			`{"V1":-0.5,"V2":-0.5,"V3":-0.5,"V4":-0.5,"V5":50,"V6":"2022-01-01T04:04:04.004004Z"}`,
+			`{"V1":-0.25,"V2":-0.25,"V3":-0.25,"V4":-0.25,"V5":25,"V6":"2022-01-01T05:05:05.005005Z"}`,
+			`{"V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T06:06:06.006006Z"}`,
+			`{"V1":0.25,"V2":0.25,"V3":0.25,"V4":0.25,"V5":25,"V6":"2022-01-01T07:07:07.007007Z"}`,
+			`{"V1":0.5,"V2":0.5,"V3":0.5,"V4":0.5,"V5":50,"V6":"2022-01-01T08:08:08.008008Z"}`,
+			`{"V1":0.75,"V2":0.75,"V3":0.75,"V4":0.75,"V5":75,"V6":"2022-01-01T09:09:09.009009Z"}`,
+			`{"V1":1,"V2":1,"V3":1,"V4":1,"V5":100,"V6":"2022-01-01T10:10:10.01001Z"}`,
+			`{"V1":1.25,"V2":1.25,"V3":1.25,"V4":1.25,"V5":125,"V6":"2022-01-01T11:11:11.011011Z"}`,
+			`{"V1":null,"V2":null,"V3":null,"V4":null,"V5":null,"V6":null}`,
+			``,
+		}, "\n"),
 		stdout)
 	assert.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_good_reinterpret_decimal_normal(t *testing.T) {
+func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 	cmd := &CatCmd{
-		Skip:        2,
-		Limit:       1,
 		PageSize:    10,
 		SampleRatio: 1.0,
 		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-fields.parquet",
+			URI: "testdata/reinterpret-list.parquet",
 		},
 		Format: "jsonl",
 	}
@@ -349,19 +367,30 @@ func Test_CatCmd_Run_good_reinterpret_decimal_normal(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":[222,3333,44444],"V2":2.22,"V3":2.22,"V4":2.22,"V5":222,"V6":"2022-01-01T02:02:02.002002Z","Ptr":2.22,"List":["2.22","2.22"],"MapK":{"2.22":"value1","22.22":"value2"},"MapV":{"value1":"2.22","value2":"22.22"}}`+"\n",
+		strings.Join([]string{
+			`{"V1":[-1.25,-1.25,-1.25,-1.25,-1.25],"V2":[-1.25,-1.25,-1.25,-1.25,-1.25],"V3":[-1.25,-1.25,-1.25,-1.25,-1.25],"V4":[-1.25,-1.25,-1.25,-1.25,-1.25],"V5":[125,125,125,125,125],"V6":["2022-01-01T01:01:01.001001Z","2022-01-01T01:01:01.001001Z","2022-01-01T01:01:01.001001Z","2022-01-01T01:01:01.001001Z","2022-01-01T01:01:01.001001Z"]}`,
+			`{"V1":[-1,-1,-1,-1],"V2":[-1,-1,-1,-1],"V3":[-1,-1,-1,-1],"V4":[-1,-1,-1,-1],"V5":[100,100,100,100],"V6":["2022-01-01T02:02:02.002002Z","2022-01-01T02:02:02.002002Z","2022-01-01T02:02:02.002002Z","2022-01-01T02:02:02.002002Z"]}`,
+			`{"V1":[-0.75,-0.75,-0.75],"V2":[-0.75,-0.75,-0.75],"V3":[-0.75,-0.75,-0.75],"V4":[-0.75,-0.75,-0.75],"V5":[75,75,75],"V6":["2022-01-01T03:03:03.003003Z","2022-01-01T03:03:03.003003Z","2022-01-01T03:03:03.003003Z"]}`,
+			`{"V1":[-0.5,-0.5],"V2":[-0.5,-0.5],"V3":[-0.5,-0.5],"V4":[-0.5,-0.5],"V5":[50,50],"V6":["2022-01-01T04:04:04.004004Z","2022-01-01T04:04:04.004004Z"]}`,
+			`{"V1":[-0.25],"V2":[-0.25],"V3":[-0.25],"V4":[-0.25],"V5":[25],"V6":["2022-01-01T05:05:05.005005Z"]}`,
+			`{"V1":[],"V2":[],"V3":[],"V4":[],"V5":[],"V6":[]}`,
+			`{"V1":[0.25],"V2":[0.25],"V3":[0.25],"V4":[0.25],"V5":[25],"V6":["2022-01-01T07:07:07.007007Z"]}`,
+			`{"V1":[0.5,0.5],"V2":[0.5,0.5],"V3":[0.5,0.5],"V4":[0.5,0.5],"V5":[50,50],"V6":["2022-01-01T08:08:08.008008Z","2022-01-01T08:08:08.008008Z"]}`,
+			`{"V1":[0.75,0.75,0.75],"V2":[0.75,0.75,0.75],"V3":[0.75,0.75,0.75],"V4":[0.75,0.75,0.75],"V5":[75,75,75],"V6":["2022-01-01T09:09:09.009009Z","2022-01-01T09:09:09.009009Z","2022-01-01T09:09:09.009009Z"]}`,
+			`{"V1":[1,1,1,1],"V2":[1,1,1,1],"V3":[1,1,1,1],"V4":[1,1,1,1],"V5":[100,100,100,100],"V6":["2022-01-01T10:10:10.01001Z","2022-01-01T10:10:10.01001Z","2022-01-01T10:10:10.01001Z","2022-01-01T10:10:10.01001Z"]}`,
+			`{"V1":[1.25,1.25,1.25,1.25,1.25],"V2":[1.25,1.25,1.25,1.25,1.25],"V3":[1.25,1.25,1.25,1.25,1.25],"V4":[1.25,1.25,1.25,1.25,1.25],"V5":[125,125,125,125,125],"V6":["2022-01-01T11:11:11.011011Z","2022-01-01T11:11:11.011011Z","2022-01-01T11:11:11.011011Z","2022-01-01T11:11:11.011011Z","2022-01-01T11:11:11.011011Z"]}`,
+			``,
+		}, "\n"),
 		stdout)
 	assert.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_good_reinterpret_decimal_negative_zero(t *testing.T) {
+func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	cmd := &CatCmd{
-		Skip:        3,
-		Limit:       1,
 		PageSize:    10,
 		SampleRatio: 1.0,
 		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-fields.parquet",
+			URI: "testdata/reinterpret-map-key.parquet",
 		},
 		Format: "jsonl",
 	}
@@ -370,19 +399,17 @@ func Test_CatCmd_Run_good_reinterpret_decimal_negative_zero(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":[],"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T03:03:03.003003Z","Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n",
+		`{"V1":{"-0.25":"INT32-[-0.25]","-0.50":"INT32-[-0.50]","-0.75":"INT32-[-0.75]","-1.00":"INT32-[-1.00]","-1.25":"INT32-[-1.25]","0.00":"INT32-[0.00]","0.25":"INT32-[0.25]","0.50":"INT32-[0.50]","0.75":"INT32-[0.75]","1.00":"INT32-[1.00]","1.25":"INT32-[1.25]"},"V2":{"-0.25":"INT64-[-0.25]","-0.50":"INT64-[-0.50]","-0.75":"INT64-[-0.75]","-1.00":"INT64-[-1.00]","-1.25":"INT64-[-1.25]","0.00":"INT64-[0.00]","0.25":"INT64-[0.25]","0.50":"INT64-[0.50]","0.75":"INT64-[0.75]","1.00":"INT64-[1.00]","1.25":"INT64-[1.25]"},"V3":{"-0.25":"FIXED_LEN_BYTE_ARRAY-[-0.25]","-0.50":"FIXED_LEN_BYTE_ARRAY-[-0.50]","-0.75":"FIXED_LEN_BYTE_ARRAY-[-0.75]","-1.00":"FIXED_LEN_BYTE_ARRAY-[-1.00]","-1.25":"FIXED_LEN_BYTE_ARRAY-[-1.25]","0.00":"FIXED_LEN_BYTE_ARRAY-[0.00]","0.25":"FIXED_LEN_BYTE_ARRAY-[0.25]","0.50":"FIXED_LEN_BYTE_ARRAY-[0.50]","0.75":"FIXED_LEN_BYTE_ARRAY-[0.75]","1.00":"FIXED_LEN_BYTE_ARRAY-[1.00]","1.25":"FIXED_LEN_BYTE_ARRAY-[1.25]"},"V4":{"-0.25":"BYTE_ARRAY-[-0.25]","-0.50":"BYTE_ARRAY-[-0.50]","-0.75":"BYTE_ARRAY-[-0.75]","-1.00":"BYTE_ARRAY-[-1.00]","-1.25":"BYTE_ARRAY-[-1.25]","0.00":"BYTE_ARRAY-[0.00]","0.25":"BYTE_ARRAY-[0.25]","0.50":"BYTE_ARRAY-[0.50]","0.75":"BYTE_ARRAY-[0.75]","1.00":"BYTE_ARRAY-[1.00]","1.25":"BYTE_ARRAY-[1.25]"},"V5":{"0":"INTERVAL-[0]","100":"INTERVAL-[100]","125":"INTERVAL-[125]","25":"INTERVAL-[25]","50":"INTERVAL-[50]","75":"INTERVAL-[75]"},"V6":{"2022-01-01T01:01:01.001001Z":"INT96-[2022-01-01T01:01:01.001001Z]","2022-01-01T02:02:02.002002Z":"INT96-[2022-01-01T02:02:02.002002Z]","2022-01-01T03:03:03.003003Z":"INT96-[2022-01-01T03:03:03.003003Z]","2022-01-01T04:04:04.004004Z":"INT96-[2022-01-01T04:04:04.004004Z]","2022-01-01T05:05:05.005005Z":"INT96-[2022-01-01T05:05:05.005005Z]","2022-01-01T06:06:06.006006Z":"INT96-[2022-01-01T06:06:06.006006Z]","2022-01-01T07:07:07.007007Z":"INT96-[2022-01-01T07:07:07.007007Z]","2022-01-01T08:08:08.008008Z":"INT96-[2022-01-01T08:08:08.008008Z]","2022-01-01T09:09:09.009009Z":"INT96-[2022-01-01T09:09:09.009009Z]","2022-01-01T10:10:10.01001Z":"INT96-[2022-01-01T10:10:10.01001Z]","2022-01-01T11:11:11.011011Z":"INT96-[2022-01-01T11:11:11.011011Z]"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_good_reinterpret_decimal_negative_fraction(t *testing.T) {
+func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	cmd := &CatCmd{
-		Skip:        4,
-		Limit:       1,
 		PageSize:    10,
 		SampleRatio: 1.0,
 		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-fields.parquet",
+			URI: "testdata/reinterpret-map-value.parquet",
 		},
 		Format: "jsonl",
 	}
@@ -391,81 +418,27 @@ func Test_CatCmd_Run_good_reinterpret_decimal_negative_fraction(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":[-11,-5],"V2":-0.11,"V3":-0.11,"V4":-0.11,"V5":11,"V6":"2022-01-01T04:04:04.004004Z","Ptr":-0.11,"List":["-0.11"],"MapK":{"-0.11":"value1"},"MapV":{"value1":"-0.11"}}`+"\n",
+		`{"V1":{"value-0":-1.25,"value-1":-1,"value-10":1.25,"value-2":-0.75,"value-3":-0.5,"value-4":-0.25,"value-5":0,"value-6":0.25,"value-7":0.5,"value-8":0.75,"value-9":1},"V2":{"value-0":-1.25,"value-1":-1,"value-10":1.25,"value-2":-0.75,"value-3":-0.5,"value-4":-0.25,"value-5":0,"value-6":0.25,"value-7":0.5,"value-8":0.75,"value-9":1},"V3":{"value-0":-1.25,"value-1":-1,"value-10":1.25,"value-2":-0.75,"value-3":-0.5,"value-4":-0.25,"value-5":0,"value-6":0.25,"value-7":0.5,"value-8":0.75,"value-9":1},"V4":{"value-0":-1.25,"value-1":-1,"value-10":1.25,"value-2":-0.75,"value-3":-0.5,"value-4":-0.25,"value-5":0,"value-6":0.25,"value-7":0.5,"value-8":0.75,"value-9":1},"V5":{"value-0":125,"value-1":100,"value-10":125,"value-2":75,"value-3":50,"value-4":25,"value-5":0,"value-6":25,"value-7":50,"value-8":75,"value-9":100},"V6":{"value-0":"2022-01-01T01:01:01.001001Z","value-1":"2022-01-01T02:02:02.002002Z","value-10":"2022-01-01T11:11:11.011011Z","value-2":"2022-01-01T03:03:03.003003Z","value-3":"2022-01-01T04:04:04.004004Z","value-4":"2022-01-01T05:05:05.005005Z","value-5":"2022-01-01T06:06:06.006006Z","value-6":"2022-01-01T07:07:07.007007Z","value-7":"2022-01-01T08:08:08.008008Z","value-8":"2022-01-01T09:09:09.009009Z","value-9":"2022-01-01T10:10:10.01001Z"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_good_reinterpret_decimal_negative_normal(t *testing.T) {
-	cmd := &CatCmd{
-		Skip:        5,
-		Limit:       1,
-		PageSize:    10,
-		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-fields.parquet",
-		},
-		Format: "jsonl",
-	}
+func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
+	// TODO composite is yet to be implemented
+	/*
+		cmd := &CatCmd{
+			PageSize:    10,
+			SampleRatio: 1.0,
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-composite.parquet",
+			},
+			Format: "jsonl",
+		}
 
-	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
-	})
-	assert.Equal(t,
-		`{"V1":[-222,-3333,-44444],"V2":-2.22,"V3":-2.22,"V4":-2.22,"V5":222,"V6":"2022-01-01T05:05:05.005005Z","Ptr":-2.22,"List":["-2.22","-2.22"],"MapK":{"-2.22":"value1","-22.22":"value2"},"MapV":{"value1":"-2.22","value2":"-22.22"}}`+"\n",
-		stdout)
-	assert.Equal(t, "", stderr)
-}
-
-func Test_cat_reformatStringDecimalValue_good_decimal(t *testing.T) {
-	fieldAttr := ReinterpretField{
-		parquetType:   parquet.Type_BYTE_ARRAY,
-		convertedType: parquet.ConvertedType_DECIMAL,
-		scale:         2,
-		precision:     10,
-	}
-
-	decimalValue := types.StrIntToBinary("-011", "BigEndian", 0, true)
-	reformatStringValue(fieldAttr, reflect.ValueOf(&decimalValue).Elem())
-	assert.Equal(t, "-0.11", decimalValue)
-
-	decimalPtr := new(string)
-	*decimalPtr = types.StrIntToBinary("222", "BigEndian", 0, true)
-	reformatStringValue(fieldAttr, reflect.ValueOf(&decimalPtr).Elem())
-	assert.Equal(t, "2.22", *decimalPtr)
-
-	var nilPtr *string
-	reformatStringValue(fieldAttr, reflect.ValueOf(&nilPtr).Elem())
-	assert.Nil(t, nilPtr)
-}
-
-func Test_cat_reformatStringDecimalValue_good_interval(t *testing.T) {
-	fieldAttr := ReinterpretField{
-		parquetType:   parquet.Type_BYTE_ARRAY,
-		convertedType: parquet.ConvertedType_INTERVAL,
-		scale:         0,
-		precision:     10,
-	}
-
-	intervalValue := types.StrIntToBinary("54321", "LittleEndian", 10, false)
-	assert.NotEqual(t, "54321", intervalValue)
-
-	reformatStringValue(fieldAttr, reflect.ValueOf(&intervalValue).Elem())
-	assert.Equal(t, "54321", intervalValue)
-}
-
-func Test_cat_reformatStringDecimalValue_good_int96(t *testing.T) {
-	fieldAttr := ReinterpretField{
-		parquetType:   parquet.Type_INT96,
-		convertedType: parquet.ConvertedType_TIMESTAMP_MICROS,
-		scale:         0,
-		precision:     0,
-	}
-
-	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
-	int96Value := types.TimeToINT96(timeValue)
-	assert.NotEqual(t, "2022-01-01T00:00:00Z", int96Value)
-
-	reformatStringValue(fieldAttr, reflect.ValueOf(&int96Value).Elem())
-	assert.Equal(t, "2022-01-01T00:00:00Z", int96Value)
+		stdout, stderr := captureStdoutStderr(func() {
+			assert.Nil(t, cmd.Run(&Context{}))
+		})
+		assert.Equal(t, "TBD", stdout)
+		assert.Equal(t, "", stderr)
+	*/
 }
