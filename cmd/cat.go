@@ -156,7 +156,16 @@ func reformatNestedString(value reflect.Value, locator []string, attr Reinterpre
 		iter := v.MapRange()
 		for iter.Next() {
 			if locator[1] == "Key" {
-				// TODO handle DECIMAL as map key
+				key := iter.Key()
+				value := iter.Value()
+
+				// delete old key
+				v.SetMapIndex(key, reflect.Value{})
+
+				newKey := reflect.New(key.Type()).Elem()
+				newKey.Set(key)
+				reformatNestedString(newKey, locator[2:], attr)
+				v.SetMapIndex(newKey, value)
 			} else {
 				newValue := reflect.New(iter.Value().Type()).Elem()
 				newValue.Set(iter.Value())

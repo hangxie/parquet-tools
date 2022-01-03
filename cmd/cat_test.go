@@ -307,7 +307,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_zero(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T00:00:00Z","Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n",
+		`{"V1":[0],"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T00:00:00Z","Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
@@ -328,7 +328,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_fraction(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":0.11,"V2":0.11,"V3":0.11,"V4":0.11,"V5":11,"V6":"2022-01-01T01:01:01.001001Z","Ptr":0.11,"List":["0.11"],"MapK":{"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000b":"value1"},"MapV":{"value1":"0.11"}}`+"\n",
+		`{"V1":[11,5],"V2":0.11,"V3":0.11,"V4":0.11,"V5":11,"V6":"2022-01-01T01:01:01.001001Z","Ptr":0.11,"List":["0.11"],"MapK":{"0.11":"value1"},"MapV":{"value1":"0.11"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
@@ -349,7 +349,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_normal(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":2.22,"V2":2.22,"V3":2.22,"V4":2.22,"V5":222,"V6":"2022-01-01T02:02:02.002002Z","Ptr":2.22,"List":["2.22","2.22"],"MapK":{"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd":"value2"},"MapV":{"value1":"2.22","value2":"2.22"}}`+"\n",
+		`{"V1":[222,3333,44444],"V2":2.22,"V3":2.22,"V4":2.22,"V5":222,"V6":"2022-01-01T02:02:02.002002Z","Ptr":2.22,"List":["2.22","2.22"],"MapK":{"2.22":"value1","22.22":"value2"},"MapV":{"value1":"2.22","value2":"22.22"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
@@ -370,7 +370,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_negative_zero(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T03:03:03.003003Z","Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n",
+		`{"V1":[],"V2":0,"V3":0,"V4":0,"V5":0,"V6":"2022-01-01T03:03:03.003003Z","Ptr":null,"List":[],"MapK":{},"MapV":{}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
@@ -391,7 +391,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_negative_fraction(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":-0.11,"V2":-0.11,"V3":-0.11,"V4":-0.11,"V5":11,"V6":"2022-01-01T04:04:04.004004Z","Ptr":-0.11,"List":["-0.11"],"MapK":{"\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd":"value1"},"MapV":{"value1":"-0.11"}}`+"\n",
+		`{"V1":[-11,-5],"V2":-0.11,"V3":-0.11,"V4":-0.11,"V5":11,"V6":"2022-01-01T04:04:04.004004Z","Ptr":-0.11,"List":["-0.11"],"MapK":{"-0.11":"value1"},"MapV":{"value1":"-0.11"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
@@ -412,7 +412,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_negative_normal(t *testing.T) {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
 	assert.Equal(t,
-		`{"V1":-2.22,"V2":-2.22,"V3":-2.22,"V4":-2.22,"V5":222,"V6":"2022-01-01T05:05:05.005005Z","Ptr":-2.22,"List":["-2.22","-2.22"],"MapK":{"\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\"":"value2"},"MapV":{"value1":"-2.22","value2":"-2.22"}}`+"\n",
+		`{"V1":[-222,-3333,-44444],"V2":-2.22,"V3":-2.22,"V4":-2.22,"V5":222,"V6":"2022-01-01T05:05:05.005005Z","Ptr":-2.22,"List":["-2.22","-2.22"],"MapK":{"-2.22":"value1","-22.22":"value2"},"MapV":{"value1":"-2.22","value2":"-22.22"}}`+"\n",
 		stdout)
 	assert.Equal(t, "", stderr)
 }
