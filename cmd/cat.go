@@ -97,7 +97,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 			tmp.Set(rowValue.Elem())
 			for k, v := range reinterpretFields {
 				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
-					encodeNestedBinaryString(tmp, strings.Split(k, "."), v)
+					encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
 				}
 			}
 			rowValue.Set(tmp)
@@ -109,7 +109,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 			if err == nil {
 				if err := json.Unmarshal(buf, &iface); err == nil {
 					for k, v := range reinterpretFields {
-						reinterpretNestedFields(&iface, strings.Split(k, "."), v)
+						reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
 					}
 					if newBuf, err := json.Marshal(iface); err == nil {
 						buf = newBuf
@@ -173,7 +173,6 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr Reinte
 			}
 		}
 		value.SetString(base64.StdEncoding.EncodeToString(buf))
-		return
 	}
 }
 
