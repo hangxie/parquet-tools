@@ -261,10 +261,6 @@ func getReinterpretFields(rootPath string, schemaRoot *schemaNode, noInterimLaye
 	reinterpretFields := make(map[string]ReinterpretField)
 	for _, child := range schemaRoot.Children {
 		currentPath := rootPath + "." + child.Name
-		if rootPath == "" {
-			currentPath = child.Name
-		}
-
 		if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
 			// STRUCT
 			for k, v := range getReinterpretFields(currentPath, child, noInterimLayer) {
@@ -289,26 +285,17 @@ func getReinterpretFields(rootPath string, schemaRoot *schemaNode, noInterimLaye
 				if noInterimLayer {
 					child = child.Children[0]
 				}
-				for k, v := range getReinterpretFields(currentPath, child, noInterimLayer) {
-					reinterpretFields[k] = v
-				}
+				fallthrough
 			case parquet.ConvertedType_MAP_KEY_VALUE:
 				for k, v := range getReinterpretFields(currentPath, child, noInterimLayer) {
 					reinterpretFields[k] = v
 				}
-			case parquet.ConvertedType_DECIMAL:
+			case parquet.ConvertedType_DECIMAL, parquet.ConvertedType_INTERVAL:
 				reinterpretFields[currentPath] = ReinterpretField{
 					parquetType:   *child.Type,
-					convertedType: parquet.ConvertedType_DECIMAL,
+					convertedType: *child.ConvertedType,
 					precision:     int(*child.Precision),
 					scale:         int(*child.Scale),
-				}
-			case parquet.ConvertedType_INTERVAL:
-				reinterpretFields[currentPath] = ReinterpretField{
-					parquetType:   *child.Type,
-					convertedType: parquet.ConvertedType_INTERVAL,
-					precision:     0,
-					scale:         0,
 				}
 			}
 		}

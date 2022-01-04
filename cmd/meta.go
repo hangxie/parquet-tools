@@ -88,7 +88,7 @@ func (c *MetaCmd) Run(ctx *Context) error {
 				continue
 			}
 
-			field, found := reinterpretFields[strings.Join(columns[colIndex].PathInSchema, ".")]
+			field, found := reinterpretFields["."+strings.Join(columns[colIndex].PathInSchema, ".")]
 			if !found {
 				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
 				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)

@@ -51,7 +51,7 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 	return nil
 }
 
-// Codes below are copied from parquet-go with refactor:
+// Codes below copied idea from:
 // https://github.com/xitongsys/parquet-go/blob/master/tool/parquet-tools/schematool/schematool.go
 
 type schemaNode struct {
@@ -109,45 +109,45 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 	repetitionType := repetitionTyeStr(s.SchemaElement)
 
 	if s.Type == nil && s.ConvertedType == nil {
+		// STRUCT
 		ret.Tag = fmt.Sprintf("name=%s, repetitiontype=%s", s.Name, repetitionType)
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
-		// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
-		// expected output is MAP->(Key, Value)
-		ret.Tag = fmt.Sprintf("name=%s, type=MAP, repetitiontype=%s", s.Name, repetitionType)
-		s.Children = s.Children[0].Children[0:2]
-		s.Children[0].Name = "Key"
-		s.Children[1].Name = "Value"
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
-		// LIST has schema structure of LIST->List->Field1
-		// expected output is LIST->Element
-		ret.Tag = fmt.Sprintf("name=%s, type=LIST, repetitiontype=%s", s.Name, repetitionType)
-		s.Children = s.Children[0].Children[:1]
-		s.Children[0].Name = "Element"
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_DECIMAL {
-		if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s",
-				s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionType)
-		} else {
-			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s",
-				s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), repetitionType)
+	} else if s.ConvertedType != nil {
+		switch *s.ConvertedType {
+		case parquet.ConvertedType_LIST:
+			// LIST has schema structure of LIST->List->Field1
+			// expected output is LIST->Element
+			ret.Tag = fmt.Sprintf("name=%s, type=LIST, repetitiontype=%s", s.Name, repetitionType)
+			s.Children = s.Children[0].Children[:1]
+			s.Children[0].Name = "Element"
+		case parquet.ConvertedType_MAP:
+			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
+			// expected output is MAP->(Key, Value)
+			ret.Tag = fmt.Sprintf("name=%s, type=MAP, repetitiontype=%s", s.Name, repetitionType)
+			s.Children = s.Children[0].Children[0:2]
+			s.Children[0].Name = "Key"
+			s.Children[1].Name = "Value"
+		case parquet.ConvertedType_DECIMAL:
+			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+				ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s",
+					s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionType)
+			} else {
+				ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s",
+					s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), repetitionType)
+			}
+		default:
+			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, repetitiontype=%s",
+				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionType)
 		}
 	} else if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
 		ret.Tag = fmt.Sprintf("name=%s, type=%s, length=%d, repetitiontype=%s",
 			s.Name, s.Type.String(), s.GetTypeLength(), repetitionType)
-	} else if s.ConvertedType != nil {
-		ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, repetitiontype=%s",
-			s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionType)
 	} else {
 		ret.Tag = fmt.Sprintf("name=%s, type=%s, repetitiontype=%s", s.Name, typeStr(s.SchemaElement), repetitionType)
 	}
 
-	if len(s.Children) == 0 {
-		ret.Fields = nil
-	} else {
-		ret.Fields = make([]*jsonSchemaNode, len(s.Children))
-		for index, child := range s.Children {
-			ret.Fields[index] = child.jsonSchema()
-		}
+	ret.Fields = make([]*jsonSchemaNode, len(s.Children))
+	for index, child := range s.Children {
+		ret.Fields[index] = child.jsonSchema()
 	}
 
 	return ret
@@ -191,51 +191,39 @@ func (s *schemaNode) goStruct(withName bool) string {
 }
 
 func (s *schemaNode) getStructTags() string {
-	repetitionStr := "REQUIRED"
-	if s.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
-		repetitionStr = "OPTIONAL"
-	} else if s.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
-		repetitionStr = "REPEATED"
-	}
-
+	repetitionStr := repetitionTyeStr(s.SchemaElement)
 	if s.Type == nil && s.ConvertedType == nil {
 		// STRUCT
 		return fmt.Sprintf("`parquet:\"name=%s, repetitiontype=%s\"`", s.Name, repetitionStr)
 	}
 
-	if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
-		// MAP
-		return fmt.Sprintf("`parquet:\"name=%s, type=MAP, repetitiontype=%s, keytype=%s, valuetype=%s\"`",
-			s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement), typeStr(s.Children[0].Children[1].SchemaElement))
-	}
+	if s.ConvertedType != nil {
+		switch *s.ConvertedType {
+		case parquet.ConvertedType_LIST:
+			return fmt.Sprintf("`parquet:\"name=%s, type=LIST, repetitiontype=%s, valuetype=%s\"`",
+				s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement))
+		case parquet.ConvertedType_MAP:
+			return fmt.Sprintf("`parquet:\"name=%s, type=MAP, repetitiontype=%s, keytype=%s, valuetype=%s\"`",
+				s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement), typeStr(s.Children[0].Children[1].SchemaElement))
+		case parquet.ConvertedType_DECIMAL:
+			// DECIMAL with FIXED_LEN_BYTE_ARRAY
+			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+				return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s\"`",
+					s.Name, s.Type, s.ConvertedType, s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionStr)
+			}
+			// DECIMAL with BYTE_ARRAY, INT32, INT63
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s\"`",
+				s.Name, s.Type, s.Type, s.GetScale(), s.GetPrecision(), repetitionStr)
+		default:
+			// with type and converted type
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, repetitiontype=%s\"`",
+				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
 
-	if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
-		// LIST
-		return fmt.Sprintf("`parquet:\"name=%s, type=LIST, repetitiontype=%s, valuetype=%s\"`",
-			s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement))
-	}
-
-	if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
-		// plain FIXED_LEN_BYTE_ARRAY
+		}
+	} else if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+		// plain FIXED_LEN_BYTE_ARRAY without converted type
 		return fmt.Sprintf("`parquet:\"name=%s, type=%s, length=%d, repetitiontype=%s\"`",
 			s.Name, s.Type, s.GetTypeLength(), repetitionStr)
-	}
-
-	if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_DECIMAL {
-		// DECIMAL with FIXED_LEN_BYTE_ARRAY
-		if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s\"`",
-				s.Name, s.Type, s.ConvertedType, s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionStr)
-		}
-		// DECIMAL
-		return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s\"`",
-			s.Name, s.Type, s.Type, s.GetScale(), s.GetPrecision(), repetitionStr)
-	}
-
-	if s.ConvertedType != nil {
-		// with type and converted type
-		return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, repetitiontype=%s\"`",
-			s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
 	}
 
 	// with type only
