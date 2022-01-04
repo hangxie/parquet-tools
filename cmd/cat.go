@@ -92,7 +92,6 @@ func (c *CatCmd) Run(ctx *Context) error {
 				fmt.Print(delimiter[c.Format].line)
 			}
 
-			// convert binary DECIMAL to human readable string
 			rowValue := reflect.ValueOf(&row).Elem()
 			tmp := reflect.New(rowValue.Elem().Type()).Elem()
 			tmp.Set(rowValue.Elem())
@@ -103,21 +102,19 @@ func (c *CatCmd) Run(ctx *Context) error {
 			}
 			rowValue.Set(tmp)
 
-			// convert to strict struct type to interface so we can change the value for formatting
+			// convert to struct type to map of interface so we can change the value for formatting,
+			// fail back to original data for any kind of errors
 			var iface interface{}
-			if buf, err := json.Marshal(row); err != nil {
-				return fmt.Errorf("failed to convert value (encoding): %s", err.Error())
-			} else if err := json.Unmarshal(buf, &iface); err != nil {
-				return fmt.Errorf("failed to convert value (decoding): %s", err.Error())
-			}
-			for k, v := range reinterpretFields {
-				if err := reinterpretNestedFields(&iface, strings.Split(k, "."), v); err != nil {
-					return fmt.Errorf("failed to reinterpret fields [%s]: %s", k, err.Error())
+			buf, err := json.Marshal(row)
+			if err == nil {
+				if err := json.Unmarshal(buf, &iface); err == nil {
+					for k, v := range reinterpretFields {
+						reinterpretNestedFields(&iface, strings.Split(k, "."), v)
+					}
+					if newBuf, err := json.Marshal(iface); err == nil {
+						buf = newBuf
+					}
 				}
-			}
-			buf, err := json.Marshal(iface)
-			if err != nil {
-				return fmt.Errorf("failed to output (encoding): %s", err.Error())
 			}
 
 			fmt.Print(string(buf))
@@ -196,102 +193,81 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr Reinte
 	}
 }
 
-func reinterpretNestedFields(iface *interface{}, locator []string, attr ReinterpretField) error {
+func reinterpretNestedFields(iface *interface{}, locator []string, attr ReinterpretField) {
 	if iface == nil || *iface == nil {
-		return nil
+		return
 	}
 	v := reflect.ValueOf(*iface)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-		if len(locator) == 0 {
-			return fmt.Errorf("cannot reinterpret a list")
-		}
-		for i := range (*iface).([]interface{}) {
-			value := (*iface).([]interface{})[i]
-			if err := reinterpretNestedFields(&value, locator[1:], attr); err != nil {
-				return err
+		if len(locator) != 0 {
+			for i := range (*iface).([]interface{}) {
+				value := (*iface).([]interface{})[i]
+				reinterpretNestedFields(&value, locator[1:], attr)
+				(*iface).([]interface{})[i] = value
 			}
-			(*iface).([]interface{})[i] = value
 		}
-		return nil
+		return
 	case reflect.Map:
-		if len(locator) == 0 {
-			return fmt.Errorf("cannot reinterpret a map")
+		if len(locator) != 0 {
+			mapValue := (*iface).(map[string]interface{})
+			switch locator[0] {
+			case "Key":
+				newMapValue := make(map[string]interface{})
+				for k, v := range mapValue {
+					var newKey interface{} = k
+					reinterpretNestedFields(&newKey, locator[1:], attr)
+
+					// INT32/INT64 will be reinterpreted to float, while string DECIMAL and
+					// INTERVAL type will be reinterpreted to string
+					switch val := newKey.(type) {
+					case string:
+						newMapValue[val] = v
+					case float64:
+						format := fmt.Sprintf("%%0.%df", attr.scale)
+						newMapValue[fmt.Sprintf(format, val)] = v
+					}
+				}
+				mapValue = newMapValue
+			case "Value":
+				for k, v := range mapValue {
+					reinterpretNestedFields(&v, locator[1:], attr)
+					mapValue[k] = v
+				}
+			default:
+				scalarValue := mapValue[locator[0]]
+				reinterpretNestedFields(&scalarValue, locator[1:], attr)
+				mapValue[locator[0]] = scalarValue
+			}
+			*iface = mapValue
 		}
-		mapValue := (*iface).(map[string]interface{})
-		if locator[0] == "Key" {
-			newMapValue := make(map[string]interface{})
-			for k, v := range mapValue {
-				var newKey interface{} = k
-				if err := reinterpretNestedFields(&newKey, locator[1:], attr); err != nil {
-					return err
-				}
-				// fmt.Println("DEBUG", k, newKey, attr.convertedType.String(), attr.parquetType.String())
-				switch val := newKey.(type) {
-				case string:
-					newMapValue[val] = v
-				case float64:
-					format := fmt.Sprintf("%%0.%df", attr.scale)
-					newMapValue[fmt.Sprintf(format, val)] = v
-				default:
-					return fmt.Errorf("reinterpret returned invalid type: %s", reflect.TypeOf(newKey))
-				}
-			}
-			mapValue = newMapValue
-		} else if locator[0] == "Value" {
-			for k, v := range mapValue {
-				if err := reinterpretNestedFields(&v, locator[1:], attr); err != nil {
-					return err
-				}
-				mapValue[k] = v
-			}
-		} else {
-			scalarValue := mapValue[locator[0]]
-			if err := reinterpretNestedFields(&scalarValue, locator[1:], attr); err != nil {
-				return err
-			}
-			mapValue[locator[0]] = scalarValue
-		}
-		*iface = mapValue
-		return nil
+		return
 	}
 
-	// scalar type
 	switch attr.parquetType {
 	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
-		if _, ok := (*iface).(string); !ok {
-			return fmt.Errorf("INTERVAL/DECIMAL values need to be string type: %s", reflect.TypeOf(*iface))
-		}
-		encoded, err := base64.StdEncoding.DecodeString((*iface).(string))
-		if err != nil {
-			return fmt.Errorf("[%s] is not base64 encoded: %s", (*iface).(string), err.Error())
-		}
-		*iface, err = strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.precision, attr.scale), 64)
-		if err != nil {
-			return err
+		switch v := (*iface).(type) {
+		case string:
+			if encoded, err := base64.StdEncoding.DecodeString(v); err == nil {
+				if float64Value, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.precision, attr.scale), 64); err == nil {
+					*iface = float64Value
+				}
+			}
 		}
 	case parquet.Type_INT32, parquet.Type_INT64:
-		if v, ok := (*iface).(float64); ok {
+		switch v := (*iface).(type) {
+		case float64:
 			*iface = v / math.Pow10(attr.scale)
-		} else if v, ok := (*iface).(string); ok {
-			if float64Value, err := strconv.ParseFloat(v, 64); err != nil {
-				return fmt.Errorf("failed to parse string [%s] to float64: %s", v, err.Error())
-			} else {
+		case string:
+			if float64Value, err := strconv.ParseFloat(v, 64); err == nil {
 				*iface = float64Value / math.Pow10(attr.scale)
 			}
-		} else {
-			return fmt.Errorf("INT32/INT64 values need to be float64 type: %s", reflect.TypeOf(*iface))
 		}
 	case parquet.Type_INT96:
-		if _, ok := (*iface).(string); !ok {
-			return fmt.Errorf("INT96 values need to be string type: %s", reflect.TypeOf(*iface))
+		if _, ok := (*iface).(string); ok {
+			if encoded, err := base64.StdEncoding.DecodeString((*iface).(string)); err == nil {
+				*iface = types.INT96ToTime(string(encoded)).Format(time.RFC3339Nano)
+			}
 		}
-		encoded, err := base64.StdEncoding.DecodeString((*iface).(string))
-		if err != nil {
-			return fmt.Errorf("[%s] is not base64 encoded: %s", strings.Join(locator, "."), err.Error())
-		}
-		*iface = types.INT96ToTime(string(encoded)).Format(time.RFC3339Nano)
 	}
-
-	return nil
 }
