@@ -130,20 +130,40 @@ func (c *CatCmd) Run(ctx *Context) error {
 }
 
 func encodeNestedBinaryString(value reflect.Value, locator []string, attr ReinterpretField) {
-	if !value.IsValid() {
+	// dereference pointer
+	if value.Kind() == reflect.Ptr {
+		if !value.IsNil() {
+			encodeNestedBinaryString(value.Elem(), locator, attr)
+		}
 		return
 	}
 
-	if len(locator) == 0 {
-		if value.Kind() == reflect.Ptr {
-			if value.IsNil() {
-				return
+	switch value.Kind() {
+	case reflect.Array, reflect.Slice:
+		for elementIndex := 0; elementIndex < value.Len(); elementIndex++ {
+			encodeNestedBinaryString(value.Index(elementIndex), locator[1:], attr)
+		}
+	case reflect.Map:
+		for _, key := range value.MapKeys() {
+			switch locator[0] {
+			case "Key":
+				v := value.MapIndex(key)
+				newKey := reflect.New(key.Type()).Elem()
+				newKey.Set(key)
+				encodeNestedBinaryString(newKey, locator[1:], attr)
+				value.SetMapIndex(newKey, v)
+				value.SetMapIndex(key, reflect.Value{})
+			case "Value":
+				v := value.MapIndex(key)
+				newValue := reflect.New(v.Type()).Elem()
+				newValue.Set(v)
+				encodeNestedBinaryString(newValue, locator[1:], attr)
+				value.SetMapIndex(key, newValue)
 			}
-			value = value.Elem()
 		}
-		if !value.IsValid() {
-			return
-		}
+	case reflect.Struct:
+		encodeNestedBinaryString(value.FieldByName(locator[0]), locator[1:], attr)
+	case reflect.String:
 		buf := []byte(value.String())
 		if attr.convertedType == parquet.ConvertedType_INTERVAL {
 			// INTERVAL uses LittleEndian, DECIMAL uses BigEndian
@@ -154,42 +174,6 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr Reinte
 		}
 		value.SetString(base64.StdEncoding.EncodeToString(buf))
 		return
-	}
-
-	if value.Kind() != reflect.Map && value.Kind() != reflect.Array && value.Kind() != reflect.Slice {
-		value = value.FieldByName(locator[0])
-		if value.Kind() == reflect.Ptr && !value.IsNil() {
-			value = value.Elem()
-		}
-		if !value.IsValid() {
-			return
-		}
-	}
-
-	switch value.Kind() {
-	case reflect.Array, reflect.Slice:
-		for elementIndex := 0; elementIndex < value.Len(); elementIndex++ {
-			encodeNestedBinaryString(value.Index(elementIndex), locator[2:], attr)
-		}
-	case reflect.Map:
-		for _, key := range value.MapKeys() {
-			if locator[1] == "Key" {
-				v := value.MapIndex(key)
-				newKey := reflect.New(key.Type()).Elem()
-				newKey.Set(key)
-				encodeNestedBinaryString(newKey, locator[2:], attr)
-				value.SetMapIndex(newKey, v)
-				value.SetMapIndex(key, reflect.Value{})
-			} else if locator[1] == "Value" {
-				v := value.MapIndex(key)
-				newValue := reflect.New(v.Type()).Elem()
-				newValue.Set(v)
-				encodeNestedBinaryString(newValue, locator[2:], attr)
-				value.SetMapIndex(key, newValue)
-			}
-		}
-	default:
-		encodeNestedBinaryString(value, locator[1:], attr)
 	}
 }
 
@@ -235,6 +219,7 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr Reinterp
 					mapValue[k] = v
 				}
 			default:
+				// this is a map serialized from struct, so keep dig into sub-fields
 				scalarValue := mapValue[locator[0]]
 				reinterpretNestedFields(&scalarValue, locator[1:], attr)
 				mapValue[locator[0]] = scalarValue
