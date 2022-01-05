@@ -70,11 +70,10 @@ func typeStr(se parquet.SchemaElement) string {
 }
 
 func repetitionTyeStr(se parquet.SchemaElement) string {
-	repetitionType := "REQUIRED"
-	if se.RepetitionType != nil {
-		repetitionType = se.RepetitionType.String()
+	if se.RepetitionType == nil {
+		return "REQUIRED"
 	}
-	return repetitionType
+	return se.RepetitionType.String()
 }
 
 var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
@@ -89,12 +88,10 @@ var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
 }
 
 func goTypeStr(se parquet.SchemaElement) string {
-	if se.Type == nil {
-		return ""
-	}
-
-	if typeStr, ok := goTypeStrMap[*se.Type]; ok {
-		return typeStr
+	if se.Type != nil {
+		if typeStr, ok := goTypeStrMap[*se.Type]; ok {
+			return typeStr
+		}
 	}
 	return ""
 }
@@ -155,37 +152,32 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 
 func (s *schemaNode) goStruct(withName bool) string {
 	res := ""
-	if withName {
-		res = strings.Title(s.GetName())
-	}
-
-	repetitionStr := ""
 	if s.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
-		repetitionStr = "*"
+		res = "*"
 	} else if s.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
-		repetitionStr = "[]"
-	}
-	if withName {
-		repetitionStr = " " + repetitionStr
+		res = "[]"
 	}
 
 	if s.Type == nil && s.ConvertedType == nil {
-		res += repetitionStr + "struct {\n"
+		res += "struct {\n"
 		for _, cNode := range s.Children {
 			res += cNode.goStruct(true) + "\n"
 		}
 		res += "}"
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP && s.Children != nil {
-		res += repetitionStr + "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + s.Children[0].Children[1].goStruct(false)
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST && s.Children != nil {
-		cNode := s.Children[0].Children[0]
-		res += repetitionStr + "[]" + cNode.goStruct(false)
+	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST {
+		// Parquet uses LIST -> "List"" -> actual element type
+		// oo struct will be []<actual element type>
+		res += "[]" + s.Children[0].Children[0].goStruct(false)
+	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP {
+		// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
+		// go struct will be map[<key type>]<value type>
+		res += "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + s.Children[0].Children[1].goStruct(false)
 	} else {
-		res += repetitionStr + goTypeStr(s.SchemaElement)
+		res += goTypeStr(s.SchemaElement)
 	}
 
 	if withName {
-		res += " " + s.getStructTags()
+		res = strings.Title(s.GetName()) + " " + res + " " + s.getStructTags()
 	}
 	return res
 }

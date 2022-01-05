@@ -37,7 +37,6 @@ func captureStdoutStderr(f func()) (string, string) {
 	return string(stdout), string(stderr)
 }
 
-// help functions
 func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
 	u := url.URL{
 		Host: "",
@@ -157,42 +156,6 @@ func Test_common_parseURI_good(t *testing.T) {
 	assert.Equal(t, "file", u.Scheme)
 	assert.Equal(t, "", u.Host)
 	assert.Equal(t, "path/to/file", u.Path)
-}
-
-func Test_common_toNumber_bad(t *testing.T) {
-	badValues := []interface{}{
-		string("8"),
-		[]uint{9, 10},
-		nil,
-	}
-
-	for _, iface := range badValues {
-		_, ok := toNumber(interface{}(iface))
-		assert.False(t, ok)
-	}
-}
-
-func Test_common_toNumber_good(t *testing.T) {
-	badValues := []interface{}{
-		uint(1),
-		uint8(2),
-		uint16(3),
-		uint32(4),
-		uint64(5),
-		int(6),
-		int8(7),
-		int16(8),
-		int32(9),
-		int64(10),
-		float32(11),
-		float64(12),
-	}
-
-	for i, iface := range badValues {
-		v, ok := toNumber(interface{}(iface))
-		assert.True(t, ok)
-		assert.Equal(t, float64(i+1), v)
-	}
 }
 
 // newParquetFileReader
@@ -349,20 +312,6 @@ func Test_common_newFileWriter_azblob_no_permission(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
-// newParquetFileWriter
-func Test_common_newParquetFileWriter_invalid_uri(t *testing.T) {
-	_, err := newParquetFileWriter("://uri", &struct{}{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to parse file location")
-}
-
-func Test_common_newParquetFileWriter_good(t *testing.T) {
-	pw, err := newParquetFileWriter(os.TempDir()+"/parquet-writer.parquet", &struct{}{})
-	assert.NotNil(t, pw)
-	assert.Nil(t, err)
-	pw.PFile.Close()
-}
-
 // newCSVWriter
 func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
 	_, err := newCSVWriter("://uri", []string{"name=Id, type=INT64"})
@@ -393,13 +342,13 @@ func Test_common_getAllDecimalFields_good(t *testing.T) {
 	// this is currently covered by high level test cases but eventually needs unit test cases
 }
 
-func Test_cat_decimalToFloat_nil(t *testing.T) {
+func Test_common_decimalToFloat_nil(t *testing.T) {
 	f64, err := decimalToFloat(ReinterpretField{}, nil)
 	assert.Nil(t, err)
 	assert.Nil(t, f64)
 }
 
-func Test_cat_decimalToFloat_int32(t *testing.T) {
+func Test_common_decimalToFloat_int32(t *testing.T) {
 	fieldAttr := ReinterpretField{
 		scale: 2,
 	}
@@ -429,7 +378,7 @@ func Test_cat_decimalToFloat_int32(t *testing.T) {
 	assert.Equal(t, -2.22, *f64)
 }
 
-func Test_cat_decimalToFloat_int64(t *testing.T) {
+func Test_common_decimalToFloat_int64(t *testing.T) {
 	fieldAttr := ReinterpretField{
 		scale: 2,
 	}
@@ -459,7 +408,7 @@ func Test_cat_decimalToFloat_int64(t *testing.T) {
 	assert.Equal(t, -2.22, *f64)
 }
 
-func Test_cat_decimalToFloat_string(t *testing.T) {
+func Test_common_decimalToFloat_string(t *testing.T) {
 	fieldAttr := ReinterpretField{
 		scale:     2,
 		precision: 10,
@@ -491,7 +440,7 @@ func Test_cat_decimalToFloat_string(t *testing.T) {
 	assert.Equal(t, -2.22, *f64)
 }
 
-func Test_cat_decimalToFloat_invalid_type(t *testing.T) {
+func Test_common_decimalToFloat_invalid_type(t *testing.T) {
 	fieldAttr := ReinterpretField{}
 
 	f64, err := decimalToFloat(fieldAttr, int(0))
