@@ -45,7 +45,7 @@ type parquetMeta struct {
 
 // Run does actual meta job
 func (c *MetaCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.URI)
+	reader, err := newParquetFileReader(c.CommonOption)
 	if err != nil {
 		return err
 	}

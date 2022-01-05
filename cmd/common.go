@@ -30,7 +30,10 @@ import (
 
 // CommonOption represents common options across most commands
 type CommonOption struct {
-	URI string `arg:"" predictor:"file" help:"URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details."`
+	URI                    string            `arg:"" predictor:"file" help:"URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details."`
+	HttpMultipleConnection bool              `help:"(HTTP endpoint only) use multiple HTTP connection." default:"false"`
+	HttpIgnoreTLSError     bool              `help:"(HTTP endpoint only) ignore TLS error." default:"false"`
+	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP endpoint only) extra HTTP headers." default:""`
 }
 
 // Context represents command's context
@@ -80,8 +83,8 @@ func getBucketRegion(bucket string) (string, error) {
 	return region, nil
 }
 
-func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
-	u, err := parseURI(uri)
+func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
+	u, err := parseURI(option.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +99,7 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 
 		fileReader, err = s3.NewS3FileReader(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), &aws.Config{Region: aws.String(region)})
 		if err != nil {
-			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
+			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
 		}
 	case "file":
 		fileReader, err = local.NewLocalFileReader(u.Path)
@@ -106,7 +109,7 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 	case "gs":
 		fileReader, err = gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 		if err != nil {
-			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
+			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
 		}
 	case "wasbs":
 		azURL, cred, err := azureAccessDetail(*u)
@@ -116,7 +119,12 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 
 		fileReader, err = pqtazblob.NewAzBlobFileReader(context.Background(), azURL, cred, pqtazblob.ReaderOptions{})
 		if err != nil {
-			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", uri, err.Error())
+			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
+		}
+	case "http", "https":
+		fileReader, err = NewHttpReader(option.URI, option.HttpMultipleConnection, option.HttpIgnoreTLSError, option.HttpExtraHeaders)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
 		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
@@ -125,8 +133,8 @@ func newParquetFileReader(uri string) (*reader.ParquetReader, error) {
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
 
-func newFileWriter(uri string) (source.ParquetFile, error) {
-	u, err := parseURI(uri)
+func newFileWriter(option CommonOption) (source.ParquetFile, error) {
+	u, err := parseURI(option.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +149,7 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 
 		fileWriter, err = s3.NewS3FileWriter(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), "bucket-owner-full-control", nil, &aws.Config{Region: aws.String(region)})
 		if err != nil {
-			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", uri, err.Error())
+			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
 		}
 	case "file":
 		fileWriter, err = local.NewLocalFileWriter(u.Path)
@@ -151,7 +159,7 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 	case "gs":
 		fileWriter, err = gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 		if err != nil {
-			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", uri, err.Error())
+			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
 		}
 	case "wasbs":
 		azURL, cred, err := azureAccessDetail(*u)
@@ -161,8 +169,10 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 
 		fileWriter, err = pqtazblob.NewAzBlobFileWriter(context.Background(), azURL, cred, pqtazblob.WriterOptions{})
 		if err != nil {
-			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", uri, err.Error())
+			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 		}
+	case "http", "https":
+		return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}
@@ -170,8 +180,8 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 	return fileWriter, nil
 }
 
-func newCSVWriter(uri string, schema []string) (*writer.CSVWriter, error) {
-	fileWriter, err := newFileWriter(uri)
+func newCSVWriter(option CommonOption, schema []string) (*writer.CSVWriter, error) {
+	fileWriter, err := newFileWriter(option)
 	if err != nil {
 		return nil, err
 	}
@@ -179,8 +189,8 @@ func newCSVWriter(uri string, schema []string) (*writer.CSVWriter, error) {
 	return writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
 }
 
-func newJSONWriter(uri, schema string) (*writer.JSONWriter, error) {
-	fileWriter, err := newFileWriter(uri)
+func newJSONWriter(option CommonOption, schema string) (*writer.JSONWriter, error) {
+	fileWriter, err := newFileWriter(option)
 	if err != nil {
 		return nil, err
 	}

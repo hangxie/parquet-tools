@@ -17,6 +17,7 @@
       - [S3 Bucket](#s3-bucket)
       - [GCS Bucket](#gcs-bucket)
       - [Azure Storage Container](#azure-storage-container)
+      - [HTTP Endpoint](#http-endpoint)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
       - [Skip Rows](#skip-rows)
@@ -155,6 +156,9 @@ Most commands can output JSON format result which can be processed by utilities 
 * Google Cloud Storage (GCS) bucket
 * Azure Storage Container
 
+`parquet-tools` can read parquet files from these locations:
+* HTTP/HTTPS URL
+
 you need to have proper permission on the file you are going to process.
 
 #### File System
@@ -230,6 +234,26 @@ $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://public@pandemicdatal
 ```
 
 Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
+
+#### HTTP Endpoint
+
+`parquet-tools` supoorts URI with `http` or `https` scheme, the remote server needs to support [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range), particularly with unit of `bytes`.
+
+HTTP endpoint does not support write operation so it cannot be used as destination of `import` command.
+
+These options can be used along with HTTP endpoints:
+* `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depends on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
+* `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to use them for authentication/authorization that is required by remote server.
+* `--http-ignore-tls-error` will igore TLS errors.
+
+```
+$ parquet-tools row-count https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+3029995
+$ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
+4632041101
+```
+
+Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessary data from remote server through [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range).
 
 ### cat Command
 
