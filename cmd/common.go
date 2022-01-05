@@ -170,14 +170,6 @@ func newFileWriter(uri string) (source.ParquetFile, error) {
 	return fileWriter, nil
 }
 
-func newParquetFileWriter(uri string, schema interface{}) (*writer.ParquetWriter, error) {
-	fileWriter, err := newFileWriter(uri)
-	if err != nil {
-		return nil, err
-	}
-	return writer.NewParquetWriter(fileWriter, schema, int64(runtime.NumCPU()))
-}
-
 func newCSVWriter(uri string, schema []string) (*writer.CSVWriter, error) {
 	fileWriter, err := newFileWriter(uri)
 	if err != nil {
@@ -194,46 +186,6 @@ func newJSONWriter(uri, schema string) (*writer.JSONWriter, error) {
 	}
 
 	return writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
-}
-
-func toNumber(iface interface{}) (float64, bool) {
-	if v, ok := iface.(int); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(int8); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(int16); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(int32); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(int64); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(uint); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(uint8); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(uint16); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(uint32); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(uint64); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(float32); ok {
-		return float64(v), true
-	}
-	if v, ok := iface.(float64); ok {
-		return v, true
-	}
-	return 0.0, false
 }
 
 func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
@@ -311,18 +263,18 @@ func decimalToFloat(fieldAttr ReinterpretField, iface interface{}) (*float64, er
 
 	switch value := iface.(type) {
 	case int64:
-		float64Value := float64(value) / math.Pow10(fieldAttr.scale)
-		return &float64Value, nil
+		f64 := float64(value) / math.Pow10(fieldAttr.scale)
+		return &f64, nil
 	case int32:
-		float64Value := float64(value) / math.Pow10(fieldAttr.scale)
-		return &float64Value, nil
+		f64 := float64(value) / math.Pow10(fieldAttr.scale)
+		return &f64, nil
 	case string:
 		buf := stringToBytes(fieldAttr, value)
-		float64Value, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale), 64)
+		f64, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.precision, fieldAttr.scale), 64)
 		if err != nil {
 			return nil, err
 		}
-		return &float64Value, nil
+		return &f64, nil
 	}
 	return nil, fmt.Errorf("unknown type: %s", reflect.TypeOf(iface))
 }

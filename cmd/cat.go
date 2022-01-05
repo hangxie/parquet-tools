@@ -233,8 +233,8 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr Reinterp
 		switch v := (*iface).(type) {
 		case string:
 			if encoded, err := base64.StdEncoding.DecodeString(v); err == nil {
-				if float64Value, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.precision, attr.scale), 64); err == nil {
-					*iface = float64Value
+				if f64, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.precision, attr.scale), 64); err == nil {
+					*iface = f64
 				}
 			}
 		}
@@ -243,8 +243,8 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr Reinterp
 		case float64:
 			*iface = v / math.Pow10(attr.scale)
 		case string:
-			if float64Value, err := strconv.ParseFloat(v, 64); err == nil {
-				*iface = float64Value / math.Pow10(attr.scale)
+			if f64, err := strconv.ParseFloat(v, 64); err == nil {
+				*iface = f64 / math.Pow10(attr.scale)
 			}
 		}
 	case parquet.Type_INT96:
