@@ -52,7 +52,7 @@ func (c *ImportCmd) importCSV() error {
 	defer csvFile.Close()
 	csvReader := csv.NewReader(csvFile)
 
-	parquetWriter, err := newCSVWriter(c.URI, schema)
+	parquetWriter, err := newCSVWriter(c.CommonOption, schema)
 	if err != nil {
 		return fmt.Errorf("failed to create CSV writer: %s", err.Error())
 	}
@@ -100,7 +100,7 @@ func (c *ImportCmd) importJSON() error {
 		return fmt.Errorf("invalid JSON string: %s", string(jsonData))
 	}
 
-	parquetWriter, err := newJSONWriter(c.URI, string(schemaData))
+	parquetWriter, err := newJSONWriter(c.CommonOption, string(schemaData))
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %s", err.Error())
 	}
@@ -138,7 +138,7 @@ func (c *ImportCmd) importJSONL() error {
 	scanner := bufio.NewScanner(jsonlFile)
 	scanner.Split(bufio.ScanLines)
 
-	parquetWriter, err := newJSONWriter(c.URI, string(schemaData))
+	parquetWriter, err := newJSONWriter(c.CommonOption, string(schemaData))
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %s", err.Error())
 	}

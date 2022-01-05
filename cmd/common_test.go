@@ -160,31 +160,31 @@ func Test_common_parseURI_good(t *testing.T) {
 
 // newParquetFileReader
 func Test_common_newParquetFileReader_invalid_uri(t *testing.T) {
-	_, err := newParquetFileReader("://uri")
+	_, err := newParquetFileReader(CommonOption{URI: "://uri"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_common_newParquetFileReader_invalid_uri_scheme(t *testing.T) {
-	_, err := newParquetFileReader("invalid-scheme://something")
+	_, err := newParquetFileReader(CommonOption{URI: "invalid-scheme://something"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unknown location scheme")
 }
 
 func Test_common_newParquetFileReader_local_non_existent_file(t *testing.T) {
-	_, err := newParquetFileReader("file/does/not/exist")
+	_, err := newParquetFileReader(CommonOption{URI: "file/does/not/exist"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "no such file or directory")
 }
 
 func Test_common_newParquetFileReader_local_not_parquet(t *testing.T) {
-	_, err := newParquetFileReader("testdata/not-a-parquet-file")
+	_, err := newParquetFileReader(CommonOption{URI: "testdata/not-a-parquet-file"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "invalid argument")
 }
 
 func Test_common_newParquetFileReader_local_good(t *testing.T) {
-	pr, err := newParquetFileReader("testdata/good.parquet")
+	pr, err := newParquetFileReader(CommonOption{URI: "testdata/good.parquet"})
 	assert.Nil(t, err)
 	assert.NotNil(t, pr)
 	pr.PFile.Close()
@@ -195,7 +195,7 @@ func Test_common_newParquetFileReader_s3_aws_error(t *testing.T) {
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
-	_, err := newParquetFileReader("s3:///path/to/object")
+	_, err := newParquetFileReader(CommonOption{URI: "s3:///path/to/object"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "AWS error:")
 }
@@ -205,7 +205,7 @@ func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
-	_, err := newParquetFileReader("s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet")
+	_, err := newParquetFileReader(CommonOption{URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open S3 object")
 }
@@ -214,7 +214,7 @@ func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
 	// Make sure there is no GCS access
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
-	_, err := newParquetFileReader("gs://cloud-samples-data/bigquery/us-states/us-states.parquet")
+	_, err := newParquetFileReader(CommonOption{URI: "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
@@ -227,7 +227,7 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	t.Logf("dummyKey is [%s]", dummyKey)
 
-	_, err := newParquetFileReader("wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
+	_, err := newParquetFileReader(CommonOption{URI: "wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet"})
 	assert.NotNil(t, err)
 	// This is returned from parquet-go-source, which does not help too much
 	assert.Contains(t, err.Error(), "Server failed to authenticate the request")
@@ -235,32 +235,32 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 
 // newFileWriter
 func Test_common_newFileWriter_invalid_uri(t *testing.T) {
-	_, err := newFileWriter("://uri")
+	_, err := newFileWriter(CommonOption{URI: "://uri"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_common_newFileWriter_invalid_uri_scheme(t *testing.T) {
-	_, err := newFileWriter("invalid-scheme://something")
+	_, err := newFileWriter(CommonOption{URI: "invalid-scheme://something"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unknown location scheme")
 }
 
 func Test_common_newFileWriter_local_not_a_file(t *testing.T) {
-	_, err := newFileWriter("testdata/")
+	_, err := newFileWriter(CommonOption{URI: "testdata/"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "is a directory")
 }
 
 func Test_common_newFileWriter_local_good(t *testing.T) {
-	fw, err := newFileWriter(os.TempDir() + "/file-writer.parquet")
+	fw, err := newFileWriter(CommonOption{URI: os.TempDir() + "/file-writer.parquet"})
 	assert.Nil(t, err)
 	assert.NotNil(t, fw)
 	fw.Close()
 }
 
 func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
-	_, err := newFileWriter(fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()))
+	_, err := newFileWriter(CommonOption{URI: fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63())})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to find")
 }
@@ -271,7 +271,7 @@ func Test_common_newFileWriter_s3_good(t *testing.T) {
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
 	// parquet writer does not actually write to destination immediately
-	fw, err := newFileWriter("s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet")
+	fw, err := newFileWriter(CommonOption{URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet"})
 	assert.Nil(t, err)
 	assert.NotNil(t, fw)
 	fw.Close()
@@ -282,7 +282,7 @@ func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
 	// parquet writer does not actually write to destination immediately
-	_, err := newFileWriter("gs://cloud-samples-data/bigquery/us-states/us-states.parquet")
+	_, err := newFileWriter(CommonOption{URI: "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
@@ -294,27 +294,14 @@ func Test_common_newFileWriter_azblob_invalid_url(t *testing.T) {
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 
-	_, err := newFileWriter("wasbs://bad/url")
+	_, err := newFileWriter(CommonOption{URI: "wasbs://bad/url"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "zure blob URI format:")
 }
 
-func Test_common_newFileWriter_azblob_no_permission(t *testing.T) {
-	// Make sure there is no Azure blob access
-	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
-	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
-
-	_, err := newFileWriter("wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet")
-	assert.NotNil(t, err)
-	// This is returned from parquet-go-source, which does not help too much
-	assert.Contains(t, err.Error(), "failed to open Azure blob object")
-}
-
 // newCSVWriter
 func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
-	_, err := newCSVWriter("://uri", []string{"name=Id, type=INT64"})
+	_, err := newCSVWriter(CommonOption{URI: "://uri"}, []string{"name=Id, type=INT64"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to parse file location")
 }
@@ -322,17 +309,17 @@ func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
 func Test_common_newCSVWriter_invalid_schema(t *testing.T) {
 	// invalid schema will cause panic
 	testFile := os.TempDir() + "/csv-writer.parquet"
-	_, err := newCSVWriter(testFile, []string{"invalid schema"})
+	_, err := newCSVWriter(CommonOption{URI: testFile}, []string{"invalid schema"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "expect 'key=value'")
 
-	_, err = newCSVWriter(testFile, []string{"name=Id"})
+	_, err = newCSVWriter(CommonOption{URI: testFile}, []string{"name=Id"})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "not a valid Type string")
 }
 
 func Test_common_newCSVWriter_good(t *testing.T) {
-	pw, err := newCSVWriter(os.TempDir()+"/csv-writer.parquet", []string{"name=Id, type=INT64"})
+	pw, err := newCSVWriter(CommonOption{URI: os.TempDir() + "/csv-writer.parquet"}, []string{"name=Id, type=INT64"})
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
 }
@@ -457,4 +444,43 @@ func Test_common_decimalToFloat_invalid_type(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, "unknown type: float64", err.Error())
 	assert.Nil(t, f64)
+}
+
+func Test_common_newParquetFileReader_http_bad_url(t *testing.T) {
+	_, err := newParquetFileReader(
+		CommonOption{
+			URI:                    "https://no-such-host.tld/",
+			HttpMultipleConnection: true,
+			HttpIgnoreTLSError:     true,
+			HttpExtraHeaders:       map[string]string{"key": "value"},
+		},
+	)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "no such host")
+}
+
+func Test_common_newParquetFileReader_http_no_range_support(t *testing.T) {
+	_, err := newParquetFileReader(
+		CommonOption{
+			URI:                    "https://www.google.com/",
+			HttpMultipleConnection: false,
+			HttpIgnoreTLSError:     true,
+			HttpExtraHeaders:       map[string]string{"key": "value"},
+		},
+	)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "does not support range")
+}
+
+func Test_common_newParquetFileReader_http_good(t *testing.T) {
+	_, err := newParquetFileReader(
+		CommonOption{
+			URI:                    "https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet",
+			HttpMultipleConnection: true,
+			HttpIgnoreTLSError:     false,
+			HttpExtraHeaders:       map[string]string{"key": "value"},
+		},
+	)
+	assert.Nil(t, err)
 }

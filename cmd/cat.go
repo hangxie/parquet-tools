@@ -51,7 +51,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
-	reader, err := newParquetFileReader(c.URI)
+	reader, err := newParquetFileReader(c.CommonOption)
 	if err != nil {
 		return err
 	}
