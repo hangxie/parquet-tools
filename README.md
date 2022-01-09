@@ -12,7 +12,7 @@ Utility to deal with Parquet data
 
 * [Download pre-built binaries](USAGE.md#download-pre-built-binaries)
 * [brew install on Mac](USAGE.md#brew-install)
-* [Docker](USAGE.md#docker)
+* [Container image](USAGE.md#container-image)
 * [Install from source](USAGE.md#install-from-source)
 * [Prebuilt packages](USAGE.md#prebuilt-packages)
 
