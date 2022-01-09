@@ -8,7 +8,7 @@
     - [Install from Source](#install-from-source)
     - [Download Pre-built Binaries](#download-pre-built-binaries)
     - [Brew Install](#brew-install)
-    - [Docker](#docker)
+    - [Container Image](#container-image)
     - [Prebuilt Packages](#prebuilt-packages)
   - [Usage](#usage)
     - [Obtain Help](#obtain-help)
@@ -93,37 +93,43 @@ Whenever you want to upgrade to latest version which you should:
 $ brew upgrade go-parquet-tools
 ```
 
-### Docker
+### Container Image
 
-Docker image is hosted on [Docker Hub](https://hub.docker.com/r/hangxie/parquet-tools), you can pull the image:
+Container image supports amd64, arm64, and arm/v7, it is hosted in two registries:
+
+* [Docker Hub](https://hub.docker.com/r/hangxie/parquet-tools)
+* [GitHub Packages](https://github.com/users/hangxie/packages/container/package/parquet-tools)
+
+You can pull the image from either location:
 
 ```
-$ docker pull hangxie/parquet-tools
+$ docker run --rm hangxie/parquet-tools version
+v1.12.1
+$ podman run --rm ghcr.io/hangxie/parquet-tools version
+v1.12.1
 ```
-
-Current this project builds docker image for amd64, arm64, and arm/v7.
 
 ### Prebuilt Packages
 
-RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases) since v1.10.2, only amd64/x86_64 arch is available at this moment, download the proper package and run corresponding installation command:
+RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases), only amd64/x86_64 and arm64/aarch64 arch are available at this moment, download the proper package and run corresponding installation command:
 
 * On Debian/Ubuntu:
 
 ```
-$ sudo dpkg -i  parquet-tools_1.10.2_amd64.deb
-Preparing to unpack parquet-tools_1.10.2_amd64.deb ...
-Unpacking parquet-tools (1.10.2) ...
-Setting up parquet-tools (1.10.2) ...
+$ sudo dpkg -i  parquet-tools_1.12.1_amd64.deb
+Preparing to unpack parquet-tools_1.12.1_amd64.deb ...
+Unpacking parquet-tools (1.12.1) ...
+Setting up parquet-tools (1.12.1) ...
 ```
 
 * On CentOS/Fedora:
 
 ```
-$ sudo rpm -Uhv parquet-tools-1.10.2-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.12.1-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.10.2-1            ################################# [100%]
+   1:parquet-tools-1.12.1-1           ################################# [100%]
 ```
 
 ## Usage
@@ -527,19 +533,19 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 ```
 $ parquet-tools version
-v1.10.2
+v1.12.1
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```
 $ parquet-tools version --build-time --json
-{"Version":"v1.10.2","BuildTime":"2021-11-12T02:43:40+00:00"}
+{"Version":"v1.12.1","BuildTime":"2022-01-09T18:49:08+00:00"}
 ```
 
 #### Print Version in JSON Format
 
 ```
 $ parquet-tools version -j
-{"Version":"v1.10.2"}
+{"Version":"v1.12.1"}
 ```
