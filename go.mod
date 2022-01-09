@@ -3,7 +3,7 @@ module github.com/hangxie/parquet-tools
 go 1.17
 
 require (
-	github.com/Azure/azure-storage-blob-go v0.10.0
+	github.com/Azure/azure-storage-blob-go v0.14.0
 	github.com/alecthomas/kong v0.2.16
 	github.com/aws/aws-sdk-go v1.38.45
 	github.com/posener/complete v1.2.3
@@ -23,7 +23,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/google/uuid v1.1.1 // indirect
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
@@ -54,5 +54,7 @@ require (
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
 replace github.com/xitongsys/parquet-go => github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
+
+replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20220106013130-990430c6ca50
 
 replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.0.0
