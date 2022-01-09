@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	pqtazblob "github.com/xitongsys/parquet-go-source/azblob"
 	"github.com/xitongsys/parquet-go-source/gcs"
+	"github.com/xitongsys/parquet-go-source/http"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3"
 	"github.com/xitongsys/parquet-go/parquet"
@@ -122,7 +123,7 @@ func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
 			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 		}
 	case "http", "https":
-		fileReader, err = NewHttpReader(option.URI, option.HttpMultipleConnection, option.HttpIgnoreTLSError, option.HttpExtraHeaders)
+		fileReader, err = http.NewHttpReader(option.URI, option.HttpMultipleConnection, option.HttpIgnoreTLSError, option.HttpExtraHeaders)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
 		}
