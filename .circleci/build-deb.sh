@@ -24,7 +24,7 @@ function build() {
     SOURCE_DIR=$(dirname $0)/..
 
     # Launch build container
-    docker ps | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
+    docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
     docker run -dit --rm --name ${DOCKER_NAME} debian:stretch-slim
 
     # CCI does not support volume mount, so use docker cp instead
@@ -46,7 +46,7 @@ function build() {
     docker cp ${DOCKER_NAME}:/tmp/deb.deb ${SOURCE_DIR}/build/release/${PKG_NAME}_${DEB_VER}_${PKG_ARCH}.deb
 
     # Clean up
-    docker ps | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
+    docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
 }
 
 build amd64
