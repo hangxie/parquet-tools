@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eou pipefail
+set -euo pipefail
 
 function build() {
     PKG_ARCH=$1
@@ -36,7 +36,7 @@ function build() {
 
     # Build deb
     docker exec -t ${DOCKER_NAME} bash -c "
-        set -eou pipefail;
+        set -euo pipefail;
         mkdir -p /tmp/deb/usr/bin;
         gunzip /tmp/${PKG_NAME}.gz;
         mv /tmp/${PKG_NAME} /tmp/deb/usr/bin/${PKG_NAME};

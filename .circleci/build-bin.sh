@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eou pipefail
+set -euo pipefail
 
 for TARGET in ${REL_TARGET}; do
     echo "    ${TARGET}"

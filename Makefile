@@ -69,7 +69,7 @@ docker-build:  ## Build docker image
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
-	@set -eou pipefail; \
+	@set -euo pipefail; \
 	go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
 		| tee /tmp/go-test.output \
 		&& cat /tmp/go-test.output | $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
