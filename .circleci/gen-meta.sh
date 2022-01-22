@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eou pipefail
+set -euo pipefail
 
 (cd ${BUILDDIR}/release; \
     sha512sum parquet-tools* > checksum-sha512.txt; \
