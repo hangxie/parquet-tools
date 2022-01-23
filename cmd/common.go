@@ -31,7 +31,7 @@ import (
 
 // CommonOption represents common options across most commands
 type CommonOption struct {
-	URI                    string            `arg:"" predictor:"file" help:"URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details."`
+	URI                    string            `arg:"" predictor:"file" help:"URI of Parquet file."`
 	HttpMultipleConnection bool              `help:"(HTTP endpoint only) use multiple HTTP connection." default:"false"`
 	HttpIgnoreTLSError     bool              `help:"(HTTP endpoint only) ignore TLS error." default:"false"`
 	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP endpoint only) extra HTTP headers." default:""`

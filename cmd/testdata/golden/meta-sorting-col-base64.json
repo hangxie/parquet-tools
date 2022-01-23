@@ -1,0 +1,100 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 20,
+      "TotalByteSize": 1699,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Name"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN",
+            "PLAIN_DICTIONARY",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 518,
+          "UncompressedSize": 639,
+          "NumValues": 20,
+          "NullCount": 0,
+          "MaxValue": "U3R1ZGVudCBOYW1lXzk=",
+          "MinValue": "U3R1ZGVudCBOYW1l",
+          "Index": "DESC"
+        },
+        {
+          "PathInSchema": [
+            "Age"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 266,
+          "UncompressedSize": 260,
+          "NumValues": 20,
+          "NullCount": 0,
+          "MaxValue": 24,
+          "MinValue": 20,
+          "Index": "ASC"
+        },
+        {
+          "PathInSchema": [
+            "Id"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 346,
+          "UncompressedSize": 404,
+          "NumValues": 20,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0
+        },
+        {
+          "PathInSchema": [
+            "Weight"
+          ],
+          "Type": "FLOAT",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 266,
+          "UncompressedSize": 260,
+          "NumValues": 20,
+          "NullCount": 0,
+          "MaxValue": 50.9,
+          "MinValue": 50
+        },
+        {
+          "PathInSchema": [
+            "Sex"
+          ],
+          "Type": "BOOLEAN",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 144,
+          "UncompressedSize": 136,
+          "NumValues": 20,
+          "NullCount": 0,
+          "MaxValue": true,
+          "MinValue": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 4,
+      "TotalByteSize": 349,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Shoe_brand"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 165,
+          "UncompressedSize": 161,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "steph_curry",
+          "MinValue": "fila"
+        },
+        {
+          "PathInSchema": [
+            "Shoe_name"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 192,
+          "UncompressedSize": 188,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "shoe_name",
+          "MinValue": "air_griffey"
+        }
+      ]
+    }
+  ]
+}

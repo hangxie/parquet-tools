@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,6 +38,41 @@ func captureStdoutStderr(f func()) (string, string) {
 	os.Stderr = savedStderr
 
 	return string(stdout), string(stderr)
+}
+
+// this for unit test only
+func loadExpected(t *testing.T, fileName string) string {
+	fd, err := os.Open(fileName)
+	if err != nil {
+		t.Fatal("cannot open golden file:", fileName, "because of:", err.Error())
+	}
+	buf, err := ioutil.ReadAll(fd)
+	if err != nil {
+		t.Fatal("cannot load golden file:", fileName, "because of:", err.Error())
+	}
+	if !strings.HasSuffix(fileName, ".json") && !strings.HasSuffix(fileName, ".jsonl") {
+		return string(buf)
+	}
+
+	// JSON and JSONL golden files are formatted by jq
+	var result string
+	currentBuf := []byte{}
+	for _, line := range bytes.Split(buf, []byte("\n")) {
+		// in jq format, if the first character is not space than it's
+		// start (when currentBuf is empty) or end of an object (when
+		// currentBuf is not empty)
+		endOfObject := len(line) > 0 && line[0] != ' ' && len(currentBuf) != 0
+		currentBuf = append(currentBuf, line...)
+		if endOfObject {
+			dst := new(bytes.Buffer)
+			if err := json.Compact(dst, currentBuf); err != nil {
+				t.Fatal("cannot parse golden file:", fileName, "because of:", err.Error())
+			}
+			result += dst.String() + "\n"
+			currentBuf = []byte{}
+		}
+	}
+	return result
 }
 
 func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
@@ -205,7 +243,9 @@ func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
-	_, err := newParquetFileReader(CommonOption{URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet"})
+	_, err := newParquetFileReader(CommonOption{
+		URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet",
+	})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open S3 object")
 }
@@ -227,7 +267,9 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	t.Logf("dummyKey is [%s]", dummyKey)
 
-	_, err := newParquetFileReader(CommonOption{URI: "wasbs://censusdatacontainer@azureopendatastorage.blob.core.windows.net/release/us_population_zip/year=2010/part-00178-tid-5434563040420806442-84b5e4ab-8ab1-4e28-beb1-81caf32ca312-1919656.c000.snappy.parquet"})
+	_, err := newParquetFileReader(CommonOption{
+		URI: "wasbs://nyctlc@azureopendatastorage.blob.core.windows.net/yellow/puYear=2021/puMonth=9/part-00005-tid-8898858832658823408-a1de80bd-eed3-4d11-b9d4-fa74bfbd47bc-426324-135.c000.snappy.parquet",
+	})
 	assert.NotNil(t, err)
 	// This is returned from parquet-go-source, which does not help too much
 	assert.Contains(t, err.Error(), "Server failed to authenticate the request")

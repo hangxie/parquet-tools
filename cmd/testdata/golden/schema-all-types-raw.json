@@ -1,0 +1,750 @@
+{
+  "repetition_type": "REQUIRED",
+  "name": "Parquet_go_root",
+  "num_children": 39,
+  "children": [
+    {
+      "type": "BOOLEAN",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Bool",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int32",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int64",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "INT96",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int96",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "FLOAT",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Float",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "DOUBLE",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Double",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Bytearray",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "type_length": 10,
+      "repetition_type": "REQUIRED",
+      "name": "FixedLenByteArray",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Utf8",
+      "converted_type": "UTF8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int_8",
+      "converted_type": "INT_8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 8,
+          "isSigned": true
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int_16",
+      "converted_type": "INT_16",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 16,
+          "isSigned": true
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int_32",
+      "converted_type": "INT_32",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 32,
+          "isSigned": true
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Int_64",
+      "converted_type": "INT_64",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 64,
+          "isSigned": true
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Uint_8",
+      "converted_type": "UINT_8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 8,
+          "isSigned": false
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Uint_16",
+      "converted_type": "UINT_16",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 16,
+          "isSigned": false
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Uint_32",
+      "converted_type": "UINT_32",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 32,
+          "isSigned": false
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Uint_64",
+      "converted_type": "UINT_64",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "INTEGER": {
+          "bitWidth": 64,
+          "isSigned": false
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Date",
+      "converted_type": "DATE",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "DATE": {}
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Date2",
+      "converted_type": "DATE",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "DATE": {}
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timemillis",
+      "converted_type": "TIME_MILLIS",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIME": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "MILLIS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timemillis2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIME": {
+          "isAdjustedToUTC": true,
+          "unit": {
+            "MILLIS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timemicros",
+      "converted_type": "TIME_MICROS",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIME": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "MICROS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timemicros2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIME": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "MICROS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timestampmillis",
+      "converted_type": "TIMESTAMP_MILLIS",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIMESTAMP": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "MILLIS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timestampmillis2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIMESTAMP": {
+          "isAdjustedToUTC": true,
+          "unit": {
+            "MILLIS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timestampmicros",
+      "converted_type": "TIMESTAMP_MICROS",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIMESTAMP": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "MICROS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Timestampmicros2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIMESTAMP": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "MICROS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "type_length": 12,
+      "repetition_type": "REQUIRED",
+      "name": "Interval",
+      "converted_type": "INTERVAL",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Decimal1",
+      "converted_type": "DECIMAL",
+      "scale": 2,
+      "precision": 9,
+      "field_id": 0,
+      "logicalType": {
+        "DECIMAL": {
+          "scale": 2,
+          "precision": 9
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Decimal2",
+      "converted_type": "DECIMAL",
+      "scale": 2,
+      "precision": 18,
+      "field_id": 0,
+      "logicalType": {
+        "DECIMAL": {
+          "scale": 2,
+          "precision": 18
+        }
+      }
+    },
+    {
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "type_length": 12,
+      "repetition_type": "REQUIRED",
+      "name": "Decimal3",
+      "converted_type": "DECIMAL",
+      "scale": 2,
+      "precision": 10,
+      "field_id": 0,
+      "logicalType": {
+        "DECIMAL": {
+          "scale": 2,
+          "precision": 10
+        }
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Decimal4",
+      "converted_type": "DECIMAL",
+      "scale": 2,
+      "precision": 20,
+      "field_id": 0,
+      "logicalType": {
+        "DECIMAL": {
+          "scale": 2,
+          "precision": 20
+        }
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Decimal5",
+      "scale": 2,
+      "precision": 9,
+      "field_id": 0,
+      "logicalType": {
+        "DECIMAL": {
+          "scale": 2,
+          "precision": 9
+        }
+      }
+    },
+    {
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "type_length": 12,
+      "repetition_type": "OPTIONAL",
+      "name": "Decimal_pointer",
+      "converted_type": "DECIMAL",
+      "scale": 2,
+      "precision": 10,
+      "field_id": 0,
+      "logicalType": {
+        "DECIMAL": {
+          "scale": 2,
+          "precision": 10
+        }
+      }
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "Map",
+      "num_children": 1,
+      "converted_type": "MAP",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "Key_value",
+          "num_children": 2,
+          "converted_type": "MAP_KEY_VALUE",
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "type_length": 0,
+              "repetition_type": "REQUIRED",
+              "name": "Key",
+              "converted_type": "UTF8",
+              "scale": 0,
+              "precision": 0,
+              "field_id": 0,
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "INT32",
+              "type_length": 0,
+              "repetition_type": "REQUIRED",
+              "name": "Value",
+              "scale": 0,
+              "precision": 0,
+              "field_id": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "List",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "List",
+          "num_children": 1,
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "type_length": 0,
+              "repetition_type": "REQUIRED",
+              "name": "Element",
+              "converted_type": "UTF8",
+              "scale": 0,
+              "precision": 0,
+              "field_id": 0,
+              "logicalType": {
+                "STRING": {}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REPEATED",
+      "name": "Repeated",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "NestedMap",
+      "num_children": 1,
+      "converted_type": "MAP",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "Key_value",
+          "num_children": 2,
+          "converted_type": "MAP_KEY_VALUE",
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "type_length": 0,
+              "repetition_type": "REQUIRED",
+              "name": "Key",
+              "scale": 0,
+              "precision": 0,
+              "field_id": 0
+            },
+            {
+              "repetition_type": "REQUIRED",
+              "name": "Value",
+              "num_children": 2,
+              "children": [
+                {
+                  "repetition_type": "REQUIRED",
+                  "name": "Map",
+                  "num_children": 1,
+                  "converted_type": "MAP",
+                  "children": [
+                    {
+                      "repetition_type": "REPEATED",
+                      "name": "Key_value",
+                      "num_children": 2,
+                      "converted_type": "MAP_KEY_VALUE",
+                      "children": [
+                        {
+                          "type": "BYTE_ARRAY",
+                          "type_length": 0,
+                          "repetition_type": "REQUIRED",
+                          "name": "Key",
+                          "scale": 0,
+                          "precision": 0,
+                          "field_id": 0
+                        },
+                        {
+                          "type": "INT32",
+                          "type_length": 0,
+                          "repetition_type": "REQUIRED",
+                          "name": "Value",
+                          "scale": 0,
+                          "precision": 0,
+                          "field_id": 0
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "repetition_type": "REQUIRED",
+                  "name": "List",
+                  "num_children": 1,
+                  "converted_type": "LIST",
+                  "children": [
+                    {
+                      "repetition_type": "REPEATED",
+                      "name": "List",
+                      "num_children": 1,
+                      "children": [
+                        {
+                          "type": "BYTE_ARRAY",
+                          "type_length": 12,
+                          "repetition_type": "REQUIRED",
+                          "name": "Element",
+                          "converted_type": "DECIMAL",
+                          "scale": 2,
+                          "precision": 10,
+                          "field_id": 0,
+                          "logicalType": {
+                            "DECIMAL": {
+                              "scale": 2,
+                              "precision": 10
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "NestedList",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "List",
+          "num_children": 1,
+          "children": [
+            {
+              "repetition_type": "REQUIRED",
+              "name": "Element",
+              "num_children": 2,
+              "children": [
+                {
+                  "repetition_type": "REQUIRED",
+                  "name": "Map",
+                  "num_children": 1,
+                  "converted_type": "MAP",
+                  "children": [
+                    {
+                      "repetition_type": "REPEATED",
+                      "name": "Key_value",
+                      "num_children": 2,
+                      "converted_type": "MAP_KEY_VALUE",
+                      "children": [
+                        {
+                          "type": "BYTE_ARRAY",
+                          "type_length": 0,
+                          "repetition_type": "REQUIRED",
+                          "name": "Key",
+                          "scale": 0,
+                          "precision": 0,
+                          "field_id": 0
+                        },
+                        {
+                          "type": "BYTE_ARRAY",
+                          "type_length": 12,
+                          "repetition_type": "REQUIRED",
+                          "name": "Value",
+                          "converted_type": "DECIMAL",
+                          "scale": 2,
+                          "precision": 10,
+                          "field_id": 0,
+                          "logicalType": {
+                            "DECIMAL": {
+                              "scale": 2,
+                              "precision": 10
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "repetition_type": "REQUIRED",
+                  "name": "List",
+                  "num_children": 1,
+                  "converted_type": "LIST",
+                  "children": [
+                    {
+                      "repetition_type": "REPEATED",
+                      "name": "List",
+                      "num_children": 1,
+                      "children": [
+                        {
+                          "type": "INT32",
+                          "type_length": 0,
+                          "repetition_type": "REQUIRED",
+                          "name": "Element",
+                          "scale": 0,
+                          "precision": 0,
+                          "field_id": 0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
