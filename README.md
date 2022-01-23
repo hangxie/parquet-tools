@@ -4,7 +4,7 @@
 [![](https://img.shields.io/badge/license-BSD%203-blue)](https://github.com/hangxie/parquet-tools/blob/main/LICENSE)
 
 # parquet-tools
-Utility to deal with Parquet data
+Utility to inspect Parquet files.
 
 ## Installation
 

@@ -27,7 +27,12 @@ var cli struct {
 }
 
 func main() {
-	parser := kong.Must(&cli, kong.UsageOnError(), kong.ConfigureHelp(kong.HelpOptions{Compact: true}))
+	parser := kong.Must(
+		&cli,
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
+		kong.Description("Utility inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/USAGE.md"),
+	)
 	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
 
 	ctx, err := parser.Parse(os.Args[1:])
