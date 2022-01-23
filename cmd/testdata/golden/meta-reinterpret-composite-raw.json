@@ -1,0 +1,102 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 1,
+      "TotalByteSize": 2129,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Map",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 105,
+          "UncompressedSize": 103,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "Map",
+            "Key_value",
+            "Value",
+            "List",
+            "Element",
+            "EmbeddedMap",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 232,
+          "UncompressedSize": 558,
+          "NumValues": 71,
+          "NullCount": 1,
+          "MaxValue": 40.04,
+          "MinValue": 0
+        },
+        {
+          "PathInSchema": [
+            "Map",
+            "Key_value",
+            "Value",
+            "List",
+            "Element",
+            "EmbeddedMap",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 181,
+          "UncompressedSize": 438,
+          "NumValues": 71,
+          "NullCount": 1,
+          "MaxValue": 0.04,
+          "MinValue": 0
+        },
+        {
+          "PathInSchema": [
+            "Map",
+            "Key_value",
+            "Value",
+            "List",
+            "Element",
+            "EmbeddedList",
+            "List",
+            "Element"
+          ],
+          "Type": "INT96",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 788,
+          "UncompressedSize": 1030,
+          "NumValues": 71,
+          "NullCount": 1,
+          "MaxValue": "2022-01-03T23:11:10.07007Z",
+          "MinValue": "2022-01-01T01:01:01.001001Z"
+        }
+      ]
+    }
+  ]
+}

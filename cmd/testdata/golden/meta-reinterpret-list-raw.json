@@ -1,0 +1,125 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 11,
+      "TotalByteSize": 3541,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "V1",
+            "List",
+            "Element"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 338,
+          "UncompressedSize": 377,
+          "NumValues": 31,
+          "NullCount": 1,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V2",
+            "List",
+            "Element"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 398,
+          "UncompressedSize": 563,
+          "NumValues": 31,
+          "NullCount": 1,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V3",
+            "List",
+            "Element"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 501,
+          "UncompressedSize": 747,
+          "NumValues": 31,
+          "NullCount": 1,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V4",
+            "List",
+            "Element"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 298,
+          "UncompressedSize": 359,
+          "NumValues": 31,
+          "NullCount": 1,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V5",
+            "List",
+            "Element"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 469,
+          "UncompressedSize": 747,
+          "NumValues": 31,
+          "NullCount": 1,
+          "MaxValue": 125,
+          "MinValue": 25
+        },
+        {
+          "PathInSchema": [
+            "V6",
+            "List",
+            "Element"
+          ],
+          "Type": "INT96",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 525,
+          "UncompressedSize": 748,
+          "NumValues": 31,
+          "NullCount": 1,
+          "MaxValue": "2022-01-01T11:11:11.011011Z",
+          "MinValue": "2022-01-01T01:01:01.001001Z"
+        }
+      ]
+    }
+  ]
+}

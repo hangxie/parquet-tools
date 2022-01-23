@@ -1,0 +1,239 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 1,
+      "TotalByteSize": 3201,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "V1",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 105,
+          "UncompressedSize": 103,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V1",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 177,
+          "UncompressedSize": 276,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": "INT32-[1.25]",
+          "MinValue": "INT32-[-0.25]"
+        },
+        {
+          "PathInSchema": [
+            "V2",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 133,
+          "UncompressedSize": 165,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V2",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 170,
+          "UncompressedSize": 276,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": "INT64-[1.25]",
+          "MinValue": "INT64-[-0.25]"
+        },
+        {
+          "PathInSchema": [
+            "V3",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 151,
+          "UncompressedSize": 225,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V3",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 247,
+          "UncompressedSize": 501,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": "FIXED_LEN_BYTE_ARRAY-[1.25]",
+          "MinValue": "FIXED_LEN_BYTE_ARRAY-[-0.25]"
+        },
+        {
+          "PathInSchema": [
+            "V4",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 99,
+          "UncompressedSize": 104,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": 1.25,
+          "MinValue": -1.25
+        },
+        {
+          "PathInSchema": [
+            "V4",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 202,
+          "UncompressedSize": 351,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": "BYTE_ARRAY-[1.25]",
+          "MinValue": "BYTE_ARRAY-[-0.25]"
+        },
+        {
+          "PathInSchema": [
+            "V5",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 127,
+          "UncompressedSize": 164,
+          "NumValues": 6,
+          "NullCount": 0,
+          "MaxValue": 125,
+          "MinValue": 0
+        },
+        {
+          "PathInSchema": [
+            "V5",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 149,
+          "UncompressedSize": 198,
+          "NumValues": 6,
+          "NullCount": 0,
+          "MaxValue": "INTERVAL-[75]",
+          "MinValue": "INTERVAL-[0]"
+        },
+        {
+          "PathInSchema": [
+            "V6",
+            "Key_value",
+            "Key"
+          ],
+          "Type": "INT96",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 201,
+          "UncompressedSize": 225,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T11:11:11.011011Z",
+          "MinValue": "2022-01-01T01:01:01.001001Z"
+        },
+        {
+          "PathInSchema": [
+            "V6",
+            "Key_value",
+            "Value"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 395,
+          "UncompressedSize": 613,
+          "NumValues": 11,
+          "NullCount": 0,
+          "MaxValue": "INT96-[2022-01-01T11:11:11.011011Z]",
+          "MinValue": "INT96-[2022-01-01T01:01:01.001001Z]"
+        }
+      ]
+    }
+  ]
+}

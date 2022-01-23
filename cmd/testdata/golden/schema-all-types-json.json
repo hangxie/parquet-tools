@@ -1,0 +1,190 @@
+{
+  "Tag": "name=Parquet_go_root, repetitiontype=REQUIRED",
+  "Fields": [
+    {
+      "Tag": "name=Bool, type=BOOLEAN, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int32, type=INT32, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int64, type=INT64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int96, type=INT96, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Float, type=FLOAT, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Double, type=DOUBLE, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Bytearray, type=BYTE_ARRAY, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int_8, type=INT32, convertedtype=INT_8, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int_16, type=INT32, convertedtype=INT_16, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int_32, type=INT32, convertedtype=INT_32, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Int_64, type=INT64, convertedtype=INT_64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Uint_8, type=INT32, convertedtype=UINT_8, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Uint_16, type=INT32, convertedtype=UINT_16, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Uint_32, type=INT32, convertedtype=UINT_32, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Uint_64, type=INT64, convertedtype=UINT_64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Date, type=INT32, convertedtype=DATE, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Date2, type=INT32, convertedtype=DATE, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timemillis, type=INT32, convertedtype=TIME_MILLIS, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timemillis2, type=INT32, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timemicros, type=INT64, convertedtype=TIME_MICROS, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timemicros2, type=INT64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timestampmillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timestampmillis2, type=INT64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timestampmicros, type=INT64, convertedtype=TIMESTAMP_MICROS, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Timestampmicros2, type=INT64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Decimal5, type=INT32, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Decimal_pointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"
+    },
+    {
+      "Tag": "name=Map, type=MAP, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+        },
+        {
+          "Tag": "name=Value, type=INT32, repetitiontype=REQUIRED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=List, type=LIST, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=Repeated, type=INT32, repetitiontype=REPEATED"
+    },
+    {
+      "Tag": "name=NestedMap, type=MAP, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Key, type=BYTE_ARRAY, repetitiontype=REQUIRED"
+        },
+        {
+          "Tag": "name=Value, repetitiontype=REQUIRED",
+          "Fields": [
+            {
+              "Tag": "name=Map, type=MAP, repetitiontype=REQUIRED",
+              "Fields": [
+                {
+                  "Tag": "name=Key, type=BYTE_ARRAY, repetitiontype=REQUIRED"
+                },
+                {
+                  "Tag": "name=Value, type=INT32, repetitiontype=REQUIRED"
+                }
+              ]
+            },
+            {
+              "Tag": "name=List, type=LIST, repetitiontype=REQUIRED",
+              "Fields": [
+                {
+                  "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, repetitiontype=REQUIRED"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Tag": "name=NestedList, type=LIST, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Element, repetitiontype=REQUIRED",
+          "Fields": [
+            {
+              "Tag": "name=Map, type=MAP, repetitiontype=REQUIRED",
+              "Fields": [
+                {
+                  "Tag": "name=Key, type=BYTE_ARRAY, repetitiontype=REQUIRED"
+                },
+                {
+                  "Tag": "name=Value, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, repetitiontype=REQUIRED"
+                }
+              ]
+            },
+            {
+              "Tag": "name=List, type=LIST, repetitiontype=REQUIRED",
+              "Fields": [
+                {
+                  "Tag": "name=Element, type=INT32, repetitiontype=REQUIRED"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
