@@ -104,9 +104,9 @@ You can pull the image from either location:
 
 ```
 $ docker run --rm hangxie/parquet-tools version
-v1.12.1
+v1.13.0
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.12.1
+v1.13.0
 ```
 
 ### Prebuilt Packages
@@ -116,20 +116,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```
-$ sudo dpkg -i  parquet-tools_1.12.1_amd64.deb
-Preparing to unpack parquet-tools_1.12.1_amd64.deb ...
-Unpacking parquet-tools (1.12.1) ...
-Setting up parquet-tools (1.12.1) ...
+$ sudo dpkg -i  parquet-tools_1.13.0_amd64.deb
+Preparing to unpack parquet-tools_1.13.0_amd64.deb ...
+Unpacking parquet-tools (1.13.0) ...
+Setting up parquet-tools (1.13.0) ...
 ```
 
 * On CentOS/Fedora:
 
 ```
-$ sudo rpm -Uhv parquet-tools-1.12.1-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.13.0-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.12.1-1           ################################# [100%]
+   1:parquet-tools-1.13.0-1           ################################# [100%]
 ```
 
 ## Usage
@@ -195,6 +195,14 @@ $ aws s3 ls s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-80
 2021-04-14 14:04:51 4632482205 part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
 $ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
 14145923
+```
+
+Optionally, you can specify object version by using `--object-version` when you performance read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist, `parquet-tools` will report error:
+
+```
+$ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet --object-version non-exist-version
+parquet-tools: error: failed to open S3 object [s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet] version [non-exist-version]: BadRequest: Bad Request
+                      	status code: 400, request id: REDACTED, host id: REDACTED
 ```
 
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
@@ -533,19 +541,19 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 ```
 $ parquet-tools version
-v1.12.1
+v1.13.0
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```
 $ parquet-tools version --build-time --json
-{"Version":"v1.12.1","BuildTime":"2022-01-09T18:49:08+00:00"}
+{"Version":"v1.13.0","BuildTime":"2022-03-15T19:22:19-0700"}
 ```
 
 #### Print Version in JSON Format
 
 ```
 $ parquet-tools version -j
-{"Version":"v1.12.1"}
+{"Version":"v1.13.0"}
 ```

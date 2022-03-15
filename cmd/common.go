@@ -35,6 +35,7 @@ type CommonOption struct {
 	HttpMultipleConnection bool              `help:"(HTTP endpoint only) use multiple HTTP connection." default:"false"`
 	HttpIgnoreTLSError     bool              `help:"(HTTP endpoint only) ignore TLS error." default:"false"`
 	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP endpoint only) extra HTTP headers." default:""`
+	ObjectVersion          string            `help:"(S3 reader only) object version." default:""`
 }
 
 // Context represents command's context
@@ -98,9 +99,14 @@ func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
 			return nil, err
 		}
 
-		fileReader, err = s3.NewS3FileReader(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), &aws.Config{Region: aws.String(region)})
+		var objVersion *string = nil
+		option.ObjectVersion = strings.Trim(option.ObjectVersion, " \t\r\n")
+		if option.ObjectVersion != "" {
+			objVersion = &option.ObjectVersion
+		}
+		fileReader, err = s3.NewS3FileReaderVersioned(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), objVersion, &aws.Config{Region: aws.String(region)})
 		if err != nil {
-			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
+			return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", option.URI, option.ObjectVersion, err.Error())
 		}
 	case "file":
 		fileReader, err = local.NewLocalFileReader(u.Path)
