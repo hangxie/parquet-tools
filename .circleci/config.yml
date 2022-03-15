@@ -6,21 +6,21 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/golang:1.17
+      - image: cimg/go:1.17
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.14
       - restore_cache:
           keys:
-            - go-mod-v4-{{ checksum "go.sum" }}
+            - go-mod-v5-{{ checksum "go.sum" }}
       - run:
           name: Install Dependencies
           command: make deps
       - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
+          key: go-mod-v5-{{ checksum "go.sum" }}
           paths:
-            - "/go/pkg/mod"
+            - "/home/circleci/go"
       - run:
           name: Run format
           command: |
@@ -42,28 +42,27 @@ jobs:
           path: build/test/coverage.html
           destination: test-coverage.html
       - slack/notify:
-          branch_pattern: main
           event: fail
           template: basic_fail_1
 
   release-build:
     working_directory: ~/repo
     docker:
-      - image: circleci/golang:1.17
+      - image: cimg/go:1.17
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.14
       - restore_cache:
           keys:
-            - go-mod-v4-{{ checksum "go.sum" }}
+            - go-mod-v5-{{ checksum "go.sum" }}
       - run:
           name: Install Dependencies
           command: make deps
       - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
+          key: go-mod-v5-{{ checksum "go.sum" }}
           paths:
-            - "/go/pkg/mod"
+            - "/home/circleci/go"
       - run:
           name: Build release binaries
           command: make release-build
