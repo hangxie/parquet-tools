@@ -10,7 +10,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/willabides/kongplete v0.2.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
-	github.com/xitongsys/parquet-go-source v0.0.0-20210926040251-45ca274c55d4
+	github.com/xitongsys/parquet-go-source v0.0.0-20220315005136-aec0fe3e777c
 )
 
 require (
@@ -54,7 +54,5 @@ require (
 replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
 replace github.com/xitongsys/parquet-go => github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
-
-replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20220106013130-990430c6ca50
 
 replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.0.0
