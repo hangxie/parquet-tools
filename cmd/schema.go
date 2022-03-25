@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -177,7 +178,9 @@ func (s *schemaNode) goStruct(withName bool) string {
 	}
 
 	if withName {
-		res = strings.Title(s.GetName()) + " " + res + " " + s.getStructTags()
+		name := s.GetName()
+		name = cases.Upper(language.Und).String(string(name[0])) + name[1:]
+		res = name + " " + res + " " + s.getStructTags()
 	}
 	return res
 }
