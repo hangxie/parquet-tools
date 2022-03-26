@@ -178,9 +178,7 @@ func (s *schemaNode) goStruct(withName bool) string {
 	}
 
 	if withName {
-		name := s.GetName()
-		name = cases.Upper(language.Und).String(string(name[0])) + name[1:]
-		res = name + " " + res + " " + s.getStructTags()
+		res = cases.Title(language.Und, cases.NoLower).String(s.GetName()) + " " + res + " " + s.getStructTags()
 	}
 	return res
 }
