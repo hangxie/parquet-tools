@@ -161,13 +161,13 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
 	_, err := getBucketRegion(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()))
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to find")
+	assert.Contains(t, err.Error(), "AWS error: bucket not found")
 }
 
-func Test_common_getBucketRegion_aws_error(t *testing.T) {
-	_, err := getBucketRegion("")
+func Test_common_getBucketRegion_bad_request(t *testing.T) {
+	_, err := getBucketRegion("*&^%")
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "AWS error:")
+	assert.Contains(t, err.Error(), "Bad Request")
 }
 
 func Test_common_parseURI_invalid_uri(t *testing.T) {
@@ -238,7 +238,7 @@ func Test_common_newParquetFileReader_s3_aws_error(t *testing.T) {
 	assert.Contains(t, err.Error(), "AWS error:")
 }
 
-func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
+func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
@@ -246,8 +246,7 @@ func Test_common_newParquetFileReader_s3_no_permission(t *testing.T) {
 	_, err := newParquetFileReader(CommonOption{
 		URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet",
 	})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to open S3 object")
+	assert.Nil(t, err)
 }
 
 func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
@@ -304,7 +303,7 @@ func Test_common_newFileWriter_local_good(t *testing.T) {
 func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
 	_, err := newFileWriter(CommonOption{URI: fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63())})
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to find")
+	assert.Contains(t, err.Error(), "AWS error: bucket not found")
 }
 
 func Test_common_newFileWriter_s3_good(t *testing.T) {

@@ -5,12 +5,27 @@ go 1.17
 require (
 	github.com/Azure/azure-storage-blob-go v0.14.0
 	github.com/alecthomas/kong v0.2.16
-	github.com/aws/aws-sdk-go v1.38.45
+	github.com/aws/aws-sdk-go-v2 v1.16.2
+	github.com/aws/aws-sdk-go-v2/config v1.5.0
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.3.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
+	github.com/aws/smithy-go v1.11.2
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.7.0
 	github.com/willabides/kongplete v0.2.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
 	github.com/xitongsys/parquet-go-source v0.0.0-20220315005136-aec0fe3e777c
+)
+
+require (
+	github.com/aws/aws-sdk-go-v2/credentials v1.3.1 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.3.0 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.1.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.2.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.2.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.5.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.3.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.6.0 // indirect
 )
 
 require (
@@ -56,3 +71,5 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 replace github.com/xitongsys/parquet-go => github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
 
 replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.0.0
+
+replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20220331185016-7e9b9c25ec3f
