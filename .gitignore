@@ -5,11 +5,13 @@
 *.so
 *.dylib
 
-# vim
+# editor/IDE
 *.swp
 *.swo
 *.swn
 *.un~
+.vscode
+.idea
 
 # Test binary, built with `go test -c`
 *.test

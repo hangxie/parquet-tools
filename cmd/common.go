@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"net/url"
@@ -13,15 +14,16 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
 	pqtazblob "github.com/xitongsys/parquet-go-source/azblob"
 	"github.com/xitongsys/parquet-go-source/gcs"
 	"github.com/xitongsys/parquet-go-source/http"
 	"github.com/xitongsys/parquet-go-source/local"
-	"github.com/xitongsys/parquet-go-source/s3"
+	"github.com/xitongsys/parquet-go-source/s3v2"
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/source"
@@ -73,10 +75,17 @@ func parseURI(uri string) (*url.URL, error) {
 func getBucketRegion(bucket string) (string, error) {
 	// Get region of the S3 bucket
 	ctx := context.Background()
-	sess := session.Must(session.NewSession())
-	region, err := s3manager.GetBucketRegion(ctx, sess, bucket, "us-east-1")
+	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
+		return "", fmt.Errorf("failed to load config to determine bucket region: %s", err.Error())
+	}
+	if cfg.Region == "" {
+		cfg.Region = "us-east-1"
+	}
+	region, err := manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket)
+	if err != nil {
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "NotFound" {
 			return "", fmt.Errorf("unable to find bucket %s's region", bucket)
 		}
 		return "", fmt.Errorf("AWS error: %s", err.Error())
@@ -98,13 +107,14 @@ func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, err
 		}
+		s3Client := s3.NewFromConfig(aws.Config{Region: region})
 
 		var objVersion *string = nil
 		option.ObjectVersion = strings.Trim(option.ObjectVersion, " \t\r\n")
 		if option.ObjectVersion != "" {
 			objVersion = &option.ObjectVersion
 		}
-		fileReader, err = s3.NewS3FileReaderVersioned(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), objVersion, &aws.Config{Region: aws.String(region)})
+		fileReader, err = s3v2.NewS3FileReaderWithClientVersioned(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", option.URI, option.ObjectVersion, err.Error())
 		}
@@ -153,8 +163,9 @@ func newFileWriter(option CommonOption) (source.ParquetFile, error) {
 		if err != nil {
 			return nil, err
 		}
+		s3Client := s3.NewFromConfig(aws.Config{Region: region})
 
-		fileWriter, err = s3.NewS3FileWriter(context.Background(), u.Host, strings.TrimLeft(u.Path, "/"), "bucket-owner-full-control", nil, &aws.Config{Region: aws.String(region)})
+		fileWriter, err = s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
 		}
