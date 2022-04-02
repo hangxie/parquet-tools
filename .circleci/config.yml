@@ -15,27 +15,30 @@ jobs:
           keys:
             - go-mod-v5-{{ checksum "go.sum" }}
       - run:
-          name: Install Dependencies
+          name: Installing Dependencies
           command: make deps
       - save_cache:
           key: go-mod-v5-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/go"
       - run:
-          name: Run format
-          command: |
-            make format
-            DIFF=$(git diff)
-            if [ ! -z "${DIFF}" ] ; then
-              echo "${DIFF}"
-              false
-            fi
+          name: Running format
+          command: make format
       - run:
-          name: Run lint
+          name: Running lint
           command: make lint
       - run:
-          name: Run tests
+          name: Running tests
           command: make test
+      - run:
+          name: Checking uncommitted changes
+          command: |
+            git status -s > /tmp/git-status.log
+            if [ -s /tmp/git-status.log ] ; then
+              echo There are uncommitted changes
+              cat /tmp/git-status.log
+              false
+            fi
       - store_test_results:
           path: build/junit
       - store_artifacts:
