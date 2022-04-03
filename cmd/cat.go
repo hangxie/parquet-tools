@@ -164,14 +164,7 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr Reinte
 	case reflect.Struct:
 		encodeNestedBinaryString(value.FieldByName(locator[0]), locator[1:], attr)
 	case reflect.String:
-		buf := []byte(value.String())
-		if attr.convertedType == parquet.ConvertedType_INTERVAL {
-			// INTERVAL uses LittleEndian, DECIMAL uses BigEndian
-			// make sure all decimal-like value are all BigEndian
-			for i, j := 0, len(buf)-1; i < j; i, j = i+1, j-1 {
-				buf[i], buf[j] = buf[j], buf[i]
-			}
-		}
+		buf := stringToBytes(attr, value.String())
 		value.SetString(base64.StdEncoding.EncodeToString(buf))
 	}
 }
