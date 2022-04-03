@@ -18,7 +18,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/smithy-go"
 	pqtazblob "github.com/xitongsys/parquet-go-source/azblob"
 	"github.com/xitongsys/parquet-go-source/gcs"
 	"github.com/xitongsys/parquet-go-source/http"
@@ -75,18 +74,15 @@ func parseURI(uri string) (*url.URL, error) {
 func getBucketRegion(bucket string) (string, error) {
 	// Get region of the S3 bucket
 	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithDefaultRegion("us-east-1"))
 	if err != nil {
 		return "", fmt.Errorf("failed to load config to determine bucket region: %s", err.Error())
 	}
-	if cfg.Region == "" {
-		cfg.Region = "us-east-1"
-	}
 	region, err := manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket)
 	if err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "NotFound" {
-			return "", fmt.Errorf("unable to find bucket %s's region", bucket)
+		var apiErr manager.BucketNotFound
+		if errors.As(err, &apiErr) {
+			return "", fmt.Errorf("unable to find region of bucket [%s]", bucket)
 		}
 		return "", fmt.Errorf("AWS error: %s", err.Error())
 	}
@@ -110,7 +106,6 @@ func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
 		s3Client := s3.NewFromConfig(aws.Config{Region: region})
 
 		var objVersion *string = nil
-		option.ObjectVersion = strings.Trim(option.ObjectVersion, " \t\r\n")
 		if option.ObjectVersion != "" {
 			objVersion = &option.ObjectVersion
 		}
@@ -308,6 +303,8 @@ func decimalToFloat(fieldAttr ReinterpretField, iface interface{}) (*float64, er
 }
 
 func stringToBytes(fieldAttr ReinterpretField, value string) []byte {
+	// INTERVAL uses LittleEndian, DECIMAL uses BigEndian
+	// make sure all decimal-like value are all BigEndian
 	buf := []byte(value)
 	if fieldAttr.convertedType == parquet.ConvertedType_INTERVAL {
 		for i, j := 0, len(buf)-1; i < j; i, j = i+1, j-1 {
