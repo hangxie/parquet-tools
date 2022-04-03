@@ -9,7 +9,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.5.0
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.3.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
-	github.com/aws/smithy-go v1.11.2
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.7.0
 	github.com/willabides/kongplete v0.2.0
@@ -26,6 +25,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.5.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.3.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.6.0 // indirect
+	github.com/aws/smithy-go v1.11.2 // indirect
 )
 
 require (
