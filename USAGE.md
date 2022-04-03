@@ -182,16 +182,10 @@ $ parquet-tools row-count file://./cmd/testdata/good.parquet
 
 #### S3 Bucket
 
-Use full S3 URL to indicate S3 object location, it starts with `s3://`. You need to make sure you have permission to read or write the S3 object, the easiest way to verify that is using [AWS cli](https://aws.amazon.com/cli/).
+Use full S3 URL to indicate S3 object location, it starts with `s3://`. You need to make sure you have permission to read or write the S3 object, or the S3 object is publicly accessible. The easiest way to verify that is using [AWS cli](https://aws.amazon.com/cli/).
 
 ```bash
-$ aws sts get-caller-identity
-{
-    "UserId": "REDACTED",
-    "Account": "123456789012",
-    "Arn": "arn:aws:iam::123456789012:user/redacted"
-}
-$ aws s3 ls s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+$ aws s3 ls --no-sign-request s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 $ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 908
