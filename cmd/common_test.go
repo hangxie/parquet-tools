@@ -244,7 +244,7 @@ func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
 	_, err := newParquetFileReader(CommonOption{
-		URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet",
+		URI: "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
 	})
 	assert.Nil(t, err)
 }
@@ -312,7 +312,7 @@ func Test_common_newFileWriter_s3_good(t *testing.T) {
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
 	// parquet writer does not actually write to destination immediately
-	fw, err := newFileWriter(CommonOption{URI: "s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet"})
+	fw, err := newFileWriter(CommonOption{URI: "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"})
 	assert.Nil(t, err)
 	assert.NotNil(t, fw)
 	fw.Close()

@@ -59,7 +59,7 @@ You can choose one of the installation methods from below, the functionality wil
 
 Good for people who are familiar with [Go](https://golang.org/), you need 1.17 or newer version.
 
-```
+```bash
 $ go get github.com/hangxie/parquet-tools
 ```
 
@@ -79,7 +79,7 @@ For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-
 
 Mac user can use [Homebrew](https://brew.sh/) to install, it is not part of core formula yet but you can run:
 
-```
+```bash
 $ brew uninstall parquet-tools
 $ brew tap hangxie/tap
 $ brew install go-parquet-tools
@@ -89,7 +89,7 @@ $ brew install go-parquet-tools
 
 Whenever you want to upgrade to latest version which you should:
 
-```
+```bash
 $ brew upgrade go-parquet-tools
 ```
 
@@ -102,11 +102,11 @@ Container image supports amd64, arm64, and arm/v7, it is hosted in two registrie
 
 You can pull the image from either location:
 
-```
+```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.13.0
+v1.13.1
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.13.0
+v1.13.1
 ```
 
 ### Prebuilt Packages
@@ -115,7 +115,7 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 
 * On Debian/Ubuntu:
 
-```
+```bash
 $ sudo dpkg -i  parquet-tools_1.13.0_amd64.deb
 Preparing to unpack parquet-tools_1.13.0_amd64.deb ...
 Unpacking parquet-tools (1.13.0) ...
@@ -124,7 +124,7 @@ Setting up parquet-tools (1.13.0) ...
 
 * On CentOS/Fedora:
 
-```
+```bash
 $ sudo rpm -Uhv parquet-tools-1.13.0-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
@@ -137,7 +137,7 @@ Updating / installing...
 ### Obtain Help
 `parquet-tools` provides help information through `-h` flag, whenever you are not sure about parmater for a command, just add `-h` to the end of the line then it will give you all available options, for example:
 
-```
+```bash
 $ parquet-tools meta -h
 Usage: parquet-tools meta <uri>
 
@@ -171,7 +171,7 @@ you need to have proper permission on the file you are going to process.
 
 For files from file system, you can specify `file://` scheme or just ignore it:
 
-```
+```bash
 $ parquet-tools row-count cmd/testdata/good.parquet
 4
 $ parquet-tools row-count file://cmd/testdata/good.parquet
@@ -184,26 +184,27 @@ $ parquet-tools row-count file://./cmd/testdata/good.parquet
 
 Use full S3 URL to indicate S3 object location, it starts with `s3://`. You need to make sure you have permission to read or write the S3 object, the easiest way to verify that is using [AWS cli](https://aws.amazon.com/cli/).
 
-```
+```bash
 $ aws sts get-caller-identity
 {
     "UserId": "REDACTED",
     "Account": "123456789012",
     "Arn": "arn:aws:iam::123456789012:user/redacted"
 }
-$ aws s3 ls s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
-2021-04-14 14:04:51 4632482205 part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
-$ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
-14145923
+$ aws s3 ls s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+$ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+908
 ```
 
 Optionally, you can specify object version by using `--object-version` when you performance read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist, `parquet-tools` will report error:
 
+```bash
+$ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet --object-version non-existent-version
+parquet-tools: error: failed to open S3 object [s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet] version [non-existent-version]: operation error S3: HeadObject, https response error StatusCode: 403, RequestID: REDACTED, HostID: REDACTED, api error Forbidden: Forbidden
 ```
-$ parquet-tools row-count s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet --object-version non-exist-version
-parquet-tools: error: failed to open S3 object [s3://dpla-provider-export/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet] version [non-exist-version]: BadRequest: Bad Request
-                      	status code: 400, request id: REDACTED, host id: REDACTED
-```
+
+> Note that according to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), if the caller does not have permission to `ListBucket` then the status code for non-existent object or version will be 403 instead of 404. 
 
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 
@@ -211,7 +212,7 @@ Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `
 
 Use full [gsutil](https://cloud.google.com/storage/docs/gsutil) URI to point to GCS object location, it starts with `gs://`. You need to make sure you have permission to read or write to the GSC object, either use application default or GOOGLE_APPLICATION_CREDENTIALS, you can refer to [Google Cloud document](https://cloud.google.com/docs/authentication/production#automatically) for more details.
 
-```
+```bash
 $ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 $ parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema gs://REDACTED/csv.parquet
 $ parquet-tools row-count gs://REDACTED/csv.parquet
@@ -239,7 +240,7 @@ means the parquet file is at:
 
 `parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonmous access is expected.
 
-```
+```bash
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://parquet-tools@REDACTED.blob.core.windows.net/test/csv.parquet
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 7
@@ -260,7 +261,7 @@ These options can be used along with HTTP endpoints:
 * `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to use them for authentication/authorization that is required by remote server.
 * `--http-ignore-tls-error` will igore TLS errors.
 
-```
+```bash
 $ parquet-tools row-count https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
 3029995
 $ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
@@ -277,7 +278,7 @@ There is a `--page-size` parameter that you probably will never touch it, it tel
 
 #### Full Data Set
 
-```
+```bash
 $ parquet-tools cat --format jsonl cmd/testdata/good.parquet
 {"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
@@ -289,7 +290,7 @@ $ parquet-tools cat --format jsonl cmd/testdata/good.parquet
 
 `--skip` is similar to OFFSET in SQL, `parquet-tools` will skip this many rows from beginning of the parquet file before applying other logics.
 
-```
+```bash
 $ parquet-tools cat --skip 2 --format jsonl cmd/testdata/good.parquet
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
@@ -297,7 +298,7 @@ $ parquet-tools cat --skip 2 --format jsonl cmd/testdata/good.parquet
 
 `parquet-tools` will not report error if `--skip` is greater than total number of rows in parquet file.
 
-```
+```bash
 $ parquet-tools cat --skip 20 cmd/testdata/good.parquet
 []
 ```
@@ -306,7 +307,7 @@ $ parquet-tools cat --skip 20 cmd/testdata/good.parquet
 
 `--limit` is similar to LIMIT in SQL, or `head` in Linux shell, `parquet-tools` will stop running after this many rows outputs.
 
-```
+```bash
 $ parquet-tools cat --limit 2 cmd/testdata/good.parquet
 [{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
 ```
@@ -317,7 +318,7 @@ $ parquet-tools cat --limit 2 cmd/testdata/good.parquet
 
 This feature picks rows in parquet file randomly, so only `0.0` and `1.0` will output deterministic result, all other ratio may generate data set less or more than you want.
 
-```
+```bash
 $ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
 [{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
 $ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
@@ -340,7 +341,7 @@ $ parquet-tools cat --sample-ratio 0.0 cmd/testdata/good.parquet
 
 `--skip`, `--limit` and `--sample-ratio` can be used together to achieve certain goals, for example, to get the 3rd row from the parquet file:
 
-```
+```bash
 $ parquet-tools cat --skip 2 --limit 1 cmd/testdata/good.parquet
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 ```
@@ -348,7 +349,7 @@ $ parquet-tools cat --skip 2 --limit 1 cmd/testdata/good.parquet
 #### Output Format
 `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
-```
+```bash
 $ parquet-tools cat cmd/testdata/good.parquet
 [{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
 ```
@@ -357,7 +358,7 @@ $ parquet-tools cat cmd/testdata/good.parquet
 
 When you want to filter data, use JSONL format output and pipe to `jq`.
 
-```
+```bash
 $ parquet-tools cat --format jsonl cmd/testdata/good.parquet
 {"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
@@ -381,7 +382,7 @@ Each source data file format has its own dedicated schema format:
 
 #### Import from CSV
 
-```
+```bash
 $ parquet-tools import -f csv -s cmd/testdata/csv.source -m cmd/testdata/csv.schema /tmp/csv.parquet
 $ parquet-tools row-count /tmp/csv.parquet
 7
@@ -389,7 +390,7 @@ $ parquet-tools row-count /tmp/csv.parquet
 
 #### Import from JSON
 
-```
+```bash
 $ parquet-tools import -f json -s cmd/testdata/json.source -m cmd/testdata/json.schema /tmp/json.parquet
 $ parquet-tools row-count /tmp/json.parquet
 1
@@ -401,7 +402,7 @@ As most JSON processing utilities, the whole JSON file needs to be loaded to mem
 
 JSONL is [line-delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON), use JSONL if you want to load multiple JSON objects into parquet.
 
-```
+```bash
 $ parquet-tools import -f jsonl -s cmd/testdata/jsonl.source -m cmd/testdata/jsonl.schema /tmp/jsonl.parquet
 $ parquet-tools row-count /tmp/jsonl.parquet
 7
@@ -415,14 +416,14 @@ Note that MinValue and MaxValue always show value with base type instead of conv
 
 #### Show Meta Data
 
-```
+```bash
 $ parquet-tools meta cmd/testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"shoe_name","MinValue":"air_griffey"}]}]}
 ```
 
 #### Show Meta Data with Base64-encoded Values
 
-```
+```bash
 $ parquet-tools meta --base64 cmd/testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"c3RlcGhfY3Vycnk=","MinValue":"ZmlsYQ=="},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"c2hvZV9uYW1l","MinValue":"YWlyX2dyaWZmZXk="}]}]}
 ```
@@ -435,7 +436,7 @@ Note that MinValue, MaxValue and NullCount are optional, if they do not show up 
 
 #### Show Number of Rows
 
-```
+```bash
 $ parquet-tools row-count cmd/testdata/good.parquet
 4
 ```
@@ -448,7 +449,7 @@ $ parquet-tools row-count cmd/testdata/good.parquet
 
 JSON format schema can be used directly in parquet-go based golang program like [this example](https://github.com/xitongsys/parquet-go/blob/master/example/json_schema.go):
 
-```
+```bash
 $ parquet-tools schema cmd/testdata/good.parquet
 {"Tag":"name=Parquet_go_root, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]}
 ```
@@ -457,7 +458,7 @@ $ parquet-tools schema cmd/testdata/good.parquet
 
 Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format.
 
-```
+```bash
 $ parquet-tools schema --format raw cmd/testdata/good.parquet
 {"repetition_type":"REQUIRED","name":"Parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
 ```
@@ -466,7 +467,7 @@ $ parquet-tools schema --format raw cmd/testdata/good.parquet
 
 go struct format generate go struct definition snippet that can be used in go:
 
-```
+```bash
 $ parquet-tools schema --format go cmd/testdata/good.parquet | gofmt
 type Parquet_go_root struct {
 	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
@@ -484,7 +485,7 @@ based on your use case, type `Parquet_go_root` may need to be renamed.
 
 To install shell completions. run:
 
-```
+```bash
 $ parquet-tools shell-completions
 ```
 
@@ -496,7 +497,7 @@ This command will return error if the same line is in shell's rcfile already.
 
 To uninstall shell completions, run:
 
-```
+```bash
 $ parquet-tools shell-completions --uninstall
 ```
 
@@ -514,21 +515,21 @@ Hit `<TAB>` key in command line when you need hint or want to auto complete curr
 
 #### Show Raw Size
 
-```
+```bash
 $ parquet-tools size cmd/testdata/good.parquet
 357
 ```
 
 #### Show Footer Size in JSON Format
 
-```
+```bash
 $ parquet-tools size --query footer --json cmd/testdata/good.parquet
 {"Footer":316}
 ```
 
 #### Show All Sizes in JSON Format
 
-```
+```bash
 $ parquet-tools size -q all -j cmd/testdata/good.parquet
 {"Raw":357,"Uncompressed":349,"Footer":316}
 ```
@@ -539,21 +540,21 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 #### Print Version
 
-```
+```bash
 $ parquet-tools version
-v1.13.0
+v1.13.1
 ```
 
 #### Print Version and Build Time in JSON Format
 
-```
+```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.13.0","BuildTime":"2022-03-15T19:22:19-0700"}
+{"Version":"v1.13.1","BuildTime":"2022-03-15T19:22:19-0700"}
 ```
 
 #### Print Version in JSON Format
 
-```
+```bash
 $ parquet-tools version -j
-{"Version":"v1.13.0"}
+{"Version":"v1.13.1"}
 ```
