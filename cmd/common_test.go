@@ -161,13 +161,13 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
 	_, err := getBucketRegion(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()))
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "AWS error: bucket not found")
+	assert.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
 
-func Test_common_getBucketRegion_bad_request(t *testing.T) {
+func Test_common_getBucketRegion_aws_error(t *testing.T) {
 	_, err := getBucketRegion("*&^%")
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Bad Request")
+	assert.Contains(t, err.Error(), "AWS error:")
 }
 
 func Test_common_parseURI_invalid_uri(t *testing.T) {
@@ -249,6 +249,21 @@ func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func Test_common_newParquetFileReader_s3_non_existent_versioned(t *testing.T) {
+	// Make sure there is no AWS access
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
+
+	_, err := newParquetFileReader(CommonOption{
+		URI:           "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
+		ObjectVersion: "random-version-id",
+	})
+	assert.NotNil(t, err)
+	// refer to https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html
+	// access to non-existent object/version without ListBucket permission will get 403 instead of 404
+	assert.Contains(t, err.Error(), "https response error StatusCode: 403")
+}
+
 func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
 	// Make sure there is no GCS access
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
@@ -303,7 +318,7 @@ func Test_common_newFileWriter_local_good(t *testing.T) {
 func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
 	_, err := newFileWriter(CommonOption{URI: fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63())})
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "AWS error: bucket not found")
+	assert.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
 
 func Test_common_newFileWriter_s3_good(t *testing.T) {
@@ -337,7 +352,13 @@ func Test_common_newFileWriter_azblob_invalid_url(t *testing.T) {
 
 	_, err := newFileWriter(CommonOption{URI: "wasbs://bad/url"})
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "zure blob URI format:")
+	assert.Contains(t, err.Error(), "azure blob URI format:")
+}
+
+func Test_common_newFileWriter_http_not_supported(t *testing.T) {
+	_, err := newFileWriter(CommonOption{URI: "https://domain.tld/path/to/file"})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "writing to https endpoint is not currently supported")
 }
 
 // newCSVWriter
@@ -363,11 +384,6 @@ func Test_common_newCSVWriter_good(t *testing.T) {
 	pw, err := newCSVWriter(CommonOption{URI: os.TempDir() + "/csv-writer.parquet"}, []string{"name=Id, type=INT64"})
 	assert.NotNil(t, pw)
 	assert.Nil(t, err)
-}
-
-func Test_common_getAllDecimalFields_good(t *testing.T) {
-	// TODO
-	// this is currently covered by high level test cases but eventually needs unit test cases
 }
 
 func Test_common_decimalToFloat_nil(t *testing.T) {
