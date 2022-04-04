@@ -37,6 +37,7 @@ type CommonOption struct {
 	HttpIgnoreTLSError     bool              `help:"(HTTP endpoint only) ignore TLS error." default:"false"`
 	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP endpoint only) extra HTTP headers." default:""`
 	ObjectVersion          string            `help:"(S3 reader only) object version." default:""`
+	IsPublic               bool              `help:"(S3 reader only) object is publicly accessible." default:"false"`
 }
 
 // Context represents command's context
@@ -71,23 +72,26 @@ func parseURI(uri string) (*url.URL, error) {
 	return u, nil
 }
 
-func getBucketRegion(bucket string) (string, error) {
-	// Get region of the S3 bucket
-	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithDefaultRegion("us-east-1"))
+func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithDefaultRegion("us-east-1"))
 	if err != nil {
-		return "", fmt.Errorf("failed to load config to determine bucket region: %s", err.Error())
+		return nil, fmt.Errorf("failed to load config to determine bucket region: %s", err.Error())
 	}
 	region, err := manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket)
 	if err != nil {
 		var apiErr manager.BucketNotFound
 		if errors.As(err, &apiErr) {
-			return "", fmt.Errorf("unable to find region of bucket [%s]", bucket)
+			return nil, fmt.Errorf("unable to find region of bucket [%s]", bucket)
 		}
-		return "", fmt.Errorf("AWS error: %s", err.Error())
+		return nil, fmt.Errorf("AWS error: %s", err.Error())
 	}
 
-	return region, nil
+	if isPublic {
+		return s3.NewFromConfig(aws.Config{Region: region}), nil
+	}
+	cfg.Region = region
+	return s3.NewFromConfig(cfg), nil
 }
 
 func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
@@ -99,11 +103,10 @@ func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
 	var fileReader source.ParquetFile
 	switch u.Scheme {
 	case "s3":
-		region, err := getBucketRegion(u.Host)
+		s3Client, err := getS3Client(u.Host, option.IsPublic)
 		if err != nil {
 			return nil, err
 		}
-		s3Client := s3.NewFromConfig(aws.Config{Region: region})
 
 		var objVersion *string = nil
 		if option.ObjectVersion != "" {
@@ -154,11 +157,10 @@ func newFileWriter(option CommonOption) (source.ParquetFile, error) {
 	var fileWriter source.ParquetFile
 	switch u.Scheme {
 	case "s3":
-		region, err := getBucketRegion(u.Host)
+		s3Client, err := getS3Client(u.Host, false)
 		if err != nil {
 			return nil, err
 		}
-		s3Client := s3.NewFromConfig(aws.Config{Region: region})
 
 		fileWriter, err = s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
 		if err != nil {
