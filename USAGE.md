@@ -182,12 +182,30 @@ $ parquet-tools row-count file://./cmd/testdata/good.parquet
 
 #### S3 Bucket
 
-Use full S3 URL to indicate S3 object location, it starts with `s3://`. You need to make sure you have permission to read or write the S3 object, or the S3 object is publicly accessible. The easiest way to verify that is using [AWS cli](https://aws.amazon.com/cli/).
+Use full S3 URL to indicate S3 object location, it starts with `s3://`. You need to make sure you have permission to read or write the S3 object, the easiest way to verify that is using [AWS cli](https://aws.amazon.com/cli/):
 
 ```bash
-$ aws s3 ls --no-sign-request s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+$ aws sts get-caller-identity
+{
+    "UserId": "REDACTED",
+    "Account": "123456789012",
+    "Arn": "arn:aws:iam::123456789012:user/redacted"
+}
+$ aws s3 ls s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 $ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+908
+```
+
+If an S3 object is publicly accessible and you do not have AWS credential, you can use `--is-public` flag to bypass AWS authentation:
+
+```bash
+$ aws sts get-caller-identity
+
+Unable to locate credentials. You can configure credentials by running "aws configure".
+$ aws s3 ls --no-sign-request s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+$ parquet-tools row-count --is-public s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 908
 ```
 
@@ -198,7 +216,7 @@ $ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-
 parquet-tools: error: failed to open S3 object [s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet] version [non-existent-version]: operation error S3: HeadObject, https response error StatusCode: 403, RequestID: REDACTED, HostID: REDACTED, api error Forbidden: Forbidden
 ```
 
-> Note that according to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), if the caller does not have permission to `ListBucket` then the status code for non-existent object or version will be 403 instead of 404. 
+> According to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), status code for non-existent object or version will be 403 instead of 404 if the caller does not have permission to `ListBucket`. 
 
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 

@@ -159,13 +159,21 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 }
 
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
-	_, err := getBucketRegion(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()))
+	_, err := getS3Client(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()), true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
 
+func Test_common_getBucketRegion_s3_missing_credential(t *testing.T) {
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
+	_, err := getS3Client("aws-roda-hcls-datalake", false)
+	// private bucket error happens at reading time
+	assert.Nil(t, err)
+}
+
 func Test_common_getBucketRegion_aws_error(t *testing.T) {
-	_, err := getBucketRegion("*&^%")
+	_, err := getS3Client("*&^%", true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "AWS error:")
 }
@@ -244,7 +252,8 @@ func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 
 	_, err := newParquetFileReader(CommonOption{
-		URI: "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
+		URI:      "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
+		IsPublic: true,
 	})
 	assert.Nil(t, err)
 }
@@ -257,6 +266,7 @@ func Test_common_newParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	_, err := newParquetFileReader(CommonOption{
 		URI:           "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
 		ObjectVersion: "random-version-id",
+		IsPublic:      true,
 	})
 	assert.NotNil(t, err)
 	// refer to https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html
