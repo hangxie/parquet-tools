@@ -35,11 +35,12 @@ type CommonOption struct {
 	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
+// ReadOption include options for read operation
 type ReadOption struct {
 	CommonOption
-	HttpMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
-	HttpIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
-	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
+	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
+	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
+	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
 	IsPublic               bool              `help:"(S3 URI only) object is publicly accessible." default:"false"`
 }
@@ -141,7 +142,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 		}
 	case "http", "https":
-		fileReader, err = http.NewHttpReader(option.URI, option.HttpMultipleConnection, option.HttpIgnoreTLSError, option.HttpExtraHeaders)
+		fileReader, err = http.NewHttpReader(option.URI, option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
 		}

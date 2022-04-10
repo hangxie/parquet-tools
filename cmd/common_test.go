@@ -543,9 +543,9 @@ func Test_common_decimalToFloat_invalid_type(t *testing.T) {
 func Test_common_newParquetFileReader_http_bad_url(t *testing.T) {
 	option := ReadOption{}
 	option.URI = "https://no-such-host.tld/"
-	option.HttpMultipleConnection = true
-	option.HttpIgnoreTLSError = true
-	option.HttpExtraHeaders = map[string]string{"key": "value"}
+	option.HTTPMultipleConnection = true
+	option.HTTPIgnoreTLSError = true
+	option.HTTPExtraHeaders = map[string]string{"key": "value"}
 	_, err := newParquetFileReader(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "no such host")
@@ -554,9 +554,9 @@ func Test_common_newParquetFileReader_http_bad_url(t *testing.T) {
 func Test_common_newParquetFileReader_http_no_range_support(t *testing.T) {
 	option := ReadOption{}
 	option.URI = "https://www.google.com/"
-	option.HttpMultipleConnection = false
-	option.HttpIgnoreTLSError = true
-	option.HttpExtraHeaders = map[string]string{"key": "value"}
+	option.HTTPMultipleConnection = false
+	option.HTTPIgnoreTLSError = true
+	option.HTTPExtraHeaders = map[string]string{"key": "value"}
 	_, err := newParquetFileReader(option)
 
 	assert.NotNil(t, err)
@@ -566,9 +566,9 @@ func Test_common_newParquetFileReader_http_no_range_support(t *testing.T) {
 func Test_common_newParquetFileReader_http_good(t *testing.T) {
 	option := ReadOption{}
 	option.URI = "https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet"
-	option.HttpMultipleConnection = true
-	option.HttpIgnoreTLSError = false
-	option.HttpExtraHeaders = map[string]string{"key": "value"}
+	option.HTTPMultipleConnection = true
+	option.HTTPIgnoreTLSError = false
+	option.HTTPExtraHeaders = map[string]string{"key": "value"}
 	_, err := newParquetFileReader(option)
 	assert.Nil(t, err)
 }
