@@ -30,6 +30,15 @@ import (
 	"github.com/xitongsys/parquet-go/writer"
 )
 
+const (
+	schemeLocal              string = "file"
+	schemeAWSS3              string = "s3"
+	schemeGoogleCloudStorage string = "gs"
+	schemeAzureStorageBlob   string = "wasbs"
+	schemeHTTP               string = "http"
+	schemeHTTPS              string = "https"
+)
+
 // CommonOption represents common options across most commands
 type CommonOption struct {
 	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
@@ -66,10 +75,10 @@ func parseURI(uri string) (*url.URL, error) {
 	}
 
 	if u.Scheme == "" {
-		u.Scheme = "file"
+		u.Scheme = schemeLocal
 	}
 
-	if u.Scheme == "file" {
+	if u.Scheme == schemeLocal {
 		u.Path = filepath.Join(u.Host, u.Path)
 		u.Host = ""
 	}
@@ -107,7 +116,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 
 	var fileReader source.ParquetFile
 	switch u.Scheme {
-	case "s3":
+	case schemeAWSS3:
 		s3Client, err := getS3Client(u.Host, option.IsPublic)
 		if err != nil {
 			return nil, err
@@ -121,17 +130,17 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", option.URI, option.ObjectVersion, err.Error())
 		}
-	case "file":
+	case schemeLocal:
 		fileReader, err = local.NewLocalFileReader(u.Path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
 		}
-	case "gs":
+	case schemeGoogleCloudStorage:
 		fileReader, err = gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
 		}
-	case "wasbs":
+	case schemeAzureStorageBlob:
 		azURL, cred, err := azureAccessDetail(*u)
 		if err != nil {
 			return nil, err
@@ -141,7 +150,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 		}
-	case "http", "https":
+	case schemeHTTP, schemeHTTPS:
 		fileReader, err = http.NewHttpReader(option.URI, option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
@@ -161,7 +170,7 @@ func newFileWriter(option CommonOption) (source.ParquetFile, error) {
 
 	var fileWriter source.ParquetFile
 	switch u.Scheme {
-	case "s3":
+	case schemeAWSS3:
 		s3Client, err := getS3Client(u.Host, false)
 		if err != nil {
 			return nil, err
@@ -171,17 +180,17 @@ func newFileWriter(option CommonOption) (source.ParquetFile, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
 		}
-	case "file":
+	case schemeLocal:
 		fileWriter, err = local.NewLocalFileWriter(u.Path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
 		}
-	case "gs":
+	case schemeGoogleCloudStorage:
 		fileWriter, err = gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
 		}
-	case "wasbs":
+	case schemeAzureStorageBlob:
 		azURL, cred, err := azureAccessDetail(*u)
 		if err != nil {
 			return nil, err
@@ -191,7 +200,7 @@ func newFileWriter(option CommonOption) (source.ParquetFile, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 		}
-	case "http", "https":
+	case schemeHTTP, schemeHTTPS:
 		return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
