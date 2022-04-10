@@ -14,7 +14,7 @@ import (
 
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
-	CommonOption
+	ReadOption
 	Base64 bool `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
 }
 
@@ -45,7 +45,7 @@ type parquetMeta struct {
 
 // Run does actual meta job
 func (c *MetaCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.CommonOption)
+	reader, err := newParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}

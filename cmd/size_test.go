@@ -8,8 +8,10 @@ import (
 
 func Test_SizeCmd_Run_non_existent_file(t *testing.T) {
 	cmd := &SizeCmd{
-		CommonOption: CommonOption{
-			URI: "file/does/not/exist",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file/does/not/exist",
+			},
 		},
 	}
 
@@ -21,8 +23,10 @@ func Test_SizeCmd_Run_non_existent_file(t *testing.T) {
 func Test_SizeCmd_Run_invalid_query(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "invalid",
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -34,8 +38,10 @@ func Test_SizeCmd_Run_invalid_query(t *testing.T) {
 func Test_SizeCmd_Run_good_raw(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "raw",
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -50,8 +56,10 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "raw",
 		JSON:  true,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -65,8 +73,10 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "uncompressed",
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -81,8 +91,10 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "uncompressed",
 		JSON:  true,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -96,8 +108,10 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 func Test_SizeCmd_Run_good_footer(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "footer",
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -112,8 +126,10 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "footer",
 		JSON:  true,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -127,8 +143,10 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 func Test_SizeCmd_Run_good_all(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "all",
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 
@@ -143,8 +161,10 @@ func Test_SizeCmd_Run_good_all_json(t *testing.T) {
 	cmd := &SizeCmd{
 		Query: "all",
 		JSON:  true,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 	}
 

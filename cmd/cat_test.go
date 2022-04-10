@@ -11,8 +11,10 @@ func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "file/does/not/exist",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file/does/not/exist",
+			},
 		},
 		Format: "json",
 	}
@@ -27,8 +29,10 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 		Limit:       0,
 		PageSize:    10,
 		SampleRatio: 0.5,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -47,8 +51,10 @@ func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
 		Limit:       10,
 		PageSize:    0,
 		SampleRatio: 0.5,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -63,8 +69,10 @@ func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 2.0,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -79,8 +87,10 @@ func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: -0.5,
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -95,8 +105,10 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -114,8 +126,10 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "jsonl",
 	}
@@ -133,8 +147,10 @@ func Test_CatCmd_Run_bad_format(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "random-dude",
 	}
@@ -154,8 +170,10 @@ func Test_CatCmd_Run_good_skip(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -174,8 +192,10 @@ func Test_CatCmd_Run_good_all_skip(t *testing.T) {
 		Limit:       10,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -192,8 +212,10 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 		Limit:       2,
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -211,8 +233,10 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 		Limit:       2,
 		PageSize:    10,
 		SampleRatio: 0.0,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -229,8 +253,10 @@ func Test_CatCmd_Run_good_empty(t *testing.T) {
 		Limit:       2,
 		PageSize:    10,
 		SampleRatio: 0.0,
-		CommonOption: CommonOption{
-			URI: "testdata/empty.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/empty.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -246,8 +272,10 @@ func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	cmd := &CatCmd{
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-scalar.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-scalar.parquet",
+			},
 		},
 		Format: "jsonl",
 	}
@@ -264,8 +292,10 @@ func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 	cmd := &CatCmd{
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-pointer.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-pointer.parquet",
+			},
 		},
 		Format: "jsonl",
 	}
@@ -282,8 +312,10 @@ func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 	cmd := &CatCmd{
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-list.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-list.parquet",
+			},
 		},
 		Format: "jsonl",
 	}
@@ -300,8 +332,10 @@ func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	cmd := &CatCmd{
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-map-key.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-map-key.parquet",
+			},
 		},
 		Format: "jsonl",
 	}
@@ -318,8 +352,10 @@ func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	cmd := &CatCmd{
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-map-value.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-map-value.parquet",
+			},
 		},
 		Format: "jsonl",
 	}
@@ -336,8 +372,10 @@ func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 	cmd := &CatCmd{
 		PageSize:    10,
 		SampleRatio: 1.0,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-composite.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-composite.parquet",
+			},
 		},
 		Format: "jsonl",
 	}

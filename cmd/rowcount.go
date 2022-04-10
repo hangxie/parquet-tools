@@ -6,12 +6,12 @@ import (
 
 // RowCountCmd is a kong command for rowcount
 type RowCountCmd struct {
-	CommonOption
+	ReadOption
 }
 
 // Run does actual rowcount job
 func (c *RowCountCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.CommonOption)
+	reader, err := newParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
