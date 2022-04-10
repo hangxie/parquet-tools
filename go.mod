@@ -66,10 +66,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
 
-replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
-
-replace github.com/xitongsys/parquet-go => github.com/xitongsys/parquet-go v1.6.3-0.20211225081130-7857c9514e69
-
-replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.0.0
-
 replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20220331185016-7e9b9c25ec3f
