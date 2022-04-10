@@ -32,12 +32,16 @@ import (
 
 // CommonOption represents common options across most commands
 type CommonOption struct {
-	URI                    string            `arg:"" predictor:"file" help:"URI of Parquet file."`
-	HttpMultipleConnection bool              `help:"(HTTP endpoint only) use multiple HTTP connection." default:"false"`
-	HttpIgnoreTLSError     bool              `help:"(HTTP endpoint only) ignore TLS error." default:"false"`
-	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP endpoint only) extra HTTP headers." default:""`
-	ObjectVersion          string            `help:"(S3 reader only) object version." default:""`
-	IsPublic               bool              `help:"(S3 reader only) object is publicly accessible." default:"false"`
+	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
+}
+
+type ReadOption struct {
+	CommonOption
+	HttpMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
+	HttpIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
+	HttpExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
+	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
+	IsPublic               bool              `help:"(S3 URI only) object is publicly accessible." default:"false"`
 }
 
 // Context represents command's context
@@ -94,7 +98,7 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 	return s3.NewFromConfig(cfg), nil
 }
 
-func newParquetFileReader(option CommonOption) (*reader.ParquetReader, error) {
+func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 	u, err := parseURI(option.URI)
 	if err != nil {
 		return nil, err

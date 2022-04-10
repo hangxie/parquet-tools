@@ -8,8 +8,10 @@ import (
 
 func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 	cmd := &RowCountCmd{
-		CommonOption: CommonOption{
-			URI: "file/does/not/exist",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file/does/not/exist",
+			},
 		},
 	}
 
@@ -20,8 +22,10 @@ func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 
 func Test_RowCountCmd_Run_good(t *testing.T) {
 	cmd := &RowCountCmd{
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 	}
 

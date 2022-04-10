@@ -70,8 +70,10 @@ func Test_SchemaCmd_goTypeStr_good(t *testing.T) {
 
 func Test_SchemaCmd_Run_non_existent(t *testing.T) {
 	cmd := &SchemaCmd{
-		CommonOption: CommonOption{
-			URI: "file/does/not/exist",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file/does/not/exist",
+			},
 		},
 	}
 
@@ -82,8 +84,10 @@ func Test_SchemaCmd_Run_non_existent(t *testing.T) {
 
 func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 	cmd := &SchemaCmd{
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "invalid",
 	}
@@ -95,8 +99,10 @@ func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 
 func Test_SchemaCmd_Run_good_raw(t *testing.T) {
 	cmd := &SchemaCmd{
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "raw",
 	}
@@ -111,8 +117,10 @@ func Test_SchemaCmd_Run_good_raw(t *testing.T) {
 
 func Test_SchemaCmd_Run_good_json(t *testing.T) {
 	cmd := &SchemaCmd{
-		CommonOption: CommonOption{
-			URI: "testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
 		},
 		Format: "json",
 	}
@@ -127,8 +135,10 @@ func Test_SchemaCmd_Run_good_json(t *testing.T) {
 
 func Test_SchemaCmd_Run_good_go(t *testing.T) {
 	cmd := &SchemaCmd{
-		CommonOption: CommonOption{
-			URI: "file://./testdata/all-types.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file://./testdata/all-types.parquet",
+			},
 		},
 		Format: "go",
 	}

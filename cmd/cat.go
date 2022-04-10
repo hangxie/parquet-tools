@@ -17,7 +17,7 @@ import (
 
 // CatCmd is a kong command for cat
 type CatCmd struct {
-	CommonOption
+	ReadOption
 	Skip        uint32  `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
@@ -51,7 +51,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
-	reader, err := newParquetFileReader(c.CommonOption)
+	reader, err := newParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}

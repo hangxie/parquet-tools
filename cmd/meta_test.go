@@ -73,8 +73,10 @@ func Test_retrieveValue_string(t *testing.T) {
 
 func Test_MetaCmd_Run_non_existent(t *testing.T) {
 	cmd := &MetaCmd{
-		CommonOption: CommonOption{
-			URI: "file/does/not/exist",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file/does/not/exist",
+			},
 		},
 	}
 
@@ -86,8 +88,10 @@ func Test_MetaCmd_Run_non_existent(t *testing.T) {
 func Test_MetaCmd_Run_good_base64(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: true,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 	}
 
@@ -109,8 +113,10 @@ func Test_MetaCmd_Run_good_base64(t *testing.T) {
 func Test_MetaCmd_Run_good_raw(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/good.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
 		},
 	}
 
@@ -132,8 +138,10 @@ func Test_MetaCmd_Run_good_raw(t *testing.T) {
 func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/nil-statistics.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/nil-statistics.parquet",
+			},
 		},
 	}
 
@@ -157,8 +165,10 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: true,
-		CommonOption: CommonOption{
-			URI: "testdata/sorting-col.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/sorting-col.parquet",
+			},
 		},
 	}
 
@@ -181,8 +191,10 @@ func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-scalar.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-scalar.parquet",
+			},
 		},
 	}
 
@@ -197,8 +209,10 @@ func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-pointer.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-pointer.parquet",
+			},
 		},
 	}
 
@@ -213,8 +227,10 @@ func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
 func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-list.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-list.parquet",
+			},
 		},
 	}
 
@@ -229,8 +245,10 @@ func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
 func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-map-key.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-map-key.parquet",
+			},
 		},
 	}
 
@@ -245,8 +263,10 @@ func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
 func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-map-value.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-map-value.parquet",
+			},
 		},
 	}
 
@@ -261,8 +281,10 @@ func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
 func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: false,
-		CommonOption: CommonOption{
-			URI: "testdata/reinterpret-composite.parquet",
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/reinterpret-composite.parquet",
+			},
 		},
 	}
 

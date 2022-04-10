@@ -18,13 +18,13 @@ var (
 
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
-	CommonOption
+	ReadOption
 	Format string `short:"f" help:"Schema format (raw/json/go)." enum:"raw,json,go" default:"json"`
 }
 
 // Run does actual schema job
 func (c *SchemaCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.CommonOption)
+	reader, err := newParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
