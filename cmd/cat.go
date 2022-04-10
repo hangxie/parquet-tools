@@ -118,7 +118,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 			}
 
 			fmt.Print(string(buf))
-			counter += 1
+			counter++
 			if counter >= c.Limit {
 				break
 			}
