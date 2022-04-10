@@ -193,13 +193,13 @@ func Test_common_parseURI_good(t *testing.T) {
 
 	u, err = parseURI("path/to/file")
 	assert.Nil(t, err)
-	assert.Equal(t, "file", u.Scheme)
+	assert.Equal(t, schemeLocal, u.Scheme)
 	assert.Equal(t, "", u.Host)
 	assert.Equal(t, "path/to/file", u.Path)
 
 	u, err = parseURI("file://path/to/file")
 	assert.Nil(t, err)
-	assert.Equal(t, "file", u.Scheme)
+	assert.Equal(t, schemeLocal, u.Scheme)
 	assert.Equal(t, "", u.Host)
 	assert.Equal(t, "path/to/file", u.Path)
 }
