@@ -401,7 +401,6 @@ func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
 }
 
 func Test_common_newCSVWriter_invalid_schema(t *testing.T) {
-	// invalid schema will cause panic
 	option := CommonOption{
 		URI: os.TempDir() + "/csv-writer.parquet",
 	}
