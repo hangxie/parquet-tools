@@ -13,6 +13,10 @@ type VersionCmd struct {
 
 // Run does actual version job
 func (c *VersionCmd) Run(ctx *Context) error {
+	if ctx == nil {
+		return fmt.Errorf("cannot retrieve build information")
+	}
+
 	if !c.JSON {
 		fmt.Println(ctx.Version)
 		if c.BuildTime {

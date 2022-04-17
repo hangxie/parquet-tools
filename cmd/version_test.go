@@ -6,11 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_VersionCmd_Run_panic(t *testing.T) {
+func Test_VersionCmd_Run_invalid_call(t *testing.T) {
 	cmd := &VersionCmd{}
-	assert.Panics(t, func() { assert.NotNil(t, cmd.Run(nil)) })
-	ctx := Context{}
-	assert.NotPanics(t, func() { assert.Nil(t, cmd.Run(&ctx)) })
+	err := cmd.Run(nil)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "cannot retrieve build information")
 }
 
 func Test_VersionCmd_Run_good_plain(t *testing.T) {
