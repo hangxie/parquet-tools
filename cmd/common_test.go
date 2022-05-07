@@ -308,21 +308,21 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 // newFileWriter
 func Test_common_newFileWriter_invalid_uri(t *testing.T) {
 	option := CommonOption{URI: "://uri"}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_common_newFileWriter_invalid_uri_scheme(t *testing.T) {
 	option := CommonOption{URI: "invalid-scheme://something"}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unknown location scheme")
 }
 
 func Test_common_newFileWriter_local_not_a_file(t *testing.T) {
 	option := CommonOption{URI: "testdata/"}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "is a directory")
 }
@@ -331,7 +331,7 @@ func Test_common_newFileWriter_local_good(t *testing.T) {
 	option := CommonOption{
 		URI: os.TempDir() + "/file-writer.parquet",
 	}
-	fw, err := newFileWriter(option)
+	fw, err := newParquetFileWriter(option)
 	assert.Nil(t, err)
 	assert.NotNil(t, fw)
 	fw.Close()
@@ -341,7 +341,7 @@ func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
 	option := CommonOption{
 		URI: fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()),
 	}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
@@ -354,7 +354,7 @@ func Test_common_newFileWriter_s3_good(t *testing.T) {
 	option := CommonOption{
 		URI: "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
 	}
-	fw, err := newFileWriter(option)
+	fw, err := newParquetFileWriter(option)
 	assert.Nil(t, err)
 	assert.NotNil(t, fw)
 	fw.Close()
@@ -368,7 +368,7 @@ func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
 	option := CommonOption{
 		URI: "gs://cloud-samples-data/bigquery/us-states/us-states.parquet",
 	}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to open GCS object")
 }
@@ -380,14 +380,14 @@ func Test_common_newFileWriter_azblob_invalid_url(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := CommonOption{URI: "wasbs://bad/url"}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 }
 
 func Test_common_newFileWriter_http_not_supported(t *testing.T) {
 	option := CommonOption{URI: "https://domain.tld/path/to/file"}
-	_, err := newFileWriter(option)
+	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "writing to https endpoint is not currently supported")
 }

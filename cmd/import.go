@@ -62,7 +62,6 @@ func (c *ImportCmd) importCSV() error {
 		if err == io.EOF {
 			break
 		}
-
 		parquetFields := make([]*string, len(fields))
 		for i := 0; i < len(fields); i++ {
 			parquetFields[i] = &fields[i]
