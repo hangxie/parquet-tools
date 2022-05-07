@@ -162,7 +162,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
 
-func newFileWriter(option CommonOption) (source.ParquetFile, error) {
+func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
 	u, err := parseURI(option.URI)
 	if err != nil {
 		return nil, err
@@ -210,7 +210,7 @@ func newFileWriter(option CommonOption) (source.ParquetFile, error) {
 }
 
 func newCSVWriter(option CommonOption, schema []string) (*writer.CSVWriter, error) {
-	fileWriter, err := newFileWriter(option)
+	fileWriter, err := newParquetFileWriter(option)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +219,7 @@ func newCSVWriter(option CommonOption, schema []string) (*writer.CSVWriter, erro
 }
 
 func newJSONWriter(option CommonOption, schema string) (*writer.JSONWriter, error) {
-	fileWriter, err := newFileWriter(option)
+	fileWriter, err := newParquetFileWriter(option)
 	if err != nil {
 		return nil, err
 	}
@@ -339,8 +339,7 @@ func newSchemaTree(reader *reader.ParquetReader) *schemaNode {
 	}
 	stack = append(stack, root)
 
-	pos := 1
-	for len(stack) > 0 {
+	for pos := 1; len(stack) > 0; {
 		node := stack[len(stack)-1]
 		if len(node.Children) < int(node.SchemaElement.GetNumChildren()) {
 			childNode := &schemaNode{

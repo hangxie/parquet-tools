@@ -23,4 +23,3 @@ install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
 
 %files
 %{_bindir}/%{name}
-

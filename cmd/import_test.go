@@ -134,6 +134,10 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 
 	err := cmd.importCSV()
 	assert.Nil(t, err)
+
+	reader, err := newParquetFileReader(ReadOption{CommonOption: cmd.CommonOption})
+	assert.Nil(t, err)
+	assert.Equal(t, reader.GetNumRows(), int64(7))
 }
 
 func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {

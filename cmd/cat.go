@@ -26,9 +26,9 @@ type CatCmd struct {
 }
 
 var delimiter = map[string]struct {
-	begin string
-	line  string
-	end   string
+	begin     string
+	delimiter string
+	end       string
 }{
 	"json":  {"[", ",", "]"},
 	"jsonl": {"", "\n", ""},
@@ -89,7 +89,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 				continue
 			}
 			if counter != 0 {
-				fmt.Print(delimiter[c.Format].line)
+				fmt.Print(delimiter[c.Format].delimiter)
 			}
 
 			rowValue := reflect.ValueOf(&row).Elem()
