@@ -22,7 +22,7 @@ type CatCmd struct {
 	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
-	Format      string  `help:"output format (json/jsonl)" enum:"json,jsonl" default:"json"`
+	Format      string  `short:"f" help:"output format (json/jsonl)" enum:"json,jsonl" default:"json"`
 }
 
 var delimiter = map[string]struct {
