@@ -111,6 +111,11 @@ jobs:
       - setup_remote_docker:
           version: 19.03.14
       - run:
+          name: Prepare workspace directory
+          command: mkdir -p ./build
+      - attach_workspace:
+          at: ./build
+      - run:
           name: Build and push to docker hub
           no_output_timeout: 60m
           command: |
@@ -120,7 +125,7 @@ jobs:
             docker context create multi-platform
             docker buildx create multi-platform --platform ${PLATFORM} --use
             docker buildx build --progress plain \
-                -f package/Dockerfile --push \
+                -f package/docker/Dockerfile-ci --push \
                 --platform ${PLATFORM} \
                 -t hangxie/parquet-tools:${CIRCLE_TAG} \
                 -t hangxie/parquet-tools:latest \
@@ -180,7 +185,7 @@ workflows:
       - publish-docker-image:
           context: parquet-tools
           requires:
-            - build
+            - release-build
           filters:
             branches:
               ignore: /.*/
