@@ -9,6 +9,9 @@ RUN apt-get update -qq \
 
 FROM debian:stretch-slim
 ARG DEBIAN_FRONTEND=noninteractive
+
+COPY --from=builder /src/build/parquet-tools /app/
+
 RUN adduser --home /app --disabled-password --system app \
  && echo This is to fix linux/arm build \
  && for U in dpkg-split dpkg-deb tar rm; do \
@@ -23,6 +26,5 @@ RUN adduser --home /app --disabled-password --system app \
     done
 
 USER app
-COPY --from=builder /src/build/parquet-tools /app/
 WORKDIR /app
 ENTRYPOINT ["/app/parquet-tools"]

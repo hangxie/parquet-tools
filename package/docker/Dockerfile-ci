@@ -1,0 +1,37 @@
+FROM debian:stretch-slim
+ARG DEBIAN_FRONTEND=noninteractive
+
+COPY ./build/release/*-linux*.gz /tmp/
+
+RUN adduser --home /app --disabled-password --system app \
+ && echo This is to fix linux/arm build \
+ && for U in dpkg-split dpkg-deb tar rm; do \
+        ln -fs `which $U` /usr/sbin/; \
+        ln -fs `which $U` /usr/local/sbin/; \
+    done \
+ && apt-get update -qq \
+ && apt-get -y -qq install ca-certificates \
+ && case $(uname -m) in \
+        aarch64) \
+            gunzip -c /tmp/*-linux-arm64.gz > /app/parquet-tools \
+            ;; \
+        x86_64) \
+            gunzip -c /tmp/*-linux-amd64.gz > /app/parquet-tools \
+            ;; \
+        armv7l) \
+            gunzip -c /tmp/*-linux-arm.gz > /app/parquet-tools \
+            ;; \
+        *) \
+            echo Unsupported arch $(uname -m); \
+            exit 1 \
+            ;; \
+    esac \
+ && chmod +x /app/parquet-tools \
+ && rm -rf /var/lib/apt/lists/* /tmp/*-linux*.gz \
+ && for U in dpkg-split dpkg-deb tar rm; do \
+        rm /usr/sbin/$U /usr/local/sbin/$U; \
+    done
+
+USER app
+WORKDIR /app
+ENTRYPOINT ["/app/parquet-tools"]
