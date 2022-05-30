@@ -132,6 +132,9 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 				ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s",
 					s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), repetitionType)
 			}
+		case parquet.ConvertedType_INTERVAL:
+			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, length=12, repetitiontype=%s",
+				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionType)
 		default:
 			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, repetitiontype=%s",
 				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionType)
@@ -207,6 +210,10 @@ func (s *schemaNode) getStructTags() string {
 			// DECIMAL with BYTE_ARRAY, INT32, INT63
 			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s\"`",
 				s.Name, s.Type, s.Type, s.GetScale(), s.GetPrecision(), repetitionStr)
+		case parquet.ConvertedType_INTERVAL:
+			// INTERVAL has fixed length
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, length=12, repetitiontype=%s\"`",
+				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
 		default:
 			// with type and converted type
 			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, repetitiontype=%s\"`",

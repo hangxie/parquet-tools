@@ -26,7 +26,7 @@ Timestampmillis int64 `parquet:"name=Timestampmillis, type=INT64, convertedtype=
 Timestampmillis2 int64 `parquet:"name=Timestampmillis2, type=INT64, repetitiontype=REQUIRED"`
 Timestampmicros int64 `parquet:"name=Timestampmicros, type=INT64, convertedtype=TIMESTAMP_MICROS, repetitiontype=REQUIRED"`
 Timestampmicros2 int64 `parquet:"name=Timestampmicros2, type=INT64, repetitiontype=REQUIRED"`
-Interval string `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, repetitiontype=REQUIRED"`
+Interval string `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, repetitiontype=REQUIRED"`
 Decimal1 int32 `parquet:"name=Decimal1, type=INT32, convertedtype=INT32, scale=2, precision=9, repetitiontype=REQUIRED"`
 Decimal2 int64 `parquet:"name=Decimal2, type=INT64, convertedtype=INT64, scale=2, precision=18, repetitiontype=REQUIRED"`
 Decimal3 string `parquet:"name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=REQUIRED"`

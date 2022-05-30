@@ -83,7 +83,7 @@
       "Tag": "name=Timestampmicros2, type=INT64, repetitiontype=REQUIRED"
     },
     {
-      "Tag": "name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, repetitiontype=REQUIRED"
+      "Tag": "name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, repetitiontype=REQUIRED"
     },
     {
       "Tag": "name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, repetitiontype=REQUIRED"
