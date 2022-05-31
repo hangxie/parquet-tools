@@ -67,3 +67,5 @@ require (
 )
 
 replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20220331185016-7e9b9c25ec3f
+
+replace gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0
