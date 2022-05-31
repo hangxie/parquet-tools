@@ -392,6 +392,8 @@ Each source data file format has its own dedicated schema format:
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/json.schema).
 * JSONL: use same schema as JSON format.
 
+You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149. 
+
 #### Import from CSV
 
 ```bash
