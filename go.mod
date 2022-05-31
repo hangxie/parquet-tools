@@ -12,7 +12,7 @@ require (
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.7.0
 	github.com/willabides/kongplete v0.2.0
-	github.com/xitongsys/parquet-go v1.6.3-0.20220514031026-134bd047b233
+	github.com/xitongsys/parquet-go v1.6.3-0.20220527110957-00fdcebed83d
 	github.com/xitongsys/parquet-go-source v0.0.0-20220315005136-aec0fe3e777c
 )
 
