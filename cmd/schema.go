@@ -188,44 +188,50 @@ func (s *schemaNode) goStruct(withName bool) string {
 
 func (s *schemaNode) getStructTags() string {
 	repetitionStr := repetitionTyeStr(s.SchemaElement)
+	if repetitionStr == "REQUIRED" {
+		repetitionStr = ""
+	} else {
+		repetitionStr = ", repetitiontype=" + repetitionStr
+	}
+
 	if s.Type == nil && s.ConvertedType == nil {
 		// STRUCT
-		return fmt.Sprintf("`parquet:\"name=%s, repetitiontype=%s\"`", s.Name, repetitionStr)
+		return fmt.Sprintf("`parquet:\"name=%s%s\"`", s.Name, repetitionStr)
 	}
 
 	if s.ConvertedType != nil {
 		switch *s.ConvertedType {
 		case parquet.ConvertedType_LIST:
-			return fmt.Sprintf("`parquet:\"name=%s, type=LIST, repetitiontype=%s, valuetype=%s\"`",
+			return fmt.Sprintf("`parquet:\"name=%s, type=LIST%s, valuetype=%s\"`",
 				s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement))
 		case parquet.ConvertedType_MAP:
-			return fmt.Sprintf("`parquet:\"name=%s, type=MAP, repetitiontype=%s, keytype=%s, valuetype=%s\"`",
+			return fmt.Sprintf("`parquet:\"name=%s, type=MAP%s, keytype=%s, valuetype=%s\"`",
 				s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement), typeStr(s.Children[0].Children[1].SchemaElement))
 		case parquet.ConvertedType_DECIMAL:
 			// DECIMAL with FIXED_LEN_BYTE_ARRAY
 			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-				return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s\"`",
+				return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d%s\"`",
 					s.Name, s.Type, s.ConvertedType, s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionStr)
 			}
 			// DECIMAL with BYTE_ARRAY, INT32, INT63
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s\"`",
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d%s\"`",
 				s.Name, s.Type, s.Type, s.GetScale(), s.GetPrecision(), repetitionStr)
 		case parquet.ConvertedType_INTERVAL:
 			// INTERVAL has fixed length
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, length=12, repetitiontype=%s\"`",
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, length=12%s\"`",
 				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
 		default:
 			// with type and converted type
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, repetitiontype=%s\"`",
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s%s\"`",
 				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
 
 		}
 	} else if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
 		// plain FIXED_LEN_BYTE_ARRAY without converted type
-		return fmt.Sprintf("`parquet:\"name=%s, type=%s, length=%d, repetitiontype=%s\"`",
+		return fmt.Sprintf("`parquet:\"name=%s, type=%s, length=%d%s\"`",
 			s.Name, s.Type, s.GetTypeLength(), repetitionStr)
 	}
 
 	// with type only
-	return fmt.Sprintf("`parquet:\"name=%s, type=%s, repetitiontype=%s\"`", s.Name, typeStr(s.SchemaElement), repetitionStr)
+	return fmt.Sprintf("`parquet:\"name=%s, type=%s%s\"`", s.Name, typeStr(s.SchemaElement), repetitionStr)
 }
