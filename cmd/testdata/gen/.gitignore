@@ -1,0 +1,2 @@
+# all parquet files under this directory are generated
+*.parquet
