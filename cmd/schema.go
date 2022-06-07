@@ -105,6 +105,7 @@ type jsonSchemaNode struct {
 func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 	ret := &jsonSchemaNode{}
 	repetitionType := repetitionTyeStr(s.SchemaElement)
+	logicalTypeTag := getLogicalTypeTag(s.LogicalType)
 
 	if s.Type == nil && s.ConvertedType == nil {
 		// STRUCT
@@ -143,7 +144,7 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 		ret.Tag = fmt.Sprintf("name=%s, type=%s, length=%d, repetitiontype=%s",
 			s.Name, s.Type.String(), s.GetTypeLength(), repetitionType)
 	} else {
-		ret.Tag = fmt.Sprintf("name=%s, type=%s, repetitiontype=%s", s.Name, typeStr(s.SchemaElement), repetitionType)
+		ret.Tag = fmt.Sprintf("name=%s, type=%s, repetitiontype=%s%s", s.Name, typeStr(s.SchemaElement), repetitionType, logicalTypeTag)
 	}
 
 	ret.Fields = make([]*jsonSchemaNode, len(s.Children))
@@ -193,6 +194,7 @@ func (s *schemaNode) getStructTags() string {
 	} else {
 		repetitionStr = ", repetitiontype=" + repetitionStr
 	}
+	logicalTypeTag := getLogicalTypeTag(s.LogicalType)
 
 	if s.Type == nil && s.ConvertedType == nil {
 		// STRUCT
@@ -222,9 +224,8 @@ func (s *schemaNode) getStructTags() string {
 				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
 		default:
 			// with type and converted type
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s%s\"`",
-				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
-
+			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s%s%s\"`",
+				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr, logicalTypeTag)
 		}
 	} else if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
 		// plain FIXED_LEN_BYTE_ARRAY without converted type
@@ -233,5 +234,5 @@ func (s *schemaNode) getStructTags() string {
 	}
 
 	// with type only
-	return fmt.Sprintf("`parquet:\"name=%s, type=%s%s\"`", s.Name, typeStr(s.SchemaElement), repetitionStr)
+	return fmt.Sprintf("`parquet:\"name=%s, type=%s%s%s\"`", s.Name, typeStr(s.SchemaElement), repetitionStr, logicalTypeTag)
 }
