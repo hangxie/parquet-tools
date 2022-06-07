@@ -6,6 +6,9 @@ Int96 string `parquet:"name=Int96, type=INT96, repetitiontype=REQUIRED"`
 Float float32 `parquet:"name=Float, type=FLOAT, repetitiontype=REQUIRED"`
 Double float64 `parquet:"name=Double, type=DOUBLE, repetitiontype=REQUIRED"`
 Bytearray string `parquet:"name=Bytearray, type=BYTE_ARRAY, repetitiontype=REQUIRED"`
+Enum string `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM, repetitiontype=REQUIRED"`
+Uuid string `parquet:"name=Uuid, type=BYTE_ARRAY, repetitiontype=REQUIRED"`
+Json string `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON, repetitiontype=REQUIRED"`
 FixedLenByteArray string `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, repetitiontype=REQUIRED"`
 Utf8 string `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
 Int_8 int32 `parquet:"name=Int_8, type=INT32, convertedtype=INT_8, repetitiontype=REQUIRED"`
@@ -41,7 +44,7 @@ Map map[string]int32 `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keyt
 List []string `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=BYTE_ARRAY"`
 } `parquet:"name=NestedMap, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, valuetype=STRUCT"`
 NestedList []struct {
-Map map[string]string `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, valuetype=BYTE_ARRAY"`
-List []int32 `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=INT32"`
+Map map[string]int32 `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, valuetype=INT32"`
+List []string `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=BYTE_ARRAY"`
 } `parquet:"name=NestedList, type=LIST, repetitiontype=REQUIRED, valuetype=STRUCT"`
 }

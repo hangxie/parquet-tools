@@ -48,7 +48,7 @@ func Test_SizeCmd_Run_good_raw(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "11593\n", stdout)
+	assert.Equal(t, "17908\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -66,7 +66,7 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Raw":11593}`+"\n", stdout)
+	assert.Equal(t, `{"Raw":17908}`+"\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -83,7 +83,7 @@ func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "12186\n", stdout)
+	assert.Equal(t, "26510\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -101,7 +101,7 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Uncompressed":12186}`+"\n", stdout)
+	assert.Equal(t, `{"Uncompressed":26510}`+"\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -118,7 +118,7 @@ func Test_SizeCmd_Run_good_footer(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "5541\n", stdout)
+	assert.Equal(t, "6402\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -136,7 +136,7 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Footer":5541}`+"\n", stdout)
+	assert.Equal(t, `{"Footer":6402}`+"\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -153,7 +153,7 @@ func Test_SizeCmd_Run_good_all(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "11593 12186 5541\n", stdout)
+	assert.Equal(t, "17908 26510 6402\n", stdout)
 	assert.Equal(t, "", stderr)
 }
 
@@ -171,6 +171,6 @@ func Test_SizeCmd_Run_good_all_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		assert.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Raw":11593,"Uncompressed":12186,"Footer":5541}`+"\n", stdout)
+	assert.Equal(t, `{"Raw":17908,"Uncompressed":26510,"Footer":6402}`+"\n", stdout)
 	assert.Equal(t, "", stderr)
 }
