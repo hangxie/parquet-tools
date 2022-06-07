@@ -15,6 +15,7 @@ type InnerMap struct {
 	Map  map[string]int32 `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
 	List []string         `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10"`
 }
+
 type AllTypes struct {
 	Bool              bool                `parquet:"name=bool, type=BOOLEAN"`
 	Int32             int32               `parquet:"name=int32, type=INT32"`
@@ -24,6 +25,8 @@ type AllTypes struct {
 	Double            float64             `parquet:"name=double, type=DOUBLE"`
 	ByteArray         string              `parquet:"name=bytearray, type=BYTE_ARRAY"`
 	Enum              string              `parquet:"name=enum, type=BYTE_ARRAY, convertedtype=ENUM"`
+	Uuid              string              `parquet:"name=uuid, type=BYTE_ARRAY, convertedtype=UUID"`
+	Json              string              `parquet:"name=json, type=BYTE_ARRAY, convertedtype=JSON"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, repetitiontype=REQUIRED"`
 	Utf8              string              `parquet:"name=utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
 	Int_8             int32               `parquet:"name=int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8"`
@@ -77,6 +80,7 @@ func main() {
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
 	for i := 0; i < 10; i++ {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
+		strI := fmt.Sprintf("%d", i)
 		value := AllTypes{
 			Bool:              i%2 == 0,
 			Int32:             int32(i),
@@ -86,6 +90,8 @@ func main() {
 			Double:            float64(i) * 0.5,
 			ByteArray:         fmt.Sprintf("ByteArray-%d", i),
 			Enum:              fmt.Sprintf("Enum-%d", i),
+			Uuid:              "12345678-ABCD-4444-" + strings.Repeat(strI, 4) + "-567890ABCDEF",
+			Json:              `{"` + strI + `":` + strI + `}`,
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
 			Int_8:             int32(i),
@@ -106,7 +112,7 @@ func main() {
 			TimestampMillis2:  int64(1640995200000 + i),
 			TimestampMicros:   int64(1640995200000000 + i),
 			TimestampMicros2:  int64(1640995200000000 + i),
-			Interval:          types.StrIntToBinary(strings.Repeat(fmt.Sprintf("%d", i), 5), "LittleEndian", 12, false),
+			Interval:          types.StrIntToBinary(strings.Repeat(strI, 5), "LittleEndian", 12, false),
 			Decimal1:          decimals[i],
 			Decimal2:          int64(decimals[i]),
 			Decimal3:          types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[i]/100.0)), "BigEndian", 12, true),
