@@ -12,8 +12,8 @@ import (
 )
 
 type InnerMap struct {
-	Map  map[string]int32 `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
-	List []string         `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10"`
+	Map  map[string]int32 `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
+	List []string         `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10"`
 }
 
 type AllTypes struct {
