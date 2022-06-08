@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 var (
@@ -177,7 +175,7 @@ func (s *schemaNode) goStruct(withName bool) string {
 	}
 
 	if withName {
-		res = cases.Title(language.Und, cases.NoLower).String(s.GetName()) + " " + res + " " + s.getStructTags()
+		res = s.Name + " " + res + " " + s.getStructTags()
 	}
 	return res
 }
