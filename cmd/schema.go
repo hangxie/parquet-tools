@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
 	"golang.org/x/text/cases"
@@ -52,9 +53,6 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 	return nil
 }
 
-// Codes below copied idea from:
-// https://github.com/xitongsys/parquet-go/blob/master/tool/parquet-tools/schematool/schematool.go
-
 type schemaNode struct {
 	parquet.SchemaElement
 	Children []*schemaNode `json:"children,omitempty"`
@@ -65,7 +63,14 @@ func typeStr(se parquet.SchemaElement) string {
 		return se.Type.String()
 	}
 	if se.ConvertedType != nil {
-		return se.ConvertedType.String()
+		switch *se.ConvertedType {
+		case parquet.ConvertedType_LIST:
+			return "LIST"
+		case parquet.ConvertedType_MAP:
+			return "MAP"
+		default:
+			return se.ConvertedType.String()
+		}
 	}
 	return "STRUCT"
 }
@@ -97,57 +102,47 @@ func goTypeStr(se parquet.SchemaElement) string {
 	return ""
 }
 
+// this represents order of tags in JSON schema and go struct
+var orderedTags []string = []string{
+	"name",
+	"type",
+	"keytype",
+	"valuetype",
+	"convertedtype",
+	"scale",
+	"precision",
+	"length",
+	"logicaltype",
+	"logicaltype.precision",
+	"logicaltype.scale",
+	"logicaltype.isadjustedtoutc",
+	"logicaltype.unit",
+	"repetitiontype",
+}
+
 type jsonSchemaNode struct {
 	Tag    string
 	Fields []*jsonSchemaNode `json:",omitempty"`
 }
 
 func (s *schemaNode) jsonSchema() *jsonSchemaNode {
-	ret := &jsonSchemaNode{}
-	repetitionType := repetitionTyeStr(s.SchemaElement)
-	logicalTypeTag := getLogicalTypeTag(s.LogicalType)
+	tagMap := s.getTagMap()
 
-	if s.Type == nil && s.ConvertedType == nil {
-		// STRUCT
-		ret.Tag = fmt.Sprintf("name=%s, repetitiontype=%s", s.Name, repetitionType)
-	} else if s.ConvertedType != nil {
-		switch *s.ConvertedType {
-		case parquet.ConvertedType_LIST:
-			// LIST has schema structure of LIST->List->Field1
-			// expected output is LIST->Element
-			ret.Tag = fmt.Sprintf("name=%s, type=LIST, repetitiontype=%s", s.Name, repetitionType)
-			s.Children = s.Children[0].Children[:1]
-			s.Children[0].Name = "Element"
-		case parquet.ConvertedType_MAP:
-			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
-			// expected output is MAP->(Key, Value)
-			ret.Tag = fmt.Sprintf("name=%s, type=MAP, repetitiontype=%s", s.Name, repetitionType)
-			s.Children = s.Children[0].Children[0:2]
-			s.Children[0].Name = "Key"
-			s.Children[1].Name = "Value"
-		case parquet.ConvertedType_DECIMAL:
-			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-				ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d, repetitiontype=%s",
-					s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionType)
-			} else {
-				ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, repetitiontype=%s",
-					s.Name, s.Type.String(), s.ConvertedType.String(), s.GetScale(), s.GetPrecision(), repetitionType)
-			}
-		case parquet.ConvertedType_INTERVAL:
-			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, length=12, repetitiontype=%s",
-				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionType)
-		default:
-			ret.Tag = fmt.Sprintf("name=%s, type=%s, convertedtype=%s, repetitiontype=%s",
-				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionType)
+	annotations := []string{}
+	for _, tag := range orderedTags {
+		// keytype and valuetype are for go struct tag only
+		if tag == "keytype" || tag == "valuetype" {
+			continue
 		}
-	} else if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
-		ret.Tag = fmt.Sprintf("name=%s, type=%s, length=%d, repetitiontype=%s",
-			s.Name, s.Type.String(), s.GetTypeLength(), repetitionType)
-	} else {
-		ret.Tag = fmt.Sprintf("name=%s, type=%s, repetitiontype=%s%s", s.Name, typeStr(s.SchemaElement), repetitionType, logicalTypeTag)
+		if val, found := tagMap[tag]; found {
+			annotations = append(annotations, tag+"="+val)
+		}
+	}
+	ret := &jsonSchemaNode{
+		Tag:    strings.Join(annotations, ", "),
+		Fields: make([]*jsonSchemaNode, len(s.Children)),
 	}
 
-	ret.Fields = make([]*jsonSchemaNode, len(s.Children))
 	for index, child := range s.Children {
 		ret.Fields[index] = child.jsonSchema()
 	}
@@ -188,51 +183,106 @@ func (s *schemaNode) goStruct(withName bool) string {
 }
 
 func (s *schemaNode) getStructTags() string {
-	repetitionStr := repetitionTyeStr(s.SchemaElement)
-	if repetitionStr == "REQUIRED" {
-		repetitionStr = ""
-	} else {
-		repetitionStr = ", repetitiontype=" + repetitionStr
-	}
-	logicalTypeTag := getLogicalTypeTag(s.LogicalType)
+	tagMap := s.getTagMap()
 
-	if s.Type == nil && s.ConvertedType == nil {
-		// STRUCT
-		return fmt.Sprintf("`parquet:\"name=%s%s\"`", s.Name, repetitionStr)
+	annotations := []string{}
+	for _, tag := range orderedTags {
+		if val, found := tagMap[tag]; found {
+			// repetitiontype=REQUIRED is redundant in go struct
+			if !(tag == "repetitiontype" && val == "REQUIRED") {
+				annotations = append(annotations, tag+"="+val)
+			}
+		}
+	}
+
+	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", "))
+}
+
+func (s *schemaNode) getTagMap() map[string]string {
+	ret := map[string]string{}
+	if s == nil {
+		return ret
+	}
+	ret["name"] = s.Name
+	ret["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
+	ret["type"] = typeStr(s.SchemaElement)
+
+	if ret["type"] == "STRUCT" {
+		return ret
+	}
+
+	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
+		ret["type"] = typeStr(s.SchemaElement)
+		ret["length"] = fmt.Sprint(*s.TypeLength)
+		return ret
 	}
 
 	if s.ConvertedType != nil {
+		ret["convertedtype"] = s.ConvertedType.String()
+
 		switch *s.ConvertedType {
 		case parquet.ConvertedType_LIST:
-			return fmt.Sprintf("`parquet:\"name=%s, type=LIST%s, valuetype=%s\"`",
-				s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement))
+			// LIST has schema structure of LIST->List->Field1
+			// expected output is LIST->Element
+			delete(ret, "convertedtype")
+			ret["valuetype"] = typeStr(s.Children[0].Children[0].SchemaElement)
+			s.Children = s.Children[0].Children[:1]
+			s.Children[0].Name = "Element"
 		case parquet.ConvertedType_MAP:
-			return fmt.Sprintf("`parquet:\"name=%s, type=MAP%s, keytype=%s, valuetype=%s\"`",
-				s.Name, repetitionStr, typeStr(s.Children[0].Children[0].SchemaElement), typeStr(s.Children[0].Children[1].SchemaElement))
+			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
+			// expected output is MAP->(Key, Value)
+			delete(ret, "convertedtype")
+			ret["keytype"] = typeStr(s.Children[0].Children[0].SchemaElement)
+			ret["valuetype"] = typeStr(s.Children[0].Children[1].SchemaElement)
+			s.Children = s.Children[0].Children[0:2]
+			s.Children[0].Name = "Key"
+			s.Children[1].Name = "Value"
 		case parquet.ConvertedType_DECIMAL:
-			// DECIMAL with FIXED_LEN_BYTE_ARRAY
+			ret["scale"] = fmt.Sprint(*s.Scale)
+			ret["precision"] = fmt.Sprint(*s.Precision)
 			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-				return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d, length=%d%s\"`",
-					s.Name, s.Type, s.ConvertedType, s.GetScale(), s.GetPrecision(), s.GetTypeLength(), repetitionStr)
+				ret["length"] = fmt.Sprint(*s.TypeLength)
 			}
-			// DECIMAL with BYTE_ARRAY, INT32, INT63
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, scale=%d, precision=%d%s\"`",
-				s.Name, s.Type, s.Type, s.GetScale(), s.GetPrecision(), repetitionStr)
 		case parquet.ConvertedType_INTERVAL:
-			// INTERVAL has fixed length
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s, length=12%s\"`",
-				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr)
-		default:
-			// with type and converted type
-			return fmt.Sprintf("`parquet:\"name=%s, type=%s, convertedtype=%s%s%s\"`",
-				s.Name, typeStr(s.SchemaElement), s.ConvertedType.String(), repetitionStr, logicalTypeTag)
+			ret["length"] = "12"
 		}
-	} else if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-		// plain FIXED_LEN_BYTE_ARRAY without converted type
-		return fmt.Sprintf("`parquet:\"name=%s, type=%s, length=%d%s\"`",
-			s.Name, s.Type, s.GetTypeLength(), repetitionStr)
 	}
 
-	// with type only
-	return fmt.Sprintf("`parquet:\"name=%s, type=%s%s%s\"`", s.Name, typeStr(s.SchemaElement), repetitionStr, logicalTypeTag)
+	if s.LogicalType != nil {
+		if s.LogicalType.IsSetDECIMAL() && ret["convertedtype"] != "DECIMAL" {
+			// Do not populate localtype fields for DECIMAL type
+			ret["logicaltype"] = "DECIMAL"
+			ret["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
+			ret["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
+		} else if s.LogicalType.IsSetDATE() {
+			// Do not populate localtype fields for DATE type
+		} else if s.LogicalType.IsSetTIME() {
+			ret["logicaltype"] = "TIME"
+			ret["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
+			ret["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
+			delete(ret, "convertedtype")
+		} else if s.LogicalType.IsSetTIMESTAMP() {
+			ret["logicaltype"] = "TIMESTAMP"
+			ret["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
+			ret["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
+			delete(ret, "convertedtype")
+		}
+	}
+	return ret
+}
+
+func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
+	if timeUnit == nil {
+		return ""
+	}
+	if timeUnit.IsSetNANOS() {
+		return "NANOS"
+	}
+	if timeUnit.IsSetMICROS() {
+		return "MICROS"
+	}
+	if timeUnit.IsSetMILLIS() {
+		return "MILLIS"
+	}
+	return "UNKNOWN_UNIT"
 }
