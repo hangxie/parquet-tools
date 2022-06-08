@@ -105,7 +105,13 @@ var orderedTags []string = []string{
 	"name",
 	"type",
 	"keytype",
+	"keyconvertedtype",
+	"keyscale",
+	"keyprecision",
 	"valuetype",
+	"valueconvertedtype",
+	"valuescale",
+	"valueprecision",
 	"convertedtype",
 	"scale",
 	"precision",
@@ -129,7 +135,7 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 	annotations := []string{}
 	for _, tag := range orderedTags {
 		// keytype and valuetype are for go struct tag only
-		if tag == "keytype" || tag == "valuetype" {
+		if strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
 			continue
 		}
 		if val, found := tagMap[tag]; found {
@@ -223,15 +229,24 @@ func (s *schemaNode) getTagMap() map[string]string {
 			// LIST has schema structure of LIST->List->Field1
 			// expected output is LIST->Element
 			delete(ret, "convertedtype")
-			ret["valuetype"] = typeStr(s.Children[0].Children[0].SchemaElement)
+			element := s.Children[0].Children[0].SchemaElement
+			for k, v := range getTagMapAsChild(element, "value") {
+				ret[k] = v
+			}
 			s.Children = s.Children[0].Children[:1]
 			s.Children[0].Name = "Element"
 		case parquet.ConvertedType_MAP:
 			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
 			// expected output is MAP->(Key, Value)
 			delete(ret, "convertedtype")
-			ret["keytype"] = typeStr(s.Children[0].Children[0].SchemaElement)
-			ret["valuetype"] = typeStr(s.Children[0].Children[1].SchemaElement)
+			key := s.Children[0].Children[0].SchemaElement
+			value := s.Children[0].Children[1].SchemaElement
+			for k, v := range getTagMapAsChild(key, "key") {
+				ret[k] = v
+			}
+			for k, v := range getTagMapAsChild(value, "value") {
+				ret[k] = v
+			}
 			s.Children = s.Children[0].Children[0:2]
 			s.Children[0].Name = "Key"
 			s.Children[1].Name = "Value"
@@ -283,4 +298,23 @@ func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
 		return "MILLIS"
 	}
 	return "UNKNOWN_UNIT"
+}
+
+func getTagMapAsChild(se parquet.SchemaElement, prefix string) map[string]string {
+	element := schemaNode{
+		se,
+		[]*schemaNode{},
+	}
+	tagMap := element.getTagMap()
+	ret := map[string]string{}
+	for _, tag := range orderedTags {
+		if tag == "name" || strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
+			continue
+		}
+		if val, found := tagMap[tag]; found {
+			ret[prefix+tag] = val
+		}
+	}
+
+	return ret
 }
