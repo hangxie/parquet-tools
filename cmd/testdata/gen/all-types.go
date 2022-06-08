@@ -12,53 +12,53 @@ import (
 )
 
 type InnerMap struct {
-	Map  map[string]int32 `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
-	List []string         `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10"`
+	Map  map[string]int32 `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
+	List []string         `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10"`
 }
 
 type AllTypes struct {
-	Bool              bool                `parquet:"name=bool, type=BOOLEAN"`
-	Int32             int32               `parquet:"name=int32, type=INT32"`
-	Int64             int64               `parquet:"name=int64, type=INT64"`
-	Int96             string              `parquet:"name=int96, type=INT96"`
-	Float             float32             `parquet:"name=float, type=FLOAT"`
-	Double            float64             `parquet:"name=double, type=DOUBLE"`
-	ByteArray         string              `parquet:"name=bytearray, type=BYTE_ARRAY"`
-	Enum              string              `parquet:"name=enum, type=BYTE_ARRAY, convertedtype=ENUM"`
-	Uuid              string              `parquet:"name=uuid, type=BYTE_ARRAY, convertedtype=UUID"`
-	Json              string              `parquet:"name=json, type=BYTE_ARRAY, convertedtype=JSON"`
-	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, repetitiontype=REQUIRED"`
-	Utf8              string              `parquet:"name=utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
-	Int_8             int32               `parquet:"name=int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8"`
-	Int_16            int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16, repetitiontype=REQUIRED"`
-	Int_32            int32               `parquet:"name=Int_32, type=INT32, convertedtype=INT_32, repetitiontype=REQUIRED"`
-	Int_64            int64               `parquet:"name=Int_64, type=INT64, convertedtype=INT_64, repetitiontype=REQUIRED"`
-	Uint_8            int32               `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8, repetitiontype=REQUIRED"`
-	Uint_16           int32               `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16, repetitiontype=REQUIRED"`
-	Uint_32           int32               `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32, repetitiontype=REQUIRED"`
-	Uint_64           int64               `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64, repetitiontype=REQUIRED"`
-	Date              int32               `parquet:"name=date, type=INT32, convertedtype=DATE"`
-	Date2             int32               `parquet:"name=date2, type=INT32, convertedtype=DATE, logicaltype=DATE"`
-	TimeMillis        int32               `parquet:"name=timemillis, type=INT32, convertedtype=TIME_MILLIS"`
-	TimeMillis2       int32               `parquet:"name=timemillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
-	TimeMicros        int64               `parquet:"name=timemicros, type=INT64, convertedtype=TIME_MICROS"`
-	TimeMicros2       int64               `parquet:"name=timemicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`
-	TimestampMillis   int64               `parquet:"name=timestampmillis, type=INT64, convertedtype=TIMESTAMP_MILLIS"`
-	TimestampMillis2  int64               `parquet:"name=timestampmillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
-	TimestampMicros   int64               `parquet:"name=timestampmicros, type=INT64, convertedtype=TIMESTAMP_MICROS"`
-	TimestampMicros2  int64               `parquet:"name=timestampmicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`
-	Interval          string              `parquet:"name=interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12"`
-	Decimal1          int32               `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, repetitiontype=REQUIRED"`
-	Decimal2          int64               `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, repetitiontype=REQUIRED"`
-	Decimal3          string              `parquet:"name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=REQUIRED"`
-	Decimal4          string              `parquet:"name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, repetitiontype=REQUIRED"`
+	Bool              bool                `parquet:"name=Bool, type=BOOLEAN"`
+	Int32             int32               `parquet:"name=Int32, type=INT32"`
+	Int64             int64               `parquet:"name=Int64, type=INT64"`
+	Int96             string              `parquet:"name=Int96, type=INT96"`
+	Float             float32             `parquet:"name=Float, type=FLOAT"`
+	Double            float64             `parquet:"name=Double, type=DOUBLE"`
+	ByteArray         string              `parquet:"name=ByteArray, type=BYTE_ARRAY"`
+	Enum              string              `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"`
+	Uuid              string              `parquet:"name=Uuid, type=BYTE_ARRAY, convertedtype=UUID"`
+	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
+	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
+	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
+	Int_8             int32               `parquet:"name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8"`
+	Int_16            int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16"`
+	Int_32            int32               `parquet:"name=Int_32, type=INT32, convertedtype=INT_32"`
+	Int_64            int64               `parquet:"name=Int_64, type=INT64, convertedtype=INT_64"`
+	Uint_8            int32               `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8"`
+	Uint_16           int32               `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16"`
+	Uint_32           int32               `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32"`
+	Uint_64           int64               `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64"`
+	Date              int32               `parquet:"name=Date, type=INT32, convertedtype=DATE"`
+	Date2             int32               `parquet:"name=Date2, type=INT32, convertedtype=DATE, logicaltype=DATE"`
+	TimeMillis        int32               `parquet:"name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS"`
+	TimeMillis2       int32               `parquet:"name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
+	TimeMicros        int64               `parquet:"name=TimeMicros, type=INT64, convertedtype=TIME_MICROS"`
+	TimeMicros2       int64               `parquet:"name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`
+	TimestampMillis   int64               `parquet:"name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS"`
+	TimestampMillis2  int64               `parquet:"name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
+	TimestampMicros   int64               `parquet:"name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS"`
+	TimestampMicros2  int64               `parquet:"name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`
+	Interval          string              `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12"`
+	Decimal1          int32               `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9"`
+	Decimal2          int64               `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18"`
+	Decimal3          string              `parquet:"name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12"`
+	Decimal4          string              `parquet:"name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20"`
 	Decimal5          int32               `parquet:"name=decimal5, type=INT32, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"`
-	Decimal_pointer   *string             `parquet:"name=Decimal_pointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"`
-	Map               map[string]int32    `parquet:"name=Map, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
-	List              []string            `parquet:"name=List, type=LIST, repetitiontype=REQUIRED, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	DecimalPointer    *string             `parquet:"name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"`
+	Map               map[string]int32    `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"`
+	List              []string            `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
 	Repeated          []int32             `parquet:"name=Repeated, type=INT32, repetitiontype=REPEATED"`
-	NestedMap         map[string]InnerMap `parquet:"name=NestedMap, type=MAP, repetitiontype=REQUIRED, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT"`
-	NestedList        []InnerMap          `parquet:"name=NestedList, type=LIST, repetitiontype=REQUIRED, valuetype=STRUCT"`
+	NestedMap         map[string]InnerMap `parquet:"name=NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT"`
+	NestedList        []InnerMap          `parquet:"name=NestedList, type=LIST, valuetype=STRUCT"`
 }
 
 func main() {
@@ -118,7 +118,7 @@ func main() {
 			Decimal3:          types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[i]/100.0)), "BigEndian", 12, true),
 			Decimal4:          types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[i]/100.0)), "BigEndian", 0, true),
 			Decimal5:          decimals[i],
-			Decimal_pointer:   nil,
+			DecimalPointer:    nil,
 			Map:               map[string]int32{},
 			List:              []string{},
 			Repeated:          []int32{},
@@ -126,9 +126,9 @@ func main() {
 			NestedList:        []InnerMap{},
 		}
 		if i%2 == 0 {
-			value.Decimal_pointer = nil
+			value.DecimalPointer = nil
 		} else {
-			value.Decimal_pointer = &value.Decimal3
+			value.DecimalPointer = &value.Decimal3
 		}
 		for j := 0; j < i; j++ {
 			key := fmt.Sprintf("Composite-%d", j)
