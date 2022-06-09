@@ -104,9 +104,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.13.1
+v1.13.8
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.13.1
+v1.13.8
 ```
 
 ### Prebuilt Packages
@@ -116,20 +116,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i  parquet-tools_1.13.0_amd64.deb
-Preparing to unpack parquet-tools_1.13.0_amd64.deb ...
-Unpacking parquet-tools (1.13.0) ...
-Setting up parquet-tools (1.13.0) ...
+$ sudo dpkg -i  parquet-tools_1.13.8_amd64.deb
+Preparing to unpack parquet-tools_1.13.8_amd64.deb ...
+Unpacking parquet-tools (1.13.8) ...
+Setting up parquet-tools (1.13.8) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.13.0-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.13.8-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.13.0-1           ################################# [100%]
+   1:parquet-tools-1.13.8-1           ################################# [100%]
 ```
 
 ## Usage
@@ -144,12 +144,17 @@ Usage: parquet-tools meta <uri>
 Prints the metadata.
 
 Arguments:
-  <uri>    URI of Parquet file, check https://github.com/hangxie/parquet-tools/blob/main/USAGE.md#parquet-file-location for more details.
+  <uri>    URI of Parquet file.
 
 Flags:
-  -h, --help       Show context-sensitive help.
+  -h, --help                                Show context-sensitive help.
 
-  -b, --base-64    Encode min/max value.
+      --http-multiple-connection            (HTTP URI only) use multiple HTTP connection.
+      --http-ignore-tls-error               (HTTP URI only) ignore TLS error.
+      --http-extra-headers=KEY=VALUE,...    (HTTP URI only) extra HTTP headers.
+      --object-version=STRING               (S3 URI only) object version.
+      --is-public                           (S3 URI only) object is publicly accessible.
+  -b, --base64                              Encode min/max value.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
@@ -465,7 +470,7 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema cmd/testdata/good.parquet
-{"Tag":"name=Parquet_go_root, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]}
+{"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]}
 ```
 
 #### Raw Format
@@ -484,8 +489,8 @@ go struct format generate go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go cmd/testdata/good.parquet | gofmt
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
-	Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"`
+	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
 }
 ```
 
@@ -556,19 +561,19 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 ```bash
 $ parquet-tools version
-v1.13.1
+v1.13.8
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.13.1","BuildTime":"2022-03-15T19:22:19-0700"}
+{"Version":"v1.13.8","BuildTime":"2022-06-09T15:32:45+00:00"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.13.1"}
+{"Version":"v1.13.8"}
 ```
