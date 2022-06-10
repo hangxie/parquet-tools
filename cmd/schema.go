@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/xitongsys/parquet-go/parquet"
@@ -39,11 +38,8 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 		res, _ := json.Marshal(s)
 		fmt.Printf("%s\n", res)
 	case formatGo:
-		snippet := schemaRoot.goStruct(true)
-		// remove annotation for top level
-		re := regexp.MustCompile("} `[^`\n]*`$")
-		snippet = re.ReplaceAllString(snippet, "}")
-		fmt.Printf("type %s\n", snippet)
+		snippet := schemaRoot.goStruct(false)
+		fmt.Printf("type %s %s\n", schemaRoot.Name, snippet)
 	default:
 		return fmt.Errorf("unknown schema format [%s]", c.Format)
 	}
