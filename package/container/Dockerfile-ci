@@ -1,11 +1,11 @@
-FROM debian:stretch-slim
+FROM debian:11-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 COPY ./build/release/*-linux*.gz /tmp/
 
 RUN adduser --home /app --disabled-password --system app \
  && echo This is to fix linux/arm build \
- && for U in dpkg-split dpkg-deb tar rm; do \
+ && for U in dpkg-split dpkg-deb tar gzip chmod chown rm; do \
         ln -fs `which $U` /usr/sbin/; \
         ln -fs `which $U` /usr/local/sbin/; \
     done \
@@ -13,22 +13,24 @@ RUN adduser --home /app --disabled-password --system app \
  && apt-get -y -qq install ca-certificates \
  && case $(uname -m) in \
         aarch64) \
-            gunzip -c /tmp/*-linux-arm64.gz > /app/parquet-tools \
+            TARBALL=$(ls /tmp/*-linux-arm64.gz) \
             ;; \
         x86_64) \
-            gunzip -c /tmp/*-linux-amd64.gz > /app/parquet-tools \
+            TARBALL=$(ls /tmp/*-linux-amd64.gz) \
             ;; \
         armv7l) \
-            gunzip -c /tmp/*-linux-arm.gz > /app/parquet-tools \
+            TARBALL=$(ls /tmp/*-linux-arm.gz) \
             ;; \
         *) \
             echo Unsupported arch $(uname -m); \
             exit 1 \
             ;; \
     esac \
+ && gzip -dc ${TARBALL} > /app/parquet-tools \
  && chmod +x /app/parquet-tools \
+ && chown app /app/parquet-tools \
  && rm -rf /var/lib/apt/lists/* /tmp/*-linux*.gz \
- && for U in dpkg-split dpkg-deb tar rm; do \
+ && for U in dpkg-split dpkg-deb tar gzip chmod chown rm; do \
         rm /usr/sbin/$U /usr/local/sbin/$U; \
     done
 
