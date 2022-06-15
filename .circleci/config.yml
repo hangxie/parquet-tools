@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.14
+          version: 20.10.14
       - restore_cache:
           keys:
             - go-mod-v5-{{ checksum "go.sum" }}
@@ -55,7 +55,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.14
+          version: 20.10.14
       - restore_cache:
           keys:
             - go-mod-v5-{{ checksum "go.sum" }}
@@ -109,7 +109,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.14
+          version: 20.10.14
       - run:
           name: Prepare workspace directory
           command: mkdir -p ./build
@@ -121,11 +121,10 @@ jobs:
           command: |
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
             echo "${GITHUB_TOKEN}" | docker login -u baldemort-bot --password-stdin ghcr.io
-            export DOCKER_CLI_EXPERIMENTAL=enabled
             docker context create multi-platform
             docker buildx create multi-platform --platform ${PLATFORM} --use
             docker buildx build --progress plain \
-                -f package/docker/Dockerfile-ci --push \
+                -f package/container/Dockerfile-ci --push \
                 --platform ${PLATFORM} \
                 -t hangxie/parquet-tools:${CIRCLE_TAG} \
                 -t hangxie/parquet-tools:latest \
