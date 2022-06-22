@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/url"
 	"os"
+	"os/user"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -20,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	pqtazblob "github.com/xitongsys/parquet-go-source/azblob"
 	"github.com/xitongsys/parquet-go-source/gcs"
+	"github.com/xitongsys/parquet-go-source/hdfs"
 	"github.com/xitongsys/parquet-go-source/http"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3v2"
@@ -37,6 +39,7 @@ const (
 	schemeAzureStorageBlob   string = "wasbs"
 	schemeHTTP               string = "http"
 	schemeHTTPS              string = "https"
+	schemeHDFS               string = "hdfs"
 )
 
 // CommonOption represents common options across most commands
@@ -68,10 +71,10 @@ type ReinterpretField struct {
 	scale         int
 }
 
-func parseURI(uri string) (*url.URL, error) {
+func parseURI(uri string) (*url.URL, string, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
+		return nil, "", fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
 	}
 
 	if u.Scheme == "" {
@@ -83,7 +86,14 @@ func parseURI(uri string) (*url.URL, error) {
 		u.Host = ""
 	}
 
-	return u, nil
+	userName := u.User.Username()
+	if userName == "" {
+		osUser, err := user.Current()
+		if err == nil && osUser != nil {
+			userName = osUser.Username
+		}
+	}
+	return u, userName, nil
 }
 
 func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
@@ -109,7 +119,7 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 }
 
 func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
-	u, err := parseURI(option.URI)
+	u, userName, err := parseURI(option.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -155,6 +165,11 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
 		}
+	case schemeHDFS:
+		fileReader, err = hdfs.NewHdfsFileReader([]string{u.Host}, userName, u.Path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
+		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}
@@ -163,7 +178,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 }
 
 func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
-	u, err := parseURI(option.URI)
+	u, userName, err := parseURI(option.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -202,6 +217,11 @@ func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
 		}
 	case schemeHTTP, schemeHTTPS:
 		return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
+	case schemeHDFS:
+		fileWriter, err = hdfs.NewHdfsFileWriter([]string{u.Host}, userName, u.Path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
+		}
 	default:
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}

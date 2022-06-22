@@ -18,6 +18,7 @@
       - [GCS Bucket](#gcs-bucket)
       - [Azure Storage Container](#azure-storage-container)
       - [HTTP Endpoint](#http-endpoint)
+      - [HDFS File](#hdfs-file)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
       - [Skip Rows](#skip-rows)
@@ -286,6 +287,20 @@ $ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.p
 ```
 
 Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessary data from remote server through [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range).
+
+#### HDFS File
+
+`parquet-file` can read and write files under HDFS with schema `hdfs://usermame@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
+
+```bash
+$ parquet-tools import -f jsonl -s cmd/testdata/jsonl.schema -s cmd/testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
+parquet-tools: error: failed to create JSON writer: failed to open HDFS source [hdfs://localhost:9000/temp/good.parquet]: create /temp/good.parquet: permission denied
+$ parquet-tools import -f jsonl -m cmd/testdata/jsonl.schema -s cmd/testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
+$ parquet-tools row-count hdfs://localhost:9000/temp/good.parquet
+7
+```
+
+Similar to cloud storage, `parquet-tools` downloads only necessary data from HDFS.
 
 ### cat Command
 
