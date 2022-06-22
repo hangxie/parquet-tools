@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/url"
 	"os"
+	"os/user"
 	"reflect"
 	"strings"
 	"testing"
@@ -179,29 +180,36 @@ func Test_common_getBucketRegion_aws_error(t *testing.T) {
 }
 
 func Test_common_parseURI_invalid_uri(t *testing.T) {
-	_, err := parseURI("://uri")
+	_, _, err := parseURI("://uri")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_common_parseURI_good(t *testing.T) {
-	u, err := parseURI("scheme://path/to/file")
+	u, userName, err := parseURI("scheme://username@path/to/file")
 	assert.Nil(t, err)
 	assert.Equal(t, "scheme", u.Scheme)
 	assert.Equal(t, "path", u.Host)
 	assert.Equal(t, "/to/file", u.Path)
+	assert.Equal(t, "username", userName)
 
-	u, err = parseURI("path/to/file")
+	u, _, err = parseURI("path/to/file")
 	assert.Nil(t, err)
 	assert.Equal(t, schemeLocal, u.Scheme)
 	assert.Equal(t, "", u.Host)
 	assert.Equal(t, "path/to/file", u.Path)
 
-	u, err = parseURI("file://path/to/file")
+	osUser, _ := user.Current()
+	u, userName, err = parseURI("file://path/to/file")
 	assert.Nil(t, err)
 	assert.Equal(t, schemeLocal, u.Scheme)
 	assert.Equal(t, "", u.Host)
 	assert.Equal(t, "path/to/file", u.Path)
+	if osUser != nil {
+		assert.Equal(t, osUser.Username, userName)
+	} else {
+		assert.Equal(t, "", userName)
+	}
 }
 
 // newParquetFileReader
@@ -570,4 +578,20 @@ func Test_common_newParquetFileReader_http_good(t *testing.T) {
 	option.HTTPExtraHeaders = map[string]string{"key": "value"}
 	_, err := newParquetFileReader(option)
 	assert.Nil(t, err)
+}
+
+func Test_common_newParquetFileReader_hdfs_good(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "hdfs://root@localhost:1/temp/good.parquet"
+	_, err := newParquetFileReader(option)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "connection refused")
+}
+
+func Test_common_newParquetFileWriter_hdfs_good(t *testing.T) {
+	option := CommonOption{}
+	option.URI = "hdfs://root@localhost:1/temp/good.parquet"
+	_, err := newParquetFileWriter(option)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "connection refused")
 }
