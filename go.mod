@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/willabides/kongplete v0.2.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20220527110957-00fdcebed83d
-	github.com/xitongsys/parquet-go-source v0.0.0-20220315005136-aec0fe3e777c
+	github.com/xitongsys/parquet-go-source v0.0.0-20220527110425-ba4adb87a31b
 )
 
 require (
@@ -65,7 +65,5 @@ require (
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
-
-replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20220331185016-7e9b9c25ec3f
 
 replace gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0
