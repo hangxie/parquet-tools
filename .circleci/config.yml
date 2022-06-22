@@ -122,6 +122,7 @@ jobs:
             echo "${DOCKER_HUB_TOKEN}" | docker login -u hangxie --password-stdin
             echo "${GITHUB_TOKEN}" | docker login -u baldemort-bot --password-stdin ghcr.io
             docker context create multi-platform
+            docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create multi-platform --platform ${PLATFORM} --use
             docker buildx build --progress plain \
                 -f package/container/Dockerfile-ci --push \
