@@ -25,7 +25,7 @@ function build() {
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-    docker run -dit --rm --name ${DOCKER_NAME} debian:stretch-slim
+    docker run -dit --rm --name ${DOCKER_NAME} debian:11-slim
 
     # CCI does not support volume mount, so use docker cp instead
     git -C ${SOURCE_DIR} archive --format=tar.gz --prefix=${PKG_NAME}-${RPM_VER}/ -o /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ${VERSION}
