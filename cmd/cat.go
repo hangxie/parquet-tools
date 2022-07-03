@@ -84,49 +84,46 @@ func (c *CatCmd) Run(ctx *Context) error {
 			break
 		}
 
-		for _, row := range rows {
-			if rand.Float64() >= c.SampleRatio {
-				continue
-			}
+		for i := 0; i < len(rows) && rand.Float64() < c.SampleRatio && counter < c.Limit; i++ {
 			if counter != 0 {
 				fmt.Print(delimiter[c.Format].delimiter)
 			}
-
-			rowValue := reflect.ValueOf(&row).Elem()
-			tmp := reflect.New(rowValue.Elem().Type()).Elem()
-			tmp.Set(rowValue.Elem())
-			for k, v := range reinterpretFields {
-				if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
-					encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
-				}
-			}
-			rowValue.Set(tmp)
-
-			// convert to struct type to map of interface so we can change the value for formatting,
-			// fail back to original data for any kind of errors
-			var iface interface{}
-			buf, err := json.Marshal(row)
-			if err == nil {
-				if err := json.Unmarshal(buf, &iface); err == nil {
-					for k, v := range reinterpretFields {
-						reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
-					}
-					if newBuf, err := json.Marshal(iface); err == nil {
-						buf = newBuf
-					}
-				}
-			}
-
-			fmt.Print(string(buf))
+			// there is no known error at this moment
+			rowString, _ := rowToJsonStr(rows[i], reinterpretFields)
+			fmt.Print(rowString)
 			counter++
-			if counter >= c.Limit {
-				break
-			}
 		}
 	}
 	fmt.Println(delimiter[c.Format].end)
-
 	return nil
+}
+
+func rowToJsonStr(row interface{}, reinterpretFields map[string]ReinterpretField) (string, error) {
+	rowValue := reflect.ValueOf(&row).Elem()
+	tmp := reflect.New(rowValue.Elem().Type()).Elem()
+	tmp.Set(rowValue.Elem())
+	for k, v := range reinterpretFields {
+		if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
+			encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
+		}
+	}
+	rowValue.Set(tmp)
+
+	// convert to struct type to map of interface so we can change the value for formatting,
+	// fail back to original data for any kind of errors
+	var iface interface{}
+	buf, err := json.Marshal(row)
+	if err == nil {
+		if err := json.Unmarshal(buf, &iface); err == nil {
+			for k, v := range reinterpretFields {
+				reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
+			}
+			if newBuf, err := json.Marshal(iface); err == nil {
+				buf = newBuf
+			}
+		}
+	}
+	return string(buf), nil
 }
 
 func encodeNestedBinaryString(value reflect.Value, locator []string, attr ReinterpretField) {
