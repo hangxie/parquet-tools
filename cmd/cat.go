@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/types"
 )
 
@@ -51,24 +52,28 @@ func (c *CatCmd) Run(ctx *Context) error {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
-	reader, err := newParquetFileReader(c.ReadOption)
+	fileReader, err := newParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
-	defer reader.PFile.Close()
+	defer fileReader.PFile.Close()
 
+	return c.outputRows(fileReader)
+}
+
+func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	// retrieve schema for better formatting
-	schemaRoot := newSchemaTree(reader)
+	schemaRoot := newSchemaTree(fileReader)
 	reinterpretFields := getReinterpretFields("", schemaRoot, true)
 
 	// this is hack for https://github.com/xitongsys/parquet-go/issues/438
-	if reader.GetNumRows() == 0 {
+	if fileReader.GetNumRows() == 0 {
 		c.Limit = 0
 	}
 
 	// Do not abort if c.Skip is greater than total number of rows
 	// This gives users flexibility to handle this scenario by themselves
-	if err := reader.SkipRows(int64(c.Skip)); err != nil {
+	if err := fileReader.SkipRows(int64(c.Skip)); err != nil {
 		return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
 	}
 
@@ -76,7 +81,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	fmt.Print(delimiter[c.Format].begin)
 	rand.Seed(time.Now().UnixNano())
 	for counter := uint64(0); counter < c.Limit; {
-		rows, err := reader.ReadByNumber(c.PageSize)
+		rows, err := fileReader.ReadByNumber(c.PageSize)
 		if err != nil {
 			return fmt.Errorf("failed to cat: %s", err)
 		}
@@ -103,6 +108,9 @@ func rowToJsonStr(row interface{}, reinterpretFields map[string]ReinterpretField
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
 	for k, v := range reinterpretFields {
+		// There are data types that are represented as string but they are actually not UTF8, they
+		// need to be re-interpretted so we will base64 encode them here to avoid lossing data. For
+		// more details: https://github.com/xitongsys/parquet-go/issues/434
 		if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
 			encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
 		}
@@ -113,15 +121,17 @@ func rowToJsonStr(row interface{}, reinterpretFields map[string]ReinterpretField
 	// fail back to original data for any kind of errors
 	var iface interface{}
 	buf, err := json.Marshal(row)
-	if err == nil {
-		if err := json.Unmarshal(buf, &iface); err == nil {
-			for k, v := range reinterpretFields {
-				reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
-			}
-			if newBuf, err := json.Marshal(iface); err == nil {
-				buf = newBuf
-			}
-		}
+	if err != nil {
+		return "", err
+	}
+
+	// this should not fail as we just Marshal it
+	_ = json.Unmarshal(buf, &iface)
+	for k, v := range reinterpretFields {
+		reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
+	}
+	if newBuf, err := json.Marshal(iface); err == nil {
+		buf = newBuf
 	}
 	return string(buf), nil
 }
@@ -173,51 +183,55 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr Reinterp
 	v := reflect.ValueOf(*iface)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-		if len(locator) != 0 {
-			for i := range (*iface).([]interface{}) {
-				value := (*iface).([]interface{})[i]
-				reinterpretNestedFields(&value, locator[1:], attr)
-				(*iface).([]interface{})[i] = value
-			}
+		if len(locator) == 0 {
+			return
 		}
-		return
+		for i := range (*iface).([]interface{}) {
+			value := (*iface).([]interface{})[i]
+			reinterpretNestedFields(&value, locator[1:], attr)
+			(*iface).([]interface{})[i] = value
+		}
 	case reflect.Map:
-		if len(locator) != 0 {
-			mapValue := (*iface).(map[string]interface{})
-			switch locator[0] {
-			case "Key":
-				newMapValue := make(map[string]interface{})
-				for k, v := range mapValue {
-					var newKey interface{} = k
-					reinterpretNestedFields(&newKey, locator[1:], attr)
-
-					// INT32/INT64 will be reinterpreted to float, while string DECIMAL and
-					// INTERVAL type will be reinterpreted to string
-					switch val := newKey.(type) {
-					case string:
-						newMapValue[val] = v
-					case float64:
-						format := fmt.Sprintf("%%0.%df", attr.scale)
-						newMapValue[fmt.Sprintf(format, val)] = v
-					}
-				}
-				mapValue = newMapValue
-			case "Value":
-				for k, v := range mapValue {
-					reinterpretNestedFields(&v, locator[1:], attr)
-					mapValue[k] = v
-				}
-			default:
-				// this is a map serialized from struct, so keep dig into sub-fields
-				scalarValue := mapValue[locator[0]]
-				reinterpretNestedFields(&scalarValue, locator[1:], attr)
-				mapValue[locator[0]] = scalarValue
-			}
-			*iface = mapValue
+		if len(locator) == 0 {
+			return
 		}
-		return
-	}
+		mapValue := (*iface).(map[string]interface{})
+		switch locator[0] {
+		case "Key":
+			newMapValue := make(map[string]interface{})
+			for k, v := range mapValue {
+				var newKey interface{} = k
+				reinterpretNestedFields(&newKey, locator[1:], attr)
 
+				// INT32/INT64 will be reinterpreted to float, while string DECIMAL and
+				// INTERVAL type will be reinterpreted to string
+				switch val := newKey.(type) {
+				case string:
+					newMapValue[val] = v
+				case float64:
+					format := fmt.Sprintf("%%0.%df", attr.scale)
+					newMapValue[fmt.Sprintf(format, val)] = v
+				}
+			}
+			mapValue = newMapValue
+		case "Value":
+			for k, v := range mapValue {
+				reinterpretNestedFields(&v, locator[1:], attr)
+				mapValue[k] = v
+			}
+		default:
+			// this is a map serialized from struct, so keep dig into sub-fields
+			scalarValue := mapValue[locator[0]]
+			reinterpretNestedFields(&scalarValue, locator[1:], attr)
+			mapValue[locator[0]] = scalarValue
+		}
+		*iface = mapValue
+	default:
+		reinterpretScalar(iface, locator, attr)
+	}
+}
+
+func reinterpretScalar(iface *interface{}, locator []string, attr ReinterpretField) {
 	switch attr.parquetType {
 	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 		switch v := (*iface).(type) {

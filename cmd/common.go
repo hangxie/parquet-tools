@@ -71,10 +71,10 @@ type ReinterpretField struct {
 	scale         int
 }
 
-func parseURI(uri string) (*url.URL, string, error) {
+func parseURI(uri string) (*url.URL, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
+		return nil, fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
 	}
 
 	if u.Scheme == "" {
@@ -86,14 +86,7 @@ func parseURI(uri string) (*url.URL, string, error) {
 		u.Host = ""
 	}
 
-	userName := u.User.Username()
-	if userName == "" {
-		osUser, err := user.Current()
-		if err == nil && osUser != nil {
-			userName = osUser.Username
-		}
-	}
-	return u, userName, nil
+	return u, nil
 }
 
 func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
@@ -118,115 +111,178 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 	return s3.NewFromConfig(cfg), nil
 }
 
-func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
-	u, userName, err := parseURI(option.URI)
+func newLocalReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+	fileReader, err := local.NewLocalFileReader(u.Path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
 	}
-
-	var fileReader source.ParquetFile
-	switch u.Scheme {
-	case schemeAWSS3:
-		s3Client, err := getS3Client(u.Host, option.IsPublic)
-		if err != nil {
-			return nil, err
-		}
-
-		var objVersion *string = nil
-		if option.ObjectVersion != "" {
-			objVersion = &option.ObjectVersion
-		}
-		fileReader, err = s3v2.NewS3FileReaderWithClientVersioned(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", option.URI, option.ObjectVersion, err.Error())
-		}
-	case schemeLocal:
-		fileReader, err = local.NewLocalFileReader(u.Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
-		}
-	case schemeGoogleCloudStorage:
-		fileReader, err = gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
-		if err != nil {
-			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
-		}
-	case schemeAzureStorageBlob:
-		azURL, cred, err := azureAccessDetail(*u)
-		if err != nil {
-			return nil, err
-		}
-
-		fileReader, err = pqtazblob.NewAzBlobFileReader(context.Background(), azURL, cred, pqtazblob.ReaderOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
-		}
-	case schemeHTTP, schemeHTTPS:
-		fileReader, err = http.NewHttpReader(option.URI, option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
-		}
-	case schemeHDFS:
-		fileReader, err = hdfs.NewHdfsFileReader([]string{u.Host}, userName, u.Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
-		}
-	default:
-		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
-	}
-
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
 
-func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
-	u, userName, err := parseURI(option.URI)
+func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+	s3Client, err := getS3Client(u.Host, option.IsPublic)
 	if err != nil {
 		return nil, err
 	}
 
-	var fileWriter source.ParquetFile
-	switch u.Scheme {
-	case schemeAWSS3:
-		s3Client, err := getS3Client(u.Host, false)
-		if err != nil {
-			return nil, err
-		}
+	var objVersion *string = nil
+	if option.ObjectVersion != "" {
+		objVersion = &option.ObjectVersion
+	}
+	fileReader, err := s3v2.NewS3FileReaderWithClientVersioned(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", option.URI, option.ObjectVersion, err.Error())
+	}
+	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+}
 
-		fileWriter, err = s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
-		}
-	case schemeLocal:
-		fileWriter, err = local.NewLocalFileWriter(u.Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
-		}
-	case schemeGoogleCloudStorage:
-		fileWriter, err = gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
-		if err != nil {
-			return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
-		}
-	case schemeAzureStorageBlob:
-		azURL, cred, err := azureAccessDetail(*u)
-		if err != nil {
-			return nil, err
-		}
-
-		fileWriter, err = pqtazblob.NewAzBlobFileWriter(context.Background(), azURL, cred, pqtazblob.WriterOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
-		}
-	case schemeHTTP, schemeHTTPS:
-		return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
-	case schemeHDFS:
-		fileWriter, err = hdfs.NewHdfsFileWriter([]string{u.Host}, userName, u.Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
-		}
-	default:
-		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
+func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+	azURL, cred, err := azureAccessDetail(*u)
+	if err != nil {
+		return nil, err
 	}
 
+	fileReader, err := pqtazblob.NewAzBlobFileReader(context.Background(), azURL, cred, pqtazblob.ReaderOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
+	}
+	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+}
+
+func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+	fileReader, err := gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
+	}
+	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+}
+
+func newHTTPReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+	fileReader, err := http.NewHttpReader(option.URI, option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
+	}
+	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+}
+
+func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+	userName := u.User.Username()
+	if userName == "" {
+		osUser, err := user.Current()
+		if err == nil && osUser != nil {
+			userName = osUser.Username
+		}
+	}
+
+	fileReader, err := hdfs.NewHdfsFileReader([]string{u.Host}, userName, u.Path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
+	}
+	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+}
+
+func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
+	readerFunctable := map[string]func(*url.URL, ReadOption) (*reader.ParquetReader, error){
+		schemeLocal:              newLocalReader,
+		schemeAWSS3:              newAWSS3Reader,
+		schemeGoogleCloudStorage: newGoogleCloudStorageReader,
+		schemeAzureStorageBlob:   newAzureStorageBlobReader,
+		schemeHTTP:               newHTTPReader,
+		schemeHTTPS:              newHTTPReader,
+		schemeHDFS:               newHDFSReader,
+	}
+
+	u, err := parseURI(option.URI)
+	if err != nil {
+		return nil, err
+	}
+	if readerFunc, found := readerFunctable[u.Scheme]; found {
+		return readerFunc(u, option)
+	}
+
+	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
+}
+
+func newLocalWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+	fileWriter, err := local.NewLocalFileWriter(u.Path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
+	}
 	return fileWriter, nil
+}
+
+func newAWSS3Writer(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+	s3Client, err := getS3Client(u.Host, false)
+	if err != nil {
+		return nil, err
+	}
+
+	fileWriter, err := s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
+	}
+	return fileWriter, nil
+}
+
+func newGoogleCloudStorageWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+	fileWriter, err := gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
+	}
+	return fileWriter, nil
+}
+
+func newAzureStorageBlobWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+	azURL, cred, err := azureAccessDetail(*u)
+	if err != nil {
+		return nil, err
+	}
+
+	fileWriter, err := pqtazblob.NewAzBlobFileWriter(context.Background(), azURL, cred, pqtazblob.WriterOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
+	}
+	return fileWriter, nil
+}
+
+func newHTTPWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+	return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
+}
+
+func newHDFSWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+	userName := u.User.Username()
+	if userName == "" {
+		osUser, err := user.Current()
+		if err == nil && osUser != nil {
+			userName = osUser.Username
+		}
+	}
+	fileWriter, err := hdfs.NewHdfsFileWriter([]string{u.Host}, userName, u.Path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
+	}
+	return fileWriter, nil
+}
+
+func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
+	writerFunctable := map[string]func(*url.URL, CommonOption) (source.ParquetFile, error){
+		schemeLocal:              newLocalWriter,
+		schemeAWSS3:              newAWSS3Writer,
+		schemeGoogleCloudStorage: newGoogleCloudStorageWriter,
+		schemeAzureStorageBlob:   newAzureStorageBlobWriter,
+		schemeHTTP:               newHTTPWriter,
+		schemeHTTPS:              newHTTPWriter,
+		schemeHDFS:               newHDFSWriter,
+	}
+
+	u, err := parseURI(option.URI)
+	if err != nil {
+		return nil, err
+	}
+	if writerFunc, found := writerFunctable[u.Scheme]; found {
+		return writerFunc(u, option)
+	}
+	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
 func newCSVWriter(option CommonOption, schema []string) (*writer.CSVWriter, error) {

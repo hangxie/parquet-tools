@@ -35,7 +35,7 @@ func (c *SizeCmd) Run(ctx *Context) error {
 	rawSize := int64(0)
 	uncompressedSize := int64(0)
 	if c.Query != queryFooter {
-		// do this only when user asks for footer size only to speed up
+		// do not scan all row groups whenever we are asked for footer size only
 		for _, rg := range reader.Footer.RowGroups {
 			for _, col := range rg.Columns {
 				rawSize += col.MetaData.TotalCompressedSize
