@@ -198,86 +198,94 @@ func (s *schemaNode) getStructTags() string {
 	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", "))
 }
 
-func (s *schemaNode) getTagMap() map[string]string {
-	ret := map[string]string{}
-	if s == nil {
-		return ret
-	}
-	ret["name"] = s.Name
-	ret["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
-	ret["type"] = typeStr(s.SchemaElement)
-
-	if ret["type"] == "STRUCT" {
-		return ret
-	}
-
-	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
-		ret["type"] = typeStr(s.SchemaElement)
-		ret["length"] = fmt.Sprint(*s.TypeLength)
-		return ret
-	}
-
+func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
 	if s.ConvertedType != nil {
-		ret["convertedtype"] = s.ConvertedType.String()
+		tagMap["convertedtype"] = s.ConvertedType.String()
 
 		switch *s.ConvertedType {
 		case parquet.ConvertedType_LIST:
 			// LIST has schema structure of LIST->List->Field1
 			// expected output is LIST->Element
-			delete(ret, "convertedtype")
+			delete(tagMap, "convertedtype")
 			element := s.Children[0].Children[0].SchemaElement
 			for k, v := range getTagMapAsChild(element, "value") {
-				ret[k] = v
+				tagMap[k] = v
 			}
 			s.Children = s.Children[0].Children[:1]
 			s.Children[0].Name = "Element"
 		case parquet.ConvertedType_MAP:
 			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
 			// expected output is MAP->(Key, Value)
-			delete(ret, "convertedtype")
+			delete(tagMap, "convertedtype")
 			key := s.Children[0].Children[0].SchemaElement
 			value := s.Children[0].Children[1].SchemaElement
 			for k, v := range getTagMapAsChild(key, "key") {
-				ret[k] = v
+				tagMap[k] = v
 			}
 			for k, v := range getTagMapAsChild(value, "value") {
-				ret[k] = v
+				tagMap[k] = v
 			}
 			s.Children = s.Children[0].Children[0:2]
 			s.Children[0].Name = "Key"
 			s.Children[1].Name = "Value"
 		case parquet.ConvertedType_DECIMAL:
-			ret["scale"] = fmt.Sprint(*s.Scale)
-			ret["precision"] = fmt.Sprint(*s.Precision)
+			tagMap["scale"] = fmt.Sprint(*s.Scale)
+			tagMap["precision"] = fmt.Sprint(*s.Precision)
 			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-				ret["length"] = fmt.Sprint(*s.TypeLength)
+				tagMap["length"] = fmt.Sprint(*s.TypeLength)
 			}
 		case parquet.ConvertedType_INTERVAL:
-			ret["length"] = "12"
+			tagMap["length"] = "12"
 		}
 	}
+}
 
+func (s *schemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 	if s.LogicalType != nil {
-		if s.LogicalType.IsSetDECIMAL() && ret["convertedtype"] != "DECIMAL" {
+		if s.LogicalType.IsSetDECIMAL() && tagMap["convertedtype"] != "DECIMAL" {
 			// Do not populate localtype fields for DECIMAL type
-			ret["logicaltype"] = "DECIMAL"
-			ret["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
-			ret["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
+			tagMap["logicaltype"] = "DECIMAL"
+			tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
+			tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
 		} else if s.LogicalType.IsSetDATE() {
 			// Do not populate localtype fields for DATE type
 		} else if s.LogicalType.IsSetTIME() {
-			ret["logicaltype"] = "TIME"
-			ret["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
-			ret["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
-			delete(ret, "convertedtype")
+			tagMap["logicaltype"] = "TIME"
+			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
+			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
+			delete(tagMap, "convertedtype")
 		} else if s.LogicalType.IsSetTIMESTAMP() {
-			ret["logicaltype"] = "TIMESTAMP"
-			ret["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
-			ret["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
-			delete(ret, "convertedtype")
+			tagMap["logicaltype"] = "TIMESTAMP"
+			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
+			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
+			delete(tagMap, "convertedtype")
 		}
 	}
-	return ret
+}
+
+func (s *schemaNode) getTagMap() map[string]string {
+	tagMap := map[string]string{}
+	if s == nil {
+		return tagMap
+	}
+	tagMap["name"] = s.Name
+	tagMap["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
+	tagMap["type"] = typeStr(s.SchemaElement)
+
+	if tagMap["type"] == "STRUCT" {
+		return tagMap
+	}
+
+	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
+		tagMap["type"] = typeStr(s.SchemaElement)
+		tagMap["length"] = fmt.Sprint(*s.TypeLength)
+		return tagMap
+	}
+
+	s.updateTagFromConvertedType(tagMap)
+	s.updateTagFromLogicalType(tagMap)
+
+	return tagMap
 }
 
 func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
