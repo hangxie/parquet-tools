@@ -4,6 +4,7 @@ orbs:
   slack: circleci/slack@4.4.2
 jobs:
   build:
+    resource_class: large
     working_directory: ~/repo
     docker:
       - image: cimg/go:1.18
@@ -30,6 +31,8 @@ jobs:
       - run:
           name: Running tests
           command: make test
+      - store_test_results:
+          path: build
       - run:
           name: Checking uncommitted changes
           command: |
@@ -39,8 +42,6 @@ jobs:
               cat /tmp/git-status.log
               false
             fi
-      - store_test_results:
-          path: build/junit
       - store_artifacts:
           path: build/test/coverage.html
           destination: test-coverage.html
@@ -49,6 +50,7 @@ jobs:
           template: basic_fail_1
 
   release-build:
+    resource_class: large
     working_directory: ~/repo
     docker:
       - image: cimg/go:1.18
@@ -101,6 +103,7 @@ jobs:
           template: basic_fail_1
 
   publish-docker-image:
+    resource_class: large
     working_directory: ~/repo
     docker:
       - image: cimg/base:stable
