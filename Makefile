@@ -38,6 +38,12 @@ format: tools  ## Format all golang code
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
 	@$(GOBIN)/golangci-lint run --timeout 5m ./...
+	@gocyclo -over 15 . > /tmp/gocyclo.output; \
+		if [[ -s /tmp/gocyclo.output ]]; then \
+			echo functions with gocyclo score higher than 15; \
+			cat /tmp/gocyclo.output | sed 's/^/    /'; \
+			false; \
+		fi
 
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
@@ -51,6 +57,8 @@ tools:  ## Install build tools
 		(cd /tmp; go install github.com/jstemmer/go-junit-report@v0.9.1)
 	@test -x $(GOBIN)/gofumpt || \
 		(cd /tmp; go install mvdan.cc/gofumpt@latest)
+	@test -x $(GOBIN)/gocyclo || \
+		(cd /tmp; go install github.com/fzipp/gocyclo/cmd/gocyclo@latest)
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@echo "==> Building executable"
