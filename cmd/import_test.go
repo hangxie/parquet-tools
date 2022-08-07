@@ -240,7 +240,7 @@ func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
 
 	err := cmd.importJSON()
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to close Parquet writer")
+	assert.Contains(t, err.Error(), "failed to close Parquet")
 }
 
 func Test_ImportCmd_importJSON_good(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/url"
 	"os"
@@ -29,8 +29,8 @@ func captureStdoutStderr(f func()) (string, string) {
 	f()
 	wOut.Close()
 	wErr.Close()
-	stdout, _ := ioutil.ReadAll(rOut)
-	stderr, _ := ioutil.ReadAll(rErr)
+	stdout, _ := io.ReadAll(rOut)
+	stderr, _ := io.ReadAll(rErr)
 	rOut.Close()
 	rErr.Close()
 
@@ -46,7 +46,7 @@ func loadExpected(t *testing.T, fileName string) string {
 	if err != nil {
 		t.Fatal("cannot open golden file:", fileName, "because of:", err.Error())
 	}
-	buf, err := ioutil.ReadAll(fd)
+	buf, err := io.ReadAll(fd)
 	if err != nil {
 		t.Fatal("cannot load golden file:", fileName, "because of:", err.Error())
 	}

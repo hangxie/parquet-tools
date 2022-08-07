@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -33,7 +32,7 @@ func (c *ImportCmd) Run(ctx *Context) error {
 }
 
 func (c *ImportCmd) importCSV() error {
-	schemaData, err := ioutil.ReadFile(c.Schema)
+	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
 	}
@@ -81,12 +80,12 @@ func (c *ImportCmd) importCSV() error {
 }
 
 func (c *ImportCmd) importJSON() error {
-	schemaData, err := ioutil.ReadFile(c.Schema)
+	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
 	}
 
-	jsonData, err := ioutil.ReadFile(c.Source)
+	jsonData, err := os.ReadFile(c.Source)
 	if err != nil {
 		return fmt.Errorf("failed to load source from %s: %s", c.Source, err.Error())
 	}
@@ -119,7 +118,7 @@ func (c *ImportCmd) importJSON() error {
 }
 
 func (c *ImportCmd) importJSONL() error {
-	schemaData, err := ioutil.ReadFile(c.Schema)
+	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
 	}

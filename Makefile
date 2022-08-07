@@ -12,6 +12,8 @@ REL_TARGET  = \
 	linux-amd64 linux-arm linux-arm64 \
 	windows-amd64 windows-arm windows-arm64
 
+FORCE_TOOLS_UPDATE := false
+
 # go option
 GO          ?= go
 PKG         :=
@@ -31,12 +33,13 @@ LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
 
 all: deps tools format lint test build  ## Build all common targets
 
-format: tools  ## Format all golang code
-	@echo "==> Formatting all golang code"
+format: tools  ## Format all go code
+	@echo "==> Formatting all go code"
 	@$(GOBIN)/gofumpt -w -extra $(GOSOURCES)
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
+	@$(GOBIN)/golangci-lint cache clean
 	@$(GOBIN)/golangci-lint run --timeout 5m ./...
 	@gocyclo -over 15 . > /tmp/gocyclo.output; \
 		if [[ -s /tmp/gocyclo.output ]]; then \
@@ -51,13 +54,13 @@ deps:  ## Install prerequisite for build
 
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
-	@test -x $(GOBIN)/golangci-lint || \
-		(cd /tmp; GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2)
-	@test -x $(GOBIN)/go-junit-report || \
-		(cd /tmp; go install github.com/jstemmer/go-junit-report@v0.9.1)
-	@test -x $(GOBIN)/gofumpt || \
+	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/golangci-lint || \
+		(cd /tmp; GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.48.0)
+	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/go-junit-report || \
+		(cd /tmp; go install github.com/jstemmer/go-junit-report/v2@v2.0.0)
+	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/gofumpt || \
 		(cd /tmp; go install mvdan.cc/gofumpt@latest)
-	@test -x $(GOBIN)/gocyclo || \
+	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/gocyclo || \
 		(cd /tmp; go install github.com/fzipp/gocyclo/cmd/gocyclo@latest)
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
