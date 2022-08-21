@@ -406,11 +406,18 @@ func stringToBytes(fieldAttr ReinterpretField, value string) []byte {
 	return buf
 }
 
+type schemaNode struct {
+	parquet.SchemaElement
+	Parent   []string      `json:"-"`
+	Children []*schemaNode `json:"children,omitempty"`
+}
+
 func newSchemaTree(reader *reader.ParquetReader) *schemaNode {
 	schemas := reader.SchemaHandler.SchemaElements
 	stack := []*schemaNode{}
 	root := &schemaNode{
 		SchemaElement: *schemas[0],
+		Parent:        []string{},
 		Children:      []*schemaNode{},
 	}
 	stack = append(stack, root)
@@ -420,6 +427,7 @@ func newSchemaTree(reader *reader.ParquetReader) *schemaNode {
 		if len(node.Children) < int(node.SchemaElement.GetNumChildren()) {
 			childNode := &schemaNode{
 				SchemaElement: *schemas[pos],
+				Parent:        append(node.Parent, node.Name),
 				Children:      []*schemaNode{},
 			}
 			node.Children = append(node.Children, childNode)
