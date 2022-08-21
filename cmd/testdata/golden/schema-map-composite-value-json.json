@@ -1,0 +1,71 @@
+{
+  "Tag": "name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED",
+  "Fields": [
+    {
+      "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Age, type=INT32, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Id, type=INT64, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Weight, type=FLOAT, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Sex, type=BOOLEAN, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Classes, type=LIST, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=Scores, type=MAP, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+        },
+        {
+          "Tag": "name=Value, type=LIST, repetitiontype=REQUIRED",
+          "Fields": [
+            {
+              "Tag": "name=Element, type=FLOAT, repetitiontype=REQUIRED"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Tag": "name=Friends, type=LIST, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",
+          "Fields": [
+            {
+              "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+            },
+            {
+              "Tag": "name=Id, type=INT64, repetitiontype=REQUIRED"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Tag": "name=Teachers, type=STRUCT, repetitiontype=REPEATED",
+      "Fields": [
+        {
+          "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+        },
+        {
+          "Tag": "name=Id, type=INT64, repetitiontype=REQUIRED"
+        }
+      ]
+    }
+  ]
+}
