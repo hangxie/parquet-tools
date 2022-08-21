@@ -47,11 +47,6 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 	return nil
 }
 
-type schemaNode struct {
-	parquet.SchemaElement
-	Children []*schemaNode `json:"children,omitempty"`
-}
-
 func typeStr(se parquet.SchemaElement) string {
 	if se.Type != nil {
 		return se.Type.String()
@@ -307,6 +302,7 @@ func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
 func getTagMapAsChild(se parquet.SchemaElement, prefix string) map[string]string {
 	element := schemaNode{
 		se,
+		[]string{},
 		[]*schemaNode{},
 	}
 	tagMap := element.getTagMap()
