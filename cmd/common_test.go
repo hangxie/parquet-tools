@@ -42,11 +42,7 @@ func captureStdoutStderr(f func()) (string, string) {
 
 // this for unit test only
 func loadExpected(t *testing.T, fileName string) string {
-	fd, err := os.Open(fileName)
-	if err != nil {
-		t.Fatal("cannot open golden file:", fileName, "because of:", err.Error())
-	}
-	buf, err := io.ReadAll(fd)
+	buf, err := os.ReadFile(fileName)
 	if err != nil {
 		t.Fatal("cannot load golden file:", fileName, "because of:", err.Error())
 	}
