@@ -511,6 +511,17 @@ type Parquet_go_root struct {
 
 based on your use case, type `Parquet_go_root` may need to be renamed.
 
+parquet-go does not support composite type as map key or value in go struct tag as for now so `parquet-tools` will report error if there is such a field, you can still output in raw or JSON format:
+
+```bash
+$ parquet-tools schema -f go cmd/testdata/map-composite-value.parquet
+parquet-tools: error: go struct does not support composite type as map value in field [Parquet_go_root.Scores]
+exit status 1
+
+$ parquet-tools schema cmd/testdata/map-composite-value.parquet
+{"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Age, type=INT32, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"},{"Tag":"name=Weight, type=FLOAT, repetitiontype=REQUIRED"},{"Tag":"name=Sex, type=BOOLEAN, repetitiontype=REQUIRED"},{"Tag":"name=Classes, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]},{"Tag":"name=Scores, type=MAP, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Value, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=FLOAT, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Friends, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Teachers, type=STRUCT, repetitiontype=REPEATED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]}
+```
+
 ### shell-completions Command (Experimental)
 
 `shell-completions` updates shell's rcfile with proper shell completions setting, this is an experimental feature at this moment, only bash is tested.

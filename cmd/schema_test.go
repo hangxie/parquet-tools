@@ -150,3 +150,56 @@ func Test_SchemaCmd_Run_good_go(t *testing.T) {
 	assert.Equal(t, expected, stdout)
 	assert.Equal(t, "", stderr)
 }
+
+func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
+	cmd := &SchemaCmd{
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/map-composite-value.parquet",
+			},
+		},
+		Format: "raw",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	expected := loadExpected(t, "testdata/golden/schema-map-composite-value-raw.json")
+	assert.Equal(t, expected, stdout)
+	assert.Equal(t, "", stderr)
+}
+
+func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
+	cmd := &SchemaCmd{
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/map-composite-value.parquet",
+			},
+		},
+		Format: "json",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+	expected := loadExpected(t, "testdata/golden/schema-map-composite-value-json.json")
+	assert.Equal(t, expected, stdout)
+	assert.Equal(t, "", stderr)
+}
+
+func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
+	cmd := &SchemaCmd{
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file://./testdata/map-composite-value.parquet",
+			},
+		},
+		Format: "go",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.NotNil(t, cmd.Run(&Context{}))
+	})
+	assert.Equal(t, "", stdout)
+	assert.Contains(t, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]", stderr)
+}

@@ -38,7 +38,10 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 		res, _ := json.Marshal(s)
 		fmt.Printf("%s\n", res)
 	case formatGo:
-		snippet := schemaRoot.goStruct(false)
+		snippet, err := schemaRoot.goStruct(false)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("type %s %s\n", schemaRoot.Name, snippet)
 	default:
 		return fmt.Errorf("unknown schema format [%s]", c.Format)
@@ -145,7 +148,54 @@ func (s *schemaNode) jsonSchema() *jsonSchemaNode {
 	return ret
 }
 
-func (s *schemaNode) goStruct(withName bool) string {
+func (s *schemaNode) goStructStruct() (string, error) {
+	res := "struct {\n"
+	for _, cNode := range s.Children {
+		structStr, err := cNode.goStruct(true)
+		if err != nil {
+			return "", err
+		}
+		res += structStr + "\n"
+	}
+	res += "}"
+	return res, nil
+}
+
+func (s *schemaNode) goStructList() (string, error) {
+	// Parquet uses LIST -> "List"" -> actual element type
+	// oo struct will be []<actual element type>
+	structStr, err := s.Children[0].Children[0].goStruct(false)
+	if err != nil {
+		return "", err
+	}
+	return "[]" + structStr, nil
+}
+
+func (s *schemaNode) goStructMap() (string, error) {
+	// go struct tag does not support LIST or MAP as type of key/value
+	if s.Children[0].Children[0].ConvertedType != nil {
+		keyConvertedType := *s.Children[0].Children[0].ConvertedType
+		if keyConvertedType == parquet.ConvertedType_MAP || keyConvertedType == parquet.ConvertedType_LIST {
+			return "", fmt.Errorf("go struct does not support composite type as map key in field [%s.%s]", strings.Join(s.Parent, "."), s.Name)
+		}
+	}
+
+	if s.Children[0].Children[1].ConvertedType != nil {
+		valueConvertedType := *s.Children[0].Children[1].ConvertedType
+		if valueConvertedType == parquet.ConvertedType_MAP || valueConvertedType == parquet.ConvertedType_LIST {
+			return "", fmt.Errorf("go struct does not support composite type as map value in field [%s.%s]", strings.Join(s.Parent, "."), s.Name)
+		}
+	}
+	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
+	// go struct will be map[<key type>]<value type>
+	structStr, err := s.Children[0].Children[1].goStruct(false)
+	if err != nil {
+		return "", err
+	}
+	return "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + structStr, nil
+}
+
+func (s *schemaNode) goStruct(withName bool) (string, error) {
 	res := ""
 	if s.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
 		res = "*"
@@ -154,19 +204,23 @@ func (s *schemaNode) goStruct(withName bool) string {
 	}
 
 	if s.Type == nil && s.ConvertedType == nil {
-		res += "struct {\n"
-		for _, cNode := range s.Children {
-			res += cNode.goStruct(true) + "\n"
+		structStr, err := s.goStructStruct()
+		if err != nil {
+			return "", err
 		}
-		res += "}"
+		res += structStr
 	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST {
-		// Parquet uses LIST -> "List"" -> actual element type
-		// oo struct will be []<actual element type>
-		res += "[]" + s.Children[0].Children[0].goStruct(false)
+		structStr, err := s.goStructList()
+		if err != nil {
+			return "", err
+		}
+		res += structStr
 	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP {
-		// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
-		// go struct will be map[<key type>]<value type>
-		res += "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + s.Children[0].Children[1].goStruct(false)
+		structStr, err := s.goStructMap()
+		if err != nil {
+			return "", err
+		}
+		res += structStr
 	} else {
 		res += goTypeStr(s.SchemaElement)
 	}
@@ -174,7 +228,7 @@ func (s *schemaNode) goStruct(withName bool) string {
 	if withName {
 		res = s.Name + " " + res + " " + s.getStructTags()
 	}
-	return res
+	return res, nil
 }
 
 func (s *schemaNode) getStructTags() string {
@@ -199,6 +253,9 @@ func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
 
 		switch *s.ConvertedType {
 		case parquet.ConvertedType_LIST:
+			if len(s.Children) == 0 {
+				return
+			}
 			// LIST has schema structure of LIST->List->Field1
 			// expected output is LIST->Element
 			delete(tagMap, "convertedtype")
@@ -302,13 +359,14 @@ func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
 func getTagMapAsChild(se parquet.SchemaElement, prefix string) map[string]string {
 	element := schemaNode{
 		se,
-		[]string{},
+		nil,
 		[]*schemaNode{},
 	}
 	tagMap := element.getTagMap()
 	ret := map[string]string{}
 	for _, tag := range orderedTags {
 		if tag == "name" || strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
+			// these are tags that should never have prefix
 			continue
 		}
 		if val, found := tagMap[tag]; found {

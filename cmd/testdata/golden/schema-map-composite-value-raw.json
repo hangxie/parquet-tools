@@ -1,0 +1,210 @@
+{
+  "repetition_type": "REQUIRED",
+  "name": "Parquet_go_root",
+  "num_children": 9,
+  "children": [
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Name",
+      "converted_type": "UTF8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Age",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Id",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "FLOAT",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Weight",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "type": "BOOLEAN",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Sex",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "Classes",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "List",
+          "num_children": 1,
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "type_length": 0,
+              "repetition_type": "REQUIRED",
+              "name": "Element",
+              "converted_type": "UTF8",
+              "scale": 0,
+              "precision": 0,
+              "field_id": 0,
+              "logicalType": {
+                "STRING": {}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "Scores",
+      "num_children": 1,
+      "converted_type": "MAP",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "Key_value",
+          "num_children": 2,
+          "converted_type": "MAP_KEY_VALUE",
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "type_length": 0,
+              "repetition_type": "REQUIRED",
+              "name": "Key",
+              "converted_type": "UTF8",
+              "scale": 0,
+              "precision": 0,
+              "field_id": 0,
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "repetition_type": "REQUIRED",
+              "name": "Value",
+              "num_children": 1,
+              "converted_type": "LIST",
+              "children": [
+                {
+                  "repetition_type": "REPEATED",
+                  "name": "List",
+                  "num_children": 1,
+                  "children": [
+                    {
+                      "type": "FLOAT",
+                      "type_length": 0,
+                      "repetition_type": "REQUIRED",
+                      "name": "Element",
+                      "scale": 0,
+                      "precision": 0,
+                      "field_id": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition_type": "REQUIRED",
+      "name": "Friends",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "List",
+          "num_children": 1,
+          "children": [
+            {
+              "repetition_type": "REQUIRED",
+              "name": "Element",
+              "num_children": 2,
+              "children": [
+                {
+                  "type": "BYTE_ARRAY",
+                  "type_length": 0,
+                  "repetition_type": "REQUIRED",
+                  "name": "Name",
+                  "converted_type": "UTF8",
+                  "scale": 0,
+                  "precision": 0,
+                  "field_id": 0,
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "INT64",
+                  "type_length": 0,
+                  "repetition_type": "REQUIRED",
+                  "name": "Id",
+                  "scale": 0,
+                  "precision": 0,
+                  "field_id": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition_type": "REPEATED",
+      "name": "Teachers",
+      "num_children": 2,
+      "children": [
+        {
+          "type": "BYTE_ARRAY",
+          "type_length": 0,
+          "repetition_type": "REQUIRED",
+          "name": "Name",
+          "converted_type": "UTF8",
+          "scale": 0,
+          "precision": 0,
+          "field_id": 0,
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "INT64",
+          "type_length": 0,
+          "repetition_type": "REQUIRED",
+          "name": "Id",
+          "scale": 0,
+          "precision": 0,
+          "field_id": 0
+        }
+      ]
+    }
+  ]
+}
