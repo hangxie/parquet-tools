@@ -568,17 +568,17 @@ func Test_common_newParquetFileReader_http_good(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_common_newParquetFileReader_hdfs_good(t *testing.T) {
+func Test_common_newParquetFileReader_hdfs_bad(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "hdfs://root@localhost:1/temp/good.parquet"
+	option.URI = "hdfs://localhost:1/temp/good.parquet"
 	_, err := newParquetFileReader(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connection refused")
 }
 
-func Test_common_newParquetFileWriter_hdfs_good(t *testing.T) {
+func Test_common_newParquetFileWriter_hdfs_bad(t *testing.T) {
 	option := CommonOption{}
-	option.URI = "hdfs://root@localhost:1/temp/good.parquet"
+	option.URI = "hdfs://localhost:1/temp/good.parquet"
 	_, err := newParquetFileWriter(option)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connection refused")
