@@ -288,6 +288,26 @@ $ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.p
 
 Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessary data from remote server through [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range).
 
+`parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by set environment variable `GODEBUG` to `http2client=0`:
+
+```
+$ parquet-tools row-count https://huggingface.co/datasets/laion/laion2B-en/resolve/main/part-00047-5114fd87-297e-42b0-9d11-50f1df323dfa-c000.snappy.parquet
+2022/09/05 09:54:52 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:52 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+2022/09/05 09:54:53 protocol error: received DATA after END_STREAM
+18141856
+
+$ GODEBUG=http2client=0 parquet-tools row-count https://huggingface.co/datasets/laion/laion2B-en/resolve/main/part-00047-5114fd87-297e-42b0-9d11-50f1df323dfa-c000.sn
+appy.parquet
+18141856
+```
+
 #### HDFS File
 
 `parquet-file` can read and write files under HDFS with schema `hdfs://usermame@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
