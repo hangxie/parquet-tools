@@ -249,21 +249,21 @@ Similar to S3, `parquet-tools` downloads only necessary data from GCS bucket.
 
 for example:
 
-> wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+> wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 
 means the parquet file is at:
 * storage account `pandemicdatalake`
 * container `public`
 * blob `curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet`
 
-`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonmous access is expected.
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonymous access is expected.
 
 ```bash
-$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://parquet-tools@REDACTED.blob.core.windows.net/test/csv.parquet
-$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 7
-$ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://public@pandemicdatalake.blob.core.windows.net/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
-2786653
+$ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+6582726
 ```
 
 Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.

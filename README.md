@@ -33,6 +33,7 @@ Some test cases are from:
 * https://github.com/xitongsys/parquet-go/tree/master/example/
 * https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet
 * https://azure.microsoft.com/en-us/services/open-datasets/catalog/
+* https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
 Tools used:
 

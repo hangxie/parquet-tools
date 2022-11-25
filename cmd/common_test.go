@@ -294,7 +294,7 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := ReadOption{}
-	option.URI = "wasbs://nyctlc@azureopendatastorage.blob.core.windows.net/yellow/puYear=2021/puMonth=9/part-00005-tid-8898858832658823408-a1de80bd-eed3-4d11-b9d4-fa74bfbd47bc-426324-135.c000.snappy.parquet"
+	option.URI = "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
 	_, err := newParquetFileReader(option)
 	assert.NotNil(t, err)
 	// This is returned from parquet-go-source, which does not help too much
@@ -560,7 +560,7 @@ func Test_common_newParquetFileReader_http_no_range_support(t *testing.T) {
 
 func Test_common_newParquetFileReader_http_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet"
+	option.URI = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-01.parquet"
 	option.HTTPMultipleConnection = true
 	option.HTTPIgnoreTLSError = false
 	option.HTTPExtraHeaders = map[string]string{"key": "value"}
