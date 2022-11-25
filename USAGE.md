@@ -154,7 +154,7 @@ Flags:
       --http-ignore-tls-error               (HTTP URI only) ignore TLS error.
       --http-extra-headers=KEY=VALUE,...    (HTTP URI only) extra HTTP headers.
       --object-version=STRING               (S3 URI only) object version.
-      --is-public                           (S3 URI only) object is publicly accessible.
+      --anonymous                           (S3 and Azure only) object is publicly accessible.
   -b, --base64                              Encode min/max value.
 ```
 
@@ -203,7 +203,7 @@ $ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-
 908
 ```
 
-If an S3 object is publicly accessible and you do not have AWS credential, you can use `--is-public` flag to bypass AWS authentation:
+If an S3 object is publicly accessible and you do not have AWS credential, you can use `--anonymous` flag to bypass AWS authentation:
 
 ```bash
 $ aws sts get-caller-identity
@@ -211,7 +211,7 @@ $ aws sts get-caller-identity
 Unable to locate credentials. You can configure credentials by running "aws configure".
 $ aws s3 ls --no-sign-request s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-$ parquet-tools row-count --is-public s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
+$ parquet-tools row-count --anonymous s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
 908
 ```
 
@@ -256,13 +256,15 @@ means the parquet file is at:
 * container `public`
 * blob `curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet`
 
-`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, then `AZURE_STORAGE_ACCESS_KEY` needs to be either empty or unset to indicate that anonymous access is expected.
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, either unset `AZURE_STORAGE_ACCESS_KEY` or use `--anonymous` option to indicate that anonymous access is expected.
 
 ```bash
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 7
 $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+6582726
+$ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 6582726
 ```
 

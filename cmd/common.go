@@ -54,7 +54,7 @@ type ReadOption struct {
 	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
-	IsPublic               bool              `help:"(S3 URI only) object is publicly accessible." default:"false"`
+	Anonymous              bool              `help:"(S3 and Azure only) object is publicly accessible." default:"false"`
 }
 
 // Context represents command's context
@@ -120,7 +120,7 @@ func newLocalReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error
 }
 
 func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
-	s3Client, err := getS3Client(u.Host, option.IsPublic)
+	s3Client, err := getS3Client(u.Host, option.Anonymous)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error
 }
 
 func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
-	azURL, cred, err := azureAccessDetail(*u)
+	azURL, cred, err := azureAccessDetail(*u, option.Anonymous)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +233,8 @@ func newGoogleCloudStorageWriter(u *url.URL, option CommonOption) (source.Parque
 }
 
 func newAzureStorageBlobWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
-	azURL, cred, err := azureAccessDetail(*u)
+	// write operation cannot be with anonymous access
+	azURL, cred, err := azureAccessDetail(*u, false)
 	if err != nil {
 		return nil, err
 	}
@@ -303,7 +304,7 @@ func newJSONWriter(option CommonOption, schema string) (*writer.JSONWriter, erro
 	return writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
 }
 
-func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
+func azureAccessDetail(azURL url.URL, anonymous bool) (string, azblob.Credential, error) {
 	container := azURL.User.Username()
 	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
 		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.core.windows.net/path/to/blob")
@@ -311,7 +312,7 @@ func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
 	httpURL := fmt.Sprintf("https://%s/%s%s", azURL.Host, container, azURL.Path)
 
 	accessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
-	if accessKey == "" {
+	if anonymous || accessKey == "" {
 		// anonymouse access
 		return httpURL, azblob.NewAnonymousCredential(), nil
 	}
