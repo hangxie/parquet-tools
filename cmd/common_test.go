@@ -78,7 +78,7 @@ func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
 	}
 	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
 
-	uri, cred, err := azureAccessDetail(u)
+	uri, cred, err := azureAccessDetail(u, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 	assert.Equal(t, "", uri)
@@ -86,19 +86,19 @@ func Test_common_azureAccessDetail_invalid_uri(t *testing.T) {
 
 	u.Host = "storageacconut"
 	u.Path = "missin/leading/slash"
-	_, _, err = azureAccessDetail(u)
+	_, _, err = azureAccessDetail(u, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 
 	u.Host = "storageacconut"
 	u.Path = "/no-container"
-	_, _, err = azureAccessDetail(u)
+	_, _, err = azureAccessDetail(u, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 
 	u.Host = "storageacconut"
 	u.Path = "/empty-blob/"
-	_, _, err = azureAccessDetail(u)
+	_, _, err = azureAccessDetail(u, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "azure blob URI format:")
 }
@@ -111,7 +111,7 @@ func Test_common_azureAccessDetail_bad_shared_cred(t *testing.T) {
 	}
 
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
-	uri, cred, err := azureAccessDetail(u)
+	uri, cred, err := azureAccessDetail(u, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to create Azure credential")
 	assert.Equal(t, "", uri)
@@ -124,14 +124,24 @@ func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 		Path: "/path/to/object",
 		User: url.User("container"),
 	}
+	// anonymous access by lack of environment variable
 	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
-	uri, cred, err := azureAccessDetail(u)
+	uri, cred, err := azureAccessDetail(u, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	assert.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
 
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
-	uri, cred, err = azureAccessDetail(u)
+	uri, cred, err = azureAccessDetail(u, false)
+	assert.Nil(t, err)
+	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
+	assert.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
+
+	// anonymous access by explicit setting
+	randBytes := make([]byte, 64)
+	rand.Read(randBytes)
+	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
+	uri, cred, err = azureAccessDetail(u, true)
 	assert.Nil(t, err)
 	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	assert.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
@@ -148,7 +158,7 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 	rand.Read(randBytes)
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
-	uri, cred, err := azureAccessDetail(u)
+	uri, cred, err := azureAccessDetail(u, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	assert.Equal(t, "*azblob.SharedKeyCredential", reflect.TypeOf(cred).String())
@@ -257,7 +267,7 @@ func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 
-	option := ReadOption{IsPublic: true}
+	option := ReadOption{Anonymous: true}
 	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
 	_, err := newParquetFileReader(option)
 	assert.Nil(t, err)
@@ -267,7 +277,7 @@ func Test_common_newParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 
-	option := ReadOption{ObjectVersion: "random-version-id", IsPublic: true}
+	option := ReadOption{ObjectVersion: "random-version-id", Anonymous: true}
 	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
 	_, err := newParquetFileReader(option)
 	assert.NotNil(t, err)
