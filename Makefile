@@ -104,7 +104,6 @@ release-build: deps ## Build release binaries
 	@cat $(BUILDDIR)/CHANGELOG
 
 help:  ## Print list of Makefile targets
-	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 	  cut -d ":" -f1- | \
 	  awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

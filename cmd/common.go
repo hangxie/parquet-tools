@@ -306,7 +306,7 @@ func newJSONWriter(option CommonOption, schema string) (*writer.JSONWriter, erro
 func azureAccessDetail(azURL url.URL) (string, azblob.Credential, error) {
 	container := azURL.User.Username()
 	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
-		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.windows.core.net/path/to/blob")
+		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.core.windows.net/path/to/blob")
 	}
 	httpURL := fmt.Sprintf("https://%s/%s%s", azURL.Host, container, azURL.Path)
 
