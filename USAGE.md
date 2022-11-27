@@ -72,7 +72,7 @@ it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you 
 
 Good for people do not want to build and all other installation approach do not work.
 
-Go to [relase page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux or Mac, then run the program.
+Go to [release page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux or Mac, then run the program.
 
 For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-386 build, if you are in Windows Insider program, windows-amd64 build should work too.
 
@@ -136,7 +136,7 @@ Updating / installing...
 ## Usage
 
 ### Obtain Help
-`parquet-tools` provides help information through `-h` flag, whenever you are not sure about parmater for a command, just add `-h` to the end of the line then it will give you all available options, for example:
+`parquet-tools` provides help information through `-h` flag, whenever you are not sure about parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:
 
 ```bash
 $ parquet-tools meta -h
@@ -215,7 +215,7 @@ $ parquet-tools row-count --anonymous s3://aws-roda-hcls-datalake/gnomad/chrm/ru
 908
 ```
 
-Optionally, you can specify object version by using `--object-version` when you performance read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist, `parquet-tools` will report error:
+Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist, `parquet-tools` will report error:
 
 ```bash
 $ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet --object-version non-existent-version
@@ -252,16 +252,21 @@ for example:
 > wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 
 means the parquet file is at:
-* storage account `pandemicdatalake`
-* container `public`
-* blob `curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet`
+* storage account `azureopendatastorage`
+* container `laborstatisticscontainer`
+* blob `lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet`
 
-`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access, if the blob is public accessible, either unset `AZURE_STORAGE_ACCESS_KEY` or use `--anonymous` option to indicate that anonymous access is expected.
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access:
 
 ```bash
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 7
+```
+
+If the blob is publicly accessible, either unset `AZURE_STORAGE_ACCESS_KEY` or use `--anonymous` option to indicate that anonymous access is expected:
+
+```
 $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 6582726
 $ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
@@ -279,18 +284,18 @@ HTTP endpoint does not support write operation so it cannot be used as destinati
 These options can be used along with HTTP endpoints:
 * `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depends on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
 * `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to use them for authentication/authorization that is required by remote server.
-* `--http-ignore-tls-error` will igore TLS errors.
+* `--http-ignore-tls-error` will ignore TLS errors.
 
 ```bash
-$ parquet-tools row-count https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/bing_covid-19_data/latest/bing_covid-19_data.parquet
-3029995
+$ parquet-tools row-count https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+6582726
 $ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
 4632041101
 ```
 
 Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessary data from remote server through [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range).
 
-`parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by set environment variable `GODEBUG` to `http2client=0`:
+`parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by setting environment variable `GODEBUG` to `http2client=0`:
 
 ```
 $ parquet-tools row-count https://huggingface.co/datasets/laion/laion2B-en/resolve/main/part-00047-5114fd87-297e-42b0-9d11-50f1df323dfa-c000.snappy.parquet
@@ -312,7 +317,7 @@ appy.parquet
 
 #### HDFS File
 
-`parquet-file` can read and write files under HDFS with schema `hdfs://usermame@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
+`parquet-tools` can read and write files under HDFS with schema `hdfs://username@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
 
 ```bash
 $ parquet-tools import -f jsonl -s cmd/testdata/jsonl.schema -s cmd/testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
