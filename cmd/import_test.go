@@ -30,6 +30,30 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
+	testFile := os.TempDir() + "/import-csv.parquet"
+	os.Remove(testFile)
+	cmd := &ImportCmd{
+		Source:     "testdata/csv-with-header.source",
+		Schema:     "testdata/csv.schema",
+		Format:     "csv",
+		SkipHeader: true,
+		CommonOption: CommonOption{
+			URI: testFile,
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		assert.Nil(t, cmd.Run(&Context{}))
+	})
+
+	assert.Equal(t, "", stdout)
+	assert.Equal(t, "", stderr)
+
+	_, err := os.Stat(testFile)
+	assert.Nil(t, err)
+}
+
 func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	testFile := os.TempDir() + "/import-json.parquet"
 	os.Remove(testFile)
