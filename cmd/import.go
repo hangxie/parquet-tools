@@ -13,9 +13,10 @@ import (
 // ImportCmd is a kong command for import
 type ImportCmd struct {
 	CommonOption
-	Source string `required:"" short:"s" predictor:"file" help:"Source file name."`
-	Format string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
-	Schema string `required:"" short:"m" predictor:"file" help:"Schema file name."`
+	Source     string `required:"" short:"s" predictor:"file" help:"Source file name."`
+	Format     string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
+	Schema     string `required:"" short:"m" predictor:"file" help:"Schema file name."`
+	SkipHeader bool   `help:"Skip first line of CSV files" default:"false"`
 }
 
 // Run does actual import job
@@ -56,6 +57,9 @@ func (c *ImportCmd) importCSV() error {
 		return fmt.Errorf("failed to create CSV writer: %s", err.Error())
 	}
 
+	if c.SkipHeader {
+		_, _ = csvReader.Read()
+	}
 	for {
 		fields, err := csvReader.Read()
 		if err == io.EOF {
