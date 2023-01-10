@@ -3,7 +3,7 @@ package cmd
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_RowCountCmd_Run_non_existent(t *testing.T) {
@@ -16,8 +16,8 @@ func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), string("failed to open local file"))
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), string("failed to open local file"))
 }
 
 func Test_RowCountCmd_Run_good(t *testing.T) {
@@ -30,8 +30,8 @@ func Test_RowCountCmd_Run_good(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "4\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "4\n", stdout)
+	require.Equal(t, "", stderr)
 }

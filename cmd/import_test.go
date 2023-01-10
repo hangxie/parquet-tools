@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_ImportCmd_Run_CSV_good(t *testing.T) {
@@ -20,14 +20,14 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 
-	assert.Equal(t, "", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
 
 	_, err := os.Stat(testFile)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
@@ -44,14 +44,14 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 
-	assert.Equal(t, "", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
 
 	_, err := os.Stat(testFile)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func Test_ImportCmd_Run_JSON_good(t *testing.T) {
@@ -67,14 +67,14 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 
-	assert.Equal(t, "", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
 
 	_, err := os.Stat(testFile)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func Test_ImportCmd_Run_invalid_format(t *testing.T) {
@@ -84,8 +84,8 @@ func Test_ImportCmd_Run_invalid_format(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "is not a recognized source format")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "is not a recognized source format")
 }
 
 func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
@@ -95,8 +95,8 @@ func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to load schema from")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to load schema from")
 }
 
 func Test_ImportCmd_importCSV_invalid_uri(t *testing.T) {
@@ -110,8 +110,8 @@ func Test_ImportCmd_importCSV_invalid_uri(t *testing.T) {
 	}
 
 	err := cmd.importCSV()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to parse file location")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_ImportCmd_importCSV_non_existent_source(t *testing.T) {
@@ -126,8 +126,8 @@ func Test_ImportCmd_importCSV_non_existent_source(t *testing.T) {
 
 	// non-existent source
 	err := cmd.importCSV()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to open CSV file")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to open CSV file")
 }
 
 func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
@@ -142,8 +142,8 @@ func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
 	}
 
 	err := cmd.importCSV()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to close Parquet file")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to close Parquet file")
 }
 
 func Test_ImportCmd_importCSV_good(t *testing.T) {
@@ -157,11 +157,11 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	}
 
 	err := cmd.importCSV()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	reader, err := newParquetFileReader(ReadOption{CommonOption: cmd.CommonOption})
-	assert.Nil(t, err)
-	assert.Equal(t, reader.GetNumRows(), int64(7))
+	require.Nil(t, err)
+	require.Equal(t, reader.GetNumRows(), int64(7))
 }
 
 func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {
@@ -171,8 +171,8 @@ func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to load schema from")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to load schema from")
 }
 
 func Test_ImportCmd_importJSON_invalid_uri(t *testing.T) {
@@ -186,8 +186,8 @@ func Test_ImportCmd_importJSON_invalid_uri(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to parse file location")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_ImportCmd_importJSON_non_existent_source(t *testing.T) {
@@ -202,8 +202,8 @@ func Test_ImportCmd_importJSON_non_existent_source(t *testing.T) {
 
 	// non-existent source
 	err := cmd.importJSON()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to load source from")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to load source from")
 }
 
 func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
@@ -218,8 +218,8 @@ func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to close Parquet file")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to close Parquet file")
 }
 
 func Test_ImportCmd_importJSON_invalid_schema(t *testing.T) {
@@ -233,8 +233,8 @@ func Test_ImportCmd_importJSON_invalid_schema(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "is not a valid schema JSON")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "is not a valid schema JSON")
 }
 
 func Test_ImportCmd_importJSON_invalid_source(t *testing.T) {
@@ -248,8 +248,8 @@ func Test_ImportCmd_importJSON_invalid_source(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid JSON string")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid JSON string")
 }
 
 func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
@@ -263,8 +263,8 @@ func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to close Parquet")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to close Parquet")
 }
 
 func Test_ImportCmd_importJSON_good(t *testing.T) {
@@ -278,7 +278,7 @@ func Test_ImportCmd_importJSON_good(t *testing.T) {
 	}
 
 	err := cmd.importJSON()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
@@ -288,8 +288,8 @@ func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to load schema from")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to load schema from")
 }
 
 func Test_ImportCmd_importJSONL_invalid_uri(t *testing.T) {
@@ -303,8 +303,8 @@ func Test_ImportCmd_importJSONL_invalid_uri(t *testing.T) {
 	}
 
 	err := cmd.importJSONL()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unable to parse file location")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_ImportCmd_importJSONL_non_existent_source(t *testing.T) {
@@ -319,8 +319,8 @@ func Test_ImportCmd_importJSONL_non_existent_source(t *testing.T) {
 
 	// non-existent source
 	err := cmd.importJSONL()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to open source file")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to open source file")
 }
 
 func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
@@ -335,8 +335,8 @@ func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
 	}
 
 	err := cmd.importJSONL()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to close Parquet file")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to close Parquet file")
 }
 
 func Test_ImportCmd_importJSONL_invalid_schema(t *testing.T) {
@@ -350,8 +350,8 @@ func Test_ImportCmd_importJSONL_invalid_schema(t *testing.T) {
 	}
 
 	err := cmd.importJSONL()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "is not a valid schema JSON")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "is not a valid schema JSON")
 }
 
 func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
@@ -365,8 +365,8 @@ func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
 	}
 
 	err := cmd.importJSONL()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid JSON string")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid JSON string")
 }
 
 func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
@@ -380,8 +380,8 @@ func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
 	}
 
 	err := cmd.importJSONL()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to close Parquet writer")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to close Parquet writer")
 }
 
 func Test_ImportCmd_importJSONL_good(t *testing.T) {
@@ -395,5 +395,5 @@ func Test_ImportCmd_importJSONL_good(t *testing.T) {
 	}
 
 	err := cmd.importJSONL()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
