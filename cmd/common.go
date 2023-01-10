@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -142,7 +142,7 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 		return nil, err
 	}
 
-	fileReader, err := pqtazblob.NewAzBlobFileReader(context.Background(), azURL, cred, pqtazblob.ReaderOptions{})
+	fileReader, err := pqtazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, azblob.ClientOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 	}
@@ -239,7 +239,7 @@ func newAzureStorageBlobWriter(u *url.URL, option CommonOption) (source.ParquetF
 		return nil, err
 	}
 
-	fileWriter, err := pqtazblob.NewAzBlobFileWriter(context.Background(), azURL, cred, pqtazblob.WriterOptions{})
+	fileWriter, err := pqtazblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, azblob.ClientOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
 	}
@@ -304,7 +304,7 @@ func newJSONWriter(option CommonOption, schema string) (*writer.JSONWriter, erro
 	return writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
 }
 
-func azureAccessDetail(azURL url.URL, anonymous bool) (string, azblob.Credential, error) {
+func azureAccessDetail(azURL url.URL, anonymous bool) (string, *azblob.SharedKeyCredential, error) {
 	container := azURL.User.Username()
 	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
 		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.core.windows.net/path/to/blob")
@@ -314,12 +314,12 @@ func azureAccessDetail(azURL url.URL, anonymous bool) (string, azblob.Credential
 	accessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
 	if anonymous || accessKey == "" {
 		// anonymouse access
-		return httpURL, azblob.NewAnonymousCredential(), nil
+		return httpURL, nil, nil
 	}
 
 	credential, err := azblob.NewSharedKeyCredential(strings.Split(azURL.Host, ".")[0], accessKey)
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to create Azure credential")
+		return "", nil, fmt.Errorf("failed to create Azure credential: %v", err)
 	}
 
 	return httpURL, credential, nil

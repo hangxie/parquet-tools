@@ -129,13 +129,13 @@ func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
-	require.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
+	require.Nil(t, cred)
 
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err = azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
-	require.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
+	require.Nil(t, cred)
 
 	// anonymous access by explicit setting
 	randBytes := make([]byte, 64)
@@ -144,7 +144,7 @@ func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	uri, cred, err = azureAccessDetail(u, true)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
-	require.Equal(t, "*azblob.anonymousCredentialPolicyFactory", reflect.TypeOf(cred).String())
+	require.Nil(t, cred)
 }
 
 func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
@@ -307,8 +307,7 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	option.URI = "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
 	_, err := newParquetFileReader(option)
 	require.NotNil(t, err)
-	// This is returned from parquet-go-source, which does not help too much
-	require.Contains(t, err.Error(), "Server failed to authenticate the request")
+	require.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
 // newFileWriter
