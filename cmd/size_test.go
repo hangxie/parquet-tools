@@ -3,7 +3,7 @@ package cmd
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_SizeCmd_Run_non_existent_file(t *testing.T) {
@@ -16,8 +16,8 @@ func Test_SizeCmd_Run_non_existent_file(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to open local")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to open local")
 }
 
 func Test_SizeCmd_Run_invalid_query(t *testing.T) {
@@ -31,8 +31,8 @@ func Test_SizeCmd_Run_invalid_query(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unknown query type")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unknown query type")
 }
 
 func Test_SizeCmd_Run_good_raw(t *testing.T) {
@@ -46,10 +46,10 @@ func Test_SizeCmd_Run_good_raw(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "17817\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "17817\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
@@ -64,10 +64,10 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Raw":17817}`+"\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, `{"Raw":17817}`+"\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
@@ -81,10 +81,10 @@ func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "26527\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "26527\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
@@ -99,10 +99,10 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Uncompressed":26527}`+"\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, `{"Uncompressed":26527}`+"\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_footer(t *testing.T) {
@@ -116,10 +116,10 @@ func Test_SizeCmd_Run_good_footer(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "6400\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "6400\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
@@ -134,10 +134,10 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Footer":6400}`+"\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, `{"Footer":6400}`+"\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_all(t *testing.T) {
@@ -151,10 +151,10 @@ func Test_SizeCmd_Run_good_all(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "17817 26527 6400\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "17817 26527 6400\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SizeCmd_Run_good_all_json(t *testing.T) {
@@ -169,8 +169,8 @@ func Test_SizeCmd_Run_good_all_json(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, `{"Raw":17817,"Uncompressed":26527,"Footer":6400}`+"\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, `{"Raw":17817,"Uncompressed":26527,"Footer":6400}`+"\n", stdout)
+	require.Equal(t, "", stderr)
 }

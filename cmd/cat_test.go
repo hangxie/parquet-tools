@@ -3,7 +3,7 @@ package cmd
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_CatCmd_Run_non_existent_file(t *testing.T) {
@@ -20,8 +20,8 @@ func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to open local")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to open local")
 }
 
 func Test_CatCmd_Run_default_limit(t *testing.T) {
@@ -39,11 +39,11 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 
 	stdout, stderr := captureStdoutStderr(func() {
 		err := cmd.Run(&Context{})
-		assert.Nil(t, err)
-		assert.Equal(t, cmd.Limit, ^uint64(0))
+		require.Nil(t, err)
+		require.Equal(t, cmd.Limit, ^uint64(0))
 	})
-	assert.NotEqual(t, "", stdout)
-	assert.Equal(t, "", stderr)
+	require.NotEqual(t, "", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
@@ -60,8 +60,8 @@ func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid page size")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid page size")
 }
 
 func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
@@ -78,8 +78,8 @@ func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid sampling")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid sampling")
 }
 
 func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
@@ -96,8 +96,8 @@ func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid sampling")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid sampling")
 }
 
 func Test_CatCmd_Run_good_default(t *testing.T) {
@@ -114,11 +114,11 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-good-json.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_stream(t *testing.T) {
@@ -135,11 +135,11 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-good-jsonl.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_bad_format(t *testing.T) {
@@ -157,11 +157,11 @@ func Test_CatCmd_Run_bad_format(t *testing.T) {
 
 	stdout, stderr := captureStdoutStderr(func() {
 		err := cmd.Run(&Context{})
-		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "unknown format: random-dude")
+		require.NotNil(t, err)
+		require.Contains(t, err.Error(), "unknown format: random-dude")
 	})
-	assert.Equal(t, "", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_skip(t *testing.T) {
@@ -179,11 +179,11 @@ func Test_CatCmd_Run_good_skip(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-good-json-skip-2.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_all_skip(t *testing.T) {
@@ -201,10 +201,10 @@ func Test_CatCmd_Run_good_all_skip(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "[]\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "[]\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_limit(t *testing.T) {
@@ -221,11 +221,11 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-good-json-limit-2.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_sampling(t *testing.T) {
@@ -242,10 +242,10 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "[]\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "[]\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_empty(t *testing.T) {
@@ -262,10 +262,10 @@ func Test_CatCmd_Run_good_empty(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "[]\n", stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, "[]\n", stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
@@ -281,11 +281,11 @@ func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-reinterpret-scalar.jsonl")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
@@ -301,11 +301,11 @@ func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-reinterpret-pointer.jsonl")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
@@ -321,11 +321,11 @@ func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-reinterpret-list.jsonl")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
@@ -341,11 +341,11 @@ func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-reinterpret-map-key.jsonl")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
@@ -361,11 +361,11 @@ func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/cat-reinterpret-map-value.jsonl")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
@@ -381,10 +381,10 @@ func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 
 	expected := loadExpected(t, "testdata/golden/cat-reinterpret-composite.jsonl")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }

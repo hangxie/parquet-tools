@@ -3,69 +3,69 @@ package cmd
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xitongsys/parquet-go/parquet"
 )
 
 func Test_SchemaCmd_typeStr_both_nil(t *testing.T) {
-	assert.Equal(t, "STRUCT", typeStr(parquet.SchemaElement{Type: nil, ConvertedType: nil}))
+	require.Equal(t, "STRUCT", typeStr(parquet.SchemaElement{Type: nil, ConvertedType: nil}))
 }
 
 func Test_SchemaCmd_typeStr_converted_type_nil(t *testing.T) {
 	pType := parquet.Type_FIXED_LEN_BYTE_ARRAY
-	assert.Equal(t, "FIXED_LEN_BYTE_ARRAY", typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: nil}))
+	require.Equal(t, "FIXED_LEN_BYTE_ARRAY", typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: nil}))
 }
 
 func Test_SchemaCmd_typeStr_type_nil(t *testing.T) {
 	cType := parquet.ConvertedType_LIST
-	assert.Equal(t, "LIST", typeStr(parquet.SchemaElement{Type: nil, ConvertedType: &cType}))
+	require.Equal(t, "LIST", typeStr(parquet.SchemaElement{Type: nil, ConvertedType: &cType}))
 }
 
 func Test_SchemaCmd_typeStr_both_non_nil(t *testing.T) {
 	pType := parquet.Type_FIXED_LEN_BYTE_ARRAY
 	cType := parquet.ConvertedType_LIST
-	assert.Equal(t, "FIXED_LEN_BYTE_ARRAY", typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: &cType}))
+	require.Equal(t, "FIXED_LEN_BYTE_ARRAY", typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: &cType}))
 }
 
 func Test_SchemaCmd_repetitionTyeStr_good(t *testing.T) {
-	assert.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
+	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
 
 	rType := parquet.FieldRepetitionType_OPTIONAL
-	assert.Equal(t, "OPTIONAL", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
+	require.Equal(t, "OPTIONAL", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
 
 	rType = parquet.FieldRepetitionType_REQUIRED
-	assert.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
+	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
 
 	rType = parquet.FieldRepetitionType_REPEATED
-	assert.Equal(t, "REPEATED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
+	require.Equal(t, "REPEATED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
 }
 
 func Test_SchemaCmd_goTypeStr_good(t *testing.T) {
-	assert.Equal(t, "", goTypeStr(parquet.SchemaElement{Type: nil}))
+	require.Equal(t, "", goTypeStr(parquet.SchemaElement{Type: nil}))
 
 	pType := parquet.Type_BOOLEAN
-	assert.Equal(t, "bool", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "bool", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_INT32
-	assert.Equal(t, "int32", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "int32", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_INT64
-	assert.Equal(t, "int64", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "int64", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_INT96
-	assert.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_FLOAT
-	assert.Equal(t, "float32", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "float32", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_DOUBLE
-	assert.Equal(t, "float64", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "float64", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_BYTE_ARRAY
-	assert.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
 
 	pType = parquet.Type_FIXED_LEN_BYTE_ARRAY
-	assert.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
+	require.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
 }
 
 func Test_SchemaCmd_Run_non_existent(t *testing.T) {
@@ -78,8 +78,8 @@ func Test_SchemaCmd_Run_non_existent(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "failed to open local file")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to open local file")
 }
 
 func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
@@ -93,8 +93,8 @@ func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 	}
 
 	err := cmd.Run(&Context{})
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "unknown schema format")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unknown schema format")
 }
 
 func Test_SchemaCmd_Run_good_raw(t *testing.T) {
@@ -108,11 +108,11 @@ func Test_SchemaCmd_Run_good_raw(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/schema-all-types-raw.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SchemaCmd_Run_good_json(t *testing.T) {
@@ -126,11 +126,11 @@ func Test_SchemaCmd_Run_good_json(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/schema-all-types-json.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SchemaCmd_Run_good_go(t *testing.T) {
@@ -144,11 +144,11 @@ func Test_SchemaCmd_Run_good_go(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/schema-all-types-go.txt")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
@@ -162,11 +162,11 @@ func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/schema-map-composite-value-raw.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
@@ -180,11 +180,11 @@ func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run(&Context{}))
 	})
 	expected := loadExpected(t, "testdata/golden/schema-map-composite-value-json.json")
-	assert.Equal(t, expected, stdout)
-	assert.Equal(t, "", stderr)
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
@@ -198,8 +198,8 @@ func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
 	}
 
 	stdout, stderr := captureStdoutStderr(func() {
-		assert.NotNil(t, cmd.Run(&Context{}))
+		require.NotNil(t, cmd.Run(&Context{}))
 	})
-	assert.Equal(t, "", stdout)
-	assert.Contains(t, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]", stderr)
+	require.Equal(t, "", stdout)
+	require.Contains(t, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]", stderr)
 }
