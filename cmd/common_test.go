@@ -172,7 +172,6 @@ func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
 
 func Test_common_getBucketRegion_s3_missing_credential(t *testing.T) {
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
-	t.Logf("dummy AWS_PROFILE: %s\n", os.Getenv("AWS_PROFILE"))
 	_, err := getS3Client("aws-roda-hcls-datalake", false)
 	// private bucket error happens at reading time
 	require.Nil(t, err)
@@ -312,30 +311,32 @@ func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 
 // newFileWriter
 func Test_common_newFileWriter_invalid_uri(t *testing.T) {
-	option := CommonOption{URI: "://uri"}
+	option := WriteOption{}
+	option.URI = "://uri"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_common_newFileWriter_invalid_uri_scheme(t *testing.T) {
-	option := CommonOption{URI: "invalid-scheme://something"}
+	option := WriteOption{}
+	option.URI = "invalid-scheme://something"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unknown location scheme")
 }
 
 func Test_common_newFileWriter_local_not_a_file(t *testing.T) {
-	option := CommonOption{URI: "testdata/"}
+	option := WriteOption{}
+	option.URI = "testdata/"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "is a directory")
 }
 
 func Test_common_newFileWriter_local_good(t *testing.T) {
-	option := CommonOption{
-		URI: os.TempDir() + "/file-writer.parquet",
-	}
+	option := WriteOption{}
+	option.URI = os.TempDir() + "/file-writer.parquet"
 	fw, err := newParquetFileWriter(option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
@@ -343,9 +344,8 @@ func Test_common_newFileWriter_local_good(t *testing.T) {
 }
 
 func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
-	option := CommonOption{
-		URI: fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63()),
-	}
+	option := WriteOption{}
+	option.URI = fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63())
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
@@ -356,9 +356,8 @@ func Test_common_newFileWriter_s3_good(t *testing.T) {
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
 
 	// parquet writer does not actually write to destination immediately
-	option := CommonOption{
-		URI: "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet",
-	}
+	option := WriteOption{}
+	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
 	fw, err := newParquetFileWriter(option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
@@ -370,9 +369,8 @@ func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
 	// parquet writer does not actually write to destination immediately
-	option := CommonOption{
-		URI: "gs://cloud-samples-data/bigquery/us-states/us-states.parquet",
-	}
+	option := WriteOption{}
+	option.URI = "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to open GCS object")
@@ -384,14 +382,16 @@ func Test_common_newFileWriter_azblob_invalid_url(t *testing.T) {
 	rand.Read(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
-	option := CommonOption{URI: "wasbs://bad/url"}
+	option := WriteOption{}
+	option.URI = "wasbs://bad/url"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "azure blob URI format:")
 }
 
 func Test_common_newFileWriter_http_not_supported(t *testing.T) {
-	option := CommonOption{URI: "https://domain.tld/path/to/file"}
+	option := WriteOption{}
+	option.URI = "https://domain.tld/path/to/file"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "writing to https endpoint is not currently supported")
@@ -399,16 +399,16 @@ func Test_common_newFileWriter_http_not_supported(t *testing.T) {
 
 // newCSVWriter
 func Test_common_newCSVWriter_invalid_uri(t *testing.T) {
-	option := CommonOption{URI: "://uri"}
+	option := WriteOption{}
+	option.URI = "://uri"
 	_, err := newCSVWriter(option, []string{"name=Id, type=INT64"})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_common_newCSVWriter_invalid_schema(t *testing.T) {
-	option := CommonOption{
-		URI: os.TempDir() + "/csv-writer.parquet",
-	}
+	option := WriteOption{}
+	option.URI = os.TempDir() + "/csv-writer.parquet"
 	_, err := newCSVWriter(option, []string{"invalid schema"})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "expect 'key=value'")
@@ -419,9 +419,8 @@ func Test_common_newCSVWriter_invalid_schema(t *testing.T) {
 }
 
 func Test_common_newCSVWriter_good(t *testing.T) {
-	option := CommonOption{
-		URI: os.TempDir() + "/csv-writer.parquet",
-	}
+	option := WriteOption{}
+	option.URI = os.TempDir() + "/csv-writer.parquet"
 	pw, err := newCSVWriter(option, []string{"name=Id, type=INT64"})
 	require.NotNil(t, pw)
 	require.Nil(t, err)
@@ -586,7 +585,7 @@ func Test_common_newParquetFileReader_hdfs_bad(t *testing.T) {
 }
 
 func Test_common_newParquetFileWriter_hdfs_bad(t *testing.T) {
-	option := CommonOption{}
+	option := WriteOption{}
 	option.URI = "hdfs://localhost:1/temp/good.parquet"
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
