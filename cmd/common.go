@@ -63,7 +63,7 @@ type Context struct {
 	Build   string
 }
 
-// ReinterpretField represents a field that needs to be re-interpretted before output
+// ReinterpretField represents a field that needs to be re-interpreted before output
 type ReinterpretField struct {
 	parquetType   parquet.Type
 	convertedType parquet.ConvertedType
@@ -182,7 +182,7 @@ func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error)
 }
 
 func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
-	readerFunctable := map[string]func(*url.URL, ReadOption) (*reader.ParquetReader, error){
+	readerFuncTable := map[string]func(*url.URL, ReadOption) (*reader.ParquetReader, error){
 		schemeLocal:              newLocalReader,
 		schemeAWSS3:              newAWSS3Reader,
 		schemeGoogleCloudStorage: newGoogleCloudStorageReader,
@@ -196,7 +196,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 	if err != nil {
 		return nil, err
 	}
-	if readerFunc, found := readerFunctable[u.Scheme]; found {
+	if readerFunc, found := readerFuncTable[u.Scheme]; found {
 		return readerFunc(u, option)
 	}
 
@@ -266,7 +266,7 @@ func newHDFSWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) 
 }
 
 func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
-	writerFunctable := map[string]func(*url.URL, CommonOption) (source.ParquetFile, error){
+	writerFuncTable := map[string]func(*url.URL, CommonOption) (source.ParquetFile, error){
 		schemeLocal:              newLocalWriter,
 		schemeAWSS3:              newAWSS3Writer,
 		schemeGoogleCloudStorage: newGoogleCloudStorageWriter,
@@ -280,7 +280,7 @@ func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
 	if err != nil {
 		return nil, err
 	}
-	if writerFunc, found := writerFunctable[u.Scheme]; found {
+	if writerFunc, found := writerFuncTable[u.Scheme]; found {
 		return writerFunc(u, option)
 	}
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
@@ -313,7 +313,7 @@ func azureAccessDetail(azURL url.URL, anonymous bool) (string, *azblob.SharedKey
 
 	accessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
 	if anonymous || accessKey == "" {
-		// anonymouse access
+		// anonymous access
 		return httpURL, nil, nil
 	}
 

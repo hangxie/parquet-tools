@@ -109,7 +109,7 @@ func rowToJsonStr(row interface{}, reinterpretFields map[string]ReinterpretField
 	tmp.Set(rowValue.Elem())
 	for k, v := range reinterpretFields {
 		// There are data types that are represented as string but they are actually not UTF8, they
-		// need to be re-interpretted so we will base64 encode them here to avoid lossing data. For
+		// need to be re-interpreted so we will base64 encode them here to avoid losing data. For
 		// more details: https://github.com/xitongsys/parquet-go/issues/434
 		if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
 			encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
