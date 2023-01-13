@@ -12,8 +12,6 @@ REL_TARGET  = \
 	linux-amd64 linux-arm linux-arm64 \
 	windows-amd64 windows-arm64
 
-FORCE_TOOLS_UPDATE := false
-
 # go option
 GO          ?= go
 PKG         :=
@@ -54,14 +52,12 @@ deps:  ## Install prerequisite for build
 
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
-	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/golangci-lint || \
-		(cd /tmp; GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.48.0)
-	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/go-junit-report || \
-		(cd /tmp; go install github.com/jstemmer/go-junit-report/v2@v2.0.0)
-	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/gofumpt || \
-		(cd /tmp; go install mvdan.cc/gofumpt@latest)
-	@test "${FORCE_TOOLS_UPDATE}" != "true" -a -x $(GOBIN)/gocyclo || \
-		(cd /tmp; go install github.com/fzipp/gocyclo/cmd/gocyclo@latest)
+	@(cd /tmp; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1; \
+		go install github.com/jstemmer/go-junit-report/v2@v2.0.0; \
+		go install mvdan.cc/gofumpt@latest; \
+		go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \
+	)
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@echo "==> Building executable"
