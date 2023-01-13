@@ -47,7 +47,7 @@ type CommonOption struct {
 	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
-// ReadOption include options for read operation
+// ReadOption includes options for read operation
 type ReadOption struct {
 	CommonOption
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
@@ -55,6 +55,11 @@ type ReadOption struct {
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
 	Anonymous              bool              `help:"(S3 and Azure only) object is publicly accessible." default:"false"`
+}
+
+// WriteOption includes options for write operation
+type WriteOption struct {
+	CommonOption
 }
 
 // Context represents command's context
@@ -131,7 +136,7 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error
 	}
 	fileReader, err := s3v2.NewS3FileReaderWithClientVersioned(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", option.URI, option.ObjectVersion, err.Error())
+		return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", u.String(), option.ObjectVersion, err.Error())
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -144,7 +149,7 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 
 	fileReader, err := pqtazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, azblob.ClientOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", u.String(), err.Error())
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -152,15 +157,15 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
 	fileReader, err := gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", u.String(), err.Error())
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
 
 func newHTTPReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
-	fileReader, err := http.NewHttpReader(option.URI, option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
+	fileReader, err := http.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", u.String(), err.Error())
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -176,7 +181,7 @@ func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error)
 
 	fileReader, err := hdfs.NewHdfsFileReader([]string{u.Host}, userName, u.Path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", u.String(), err.Error())
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -203,7 +208,7 @@ func newParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
-func newLocalWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+func newLocalWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	fileWriter, err := local.NewLocalFileWriter(u.Path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
@@ -211,7 +216,7 @@ func newLocalWriter(u *url.URL, option CommonOption) (source.ParquetFile, error)
 	return fileWriter, nil
 }
 
-func newAWSS3Writer(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+func newAWSS3Writer(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	s3Client, err := getS3Client(u.Host, false)
 	if err != nil {
 		return nil, err
@@ -219,20 +224,20 @@ func newAWSS3Writer(u *url.URL, option CommonOption) (source.ParquetFile, error)
 
 	fileWriter, err := s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open S3 object [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open S3 object [%s]: %s", u.String(), err.Error())
 	}
 	return fileWriter, nil
 }
 
-func newGoogleCloudStorageWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+func newGoogleCloudStorageWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	fileWriter, err := gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", u.String(), err.Error())
 	}
 	return fileWriter, nil
 }
 
-func newAzureStorageBlobWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+func newAzureStorageBlobWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	// write operation cannot be with anonymous access
 	azURL, cred, err := azureAccessDetail(*u, false)
 	if err != nil {
@@ -241,16 +246,16 @@ func newAzureStorageBlobWriter(u *url.URL, option CommonOption) (source.ParquetF
 
 	fileWriter, err := pqtazblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, azblob.ClientOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", u.String(), err.Error())
 	}
 	return fileWriter, nil
 }
 
-func newHTTPWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+func newHTTPWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
 }
 
-func newHDFSWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) {
+func newHDFSWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	userName := u.User.Username()
 	if userName == "" {
 		osUser, err := user.Current()
@@ -260,13 +265,13 @@ func newHDFSWriter(u *url.URL, option CommonOption) (source.ParquetFile, error) 
 	}
 	fileWriter, err := hdfs.NewHdfsFileWriter([]string{u.Host}, userName, u.Path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", option.URI, err.Error())
+		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", u.String(), err.Error())
 	}
 	return fileWriter, nil
 }
 
-func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
-	writerFuncTable := map[string]func(*url.URL, CommonOption) (source.ParquetFile, error){
+func newParquetFileWriter(option WriteOption) (source.ParquetFile, error) {
+	writerFuncTable := map[string]func(*url.URL, WriteOption) (source.ParquetFile, error){
 		schemeLocal:              newLocalWriter,
 		schemeAWSS3:              newAWSS3Writer,
 		schemeGoogleCloudStorage: newGoogleCloudStorageWriter,
@@ -286,7 +291,7 @@ func newParquetFileWriter(option CommonOption) (source.ParquetFile, error) {
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
-func newCSVWriter(option CommonOption, schema []string) (*writer.CSVWriter, error) {
+func newCSVWriter(option WriteOption, schema []string) (*writer.CSVWriter, error) {
 	fileWriter, err := newParquetFileWriter(option)
 	if err != nil {
 		return nil, err
@@ -295,7 +300,7 @@ func newCSVWriter(option CommonOption, schema []string) (*writer.CSVWriter, erro
 	return writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
 }
 
-func newJSONWriter(option CommonOption, schema string) (*writer.JSONWriter, error) {
+func newJSONWriter(option WriteOption, schema string) (*writer.JSONWriter, error) {
 	fileWriter, err := newParquetFileWriter(option)
 	if err != nil {
 		return nil, err
