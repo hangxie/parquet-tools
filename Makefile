@@ -76,11 +76,13 @@ docker-build:  ## Build docker image
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
-	@set -euo pipefail; \
-	go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
-		| tee /tmp/go-test.output \
-		&& cat /tmp/go-test.output | $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml \
-		&& go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html
+	@set -euo pipefail ; \
+		go test -v -coverprofile=$(BUILDDIR)/test/cover.out ./... \
+			| tee $(BUILDDIR)/test/go-test.output ; \
+		go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html ; \
+		go tool cover -func=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.txt ; \
+		cat $(BUILDDIR)/test/go-test.output | $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml ; \
+		cat $(BUILDDIR)/test/coverage.txt
 
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
