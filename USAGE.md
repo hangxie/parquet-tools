@@ -64,7 +64,7 @@ Good for people who are familiar with [Go](https://golang.org/), you need 1.17 o
 $ go get github.com/hangxie/parquet-tools
 ```
 
-it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go evn GOPATH`, usually it is `go/` directory under your home directory.
+it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.
 
 `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
 
@@ -277,7 +277,7 @@ Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
 
 #### HTTP Endpoint
 
-`parquet-tools` supoorts URI with `http` or `https` scheme, the remote server needs to support [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range), particularly with unit of `bytes`.
+`parquet-tools` supports URI with `http` or `https` scheme, the remote server needs to support [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range), particularly with unit of `bytes`.
 
 HTTP endpoint does not support write operation so it cannot be used as destination of `import` command.
 
@@ -429,7 +429,7 @@ You can read data line by line and parse every single line as a JSON object if y
 
 ### import Command
 
-`import` command creates a paruet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
+`import` command creates a parquet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
 The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file holds schema. Optionally, if CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
@@ -504,7 +504,7 @@ $ parquet-tools row-count cmd/testdata/good.parquet
 
 ### schema Command
 
-`schema` command shows schema of the parquet file in differnt formats.
+`schema` command shows schema of the parquet file in different formats.
 
 #### JSON Format
 
