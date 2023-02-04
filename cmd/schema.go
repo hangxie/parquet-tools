@@ -256,15 +256,17 @@ func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
 			if len(s.Children) == 0 {
 				return
 			}
-			// LIST has schema structure of LIST->List->Field1
-			// expected output is LIST->Element
 			delete(tagMap, "convertedtype")
-			element := s.Children[0].Children[0].SchemaElement
-			for k, v := range getTagMapAsChild(element, "value") {
-				tagMap[k] = v
+			if s.Children[0].Type == nil {
+				// LIST has schema structure LIST->List->Element
+				// expected output is LIST->Element
+				element := s.Children[0].Children[0].SchemaElement
+				for k, v := range getTagMapAsChild(element, "value") {
+					tagMap[k] = v
+				}
+				s.Children = s.Children[0].Children[:1]
+				s.Children[0].Name = "Element"
 			}
-			s.Children = s.Children[0].Children[:1]
-			s.Children[0].Name = "Element"
 		case parquet.ConvertedType_MAP:
 			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
 			// expected output is MAP->(Key, Value)
