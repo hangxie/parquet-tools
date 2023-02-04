@@ -162,9 +162,15 @@ func (s *schemaNode) goStructStruct() (string, error) {
 }
 
 func (s *schemaNode) goStructList() (string, error) {
-	// Parquet uses LIST -> "List"" -> actual element type
-	// oo struct will be []<actual element type>
-	structStr, err := s.Children[0].Children[0].goStruct(false)
+	var structStr string
+	var err error
+	if s.Children[0].Type == nil {
+		// Parquet uses LIST -> "List"" -> actual element type
+		// oo struct will be []<actual element type>
+		structStr, err = s.Children[0].Children[0].goStruct(false)
+	} else {
+		structStr, err = s.Children[0].goStruct(false)
+	}
 	if err != nil {
 		return "", err
 	}
