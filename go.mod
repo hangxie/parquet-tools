@@ -16,7 +16,7 @@ require (
 	github.com/xitongsys/parquet-go-source v0.0.0-20221025031416-9877e685ef65
 )
 
-replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20230112210339-2fe492db7a1a
+replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20230204043612-cdd997be8a3a
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.11.2 // indirect
