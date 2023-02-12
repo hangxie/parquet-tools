@@ -162,6 +162,34 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 	require.Nil(t, meta.RowGroups[0].Columns[1].DistinctCount)
 }
 
+func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
+	cmd := &MetaCmd{
+		Base64: false,
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/int96-nil-min-max.parquet",
+			},
+		},
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run(&Context{}))
+	})
+	expected := loadExpected(t, "testdata/golden/int96-nil-min-max.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+
+	// double check fields we care about
+	meta := parquetMeta{}
+	err := json.Unmarshal([]byte(stdout), &meta)
+	require.Nil(t, err)
+	require.Nil(t, meta.RowGroups[0].Columns[1].MaxValue)
+	require.Nil(t, meta.RowGroups[0].Columns[1].MinValue)
+	require.NotNil(t, meta.RowGroups[0].Columns[1].NullCount)
+	// https://github.com/xitongsys/parquet-go/issues/523
+	// require.Equal(t, *meta.RowGroups[0].Columns[1].NullCount, int64(10))
+}
+
 func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 	cmd := &MetaCmd{
 		Base64: true,

@@ -1,0 +1,45 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 10,
+      "TotalByteSize": 488,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Utf8"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN",
+            "PLAIN_DICTIONARY",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 343,
+          "UncompressedSize": 380,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "UTF8-9",
+          "MinValue": "UTF8-0"
+        },
+        {
+          "PathInSchema": [
+            "Int96"
+          ],
+          "Type": "INT96",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 116,
+          "UncompressedSize": 108,
+          "NumValues": 10,
+          "NullCount": 6
+        }
+      ]
+    }
+  ]
+}
