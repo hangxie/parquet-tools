@@ -421,7 +421,7 @@ func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close Parquet writer")
+	require.Contains(t, err.Error(), "failed to close Parquet")
 }
 
 func Test_ImportCmd_importJSONL_good(t *testing.T) {
