@@ -16,6 +16,8 @@ require (
 	github.com/xitongsys/parquet-go-source v0.0.0-20221025031416-9877e685ef65
 )
 
+replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20230125083511-3261b3068f0e
+
 replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20230204043612-cdd997be8a3a
 
 require (

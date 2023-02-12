@@ -203,3 +203,21 @@ func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
 	require.Equal(t, "", stdout)
 	require.Contains(t, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]", stderr)
 }
+
+func Test_SchemaCmd_Run_map_value_map(t *testing.T) {
+	cmd := &SchemaCmd{
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "file://./testdata/map-value-map.parquet",
+			},
+		},
+		Format: "json",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run(&Context{}))
+	})
+	expected := loadExpected(t, "testdata/golden/schema-map-value-map-json.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
