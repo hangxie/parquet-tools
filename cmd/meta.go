@@ -81,10 +81,12 @@ func (c *MetaCmd) Run(ctx *Context) error {
 
 			if col.MetaData.Type == parquet.Type_INT96 {
 				// INT96 (deprecated) is used for timestamp only
-				maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-				columns[colIndex].MaxValue = types.INT96ToTime(maxValue.(string))
-				minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-				columns[colIndex].MinValue = types.INT96ToTime(minValue.(string))
+				if maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false); maxValue != nil {
+					columns[colIndex].MaxValue = types.INT96ToTime(maxValue.(string))
+				}
+				if minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false); minValue != nil {
+					columns[colIndex].MinValue = types.INT96ToTime(minValue.(string))
+				}
 				continue
 			}
 
