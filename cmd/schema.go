@@ -253,50 +253,65 @@ func (s *schemaNode) getStructTags() string {
 	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", "))
 }
 
-func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
-	if s.ConvertedType != nil {
-		tagMap["convertedtype"] = s.ConvertedType.String()
+func (s *schemaNode) updateTagForList(tagMap map[string]string) {
+	if len(s.Children) == 0 || s.Children[0].Type != nil {
+		return
+	}
+	// LIST has schema structure LIST->List->Element
+	// expected output is LIST->Element
+	element := s.Children[0].Children[0]
+	for k, v := range getTagMapAsChild(element, "value") {
+		tagMap[k] = v
+	}
+	s.Children = s.Children[0].Children[:1]
+	s.Children[0].Name = "Element"
+}
 
-		switch *s.ConvertedType {
-		case parquet.ConvertedType_LIST:
-			if len(s.Children) == 0 {
-				return
-			}
-			delete(tagMap, "convertedtype")
-			if s.Children[0].Type == nil {
-				// LIST has schema structure LIST->List->Element
-				// expected output is LIST->Element
-				element := s.Children[0].Children[0].SchemaElement
-				for k, v := range getTagMapAsChild(element, "value") {
-					tagMap[k] = v
-				}
-				s.Children = s.Children[0].Children[:1]
-				s.Children[0].Name = "Element"
-			}
-		case parquet.ConvertedType_MAP:
-			// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
-			// expected output is MAP->(Key, Value)
-			delete(tagMap, "convertedtype")
-			key := s.Children[0].Children[0].SchemaElement
-			value := s.Children[0].Children[1].SchemaElement
-			for k, v := range getTagMapAsChild(key, "key") {
-				tagMap[k] = v
-			}
-			for k, v := range getTagMapAsChild(value, "value") {
-				tagMap[k] = v
-			}
-			s.Children = s.Children[0].Children[0:2]
-			s.Children[0].Name = "Key"
-			s.Children[1].Name = "Value"
-		case parquet.ConvertedType_DECIMAL:
-			tagMap["scale"] = fmt.Sprint(*s.Scale)
-			tagMap["precision"] = fmt.Sprint(*s.Precision)
-			if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-				tagMap["length"] = fmt.Sprint(*s.TypeLength)
-			}
-		case parquet.ConvertedType_INTERVAL:
-			tagMap["length"] = "12"
+func (s *schemaNode) updateTagForMap(tagMap map[string]string) {
+	if len(s.Children) == 0 || s.Children[0] == nil || len(s.Children[0].Children) == 0 {
+		// meaningless interim layer
+		return
+	}
+	if s.Children[0].ConvertedType != nil && *s.Children[0].ConvertedType != parquet.ConvertedType_MAP_KEY_VALUE {
+		// child nodes have been processed
+		return
+	}
+
+	// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
+	// expected output is MAP->(Key, Value)
+	key := s.Children[0].Children[0]
+	value := s.Children[0].Children[1]
+	for k, v := range getTagMapAsChild(key, "key") {
+		tagMap[k] = v
+	}
+	for k, v := range getTagMapAsChild(value, "value") {
+		tagMap[k] = v
+	}
+	s.Children = s.Children[0].Children[0:2]
+	s.Children[0].Name = "Key"
+	s.Children[1].Name = "Value"
+}
+
+func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
+	if s.ConvertedType == nil {
+		return
+	}
+
+	tagMap["convertedtype"] = s.ConvertedType.String()
+
+	switch *s.ConvertedType {
+	case parquet.ConvertedType_LIST:
+		s.updateTagForList(tagMap)
+	case parquet.ConvertedType_MAP:
+		s.updateTagForMap(tagMap)
+	case parquet.ConvertedType_DECIMAL:
+		tagMap["scale"] = fmt.Sprint(*s.Scale)
+		tagMap["precision"] = fmt.Sprint(*s.Precision)
+		if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+			tagMap["length"] = fmt.Sprint(*s.TypeLength)
 		}
+	case parquet.ConvertedType_INTERVAL:
+		tagMap["length"] = "12"
 	}
 }
 
@@ -364,13 +379,8 @@ func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
 	return "UNKNOWN_UNIT"
 }
 
-func getTagMapAsChild(se parquet.SchemaElement, prefix string) map[string]string {
-	element := schemaNode{
-		se,
-		nil,
-		[]*schemaNode{},
-	}
-	tagMap := element.getTagMap()
+func getTagMapAsChild(se *schemaNode, prefix string) map[string]string {
+	tagMap := se.getTagMap()
 	ret := map[string]string{}
 	for _, tag := range orderedTags {
 		if tag == "name" || strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {

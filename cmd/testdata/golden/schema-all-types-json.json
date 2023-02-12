@@ -113,7 +113,7 @@
       "Tag": "name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=Map, type=MAP, repetitiontype=REQUIRED",
+      "Tag": "name=Map, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
@@ -124,7 +124,7 @@
       ]
     },
     {
-      "Tag": "name=List, type=LIST, repetitiontype=REQUIRED",
+      "Tag": "name=List, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
@@ -135,7 +135,7 @@
       "Tag": "name=Repeated, type=INT32, repetitiontype=REPEATED"
     },
     {
-      "Tag": "name=NestedMap, type=MAP, repetitiontype=REQUIRED",
+      "Tag": "name=NestedMap, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
@@ -144,7 +144,7 @@
           "Tag": "name=Value, type=STRUCT, repetitiontype=REQUIRED",
           "Fields": [
             {
-              "Tag": "name=Map, type=MAP, repetitiontype=REQUIRED",
+              "Tag": "name=Map, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
               "Fields": [
                 {
                   "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
@@ -155,7 +155,7 @@
               ]
             },
             {
-              "Tag": "name=List, type=LIST, repetitiontype=REQUIRED",
+              "Tag": "name=List, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
               "Fields": [
                 {
                   "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, repetitiontype=REQUIRED"
@@ -167,13 +167,13 @@
       ]
     },
     {
-      "Tag": "name=NestedList, type=LIST, repetitiontype=REQUIRED",
+      "Tag": "name=NestedList, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",
           "Fields": [
             {
-              "Tag": "name=Map, type=MAP, repetitiontype=REQUIRED",
+              "Tag": "name=Map, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
               "Fields": [
                 {
                   "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
@@ -184,7 +184,7 @@
               ]
             },
             {
-              "Tag": "name=List, type=LIST, repetitiontype=REQUIRED",
+              "Tag": "name=List, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
               "Fields": [
                 {
                   "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, repetitiontype=REQUIRED"

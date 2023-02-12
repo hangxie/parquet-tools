@@ -17,7 +17,7 @@
       "Tag": "name=Sex, type=BOOLEAN, repetitiontype=REQUIRED"
     },
     {
-      "Tag": "name=Classes, type=LIST, repetitiontype=REQUIRED",
+      "Tag": "name=Classes, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
@@ -25,13 +25,13 @@
       ]
     },
     {
-      "Tag": "name=Scores, type=MAP, repetitiontype=REQUIRED",
+      "Tag": "name=Scores, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
         },
         {
-          "Tag": "name=Value, type=LIST, repetitiontype=REQUIRED",
+          "Tag": "name=Value, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
           "Fields": [
             {
               "Tag": "name=Element, type=FLOAT, repetitiontype=REQUIRED"
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "Tag": "name=Friends, type=LIST, repetitiontype=REQUIRED",
+      "Tag": "name=Friends, type=LIST, convertedtype=LIST, repetitiontype=REQUIRED",
       "Fields": [
         {
           "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",

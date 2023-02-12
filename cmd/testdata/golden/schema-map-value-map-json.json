@@ -1,0 +1,27 @@
+{
+  "Tag": "name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED",
+  "Fields": [
+    {
+      "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+    },
+    {
+      "Tag": "name=Scores, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
+      "Fields": [
+        {
+          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+        },
+        {
+          "Tag": "name=Value, type=MAP, convertedtype=MAP, repetitiontype=REQUIRED",
+          "Fields": [
+            {
+              "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+            },
+            {
+              "Tag": "name=Value, type=FLOAT, repetitiontype=REQUIRED"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
