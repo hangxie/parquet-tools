@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
+	"math"
+	"math/big"
 	"net/url"
 	"os"
 	"reflect"
@@ -139,7 +141,10 @@ func Test_common_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 
 	// anonymous access by explicit setting
 	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
+	_, err = rand.Read(randBytes)
+	if err != nil {
+		t.Fatalf("failed to setup test: %s", err.Error())
+	}
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 	uri, cred, err = azureAccessDetail(u, true)
 	require.Nil(t, err)
@@ -155,7 +160,10 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 	}
 
 	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		t.Fatalf("failed to setup test: %s", err.Error())
+	}
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	uri, cred, err := azureAccessDetail(u, false)
@@ -165,13 +173,15 @@ func Test_common_azureAccessDetail_good_shared_cred(t *testing.T) {
 }
 
 func Test_common_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
-	_, err := getS3Client(fmt.Sprintf("bucket-does-not-exist-%d", rand.Int63()), true)
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	_, err := getS3Client(fmt.Sprintf("bucket-does-not-exist-%d", intVal.Int64()), true)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
 
 func Test_common_getBucketRegion_s3_missing_credential(t *testing.T) {
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 	_, err := getS3Client("aws-roda-hcls-datalake", false)
 	// private bucket error happens at reading time
 	require.Nil(t, err)
@@ -253,7 +263,8 @@ func Test_common_newParquetFileReader_local_good(t *testing.T) {
 
 func Test_common_newParquetFileReader_s3_aws_error(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 
 	option := ReadOption{}
 	option.URI = "s3:///path/to/object"
@@ -264,8 +275,8 @@ func Test_common_newParquetFileReader_s3_aws_error(t *testing.T) {
 
 func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
-
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 	option := ReadOption{Anonymous: true}
 	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
 	_, err := newParquetFileReader(option)
@@ -274,7 +285,8 @@ func Test_common_newParquetFileReader_s3_good(t *testing.T) {
 
 func Test_common_newParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 
 	option := ReadOption{ObjectVersion: "random-version-id", Anonymous: true}
 	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
@@ -299,12 +311,15 @@ func Test_common_newParquetFileReader_gcs_no_permission(t *testing.T) {
 func Test_common_newParquetFileReader_azblob_no_permission(t *testing.T) {
 	// Use a faked access key so anonymous access will fail
 	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		t.Fatalf("failed to setup test: %s", err.Error())
+	}
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := ReadOption{}
 	option.URI = "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
-	_, err := newParquetFileReader(option)
+	_, err = newParquetFileReader(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to open Azure blob object")
 }
@@ -345,7 +360,8 @@ func Test_common_newFileWriter_local_good(t *testing.T) {
 
 func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
 	option := WriteOption{}
-	option.URI = fmt.Sprintf("s3://bucket-does-not-exist-%d", rand.Int63())
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	option.URI = fmt.Sprintf("s3://bucket-does-not-exist-%d", intVal.Int64())
 	_, err := newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
@@ -353,7 +369,8 @@ func Test_common_newFileWriter_s3_non_existent_bucket(t *testing.T) {
 
 func Test_common_newFileWriter_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", rand.Int63()))
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
@@ -379,12 +396,15 @@ func Test_common_newFileWriter_gcs_no_permission(t *testing.T) {
 func Test_common_newFileWriter_azblob_invalid_url(t *testing.T) {
 	// Make sure there is no Azure blob access
 	randBytes := make([]byte, 64)
-	rand.Read(randBytes)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		t.Fatalf("failed to setup test: %s", err.Error())
+	}
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := WriteOption{}
 	option.URI = "wasbs://bad/url"
-	_, err := newParquetFileWriter(option)
+	_, err = newParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "azure blob URI format:")
 }
