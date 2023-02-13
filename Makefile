@@ -53,7 +53,7 @@ deps:  ## Install prerequisite for build
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
 	@(cd /tmp; \
-		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1; \
 		go install github.com/jstemmer/go-junit-report/v2@v2.0.0; \
 		go install mvdan.cc/gofumpt@latest; \
 		go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \

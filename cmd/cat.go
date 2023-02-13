@@ -79,7 +79,6 @@ func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 
 	// Output rows one by one to avoid running out of memory with a jumbo list
 	fmt.Print(delimiter[c.Format].begin)
-	rand.Seed(time.Now().UnixNano())
 	for counter := uint64(0); counter < c.Limit; {
 		rows, err := fileReader.ReadByNumber(c.PageSize)
 		if err != nil {
