@@ -2,8 +2,8 @@
   "NumRowGroups": 1,
   "RowGroups": [
     {
-      "NumRows": 4,
-      "TotalByteSize": 349,
+      "NumRows": 3,
+      "TotalByteSize": 438,
       "Columns": [
         {
           "PathInSchema": [
@@ -15,9 +15,9 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 165,
-          "UncompressedSize": 161,
-          "NumValues": 4,
+          "CompressedSize": 200,
+          "UncompressedSize": 194,
+          "NumValues": 3,
           "NullCount": 0,
           "MaxValue": "steph_curry",
           "MinValue": "fila"
@@ -32,11 +32,11 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 192,
-          "UncompressedSize": 188,
-          "NumValues": 4,
+          "CompressedSize": 250,
+          "UncompressedSize": 244,
+          "NumValues": 3,
           "NullCount": 0,
-          "MaxValue": "shoe_name",
+          "MaxValue": "grant_hill_2",
           "MinValue": "air_griffey"
         }
       ]

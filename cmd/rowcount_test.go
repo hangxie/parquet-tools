@@ -32,6 +32,6 @@ func Test_RowCountCmd_Run_good(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	require.Equal(t, "4\n", stdout)
+	require.Equal(t, "3\n", stdout)
 	require.Equal(t, "", stderr)
 }
