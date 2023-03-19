@@ -22,6 +22,7 @@
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
       - [Skip Rows](#skip-rows)
+      - [CSV/TSV Format](#csvtsv-format)
       - [Limit Number of Rows](#limit-number-of-rows)
       - [Sampling](#sampling)
       - [Compound Rule](#compound-rule)
@@ -331,7 +332,7 @@ Similar to cloud storage, `parquet-tools` downloads only necessary data from HDF
 
 ### cat Command
 
-`cat` command output data in parquet file in JSON or JSONL format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduces the output to a certain level, these flags can be used together.
+`cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduces the output to a certain level, these flags can be used together.
 
 There is a `--page-size` parameter that you probably will never touch it, it tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 
@@ -360,6 +361,35 @@ $ parquet-tools cat --skip 2 --format jsonl cmd/testdata/good.parquet
 ```bash
 $ parquet-tools cat --skip 20 cmd/testdata/good.parquet
 []
+```
+
+#### CSV/TSV Format
+
+There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpretted by other utilities, especially if they are from other programming laguages.
+
+```bash
+$ parquet-tools cat -f csv cmd/testdata/good.parquet
+Shoe_brand,Shoe_name
+nike,air_griffey
+fila,grant_hill_2
+steph_curry,curry7
+```
+
+`nil` values will be presented as empty string:
+
+```bash
+$ parquet-tools cat -f csv --limit 2 cmd/testdata/int96-nil-min-max.parquet
+Utf8,Int96
+UTF8-0,
+UTF8-1,
+```
+
+CSV and TSV do not support parquet files with complex schema:
+
+```bash
+$ parquet-tools cat -f csv cmd/testdata/all-types.parquet
+parquet-tools: error: field [Map] is not scalar type, cannot output in csv format
+exit status 1
 ```
 
 #### Limit Number of Rows
