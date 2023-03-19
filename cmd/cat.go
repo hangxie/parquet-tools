@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -23,16 +24,19 @@ type CatCmd struct {
 	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
-	Format      string  `short:"f" help:"output format (json/jsonl)" enum:"json,jsonl" default:"json"`
+	Format      string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
 }
 
 var delimiter = map[string]struct {
-	begin     string
-	delimiter string
-	end       string
+	begin          string
+	lineDelimiter  string
+	fieldDelimiter rune
+	end            string
 }{
-	"json":  {"[", ",", "]"},
-	"jsonl": {"", "\n", ""},
+	"json":  {"[", ",", ' ', "]"},
+	"jsonl": {"", "\n", ' ', ""},
+	"csv":   {"", "\n", ',', ""},
+	"tsv":   {"", "\n", '\t', ""},
 }
 
 // Run does actual cat job
@@ -61,15 +65,35 @@ func (c *CatCmd) Run(ctx *Context) error {
 	return c.outputRows(fileReader)
 }
 
-func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
-	// retrieve schema for better formatting
-	schemaRoot := newSchemaTree(fileReader)
-	reinterpretFields := getReinterpretFields("", schemaRoot, true)
-
-	// this is hack for https://github.com/xitongsys/parquet-go/issues/438
-	if fileReader.GetNumRows() == 0 {
-		c.Limit = 0
+func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *schemaNode) ([]string, error) {
+	fieldList := make([]string, len(schemaRoot.Children))
+	if c.Format == "csv" || c.Format == "tsv" {
+		for index, child := range schemaRoot.Children {
+			if len(child.Children) != 0 {
+				return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
+			}
+			fieldList[index] = child.Name
+		}
+		line, err := valuesToCSV(fieldList, delimiter[c.Format].fieldDelimiter)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print(line)
 	}
+	return fieldList, nil
+}
+
+func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
+	schemaRoot := newSchemaTree(fileReader)
+
+	// CSV snd TSV does not support nested schema
+	fieldList, err := c.outputHeader(fileReader, schemaRoot)
+	if err != nil {
+		return err
+	}
+
+	// retrieve schema for better formatting
+	reinterpretFields := getReinterpretFields("", schemaRoot, true)
 
 	// Do not abort if c.Skip is greater than total number of rows
 	// This gives users flexibility to handle this scenario by themselves
@@ -90,11 +114,32 @@ func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 
 		for i := 0; i < len(rows) && rand.Float64() < c.SampleRatio && counter < c.Limit; i++ {
 			if counter != 0 {
-				fmt.Print(delimiter[c.Format].delimiter)
+				fmt.Print(delimiter[c.Format].lineDelimiter)
 			}
 			// there is no known error at this moment
-			rowString, _ := rowToJsonStr(rows[i], reinterpretFields)
-			fmt.Print(rowString)
+			rowStruct, _ := rowToStruct(rows[i], reinterpretFields)
+			switch c.Format {
+			case "json", "jsonl":
+				buf, _ := json.Marshal(rowStruct)
+				fmt.Print(string(buf))
+			case "csv", "tsv":
+				flatValues := rowStruct.(map[string]interface{})
+				values := make([]string, len(flatValues))
+				for index, field := range fieldList {
+					switch val := flatValues[field].(type) {
+					case nil:
+						// nil is just empty
+					default:
+						values[index] = fmt.Sprint(val)
+					}
+				}
+
+				line, err := valuesToCSV(values, delimiter[c.Format].fieldDelimiter)
+				if err != nil {
+					return err
+				}
+				fmt.Print(strings.TrimRight(line, "\n"))
+			}
 			counter++
 		}
 	}
@@ -102,7 +147,20 @@ func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	return nil
 }
 
-func rowToJsonStr(row interface{}, reinterpretFields map[string]ReinterpretField) (string, error) {
+func valuesToCSV(values []string, delimiter rune) (string, error) {
+	// there is no standard for CSV, use go's CSV module to maintain minimum compatibility
+	buf := new(strings.Builder)
+	csvWriter := csv.NewWriter(buf)
+	csvWriter.Comma = delimiter
+	if err := csvWriter.Write(values); err != nil {
+		// this should never happen
+		return "", err
+	}
+	csvWriter.Flush()
+	return buf.String(), nil
+}
+
+func rowToStruct(row interface{}, reinterpretFields map[string]ReinterpretField) (interface{}, error) {
 	rowValue := reflect.ValueOf(&row).Elem()
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
@@ -129,10 +187,7 @@ func rowToJsonStr(row interface{}, reinterpretFields map[string]ReinterpretField
 	for k, v := range reinterpretFields {
 		reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
 	}
-	if newBuf, err := json.Marshal(iface); err == nil {
-		buf = newBuf
-	}
-	return string(buf), nil
+	return iface, nil
 }
 
 func encodeNestedBinaryString(value reflect.Value, locator []string, attr ReinterpretField) {

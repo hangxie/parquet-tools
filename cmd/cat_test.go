@@ -388,3 +388,79 @@ func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
+
+func Test_CatCmd_Run_good_csv(t *testing.T) {
+	cmd := &CatCmd{
+		PageSize:    10,
+		SampleRatio: 1.0,
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
+		},
+		Format: "csv",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run(&Context{}))
+	})
+
+	expected := loadExpected(t, "testdata/golden/cat-good-csv.txt")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
+
+func Test_CatCmd_Run_good_tsv(t *testing.T) {
+	cmd := &CatCmd{
+		PageSize:    10,
+		SampleRatio: 1.0,
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/good.parquet",
+			},
+		},
+		Format: "tsv",
+	}
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run(&Context{}))
+	})
+
+	expected := loadExpected(t, "testdata/golden/cat-good-tsv.txt")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
+
+func Test_CatCmd_Run_nested_csv(t *testing.T) {
+	cmd := &CatCmd{
+		PageSize:    10,
+		SampleRatio: 1.0,
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
+		},
+		Format: "csv",
+	}
+
+	err := cmd.Run(&Context{})
+	require.NotNil(t, err)
+	require.Equal(t, err.Error(), "field [Map] is not scalar type, cannot output in csv format")
+}
+
+func Test_CatCmd_Run_nested_tsv(t *testing.T) {
+	cmd := &CatCmd{
+		PageSize:    10,
+		SampleRatio: 1.0,
+		ReadOption: ReadOption{
+			CommonOption: CommonOption{
+				URI: "testdata/all-types.parquet",
+			},
+		},
+		Format: "tsv",
+	}
+
+	err := cmd.Run(&Context{})
+	require.NotNil(t, err)
+	require.Equal(t, err.Error(), "field [Map] is not scalar type, cannot output in tsv format")
+}
