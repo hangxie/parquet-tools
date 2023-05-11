@@ -25,7 +25,7 @@ func Test_SizeCmd_Run_invalid_query(t *testing.T) {
 		Query: "invalid",
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -40,7 +40,7 @@ func Test_SizeCmd_Run_good_raw(t *testing.T) {
 		Query: "raw",
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -58,7 +58,7 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 		JSON:  true,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -75,7 +75,7 @@ func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 		Query: "uncompressed",
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -93,7 +93,7 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 		JSON:  true,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -110,7 +110,7 @@ func Test_SizeCmd_Run_good_footer(t *testing.T) {
 		Query: "footer",
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -128,7 +128,7 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 		JSON:  true,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -145,7 +145,7 @@ func Test_SizeCmd_Run_good_all(t *testing.T) {
 		Query: "all",
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}
@@ -163,7 +163,7 @@ func Test_SizeCmd_Run_good_all_json(t *testing.T) {
 		JSON:  true,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 	}

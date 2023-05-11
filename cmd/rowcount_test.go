@@ -24,7 +24,7 @@ func Test_RowCountCmd_Run_good(t *testing.T) {
 	cmd := &RowCountCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 	}

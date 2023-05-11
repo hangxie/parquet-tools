@@ -90,7 +90,7 @@ func Test_MetaCmd_Run_good_base64(t *testing.T) {
 		Base64: true,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 	}
@@ -98,7 +98,7 @@ func Test_MetaCmd_Run_good_base64(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-good-base64.json")
+	expected := loadExpected(t, "../testdata/golden/meta-good-base64.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 
@@ -115,7 +115,7 @@ func Test_MetaCmd_Run_good_raw(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 	}
@@ -123,7 +123,7 @@ func Test_MetaCmd_Run_good_raw(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-good-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-good-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 
@@ -140,7 +140,7 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/nil-statistics.parquet",
+				URI: "../testdata/nil-statistics.parquet",
 			},
 		},
 	}
@@ -148,7 +148,7 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-nil-statistics-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-nil-statistics-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 
@@ -167,7 +167,7 @@ func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/int96-nil-min-max.parquet",
+				URI: "../testdata/int96-nil-min-max.parquet",
 			},
 		},
 	}
@@ -175,7 +175,7 @@ func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/int96-nil-min-max.json")
+	expected := loadExpected(t, "../testdata/golden/int96-nil-min-max.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 
@@ -195,7 +195,7 @@ func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 		Base64: true,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/sorting-col.parquet",
+				URI: "../testdata/sorting-col.parquet",
 			},
 		},
 	}
@@ -203,7 +203,7 @@ func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-sorting-col-base64.json")
+	expected := loadExpected(t, "../testdata/golden/meta-sorting-col-base64.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 
@@ -221,7 +221,7 @@ func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-scalar.parquet",
+				URI: "../testdata/reinterpret-scalar.parquet",
 			},
 		},
 	}
@@ -229,7 +229,7 @@ func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-reinterpret-scalar-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-scalar-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -239,7 +239,7 @@ func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-pointer.parquet",
+				URI: "../testdata/reinterpret-pointer.parquet",
 			},
 		},
 	}
@@ -247,7 +247,7 @@ func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-reinterpret-pointer-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-pointer-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -257,7 +257,7 @@ func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-list.parquet",
+				URI: "../testdata/reinterpret-list.parquet",
 			},
 		},
 	}
@@ -265,7 +265,7 @@ func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-reinterpret-list-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-list-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -275,7 +275,7 @@ func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-map-key.parquet",
+				URI: "../testdata/reinterpret-map-key.parquet",
 			},
 		},
 	}
@@ -283,7 +283,7 @@ func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-reinterpret-map-key-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-map-key-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -293,7 +293,7 @@ func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-map-value.parquet",
+				URI: "../testdata/reinterpret-map-value.parquet",
 			},
 		},
 	}
@@ -301,7 +301,7 @@ func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-reinterpret-map-value-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-map-value-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -311,7 +311,7 @@ func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
 		Base64: false,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-composite.parquet",
+				URI: "../testdata/reinterpret-composite.parquet",
 			},
 		},
 	}
@@ -319,7 +319,7 @@ func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/meta-reinterpret-composite-raw.json")
+	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-composite-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }

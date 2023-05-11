@@ -31,7 +31,7 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 		SampleRatio: 0.5,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "json",
@@ -53,7 +53,7 @@ func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
 		SampleRatio: 0.5,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "json",
@@ -71,7 +71,7 @@ func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 		SampleRatio: 2.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "json",
@@ -89,7 +89,7 @@ func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 		SampleRatio: -0.5,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "json",
@@ -107,7 +107,7 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "json",
@@ -116,7 +116,7 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-good-json.json")
+	expected := loadExpected(t, "../testdata/golden/cat-good-json.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -128,7 +128,7 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -137,7 +137,7 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-good-jsonl.json")
+	expected := loadExpected(t, "../testdata/golden/cat-good-jsonl.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -149,7 +149,7 @@ func Test_CatCmd_Run_bad_format(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "random-dude",
@@ -172,7 +172,7 @@ func Test_CatCmd_Run_good_skip(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "json",
@@ -181,7 +181,7 @@ func Test_CatCmd_Run_good_skip(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-good-json-skip-2.json")
+	expected := loadExpected(t, "../testdata/golden/cat-good-json-skip-2.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -194,7 +194,7 @@ func Test_CatCmd_Run_good_all_skip(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "json",
@@ -214,7 +214,7 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "json",
@@ -223,7 +223,7 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-good-json-limit-2.json")
+	expected := loadExpected(t, "../testdata/golden/cat-good-json-limit-2.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -235,7 +235,7 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 		SampleRatio: 0.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "json",
@@ -255,7 +255,7 @@ func Test_CatCmd_Run_good_empty(t *testing.T) {
 		SampleRatio: 0.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/empty.parquet",
+				URI: "../testdata/empty.parquet",
 			},
 		},
 		Format: "json",
@@ -274,7 +274,7 @@ func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-scalar.parquet",
+				URI: "../testdata/reinterpret-scalar.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -283,7 +283,7 @@ func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-reinterpret-scalar.jsonl")
+	expected := loadExpected(t, "../testdata/golden/cat-reinterpret-scalar.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -294,7 +294,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-pointer.parquet",
+				URI: "../testdata/reinterpret-pointer.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -303,7 +303,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-reinterpret-pointer.jsonl")
+	expected := loadExpected(t, "../testdata/golden/cat-reinterpret-pointer.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -314,7 +314,7 @@ func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-list.parquet",
+				URI: "../testdata/reinterpret-list.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -323,7 +323,7 @@ func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-reinterpret-list.jsonl")
+	expected := loadExpected(t, "../testdata/golden/cat-reinterpret-list.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -334,7 +334,7 @@ func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-map-key.parquet",
+				URI: "../testdata/reinterpret-map-key.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -343,7 +343,7 @@ func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-reinterpret-map-key.jsonl")
+	expected := loadExpected(t, "../testdata/golden/cat-reinterpret-map-key.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -354,7 +354,7 @@ func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-map-value.parquet",
+				URI: "../testdata/reinterpret-map-value.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -363,7 +363,7 @@ func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/cat-reinterpret-map-value.jsonl")
+	expected := loadExpected(t, "../testdata/golden/cat-reinterpret-map-value.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -374,7 +374,7 @@ func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/reinterpret-composite.parquet",
+				URI: "../testdata/reinterpret-composite.parquet",
 			},
 		},
 		Format: "jsonl",
@@ -384,7 +384,7 @@ func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
 
-	expected := loadExpected(t, "testdata/golden/cat-reinterpret-composite.jsonl")
+	expected := loadExpected(t, "../testdata/golden/cat-reinterpret-composite.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -395,7 +395,7 @@ func Test_CatCmd_Run_good_csv(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "csv",
@@ -405,7 +405,7 @@ func Test_CatCmd_Run_good_csv(t *testing.T) {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
 
-	expected := loadExpected(t, "testdata/golden/cat-good-csv.txt")
+	expected := loadExpected(t, "../testdata/golden/cat-good-csv.txt")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -416,7 +416,7 @@ func Test_CatCmd_Run_good_tsv(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/good.parquet",
+				URI: "../testdata/good.parquet",
 			},
 		},
 		Format: "tsv",
@@ -426,7 +426,7 @@ func Test_CatCmd_Run_good_tsv(t *testing.T) {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
 
-	expected := loadExpected(t, "testdata/golden/cat-good-tsv.txt")
+	expected := loadExpected(t, "../testdata/golden/cat-good-tsv.txt")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -437,7 +437,7 @@ func Test_CatCmd_Run_nested_csv(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "csv",
@@ -454,7 +454,7 @@ func Test_CatCmd_Run_nested_tsv(t *testing.T) {
 		SampleRatio: 1.0,
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "tsv",

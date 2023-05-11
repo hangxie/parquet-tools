@@ -86,7 +86,7 @@ func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "invalid",
@@ -101,7 +101,7 @@ func Test_SchemaCmd_Run_good_raw(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "raw",
@@ -110,7 +110,7 @@ func Test_SchemaCmd_Run_good_raw(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/schema-all-types-raw.json")
+	expected := loadExpected(t, "../testdata/golden/schema-all-types-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -119,7 +119,7 @@ func Test_SchemaCmd_Run_good_json(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/all-types.parquet",
+				URI: "../testdata/all-types.parquet",
 			},
 		},
 		Format: "json",
@@ -128,7 +128,7 @@ func Test_SchemaCmd_Run_good_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/schema-all-types-json.json")
+	expected := loadExpected(t, "../testdata/golden/schema-all-types-json.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -137,7 +137,7 @@ func Test_SchemaCmd_Run_good_go(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "file://./testdata/all-types.parquet",
+				URI: "file://./../testdata/all-types.parquet",
 			},
 		},
 		Format: "go",
@@ -146,7 +146,7 @@ func Test_SchemaCmd_Run_good_go(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/schema-all-types-go.txt")
+	expected := loadExpected(t, "../testdata/golden/schema-all-types-go.txt")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -155,7 +155,7 @@ func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/map-composite-value.parquet",
+				URI: "../testdata/map-composite-value.parquet",
 			},
 		},
 		Format: "raw",
@@ -164,7 +164,7 @@ func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/schema-map-composite-value-raw.json")
+	expected := loadExpected(t, "../testdata/golden/schema-map-composite-value-raw.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -173,7 +173,7 @@ func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "testdata/map-composite-value.parquet",
+				URI: "../testdata/map-composite-value.parquet",
 			},
 		},
 		Format: "json",
@@ -182,7 +182,7 @@ func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/schema-map-composite-value-json.json")
+	expected := loadExpected(t, "../testdata/golden/schema-map-composite-value-json.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
@@ -191,7 +191,7 @@ func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "file://./testdata/map-composite-value.parquet",
+				URI: "file://./../testdata/map-composite-value.parquet",
 			},
 		},
 		Format: "go",
@@ -208,7 +208,7 @@ func Test_SchemaCmd_Run_map_value_map(t *testing.T) {
 	cmd := &SchemaCmd{
 		ReadOption: ReadOption{
 			CommonOption: CommonOption{
-				URI: "file://./testdata/map-value-map.parquet",
+				URI: "file://./../testdata/map-value-map.parquet",
 			},
 		},
 		Format: "json",
@@ -217,7 +217,7 @@ func Test_SchemaCmd_Run_map_value_map(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
 	})
-	expected := loadExpected(t, "testdata/golden/schema-map-value-map-json.json")
+	expected := loadExpected(t, "../testdata/golden/schema-map-value-map-json.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
