@@ -1,7 +1,7 @@
 {
   "repetition_type": "REQUIRED",
   "name": "Parquet_go_root",
-  "num_children": 42,
+  "num_children": 44,
   "children": [
     {
       "type": "BOOLEAN",
@@ -351,6 +351,23 @@
       "type": "INT64",
       "type_length": 0,
       "repetition_type": "REQUIRED",
+      "name": "TimeNanos2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIME": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "NANOS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
       "name": "TimestampMillis",
       "converted_type": "TIMESTAMP_MILLIS",
       "scale": 0,
@@ -413,6 +430,23 @@
           "isAdjustedToUTC": false,
           "unit": {
             "MICROS": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "TimestampNanos2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "TIMESTAMP": {
+          "isAdjustedToUTC": false,
+          "unit": {
+            "NANOS": {}
           }
         }
       }
