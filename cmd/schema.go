@@ -50,23 +50,6 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 	return nil
 }
 
-func typeStr(se parquet.SchemaElement) string {
-	if se.Type != nil {
-		return se.Type.String()
-	}
-	if se.ConvertedType != nil {
-		switch *se.ConvertedType {
-		case parquet.ConvertedType_LIST:
-			return "LIST"
-		case parquet.ConvertedType_MAP:
-			return "MAP"
-		default:
-			return se.ConvertedType.String()
-		}
-	}
-	return "STRUCT"
-}
-
 func repetitionTyeStr(se parquet.SchemaElement) string {
 	if se.RepetitionType == nil {
 		return "REQUIRED"
@@ -165,8 +148,8 @@ func (s *schemaNode) goStructList() (string, error) {
 	var structStr string
 	var err error
 	if s.Children[0].Type == nil {
-		// Parquet uses LIST -> "List"" -> actual element type
-		// oo struct will be []<actual element type>
+		// Parquet uses LIST -> "List" -> actual element type
+		// go struct will be []<actual element type>
 		structStr, err = s.Children[0].Children[0].goStruct(false)
 	} else {
 		structStr, err = s.Children[0].goStruct(false)
@@ -194,11 +177,12 @@ func (s *schemaNode) goStructMap() (string, error) {
 	}
 	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
 	// go struct will be map[<key type>]<value type>
-	structStr, err := s.Children[0].Children[1].goStruct(false)
+	keyType := goTypeStr(s.Children[0].Children[0].SchemaElement)
+	valueType, err := s.Children[0].Children[1].goStruct(false)
 	if err != nil {
 		return "", err
 	}
-	return "map[" + goTypeStr(s.Children[0].Children[0].SchemaElement) + "]" + structStr, nil
+	return "map[" + keyType + "]" + valueType, nil
 }
 
 func (s *schemaNode) goStruct(withName bool) (string, error) {
@@ -209,27 +193,22 @@ func (s *schemaNode) goStruct(withName bool) (string, error) {
 		res = "[]"
 	}
 
-	if s.Type == nil && s.ConvertedType == nil {
-		structStr, err := s.goStructStruct()
-		if err != nil {
-			return "", err
-		}
-		res += structStr
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST {
-		structStr, err := s.goStructList()
-		if err != nil {
-			return "", err
-		}
-		res += structStr
-	} else if s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP {
-		structStr, err := s.goStructMap()
-		if err != nil {
-			return "", err
-		}
-		res += structStr
-	} else {
-		res += goTypeStr(s.SchemaElement)
+	var structStr string
+	var err error
+	switch {
+	case s.Type == nil && s.ConvertedType == nil:
+		structStr, err = s.goStructStruct()
+	case s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST:
+		structStr, err = s.goStructList()
+	case s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP:
+		structStr, err = s.goStructMap()
+	default:
+		structStr, err = goTypeStr(s.SchemaElement), nil
 	}
+	if err != nil {
+		return "", err
+	}
+	res += structStr
 
 	if withName {
 		res = s.Name + " " + res + " " + s.getStructTags()
@@ -242,11 +221,13 @@ func (s *schemaNode) getStructTags() string {
 
 	annotations := []string{}
 	for _, tag := range orderedTags {
-		if val, found := tagMap[tag]; found {
-			// repetitiontype=REQUIRED is redundant in go struct
-			if !(tag == "repetitiontype" && val == "REQUIRED") {
-				annotations = append(annotations, tag+"="+val)
-			}
+		val, found := tagMap[tag]
+		if !found {
+			continue
+		}
+		// repetitiontype=REQUIRED is redundant in go struct
+		if !(tag == "repetitiontype" && val == "REQUIRED") {
+			annotations = append(annotations, tag+"="+val)
 		}
 	}
 
@@ -316,43 +297,46 @@ func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
 }
 
 func (s *schemaNode) updateTagFromLogicalType(tagMap map[string]string) {
-	if s.LogicalType != nil {
-		if s.LogicalType.IsSetDECIMAL() && tagMap["convertedtype"] != "DECIMAL" {
-			// Do not populate localtype fields for DECIMAL type
-			tagMap["logicaltype"] = "DECIMAL"
-			tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
-			tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
-		} else if s.LogicalType.IsSetDATE() {
-			// Do not populate localtype fields for DATE type
-		} else if s.LogicalType.IsSetTIME() {
-			tagMap["logicaltype"] = "TIME"
-			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
-			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
-			delete(tagMap, "convertedtype")
-		} else if s.LogicalType.IsSetTIMESTAMP() {
-			tagMap["logicaltype"] = "TIMESTAMP"
-			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
-			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
-			delete(tagMap, "convertedtype")
-		}
+	if s.LogicalType == nil {
+		return
+	}
+
+	switch {
+	case s.LogicalType.IsSetDECIMAL() && tagMap["convertedtype"] != "DECIMAL":
+		// let convertedtype do annotation job if both logicaltype and convertedtype are decimal
+		tagMap["logicaltype"] = "DECIMAL"
+		tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
+		tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
+	case s.LogicalType.IsSetDATE():
+		// Do not populate logical fields for DATE type
+	case s.LogicalType.IsSetTIME():
+		tagMap["logicaltype"] = "TIME"
+		tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
+		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
+		delete(tagMap, "convertedtype")
+	case s.LogicalType.IsSetTIMESTAMP():
+		tagMap["logicaltype"] = "TIMESTAMP"
+		tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
+		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
+		delete(tagMap, "convertedtype")
 	}
 }
 
 func (s *schemaNode) getTagMap() map[string]string {
-	tagMap := map[string]string{}
-	if s == nil {
-		return tagMap
+	tagMap := map[string]string{
+		"name":           s.Name,
+		"repetitiontype": repetitionTyeStr(s.SchemaElement),
 	}
-	tagMap["name"] = s.Name
-	tagMap["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
-	tagMap["type"] = typeStr(s.SchemaElement)
-
-	if tagMap["type"] == "STRUCT" {
+	if s.SchemaElement.Type != nil {
+		tagMap["type"] = s.SchemaElement.Type.String()
+	} else if s.SchemaElement.ConvertedType != nil {
+		tagMap["type"] = s.SchemaElement.ConvertedType.String()
+	} else {
+		tagMap["type"] = "STRUCT"
 		return tagMap
 	}
 
 	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
-		tagMap["type"] = typeStr(s.SchemaElement)
 		tagMap["length"] = fmt.Sprint(*s.TypeLength)
 		return tagMap
 	}
