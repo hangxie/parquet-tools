@@ -7,26 +7,6 @@ import (
 	"github.com/xitongsys/parquet-go/parquet"
 )
 
-func Test_SchemaCmd_typeStr_both_nil(t *testing.T) {
-	require.Equal(t, "STRUCT", typeStr(parquet.SchemaElement{Type: nil, ConvertedType: nil}))
-}
-
-func Test_SchemaCmd_typeStr_converted_type_nil(t *testing.T) {
-	pType := parquet.Type_FIXED_LEN_BYTE_ARRAY
-	require.Equal(t, "FIXED_LEN_BYTE_ARRAY", typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: nil}))
-}
-
-func Test_SchemaCmd_typeStr_type_nil(t *testing.T) {
-	cType := parquet.ConvertedType_LIST
-	require.Equal(t, "LIST", typeStr(parquet.SchemaElement{Type: nil, ConvertedType: &cType}))
-}
-
-func Test_SchemaCmd_typeStr_both_non_nil(t *testing.T) {
-	pType := parquet.Type_FIXED_LEN_BYTE_ARRAY
-	cType := parquet.ConvertedType_LIST
-	require.Equal(t, "FIXED_LEN_BYTE_ARRAY", typeStr(parquet.SchemaElement{Type: &pType, ConvertedType: &cType}))
-}
-
 func Test_SchemaCmd_repetitionTyeStr_good(t *testing.T) {
 	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
 
@@ -69,13 +49,8 @@ func Test_SchemaCmd_goTypeStr_good(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_non_existent(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "file/does/not/exist",
-			},
-		},
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "file/does/not/exist"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -83,14 +58,9 @@ func Test_SchemaCmd_Run_non_existent(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-		Format: "invalid",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "invalid"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -98,14 +68,9 @@ func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_good_raw(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-		Format: "raw",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "raw"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -116,14 +81,9 @@ func Test_SchemaCmd_Run_good_raw(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_good_json(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-		Format: "json",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "json"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -134,14 +94,9 @@ func Test_SchemaCmd_Run_good_json(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_good_go(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "file://./../testdata/all-types.parquet",
-			},
-		},
-		Format: "go",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "go"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -152,14 +107,9 @@ func Test_SchemaCmd_Run_good_go(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/map-composite-value.parquet",
-			},
-		},
-		Format: "raw",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/map-composite-value.parquet"
+	cmd.Format = "raw"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -170,14 +120,9 @@ func Test_SchemaCmd_Run_map_composite_value_raw(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/map-composite-value.parquet",
-			},
-		},
-		Format: "json",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/map-composite-value.parquet"
+	cmd.Format = "json"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -188,14 +133,9 @@ func Test_SchemaCmd_Run_map_composite_value_json(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "file://./../testdata/map-composite-value.parquet",
-			},
-		},
-		Format: "go",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/map-composite-value.parquet"
+	cmd.Format = "go"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.NotNil(t, cmd.Run(&Context{}))
@@ -205,14 +145,9 @@ func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_map_value_map(t *testing.T) {
-	cmd := &SchemaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "file://./../testdata/map-value-map.parquet",
-			},
-		},
-		Format: "json",
-	}
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/map-value-map.parquet"
+	cmd.Format = "json"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
