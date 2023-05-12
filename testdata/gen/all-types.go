@@ -16,6 +16,9 @@ type InnerMap struct {
 	List []string         `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10"`
 }
 
+// there is no TIME_NANOS or TIMESTAMP_NANOS
+// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#deprecated-time-convertedtype
+// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#deprecated-timestamp-convertedtype
 type AllTypes struct {
 	Bool              bool                `parquet:"name=Bool, type=BOOLEAN"`
 	Int32             int32               `parquet:"name=Int32, type=INT32"`
@@ -43,10 +46,12 @@ type AllTypes struct {
 	TimeMillis2       int32               `parquet:"name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
 	TimeMicros        int64               `parquet:"name=TimeMicros, type=INT64, convertedtype=TIME_MICROS"`
 	TimeMicros2       int64               `parquet:"name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`
+	TimeNanos2        int64               `parquet:"name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS"`
 	TimestampMillis   int64               `parquet:"name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS"`
 	TimestampMillis2  int64               `parquet:"name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
 	TimestampMicros   int64               `parquet:"name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS"`
 	TimestampMicros2  int64               `parquet:"name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`
+	TimestampNanos2   int64               `parquet:"name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS"`
 	Interval          string              `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12"`
 	Decimal1          int32               `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9"`
 	Decimal2          int64               `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18"`
@@ -104,14 +109,16 @@ func main() {
 			Uint_64:           int64(i),
 			Date:              int32(1640995200 + i),
 			Date2:             int32(1640995200 + i),
-			TimeMillis:        int32(i),
-			TimeMillis2:       int32(i),
-			TimeMicros:        int64(i),
-			TimeMicros2:       int64(i),
-			TimestampMillis:   int64(1640995200000 + i),
-			TimestampMillis2:  int64(1640995200000 + i),
-			TimestampMicros:   int64(1640995200000000 + i),
-			TimestampMicros2:  int64(1640995200000000 + i),
+			TimeMillis:        int32(i) * 1_001,
+			TimeMillis2:       int32(i) * 1_001,
+			TimeMicros:        int64(i) * 1_000_001,
+			TimeMicros2:       int64(i) * 1_000_001,
+			TimeNanos2:        int64(i) * 1_000_000_001,
+			TimestampMillis:   int64(i) + 1_640_995_200_000,
+			TimestampMillis2:  int64(i) + 1_640_995_200_000,
+			TimestampMicros:   int64(i) + 1_640_995_200_000_000,
+			TimestampMicros2:  int64(i) + 1_640_995_200_000_000,
+			TimestampNanos2:   int64(i) + 1_640_995_200_000_000_000,
 			Interval:          types.StrIntToBinary(strings.Repeat(strI, 5), "LittleEndian", 12, false),
 			Decimal1:          decimals[i],
 			Decimal2:          int64(decimals[i]),
