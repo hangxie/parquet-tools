@@ -40,10 +40,7 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 		res, _ := json.Marshal(s)
 		fmt.Printf("%s\n", res)
 	case formatGo:
-		node := internal.GoStructNode{
-			SchemaNode: *schemaRoot,
-		}
-		snippet, err := node.String()
+		snippet, err := internal.GoStructNode{SchemaNode: *schemaRoot}.String()
 		if err != nil {
 			return err
 		}

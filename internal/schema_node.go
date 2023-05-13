@@ -128,8 +128,7 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 	}
 	// LIST has schema structure LIST->List->Element
 	// expected output is LIST->Element
-	node := GoStructNode{*s.Children[0].Children[0]}
-	for k, v := range node.getTagMapWithPrefix("value") {
+	for k, v := range s.Children[0].Children[0].getTagMapWithPrefix("value") {
 		tagMap[k] = v
 	}
 	s.Children = s.Children[0].Children[:1]
@@ -148,12 +147,10 @@ func (s *SchemaNode) updateTagForMap(tagMap map[string]string) {
 
 	// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
 	// expected output is MAP->(Key, Value)
-	keyNode := GoStructNode{*s.Children[0].Children[0]}
-	valueNode := GoStructNode{*s.Children[0].Children[1]}
-	for k, v := range keyNode.getTagMapWithPrefix("key") {
+	for k, v := range s.Children[0].Children[0].getTagMapWithPrefix("key") {
 		tagMap[k] = v
 	}
-	for k, v := range valueNode.getTagMapWithPrefix("value") {
+	for k, v := range s.Children[0].Children[1].getTagMapWithPrefix("value") {
 		tagMap[k] = v
 	}
 	s.Children = s.Children[0].Children[0:2]
