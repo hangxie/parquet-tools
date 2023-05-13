@@ -34,6 +34,7 @@ all: deps tools format lint test build  ## Build all common targets
 format: tools  ## Format all go code
 	@echo "==> Formatting all go code"
 	@$(GOBIN)/gofumpt -w -extra $(GOSOURCES)
+	@$(GOBIN)/goimports -w -local github.com/hangxie/parquet-tools $(GOSOURCES)
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
@@ -57,6 +58,7 @@ tools:  ## Install build tools
 		go install github.com/jstemmer/go-junit-report/v2@v2.0.0; \
 		go install mvdan.cc/gofumpt@latest; \
 		go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \
+		go install golang.org/x/tools/cmd/goimports@latest; \
 	)
 
 build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
