@@ -10,11 +10,13 @@ import (
 
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/types"
+
+	"github.com/hangxie/parquet-tools/internal"
 )
 
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
-	ReadOption
+	internal.ReadOption
 	Base64 bool `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
 }
 
@@ -45,13 +47,13 @@ type parquetMeta struct {
 
 // Run does actual meta job
 func (c *MetaCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.ReadOption)
+	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
 
-	schemaRoot := newSchemaTree(reader)
-	reinterpretFields := getReinterpretFields("", schemaRoot, false)
+	schemaRoot := internal.NewSchemaTree(reader)
+	reinterpretFields := schemaRoot.GetReinterpretFields("", false)
 
 	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
 	for rgIndex, rg := range reader.Footer.RowGroups {
@@ -100,12 +102,12 @@ func (c *MetaCmd) Run(ctx *Context) error {
 			// reformat decimal values
 			var err error
 			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-			if columns[colIndex].MaxValue, err = decimalToFloat(field, maxValue); err != nil {
+			if columns[colIndex].MaxValue, err = internal.DecimalToFloat(field, maxValue); err != nil {
 				return err
 			}
 
 			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-			if columns[colIndex].MinValue, err = decimalToFloat(field, minValue); err != nil {
+			if columns[colIndex].MinValue, err = internal.DecimalToFloat(field, minValue); err != nil {
 				return err
 			}
 		}

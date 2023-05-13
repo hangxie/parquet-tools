@@ -4,58 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/xitongsys/parquet-go/parquet"
 )
-
-func Test_SchemaCmd_repetitionTyeStr_good(t *testing.T) {
-	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
-
-	rType := parquet.FieldRepetitionType_OPTIONAL
-	require.Equal(t, "OPTIONAL", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
-
-	rType = parquet.FieldRepetitionType_REQUIRED
-	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
-
-	rType = parquet.FieldRepetitionType_REPEATED
-	require.Equal(t, "REPEATED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
-}
-
-func Test_SchemaCmd_goTypeStr_good(t *testing.T) {
-	require.Equal(t, "", goTypeStr(parquet.SchemaElement{Type: nil}))
-
-	pType := parquet.Type_BOOLEAN
-	require.Equal(t, "bool", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_INT32
-	require.Equal(t, "int32", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_INT64
-	require.Equal(t, "int64", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_INT96
-	require.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_FLOAT
-	require.Equal(t, "float32", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_DOUBLE
-	require.Equal(t, "float64", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_BYTE_ARRAY
-	require.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
-
-	pType = parquet.Type_FIXED_LEN_BYTE_ARRAY
-	require.Equal(t, "string", goTypeStr(parquet.SchemaElement{Type: &pType}))
-}
-
-func Test_SchemaCmd_Run_non_existent(t *testing.T) {
-	cmd := &SchemaCmd{}
-	cmd.URI = "file/does/not/exist"
-
-	err := cmd.Run(&Context{})
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open local file")
-}
 
 func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 	cmd := &SchemaCmd{}

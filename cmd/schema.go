@@ -3,9 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/hangxie/parquet-tools/internal"
 )
 
 var (
@@ -16,29 +15,35 @@ var (
 
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
-	ReadOption
+	internal.ReadOption
 	Format string `short:"f" help:"Schema format (raw/json/go)." enum:"raw,json,go" default:"json"`
 }
 
 // Run does actual schema job
 func (c *SchemaCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.ReadOption)
+	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
 	defer reader.PFile.Close()
 
-	schemaRoot := newSchemaTree(reader)
+	schemaRoot := internal.NewSchemaTree(reader)
 	switch c.Format {
 	case formatRaw:
 		res, _ := json.Marshal(*schemaRoot)
 		fmt.Printf("%s\n", res)
 	case formatJSON:
-		s := schemaRoot.jsonSchema()
+		node := internal.JSONSchemaNode{
+			SchemaNode: *schemaRoot,
+		}
+		s := node.Schema()
 		res, _ := json.Marshal(s)
 		fmt.Printf("%s\n", res)
 	case formatGo:
-		snippet, err := schemaRoot.goStruct(false)
+		node := internal.GoStructNode{
+			SchemaNode: *schemaRoot,
+		}
+		snippet, err := node.String()
 		if err != nil {
 			return err
 		}
@@ -48,333 +53,4 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 	}
 
 	return nil
-}
-
-func repetitionTyeStr(se parquet.SchemaElement) string {
-	if se.RepetitionType == nil {
-		return "REQUIRED"
-	}
-	return se.RepetitionType.String()
-}
-
-var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
-	parquet.Type_BOOLEAN:              "bool",
-	parquet.Type_INT32:                "int32",
-	parquet.Type_INT64:                "int64",
-	parquet.Type_INT96:                "string",
-	parquet.Type_FLOAT:                "float32",
-	parquet.Type_DOUBLE:               "float64",
-	parquet.Type_BYTE_ARRAY:           "string",
-	parquet.Type_FIXED_LEN_BYTE_ARRAY: "string",
-}
-
-func goTypeStr(se parquet.SchemaElement) string {
-	if se.Type != nil {
-		if typeStr, ok := goTypeStrMap[*se.Type]; ok {
-			return typeStr
-		}
-	}
-	return ""
-}
-
-// this represents order of tags in JSON schema and go struct
-var orderedTags []string = []string{
-	"name",
-	"type",
-	"keytype",
-	"keyconvertedtype",
-	"keyscale",
-	"keyprecision",
-	"valuetype",
-	"valueconvertedtype",
-	"valuescale",
-	"valueprecision",
-	"convertedtype",
-	"scale",
-	"precision",
-	"length",
-	"logicaltype",
-	"logicaltype.precision",
-	"logicaltype.scale",
-	"logicaltype.isadjustedtoutc",
-	"logicaltype.unit",
-	"repetitiontype",
-}
-
-type jsonSchemaNode struct {
-	Tag    string
-	Fields []*jsonSchemaNode `json:",omitempty"`
-}
-
-func (s *schemaNode) jsonSchema() *jsonSchemaNode {
-	tagMap := s.getTagMap()
-
-	annotations := []string{}
-	for _, tag := range orderedTags {
-		// keytype and valuetype are for go struct tag only
-		if strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
-			continue
-		}
-		if val, found := tagMap[tag]; found {
-			annotations = append(annotations, tag+"="+val)
-		}
-	}
-	ret := &jsonSchemaNode{
-		Tag:    strings.Join(annotations, ", "),
-		Fields: make([]*jsonSchemaNode, len(s.Children)),
-	}
-
-	for index, child := range s.Children {
-		ret.Fields[index] = child.jsonSchema()
-	}
-
-	return ret
-}
-
-func (s *schemaNode) goStructStruct() (string, error) {
-	res := "struct {\n"
-	for _, cNode := range s.Children {
-		structStr, err := cNode.goStruct(true)
-		if err != nil {
-			return "", err
-		}
-		res += structStr + "\n"
-	}
-	res += "}"
-	return res, nil
-}
-
-func (s *schemaNode) goStructList() (string, error) {
-	var structStr string
-	var err error
-	if s.Children[0].Type == nil {
-		// Parquet uses LIST -> "List" -> actual element type
-		// go struct will be []<actual element type>
-		structStr, err = s.Children[0].Children[0].goStruct(false)
-	} else {
-		structStr, err = s.Children[0].goStruct(false)
-	}
-	if err != nil {
-		return "", err
-	}
-	return "[]" + structStr, nil
-}
-
-func (s *schemaNode) goStructMap() (string, error) {
-	// go struct tag does not support LIST or MAP as type of key/value
-	if s.Children[0].Children[0].ConvertedType != nil {
-		keyConvertedType := *s.Children[0].Children[0].ConvertedType
-		if keyConvertedType == parquet.ConvertedType_MAP || keyConvertedType == parquet.ConvertedType_LIST {
-			return "", fmt.Errorf("go struct does not support composite type as map key in field [%s.%s]", strings.Join(s.Parent, "."), s.Name)
-		}
-	}
-
-	if s.Children[0].Children[1].ConvertedType != nil {
-		valueConvertedType := *s.Children[0].Children[1].ConvertedType
-		if valueConvertedType == parquet.ConvertedType_MAP || valueConvertedType == parquet.ConvertedType_LIST {
-			return "", fmt.Errorf("go struct does not support composite type as map value in field [%s.%s]", strings.Join(s.Parent, "."), s.Name)
-		}
-	}
-	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
-	// go struct will be map[<key type>]<value type>
-	keyType := goTypeStr(s.Children[0].Children[0].SchemaElement)
-	valueType, err := s.Children[0].Children[1].goStruct(false)
-	if err != nil {
-		return "", err
-	}
-	return "map[" + keyType + "]" + valueType, nil
-}
-
-func (s *schemaNode) goStruct(withName bool) (string, error) {
-	res := ""
-	if s.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
-		res = "*"
-	} else if s.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
-		res = "[]"
-	}
-
-	var structStr string
-	var err error
-	switch {
-	case s.Type == nil && s.ConvertedType == nil:
-		structStr, err = s.goStructStruct()
-	case s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_LIST:
-		structStr, err = s.goStructList()
-	case s.ConvertedType != nil && *s.ConvertedType == parquet.ConvertedType_MAP:
-		structStr, err = s.goStructMap()
-	default:
-		structStr, err = goTypeStr(s.SchemaElement), nil
-	}
-	if err != nil {
-		return "", err
-	}
-	res += structStr
-
-	if withName {
-		res = s.Name + " " + res + " " + s.getStructTags()
-	}
-	return res, nil
-}
-
-func (s *schemaNode) getStructTags() string {
-	tagMap := s.getTagMap()
-
-	annotations := []string{}
-	for _, tag := range orderedTags {
-		val, found := tagMap[tag]
-		if !found {
-			continue
-		}
-		// repetitiontype=REQUIRED is redundant in go struct
-		if !(tag == "repetitiontype" && val == "REQUIRED") {
-			annotations = append(annotations, tag+"="+val)
-		}
-	}
-
-	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", "))
-}
-
-func (s *schemaNode) updateTagForList(tagMap map[string]string) {
-	if len(s.Children) == 0 || s.Children[0].Type != nil {
-		return
-	}
-	// LIST has schema structure LIST->List->Element
-	// expected output is LIST->Element
-	element := s.Children[0].Children[0]
-	for k, v := range getTagMapAsChild(element, "value") {
-		tagMap[k] = v
-	}
-	s.Children = s.Children[0].Children[:1]
-	s.Children[0].Name = "Element"
-}
-
-func (s *schemaNode) updateTagForMap(tagMap map[string]string) {
-	if len(s.Children) == 0 || s.Children[0] == nil || len(s.Children[0].Children) == 0 {
-		// meaningless interim layer
-		return
-	}
-	if s.Children[0].ConvertedType != nil && *s.Children[0].ConvertedType != parquet.ConvertedType_MAP_KEY_VALUE {
-		// child nodes have been processed
-		return
-	}
-
-	// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
-	// expected output is MAP->(Key, Value)
-	key := s.Children[0].Children[0]
-	value := s.Children[0].Children[1]
-	for k, v := range getTagMapAsChild(key, "key") {
-		tagMap[k] = v
-	}
-	for k, v := range getTagMapAsChild(value, "value") {
-		tagMap[k] = v
-	}
-	s.Children = s.Children[0].Children[0:2]
-	s.Children[0].Name = "Key"
-	s.Children[1].Name = "Value"
-}
-
-func (s *schemaNode) updateTagFromConvertedType(tagMap map[string]string) {
-	if s.ConvertedType == nil {
-		return
-	}
-
-	tagMap["convertedtype"] = s.ConvertedType.String()
-
-	switch *s.ConvertedType {
-	case parquet.ConvertedType_LIST:
-		s.updateTagForList(tagMap)
-	case parquet.ConvertedType_MAP:
-		s.updateTagForMap(tagMap)
-	case parquet.ConvertedType_DECIMAL:
-		tagMap["scale"] = fmt.Sprint(*s.Scale)
-		tagMap["precision"] = fmt.Sprint(*s.Precision)
-		if *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-			tagMap["length"] = fmt.Sprint(*s.TypeLength)
-		}
-	case parquet.ConvertedType_INTERVAL:
-		tagMap["length"] = "12"
-	}
-}
-
-func (s *schemaNode) updateTagFromLogicalType(tagMap map[string]string) {
-	if s.LogicalType == nil {
-		return
-	}
-
-	switch {
-	case s.LogicalType.IsSetDECIMAL() && tagMap["convertedtype"] != "DECIMAL":
-		// let convertedtype do annotation job if both logicaltype and convertedtype are decimal
-		tagMap["logicaltype"] = "DECIMAL"
-		tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
-		tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
-	case s.LogicalType.IsSetDATE():
-		// Do not populate logical fields for DATE type
-	case s.LogicalType.IsSetTIME():
-		tagMap["logicaltype"] = "TIME"
-		tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
-		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
-		delete(tagMap, "convertedtype")
-	case s.LogicalType.IsSetTIMESTAMP():
-		tagMap["logicaltype"] = "TIMESTAMP"
-		tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
-		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
-		delete(tagMap, "convertedtype")
-	}
-}
-
-func (s *schemaNode) getTagMap() map[string]string {
-	tagMap := map[string]string{
-		"name":           s.Name,
-		"repetitiontype": repetitionTyeStr(s.SchemaElement),
-	}
-	if s.SchemaElement.Type != nil {
-		tagMap["type"] = s.SchemaElement.Type.String()
-	} else if s.SchemaElement.ConvertedType != nil {
-		tagMap["type"] = s.SchemaElement.ConvertedType.String()
-	} else {
-		tagMap["type"] = "STRUCT"
-		return tagMap
-	}
-
-	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
-		tagMap["length"] = fmt.Sprint(*s.TypeLength)
-		return tagMap
-	}
-
-	s.updateTagFromConvertedType(tagMap)
-	s.updateTagFromLogicalType(tagMap)
-
-	return tagMap
-}
-
-func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
-	if timeUnit == nil {
-		return ""
-	}
-	if timeUnit.IsSetNANOS() {
-		return "NANOS"
-	}
-	if timeUnit.IsSetMICROS() {
-		return "MICROS"
-	}
-	if timeUnit.IsSetMILLIS() {
-		return "MILLIS"
-	}
-	return "UNKNOWN_UNIT"
-}
-
-func getTagMapAsChild(se *schemaNode, prefix string) map[string]string {
-	tagMap := se.getTagMap()
-	ret := map[string]string{}
-	for _, tag := range orderedTags {
-		if tag == "name" || strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
-			// these are tags that should never have prefix
-			continue
-		}
-		if val, found := tagMap[tag]; found {
-			ret[prefix+tag] = val
-		}
-	}
-
-	return ret
 }

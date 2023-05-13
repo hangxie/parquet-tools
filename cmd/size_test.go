@@ -7,13 +7,8 @@ import (
 )
 
 func Test_SizeCmd_Run_non_existent_file(t *testing.T) {
-	cmd := &SizeCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "file/does/not/exist",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.URI = "file/does/not/exist"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -21,14 +16,9 @@ func Test_SizeCmd_Run_non_existent_file(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_invalid_query(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "invalid",
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "invalid"
+	cmd.URI = "../testdata/all-types.parquet"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -36,14 +26,9 @@ func Test_SizeCmd_Run_invalid_query(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_raw(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "raw",
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "raw"
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -53,15 +38,10 @@ func Test_SizeCmd_Run_good_raw(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "raw",
-		JSON:  true,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "raw"
+	cmd.JSON = true
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -71,14 +51,9 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "uncompressed",
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "uncompressed"
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -88,15 +63,10 @@ func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "uncompressed",
-		JSON:  true,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "uncompressed"
+	cmd.JSON = true
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -106,14 +76,9 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_footer(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "footer",
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "footer"
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -123,15 +88,10 @@ func Test_SizeCmd_Run_good_footer(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "footer",
-		JSON:  true,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "footer"
+	cmd.JSON = true
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -141,14 +101,9 @@ func Test_SizeCmd_Run_good_footer_json(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_all(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "all",
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "all"
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -158,15 +113,10 @@ func Test_SizeCmd_Run_good_all(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good_all_json(t *testing.T) {
-	cmd := &SizeCmd{
-		Query: "all",
-		JSON:  true,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/all-types.parquet",
-			},
-		},
-	}
+	cmd := &SizeCmd{}
+	cmd.Query = "all"
+	cmd.JSON = true
+	cmd.URI = "../testdata/all-types.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))

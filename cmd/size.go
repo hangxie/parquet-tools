@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/hangxie/parquet-tools/internal"
 )
 
 var (
@@ -14,14 +16,14 @@ var (
 
 // SizeCmd is a kong command for size
 type SizeCmd struct {
-	ReadOption
+	internal.ReadOption
 	Query string `short:"q" help:"Size to query (raw/uncompressed/footer/all)." enum:"raw,uncompressed,footer,all" default:"raw"`
 	JSON  bool   `short:"j" help:"Output in JSON format." default:"false"`
 }
 
 // Run does actual size job
 func (c *SizeCmd) Run(ctx *Context) error {
-	reader, err := newParquetFileReader(c.ReadOption)
+	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
