@@ -15,11 +15,13 @@ import (
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/types"
+
+	"github.com/hangxie/parquet-tools/internal"
 )
 
 // CatCmd is a kong command for cat
 type CatCmd struct {
-	ReadOption
+	internal.ReadOption
 	Skip        uint32  `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
@@ -56,7 +58,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
-	fileReader, err := newParquetFileReader(c.ReadOption)
+	fileReader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -65,7 +67,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	return c.outputRows(fileReader)
 }
 
-func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *schemaNode) ([]string, error) {
+func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *internal.SchemaNode) ([]string, error) {
 	fieldList := make([]string, len(schemaRoot.Children))
 	if c.Format == "csv" || c.Format == "tsv" {
 		for index, child := range schemaRoot.Children {
@@ -84,7 +86,7 @@ func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *sche
 }
 
 func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
-	schemaRoot := newSchemaTree(fileReader)
+	schemaRoot := internal.NewSchemaTree(fileReader)
 
 	// CSV snd TSV does not support nested schema
 	fieldList, err := c.outputHeader(fileReader, schemaRoot)
@@ -93,7 +95,7 @@ func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	}
 
 	// retrieve schema for better formatting
-	reinterpretFields := getReinterpretFields("", schemaRoot, true)
+	reinterpretFields := schemaRoot.GetReinterpretFields("", true)
 
 	// Do not abort if c.Skip is greater than total number of rows
 	// This gives users flexibility to handle this scenario by themselves
@@ -160,7 +162,7 @@ func valuesToCSV(values []string, delimiter rune) (string, error) {
 	return buf.String(), nil
 }
 
-func rowToStruct(row interface{}, reinterpretFields map[string]ReinterpretField) (interface{}, error) {
+func rowToStruct(row interface{}, reinterpretFields map[string]internal.ReinterpretField) (interface{}, error) {
 	rowValue := reflect.ValueOf(&row).Elem()
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
@@ -168,7 +170,7 @@ func rowToStruct(row interface{}, reinterpretFields map[string]ReinterpretField)
 		// There are data types that are represented as string but they are actually not UTF8, they
 		// need to be re-interpreted so we will base64 encode them here to avoid losing data. For
 		// more details: https://github.com/xitongsys/parquet-go/issues/434
-		if v.parquetType == parquet.Type_BYTE_ARRAY || v.parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.parquetType == parquet.Type_INT96 {
+		if v.ParquetType == parquet.Type_BYTE_ARRAY || v.ParquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.ParquetType == parquet.Type_INT96 {
 			encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
 		}
 	}
@@ -190,7 +192,7 @@ func rowToStruct(row interface{}, reinterpretFields map[string]ReinterpretField)
 	return iface, nil
 }
 
-func encodeNestedBinaryString(value reflect.Value, locator []string, attr ReinterpretField) {
+func encodeNestedBinaryString(value reflect.Value, locator []string, attr internal.ReinterpretField) {
 	// dereference pointer
 	if value.Kind() == reflect.Ptr {
 		if !value.IsNil() {
@@ -225,12 +227,12 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr Reinte
 	case reflect.Struct:
 		encodeNestedBinaryString(value.FieldByName(locator[0]), locator[1:], attr)
 	case reflect.String:
-		buf := stringToBytes(attr, value.String())
+		buf := internal.StringToBytes(attr, value.String())
 		value.SetString(base64.StdEncoding.EncodeToString(buf))
 	}
 }
 
-func reinterpretNestedFields(iface *interface{}, locator []string, attr ReinterpretField) {
+func reinterpretNestedFields(iface *interface{}, locator []string, attr internal.ReinterpretField) {
 	if iface == nil || *iface == nil {
 		return
 	}
@@ -263,7 +265,7 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr Reinterp
 				case string:
 					newMapValue[val] = v
 				case float64:
-					format := fmt.Sprintf("%%0.%df", attr.scale)
+					format := fmt.Sprintf("%%0.%df", attr.Scale)
 					newMapValue[fmt.Sprintf(format, val)] = v
 				}
 			}
@@ -285,13 +287,13 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr Reinterp
 	}
 }
 
-func reinterpretScalar(iface *interface{}, locator []string, attr ReinterpretField) {
-	switch attr.parquetType {
+func reinterpretScalar(iface *interface{}, locator []string, attr internal.ReinterpretField) {
+	switch attr.ParquetType {
 	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 		switch v := (*iface).(type) {
 		case string:
 			if encoded, err := base64.StdEncoding.DecodeString(v); err == nil {
-				if f64, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.precision, attr.scale), 64); err == nil {
+				if f64, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.Precision, attr.Scale), 64); err == nil {
 					*iface = f64
 				}
 			}
@@ -299,10 +301,10 @@ func reinterpretScalar(iface *interface{}, locator []string, attr ReinterpretFie
 	case parquet.Type_INT32, parquet.Type_INT64:
 		switch v := (*iface).(type) {
 		case float64:
-			*iface = v / math.Pow10(attr.scale)
+			*iface = v / math.Pow10(attr.Scale)
 		case string:
 			if f64, err := strconv.ParseFloat(v, 64); err == nil {
-				*iface = f64 / math.Pow10(attr.scale)
+				*iface = f64 / math.Pow10(attr.Scale)
 			}
 		}
 	case parquet.Type_INT96:

@@ -5,21 +5,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/hangxie/parquet-tools/internal"
 )
 
 func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 	testFile := os.TempDir() + "/import-csv.parquet"
 	os.Remove(testFile)
-	cmd := &ImportCmd{
-		Source: "../testdata/csv.source",
-		Schema: "../testdata/csv.schema",
-		Format: "csv",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: testFile,
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Source = "../testdata/csv.source"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Format = "csv"
+	cmd.URI = testFile
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -35,17 +32,12 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 	testFile := os.TempDir() + "/import-csv.parquet"
 	os.Remove(testFile)
-	cmd := &ImportCmd{
-		Source:     "../testdata/csv-with-header.source",
-		Schema:     "../testdata/csv.schema",
-		Format:     "csv",
-		SkipHeader: true,
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: testFile,
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Source = "../testdata/csv-with-header.source"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Format = "csv"
+	cmd.SkipHeader = true
+	cmd.URI = testFile
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -61,16 +53,11 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	testFile := os.TempDir() + "/import-json.parquet"
 	os.Remove(testFile)
-	cmd := &ImportCmd{
-		Source: "../testdata/json.source",
-		Schema: "../testdata/json.schema",
-		Format: "json",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: testFile,
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Source = "../testdata/json.source"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Format = "json"
+	cmd.URI = testFile
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -84,10 +71,9 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 }
 
 func Test_ImportCmd_Run_invalid_format(t *testing.T) {
-	cmd := &ImportCmd{
-		Schema: "../testdata/csv.schema",
-		Format: "random",
-	}
+	cmd := &ImportCmd{}
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Format = "random"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -95,10 +81,9 @@ func Test_ImportCmd_Run_invalid_format(t *testing.T) {
 }
 
 func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
-	cmd := &ImportCmd{
-		Schema: "file/does/not/exist",
-		Format: "csv",
-	}
+	cmd := &ImportCmd{}
+	cmd.Schema = "file/does/not/exist"
+	cmd.Format = "csv"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -106,16 +91,11 @@ func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
 }
 
 func Test_ImportCmd_importCSV_invalid_uri(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "csv",
-		Schema: "../testdata/csv.schema",
-		Source: "../testdata/csv.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "://uri",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "csv"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Source = "../testdata/csv.source"
+	cmd.URI = "://uri"
 
 	err := cmd.importCSV()
 	require.NotNil(t, err)
@@ -123,16 +103,11 @@ func Test_ImportCmd_importCSV_invalid_uri(t *testing.T) {
 }
 
 func Test_ImportCmd_importCSV_non_existent_source(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "csv",
-		Schema: "../testdata/csv.schema",
-		Source: "file/does/not/exist",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "csv"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Source = "file/does/not/exist"
+	cmd.URI = "s3://target"
 
 	// non-existent source
 	err := cmd.importCSV()
@@ -142,16 +117,11 @@ func Test_ImportCmd_importCSV_non_existent_source(t *testing.T) {
 
 func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
 	// fail to write
-	cmd := &ImportCmd{
-		Format: "csv",
-		Schema: "../testdata/csv.schema",
-		Source: "../testdata/csv.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "csv"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Source = "../testdata/csv.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importCSV()
 	require.NotNil(t, err)
@@ -159,30 +129,24 @@ func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
 }
 
 func Test_ImportCmd_importCSV_good(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "csv",
-		Schema: "../testdata/csv.schema",
-		Source: "../testdata/csv.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: os.TempDir() + "/import-csv.parquet",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "csv"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Source = "../testdata/csv.source"
+	cmd.URI = os.TempDir() + "/import-csv.parquet"
 
 	err := cmd.importCSV()
 	require.Nil(t, err)
 
-	reader, err := newParquetFileReader(ReadOption{CommonOption: cmd.CommonOption})
+	reader, err := internal.NewParquetFileReader(internal.ReadOption{CommonOption: cmd.WriteOption.CommonOption})
 	require.Nil(t, err)
 	require.Equal(t, reader.GetNumRows(), int64(7))
 }
 
 func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {
-	cmd := &ImportCmd{
-		Schema: "file/does/not/exist",
-		Format: "json",
-	}
+	cmd := &ImportCmd{}
+	cmd.Schema = "file/does/not/exist"
+	cmd.Format = "json"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -190,16 +154,11 @@ func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_invalid_uri(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/json.schema",
-		Source: "../testdata/json.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "://uri",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Source = "../testdata/json.source"
+	cmd.URI = "://uri"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -207,16 +166,11 @@ func Test_ImportCmd_importJSON_invalid_uri(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_non_existent_source(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/json.schema",
-		Source: "file/does/not/exist",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Source = "file/does/not/exist"
+	cmd.URI = "s3://target"
 
 	// non-existent source
 	err := cmd.importJSON()
@@ -226,16 +180,11 @@ func Test_ImportCmd_importJSON_non_existent_source(t *testing.T) {
 
 func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
 	// fail to write
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/json.schema",
-		Source: "../testdata/json.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Source = "../testdata/json.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -243,16 +192,11 @@ func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_invalid_schema(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/csv.schema",
-		Source: "../testdata/json.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Source = "../testdata/json.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -260,16 +204,11 @@ func Test_ImportCmd_importJSON_invalid_schema(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_invalid_source(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/json.schema",
-		Source: "../testdata/csv.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Source = "../testdata/csv.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -277,16 +216,11 @@ func Test_ImportCmd_importJSON_invalid_source(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/json.schema",
-		Source: "../testdata/json.bad-source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Source = "../testdata/json.bad-source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -294,26 +228,20 @@ func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_good(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "json",
-		Schema: "../testdata/json.schema",
-		Source: "../testdata/json.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: os.TempDir() + "/import-csv.parquet",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Source = "../testdata/json.source"
+	cmd.URI = os.TempDir() + "/import-csv.parquet"
 
 	err := cmd.importJSON()
 	require.Nil(t, err)
 }
 
 func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
-	cmd := &ImportCmd{
-		Schema: "file/does/not/exist",
-		Format: "jsonl",
-	}
+	cmd := &ImportCmd{}
+	cmd.Schema = "file/does/not/exist"
+	cmd.Format = "jsonl"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -321,16 +249,11 @@ func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_invalid_uri(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/jsonl.schema",
-		Source: "../testdata/jsonl.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "://uri",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/jsonl.schema"
+	cmd.Source = "../testdata/jsonl.source"
+	cmd.URI = "://uri"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -338,16 +261,11 @@ func Test_ImportCmd_importJSONL_invalid_uri(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_non_existent_source(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/jsonl.schema",
-		Source: "file/does/not/exist",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/jsonl.schema"
+	cmd.Source = "file/does/not/exist"
+	cmd.URI = "s3://target"
 
 	// non-existent source
 	err := cmd.importJSONL()
@@ -357,16 +275,11 @@ func Test_ImportCmd_importJSONL_non_existent_source(t *testing.T) {
 
 func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
 	// fail to write
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/jsonl.schema",
-		Source: "../testdata/jsonl.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/jsonl.schema"
+	cmd.Source = "../testdata/jsonl.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -374,16 +287,11 @@ func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_invalid_schema(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/csv.schema",
-		Source: "../testdata/jsonl.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/csv.schema"
+	cmd.Source = "../testdata/jsonl.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -391,16 +299,11 @@ func Test_ImportCmd_importJSONL_invalid_schema(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/jsonl.schema",
-		Source: "../testdata/csv.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/jsonl.schema"
+	cmd.Source = "../testdata/csv.source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -408,16 +311,11 @@ func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/jsonl.schema",
-		Source: "../testdata/jsonl.bad-source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: "s3://target",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/jsonl.schema"
+	cmd.Source = "../testdata/jsonl.bad-source"
+	cmd.URI = "s3://target"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -425,16 +323,11 @@ func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_good(t *testing.T) {
-	cmd := &ImportCmd{
-		Format: "jsonl",
-		Schema: "../testdata/jsonl.schema",
-		Source: "../testdata/jsonl.source",
-		WriteOption: WriteOption{
-			CommonOption: CommonOption{
-				URI: os.TempDir() + "/import-csv.parquet",
-			},
-		},
-	}
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.Schema = "../testdata/jsonl.schema"
+	cmd.Source = "../testdata/jsonl.source"
+	cmd.URI = os.TempDir() + "/import-csv.parquet"
 
 	err := cmd.importJSONL()
 	require.Nil(t, err)

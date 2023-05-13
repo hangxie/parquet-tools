@@ -18,8 +18,10 @@ func Test_retrieveValue_boolean(t *testing.T) {
 	cmd := &MetaCmd{}
 	s := cmd.retrieveValue([]byte{0}, parquet.Type_BOOLEAN, true)
 	require.Equal(t, false, s)
+
 	s = cmd.retrieveValue([]byte{1}, parquet.Type_BOOLEAN, false)
 	require.Equal(t, true, s)
+
 	s = cmd.retrieveValue([]byte{}, parquet.Type_BOOLEAN, false)
 	require.Equal(t, "failed to read data as BOOLEAN", s)
 }
@@ -28,8 +30,10 @@ func Test_retrieveValue_int32(t *testing.T) {
 	cmd := &MetaCmd{}
 	s := cmd.retrieveValue([]byte{9, 0, 0, 0}, parquet.Type_INT32, true)
 	require.Equal(t, int32(9), s)
+
 	s = cmd.retrieveValue([]byte{251, 255, 255, 255}, parquet.Type_INT32, false)
 	require.Equal(t, int32(-5), s)
+
 	s = cmd.retrieveValue([]byte{}, parquet.Type_INT32, false)
 	require.Equal(t, "failed to read data as INT32", s)
 }
@@ -38,8 +42,10 @@ func Test_retrieveValue_int64(t *testing.T) {
 	cmd := &MetaCmd{}
 	s := cmd.retrieveValue([]byte{9, 0, 0, 0, 0, 0, 0, 0}, parquet.Type_INT64, true)
 	require.Equal(t, int64(9), s)
+
 	s = cmd.retrieveValue([]byte{251, 255, 255, 255, 255, 255, 255, 255}, parquet.Type_INT64, false)
 	require.Equal(t, int64(-5), s)
+
 	s = cmd.retrieveValue([]byte{}, parquet.Type_INT64, false)
 	require.Equal(t, "failed to read data as INT64", s)
 }
@@ -48,8 +54,10 @@ func Test_retrieveValue_float(t *testing.T) {
 	cmd := &MetaCmd{}
 	s := cmd.retrieveValue([]byte{0, 0, 32, 192}, parquet.Type_FLOAT, true)
 	require.Equal(t, float32(-2.5), s)
+
 	s = cmd.retrieveValue([]byte{0, 0, 0, 64}, parquet.Type_FLOAT, false)
 	require.Equal(t, float32(2), s)
+
 	s = cmd.retrieveValue([]byte{}, parquet.Type_FLOAT, false)
 	require.Equal(t, "failed to read data as FLOAT", s)
 }
@@ -58,8 +66,10 @@ func Test_retrieveValue_double(t *testing.T) {
 	cmd := &MetaCmd{}
 	s := cmd.retrieveValue([]byte{0, 0, 0, 0, 0, 0, 0, 64}, parquet.Type_DOUBLE, true)
 	require.Equal(t, float64(2), s)
+
 	s = cmd.retrieveValue([]byte{0, 0, 0, 0, 0, 0, 4, 192}, parquet.Type_DOUBLE, false)
 	require.Equal(t, float64(-2.5), s)
+
 	s = cmd.retrieveValue([]byte{}, parquet.Type_DOUBLE, false)
 	require.Equal(t, "failed to read data as DOUBLE", s)
 }
@@ -72,13 +82,8 @@ func Test_retrieveValue_string(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_non_existent(t *testing.T) {
-	cmd := &MetaCmd{
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "file/does/not/exist",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.URI = "file/does/not/exist"
 
 	err := cmd.Run(&Context{})
 	require.NotNil(t, err)
@@ -86,14 +91,9 @@ func Test_MetaCmd_Run_non_existent(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_base64(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: true,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/good.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = true
+	cmd.URI = "../testdata/good.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -111,14 +111,9 @@ func Test_MetaCmd_Run_good_base64(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_raw(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/good.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/good.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -136,14 +131,9 @@ func Test_MetaCmd_Run_good_raw(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/nil-statistics.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/nil-statistics.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -163,14 +153,9 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/int96-nil-min-max.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/int96-nil-min-max.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -191,14 +176,9 @@ func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: true,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/sorting-col.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = true
+	cmd.URI = "../testdata/sorting-col.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -217,14 +197,9 @@ func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/reinterpret-scalar.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/reinterpret-scalar.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -235,14 +210,9 @@ func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/reinterpret-pointer.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/reinterpret-pointer.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -253,14 +223,9 @@ func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/reinterpret-list.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/reinterpret-list.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -271,14 +236,9 @@ func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/reinterpret-map-key.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/reinterpret-map-key.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -289,14 +249,9 @@ func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/reinterpret-map-value.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/reinterpret-map-value.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
@@ -307,14 +262,9 @@ func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
-	cmd := &MetaCmd{
-		Base64: false,
-		ReadOption: ReadOption{
-			CommonOption: CommonOption{
-				URI: "../testdata/reinterpret-composite.parquet",
-			},
-		},
-	}
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/reinterpret-composite.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run(&Context{}))
