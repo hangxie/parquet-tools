@@ -308,6 +308,15 @@ func Test_CatCmd_Run_good_csv(t *testing.T) {
 	expected := loadExpected(t, "../testdata/golden/cat-good-csv.txt")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
+
+	cmd.NoHeader = true
+	stdout, stderr = captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run(&Context{}))
+	})
+
+	expected = loadExpected(t, "../testdata/golden/cat-good-csv-no-header.txt")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
 }
 
 func Test_CatCmd_Run_good_tsv(t *testing.T) {
@@ -322,6 +331,15 @@ func Test_CatCmd_Run_good_tsv(t *testing.T) {
 	})
 
 	expected := loadExpected(t, "../testdata/golden/cat-good-tsv.txt")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+
+	cmd.NoHeader = true
+	stdout, stderr = captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run(&Context{}))
+	})
+
+	expected = loadExpected(t, "../testdata/golden/cat-good-tsv-no-header.txt")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
