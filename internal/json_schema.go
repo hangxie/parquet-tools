@@ -11,6 +11,10 @@ type JSONSchemaNode struct {
 	SchemaNode
 }
 
+func NewJSONSchemaNode(s SchemaNode) JSONSchemaNode {
+	return JSONSchemaNode{s}
+}
+
 func (s JSONSchemaNode) Schema() JSONSchema {
 	tagMap := s.SchemaNode.getTagMap()
 
@@ -30,8 +34,7 @@ func (s JSONSchemaNode) Schema() JSONSchema {
 	}
 
 	for index, child := range s.Children {
-		node := JSONSchemaNode{*child}
-		ret.Fields[index] = node.Schema()
+		ret.Fields[index] = NewJSONSchemaNode(*child).Schema()
 	}
 
 	return ret

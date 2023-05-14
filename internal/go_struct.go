@@ -11,6 +11,10 @@ type GoStructNode struct {
 	SchemaNode
 }
 
+func NewGoStructNode(s SchemaNode) GoStructNode {
+	return GoStructNode{s}
+}
+
 var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
 	parquet.Type_BOOLEAN:              "bool",
 	parquet.Type_INT32:                "int32",
@@ -35,7 +39,7 @@ func (n GoStructNode) asScalar() (string, error) {
 func (n GoStructNode) asStruct() (string, error) {
 	typeStr := "struct {\n"
 	for _, child := range n.Children {
-		structStr, err := GoStructNode{*child}.stringWithName()
+		structStr, err := NewGoStructNode(*child).stringWithName()
 		if err != nil {
 			return "", err
 		}
@@ -51,11 +55,11 @@ func (n GoStructNode) asList() (string, error) {
 	if n.Children[0].Type == nil {
 		// Parquet uses LIST -> "List"" -> actual element type
 		// oo struct will be []<actual element type>
-		typeStr, err = GoStructNode{*n.Children[0].Children[0]}.String()
+		typeStr, err = NewGoStructNode(*n.Children[0].Children[0]).String()
 	} else {
 		// TODO find test case
 		// https://github.com/hangxie/parquet-tools/issues/187
-		typeStr, err = GoStructNode{*n.Children[0]}.String()
+		typeStr, err = NewGoStructNode(*n.Children[0]).String()
 	}
 	if err != nil {
 		return "", err
@@ -80,11 +84,11 @@ func (n GoStructNode) asMap() (string, error) {
 	}
 	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
 	// go struct will be map[<key type>]<value type>
-	keyStr, err := GoStructNode{*n.Children[0].Children[0]}.asScalar()
+	keyStr, err := NewGoStructNode(*n.Children[0].Children[0]).asScalar()
 	if err != nil {
 		return "", err
 	}
-	valueStr, err := GoStructNode{*n.Children[0].Children[1]}.String()
+	valueStr, err := NewGoStructNode(*n.Children[0].Children[1]).String()
 	if err != nil {
 		return "", err
 	}
@@ -109,7 +113,7 @@ func (n GoStructNode) String() (string, error) {
 	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_MAP:
 		typeStr, err = n.asMap()
 	default:
-		typeStr, err = GoStructNode{n.SchemaNode}.asScalar()
+		typeStr, err = NewGoStructNode(n.SchemaNode).asScalar()
 	}
 	if err != nil {
 		return "", err

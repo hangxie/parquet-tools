@@ -33,14 +33,11 @@ func (c *SchemaCmd) Run(ctx *Context) error {
 		res, _ := json.Marshal(*schemaRoot)
 		fmt.Printf("%s\n", res)
 	case formatJSON:
-		node := internal.JSONSchemaNode{
-			SchemaNode: *schemaRoot,
-		}
-		s := node.Schema()
+		s := internal.NewJSONSchemaNode(*schemaRoot).Schema()
 		res, _ := json.Marshal(s)
 		fmt.Printf("%s\n", res)
 	case formatGo:
-		snippet, err := internal.GoStructNode{SchemaNode: *schemaRoot}.String()
+		snippet, err := internal.NewGoStructNode(*schemaRoot).String()
 		if err != nil {
 			return err
 		}
