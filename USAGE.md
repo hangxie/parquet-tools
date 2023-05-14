@@ -384,6 +384,15 @@ UTF8-0,
 UTF8-1,
 ```
 
+By default CSV and TSV output contains a header line with field names, you can use `--no-header` option to remove it from output.
+
+```bash
+$ parquet-tools cat -f csv --no-header cmd/testdata/good.parquet
+nike,air_griffey
+fila,grant_hill_2
+steph_curry,curry7
+```
+
 CSV and TSV do not support parquet files with complex schema:
 
 ```bash

@@ -27,6 +27,7 @@ type CatCmd struct {
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
 	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Format      string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
+	NoHeader    bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 }
 
 var delimiter = map[string]struct {
@@ -68,18 +69,24 @@ func (c *CatCmd) Run(ctx *Context) error {
 }
 
 func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *internal.SchemaNode) ([]string, error) {
+	if c.Format != "csv" && c.Format != "tsv" {
+		// only CSV and TSV need header
+		return nil, nil
+	}
+
 	fieldList := make([]string, len(schemaRoot.Children))
-	if c.Format == "csv" || c.Format == "tsv" {
-		for index, child := range schemaRoot.Children {
-			if len(child.Children) != 0 {
-				return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
-			}
-			fieldList[index] = child.Name
+	for index, child := range schemaRoot.Children {
+		if len(child.Children) != 0 {
+			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
-		line, err := valuesToCSV(fieldList, delimiter[c.Format].fieldDelimiter)
-		if err != nil {
-			return nil, err
-		}
+		fieldList[index] = child.Name
+	}
+	line, err := valuesToCSV(fieldList, delimiter[c.Format].fieldDelimiter)
+	if err != nil {
+		return nil, err
+	}
+
+	if !c.NoHeader {
 		fmt.Print(line)
 	}
 	return fieldList, nil
