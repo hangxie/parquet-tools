@@ -83,9 +83,6 @@ func NewSchemaTree(reader *reader.ParquetReader) *SchemaNode {
 
 func (s *SchemaNode) getTagMap() map[string]string {
 	tagMap := map[string]string{}
-	if s == nil {
-		return tagMap
-	}
 	tagMap["name"] = s.Name
 	tagMap["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
 	tagMap["type"] = typeStr(s.SchemaElement)
@@ -95,7 +92,6 @@ func (s *SchemaNode) getTagMap() map[string]string {
 	}
 
 	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
-		tagMap["type"] = typeStr(s.SchemaElement)
 		tagMap["length"] = fmt.Sprint(*s.TypeLength)
 		return tagMap
 	}
