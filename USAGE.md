@@ -106,9 +106,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.13.8
+v1.16.0
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.13.8
+v1.16.0
 ```
 
 ### Prebuilt Packages
@@ -118,20 +118,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i  parquet-tools_1.13.8_amd64.deb
-Preparing to unpack parquet-tools_1.13.8_amd64.deb ...
-Unpacking parquet-tools (1.13.8) ...
-Setting up parquet-tools (1.13.8) ...
+$ sudo dpkg -i  parquet-tools_1.16.0_amd64.deb
+Preparing to unpack parquet-tools_1.16.0_amd64.deb ...
+Unpacking parquet-tools (1.16.0) ...
+Setting up parquet-tools (1.16.0) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.13.8-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.16.0-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.13.8-1           ################################# [100%]
+   1:parquet-tools-1.16.0-1           ################################# [100%]
 ```
 
 ## Usage
@@ -179,11 +179,11 @@ you need to have proper permission on the file you are going to process.
 For files from file system, you can specify `file://` scheme or just ignore it:
 
 ```bash
-$ parquet-tools row-count cmd/testdata/good.parquet
+$ parquet-tools row-count testdata/good.parquet
 4
-$ parquet-tools row-count file://cmd/testdata/good.parquet
+$ parquet-tools row-count file://testdata/good.parquet
 4
-$ parquet-tools row-count file://./cmd/testdata/good.parquet
+$ parquet-tools row-count file://./testdata/good.parquet
 4
 ```
 
@@ -233,7 +233,7 @@ Use full [gsutil](https://cloud.google.com/storage/docs/gsutil) URI to point to 
 
 ```bash
 $ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
-$ parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema gs://REDACTED/csv.parquet
+$ parquet-tools import -s testdata/csv.source -m testdata/csv.schema gs://REDACTED/csv.parquet
 $ parquet-tools row-count gs://REDACTED/csv.parquet
 7
 ```
@@ -260,7 +260,7 @@ means the parquet file is at:
 `parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access:
 
 ```bash
-$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s cmd/testdata/csv.source -m cmd/testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
+$ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s testdata/csv.source -m testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
 7
 ```
@@ -321,9 +321,9 @@ appy.parquet
 `parquet-tools` can read and write files under HDFS with schema `hdfs://username@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
 
 ```bash
-$ parquet-tools import -f jsonl -s cmd/testdata/jsonl.schema -s cmd/testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
+$ parquet-tools import -f jsonl -s testdata/jsonl.schema -s testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
 parquet-tools: error: failed to create JSON writer: failed to open HDFS source [hdfs://localhost:9000/temp/good.parquet]: create /temp/good.parquet: permission denied
-$ parquet-tools import -f jsonl -m cmd/testdata/jsonl.schema -s cmd/testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
+$ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
 $ parquet-tools row-count hdfs://localhost:9000/temp/good.parquet
 7
 ```
@@ -339,8 +339,7 @@ There is a `--page-size` parameter that you probably will never touch it, it tel
 #### Full Data Set
 
 ```bash
-$ parquet-tools cat --format jsonl cmd/testdata/good.parquet
-{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
+$ parquet-tools cat --format jsonl testdata/good.parquet
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
@@ -351,15 +350,14 @@ $ parquet-tools cat --format jsonl cmd/testdata/good.parquet
 `--skip` is similar to OFFSET in SQL, `parquet-tools` will skip this many rows from beginning of the parquet file before applying other logics.
 
 ```bash
-$ parquet-tools cat --skip 2 --format jsonl cmd/testdata/good.parquet
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+$ parquet-tools cat --skip 2 --format jsonl testdata/good.parquet
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
 ```
 
 `parquet-tools` will not report error if `--skip` is greater than total number of rows in parquet file.
 
 ```bash
-$ parquet-tools cat --skip 20 cmd/testdata/good.parquet
+$ parquet-tools cat --skip 20 testdata/good.parquet
 []
 ```
 
@@ -368,7 +366,7 @@ $ parquet-tools cat --skip 20 cmd/testdata/good.parquet
 There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpretted by other utilities, especially if they are from other programming laguages.
 
 ```bash
-$ parquet-tools cat -f csv cmd/testdata/good.parquet
+$ parquet-tools cat -f csv testdata/good.parquet
 Shoe_brand,Shoe_name
 nike,air_griffey
 fila,grant_hill_2
@@ -378,7 +376,7 @@ steph_curry,curry7
 `nil` values will be presented as empty string:
 
 ```bash
-$ parquet-tools cat -f csv --limit 2 cmd/testdata/int96-nil-min-max.parquet
+$ parquet-tools cat -f csv --limit 2 testdata/int96-nil-min-max.parquet
 Utf8,Int96
 UTF8-0,
 UTF8-1,
@@ -387,7 +385,7 @@ UTF8-1,
 By default CSV and TSV output contains a header line with field names, you can use `--no-header` option to remove it from output.
 
 ```bash
-$ parquet-tools cat -f csv --no-header cmd/testdata/good.parquet
+$ parquet-tools cat -f csv --no-header testdata/good.parquet
 nike,air_griffey
 fila,grant_hill_2
 steph_curry,curry7
@@ -396,7 +394,7 @@ steph_curry,curry7
 CSV and TSV do not support parquet files with complex schema:
 
 ```bash
-$ parquet-tools cat -f csv cmd/testdata/all-types.parquet
+$ parquet-tools cat -f csv testdata/all-types.parquet
 parquet-tools: error: field [Map] is not scalar type, cannot output in csv format
 exit status 1
 ```
@@ -406,8 +404,8 @@ exit status 1
 `--limit` is similar to LIMIT in SQL, or `head` in Linux shell, `parquet-tools` will stop running after this many rows outputs.
 
 ```bash
-$ parquet-tools cat --limit 2 cmd/testdata/good.parquet
-[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
+$ parquet-tools cat --limit 2 testdata/good.parquet
+[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
 ```
 
 #### Sampling
@@ -417,21 +415,19 @@ $ parquet-tools cat --limit 2 cmd/testdata/good.parquet
 This feature picks rows in parquet file randomly, so only `0.0` and `1.0` will output deterministic result, all other ratio may generate data set less or more than you want.
 
 ```bash
-$ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
-[{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
-$ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
-[{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
-$ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
-[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}]
-$ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
-[{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
-$ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
-$ parquet-tools cat --sample-ratio 0.25 cmd/testdata/good.parquet
+$ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
+[{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
+$ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
 []
-$ parquet-tools cat --sample-ratio 1.0 cmd/testdata/good.parquet
-[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
-$ parquet-tools cat --sample-ratio 0.0 cmd/testdata/good.parquet
+$ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
+[{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+$ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
+[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
+$ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
+[{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
+$ parquet-tools cat --sample-ratio 1.0 testdata/good.parquet
+[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+$ parquet-tools cat --sample-ratio 0.0 testdata/good.parquet
 []
 ```
 
@@ -440,16 +436,16 @@ $ parquet-tools cat --sample-ratio 0.0 cmd/testdata/good.parquet
 `--skip`, `--limit` and `--sample-ratio` can be used together to achieve certain goals, for example, to get the 3rd row from the parquet file:
 
 ```bash
-$ parquet-tools cat --skip 2 --limit 1 cmd/testdata/good.parquet
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+$ parquet-tools cat --skip 2 --limit 1 testdata/good.parquet
+[{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
 ```
 
 #### Output Format
 `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
 ```bash
-$ parquet-tools cat cmd/testdata/good.parquet
-[{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"},{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+$ parquet-tools cat testdata/good.parquet
+[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
 ```
 
 `cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
@@ -457,8 +453,7 @@ $ parquet-tools cat cmd/testdata/good.parquet
 When you want to filter data, use JSONL format output and pipe to `jq`.
 
 ```bash
-$ parquet-tools cat --format jsonl cmd/testdata/good.parquet
-{"Shoe_brand":"shoe_brand","Shoe_name":"shoe_name"}
+$ parquet-tools cat --format jsonl testdata/good.parquet
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
@@ -474,8 +469,8 @@ The command takes 3 parameters, `--source` tells which file (file system only) t
 
 Each source data file format has its own dedicated schema format:
 
-* CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/csv.schema).
-* JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/cmd/testdata/json.schema).
+* CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/csv.schema).
+* JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/json.schema).
 * JSONL: use same schema as JSON format.
 
 You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149. 
@@ -483,7 +478,7 @@ You cannot import INT96 data at this moment, more details can be found at https:
 #### Import from CSV
 
 ```bash
-$ parquet-tools import -f csv -s cmd/testdata/csv.source -m cmd/testdata/csv.schema /tmp/csv.parquet
+$ parquet-tools import -f csv -s testdata/csv.source -m testdata/csv.schema /tmp/csv.parquet
 $ parquet-tools row-count /tmp/csv.parquet
 7
 ```
@@ -491,7 +486,7 @@ $ parquet-tools row-count /tmp/csv.parquet
 #### Import from JSON
 
 ```bash
-$ parquet-tools import -f json -s cmd/testdata/json.source -m cmd/testdata/json.schema /tmp/json.parquet
+$ parquet-tools import -f json -s testdata/json.source -m testdata/json.schema /tmp/json.parquet
 $ parquet-tools row-count /tmp/json.parquet
 1
 ```
@@ -503,7 +498,7 @@ As most JSON processing utilities, the whole JSON file needs to be loaded to mem
 JSONL is [line-delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON), use JSONL if you want to load multiple JSON objects into parquet.
 
 ```bash
-$ parquet-tools import -f jsonl -s cmd/testdata/jsonl.source -m cmd/testdata/jsonl.schema /tmp/jsonl.parquet
+$ parquet-tools import -f jsonl -s testdata/jsonl.source -m testdata/jsonl.schema /tmp/jsonl.parquet
 $ parquet-tools row-count /tmp/jsonl.parquet
 7
 ```
@@ -517,14 +512,14 @@ Note that MinValue and MaxValue always show value with base type instead of conv
 #### Show Meta Data
 
 ```bash
-$ parquet-tools meta cmd/testdata/good.parquet
+$ parquet-tools meta testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"shoe_name","MinValue":"air_griffey"}]}]}
 ```
 
 #### Show Meta Data with Base64-encoded Values
 
 ```bash
-$ parquet-tools meta --base64 cmd/testdata/good.parquet
+$ parquet-tools meta --base64 testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"c3RlcGhfY3Vycnk=","MinValue":"ZmlsYQ=="},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"c2hvZV9uYW1l","MinValue":"YWlyX2dyaWZmZXk="}]}]}
 ```
 
@@ -537,7 +532,7 @@ Note that MinValue, MaxValue and NullCount are optional, if they do not show up 
 #### Show Number of Rows
 
 ```bash
-$ parquet-tools row-count cmd/testdata/good.parquet
+$ parquet-tools row-count testdata/good.parquet
 4
 ```
 
@@ -550,7 +545,7 @@ $ parquet-tools row-count cmd/testdata/good.parquet
 JSON format schema can be used directly in parquet-go based golang program like [this example](https://github.com/xitongsys/parquet-go/blob/master/example/json_schema.go):
 
 ```bash
-$ parquet-tools schema cmd/testdata/good.parquet
+$ parquet-tools schema testdata/good.parquet
 {"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]}
 ```
 
@@ -559,7 +554,7 @@ $ parquet-tools schema cmd/testdata/good.parquet
 Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format.
 
 ```bash
-$ parquet-tools schema --format raw cmd/testdata/good.parquet
+$ parquet-tools schema --format raw testdata/good.parquet
 {"repetition_type":"REQUIRED","name":"Parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
 ```
 
@@ -568,7 +563,7 @@ $ parquet-tools schema --format raw cmd/testdata/good.parquet
 go struct format generate go struct definition snippet that can be used in go:
 
 ```bash
-$ parquet-tools schema --format go cmd/testdata/good.parquet | gofmt
+$ parquet-tools schema --format go testdata/good.parquet | gofmt
 type Parquet_go_root struct {
 	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
 	Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
@@ -580,11 +575,11 @@ based on your use case, type `Parquet_go_root` may need to be renamed.
 parquet-go does not support composite type as map key or value in go struct tag as for now so `parquet-tools` will report error if there is such a field, you can still output in raw or JSON format:
 
 ```bash
-$ parquet-tools schema -f go cmd/testdata/map-composite-value.parquet
+$ parquet-tools schema -f go testdata/map-composite-value.parquet
 parquet-tools: error: go struct does not support composite type as map value in field [Parquet_go_root.Scores]
 exit status 1
 
-$ parquet-tools schema cmd/testdata/map-composite-value.parquet
+$ parquet-tools schema testdata/map-composite-value.parquet
 {"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Age, type=INT32, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"},{"Tag":"name=Weight, type=FLOAT, repetitiontype=REQUIRED"},{"Tag":"name=Sex, type=BOOLEAN, repetitiontype=REQUIRED"},{"Tag":"name=Classes, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]},{"Tag":"name=Scores, type=MAP, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Value, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=FLOAT, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Friends, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Teachers, type=STRUCT, repetitiontype=REPEATED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]}
 ```
 
@@ -627,22 +622,22 @@ Hit `<TAB>` key in command line when you need hint or want to auto complete curr
 #### Show Raw Size
 
 ```bash
-$ parquet-tools size cmd/testdata/good.parquet
-357
+$ parquet-tools size testdata/good.parquet
+450
 ```
 
 #### Show Footer Size in JSON Format
 
 ```bash
-$ parquet-tools size --query footer --json cmd/testdata/good.parquet
-{"Footer":316}
+$ parquet-tools size --query footer --json testdata/good.parquet
+{"Footer":323}
 ```
 
 #### Show All Sizes in JSON Format
 
 ```bash
-$ parquet-tools size -q all -j cmd/testdata/good.parquet
-{"Raw":357,"Uncompressed":349,"Footer":316}
+$ parquet-tools size -q all -j testdata/good.parquet
+{"Raw":450,"Uncompressed":438,"Footer":323}
 ```
 
 ### version Command
@@ -653,19 +648,19 @@ $ parquet-tools size -q all -j cmd/testdata/good.parquet
 
 ```bash
 $ parquet-tools version
-v1.13.8
+v1.16.0
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.13.8","BuildTime":"2022-06-09T15:32:45+00:00"}
+{"Version":"v1.16.0","BuildTime":"2023-03-19T14:13:54+00:00"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.13.8"}
+{"Version":"v1.16.0"}
 ```
