@@ -19,7 +19,7 @@ func Test_GoStructNode_String_good(t *testing.T) {
 	schemaRoot := NewSchemaTree(pr)
 	require.NotNil(t, schemaRoot)
 
-	typeStr, err := GoStructNode{SchemaNode: *schemaRoot}.String()
+	typeStr, err := NewGoStructNode(*schemaRoot).String()
 	require.Nil(t, err)
 
 	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
@@ -44,7 +44,7 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	// 1st field is "Key_value", its
 	// 1st field is map's key
 	schemaRoot.Children[1].Children[0].Children[0].ConvertedType = &mapType
-	_, err = GoStructNode{SchemaNode: *schemaRoot}.String()
+	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as map key")
 }
@@ -59,7 +59,7 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	schemaRoot := NewSchemaTree(pr)
 	require.NotNil(t, schemaRoot)
 
-	_, err = GoStructNode{SchemaNode: *schemaRoot}.String()
+	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as map value")
 }
@@ -77,7 +77,7 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	// A bit explanation:
 	// 1st field is "Shoe_brand"
 	schemaRoot.Children[0].Type = nil
-	_, err = GoStructNode{SchemaNode: *schemaRoot}.String()
+	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "type not set")
 }
@@ -98,7 +98,7 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	// 1st field is "List", its
 	// 1st field is "Element"
 	schemaRoot.Children[0].Children[0].Children[0].Type = &invalidType
-	_, err = GoStructNode{SchemaNode: *schemaRoot}.String()
+	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
 }
@@ -119,7 +119,7 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	// 1st field is "Key_value", its
 	// 1st field is map's key
 	schemaRoot.Children[1].Children[0].Children[0].Type = &invalidType
-	_, err = GoStructNode{SchemaNode: *schemaRoot}.String()
+	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
 }
@@ -139,7 +139,7 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	// 1st field is "Key_value", its
 	// 3nd field is map's value
 	schemaRoot.Children[1].Children[0].Children[1].Type = nil
-	_, err = GoStructNode{SchemaNode: *schemaRoot}.String()
+	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "type not set")
 }

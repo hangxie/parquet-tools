@@ -18,8 +18,7 @@ func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 	schemaRoot := NewSchemaTree(pr)
 	require.NotNil(t, schemaRoot)
 
-	node := JSONSchemaNode{SchemaNode: *schemaRoot}
-	schema := node.Schema()
+	schema := NewJSONSchemaNode(*schemaRoot).Schema()
 	require.Nil(t, err)
 
 	actual, _ := json.MarshalIndent(schema, "", "  ")
