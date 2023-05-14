@@ -25,7 +25,7 @@ type CatCmd struct {
 	Skip        uint32  `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
-	SampleRatio float64 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
+	SampleRatio float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Format      string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
 	NoHeader    bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 }
@@ -121,7 +121,10 @@ func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 			break
 		}
 
-		for i := 0; i < len(rows) && rand.Float64() < c.SampleRatio && counter < c.Limit; i++ {
+		for i := 0; i < len(rows) && counter < c.Limit; i++ {
+			if rand.Float32() >= c.SampleRatio {
+				continue
+			}
 			if counter != 0 {
 				fmt.Print(delimiter[c.Format].lineDelimiter)
 			}
