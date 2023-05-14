@@ -92,39 +92,29 @@ func (n GoStructNode) asMap() (string, error) {
 }
 
 func (n GoStructNode) String() (string, error) {
-	typeStr := ""
+	typePrefix := ""
 	if n.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
-		typeStr = "*"
+		typePrefix = "*"
 	} else if n.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
-		typeStr = "[]"
+		typePrefix = "[]"
 	}
 
-	if n.Type == nil && n.ConvertedType == nil {
-		structStr, err := n.asStruct()
-		if err != nil {
-			return "", err
-		}
-		typeStr += structStr
-	} else if n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
-		listStr, err := n.asList()
-		if err != nil {
-			return "", err
-		}
-		typeStr += listStr
-	} else if n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_MAP {
-		mapStr, err := n.asMap()
-		if err != nil {
-			return "", err
-		}
-		typeStr += mapStr
-	} else {
-		scalarStr, err := GoStructNode{n.SchemaNode}.asScalar()
-		if err != nil {
-			return "", err
-		}
-		typeStr += scalarStr
+	var typeStr string
+	var err error
+	switch {
+	case n.Type == nil && n.ConvertedType == nil:
+		typeStr, err = n.asStruct()
+	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST:
+		typeStr, err = n.asList()
+	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_MAP:
+		typeStr, err = n.asMap()
+	default:
+		typeStr, err = GoStructNode{n.SchemaNode}.asScalar()
 	}
-	return typeStr, nil
+	if err != nil {
+		return "", err
+	}
+	return typePrefix + typeStr, nil
 }
 
 func (n GoStructNode) stringWithName() (string, error) {
