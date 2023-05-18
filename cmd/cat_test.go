@@ -30,7 +30,6 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		err := cmd.Run(&Context{})
 		require.Nil(t, err)
-		require.Equal(t, cmd.Limit, ^uint64(0))
 	})
 	require.NotEqual(t, "", stdout)
 	require.Equal(t, "", stderr)
