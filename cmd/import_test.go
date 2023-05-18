@@ -19,7 +19,7 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 	cmd.URI = testFile
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 
 	require.Equal(t, "", stdout)
@@ -40,7 +40,7 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 	cmd.URI = testFile
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 
 	require.Equal(t, "", stdout)
@@ -60,7 +60,7 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	cmd.URI = testFile
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 
 	require.Equal(t, "", stdout)
@@ -75,7 +75,7 @@ func Test_ImportCmd_Run_invalid_format(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Format = "random"
 
-	err := cmd.Run(&Context{})
+	err := cmd.Run()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "is not a recognized source format")
 }
@@ -85,7 +85,7 @@ func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
 	cmd.Schema = "file/does/not/exist"
 	cmd.Format = "csv"
 
-	err := cmd.Run(&Context{})
+	err := cmd.Run()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to load schema from")
 }
@@ -148,7 +148,7 @@ func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {
 	cmd.Schema = "file/does/not/exist"
 	cmd.Format = "json"
 
-	err := cmd.Run(&Context{})
+	err := cmd.Run()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to load schema from")
 }
@@ -243,7 +243,7 @@ func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
 	cmd.Schema = "file/does/not/exist"
 	cmd.Format = "jsonl"
 
-	err := cmd.Run(&Context{})
+	err := cmd.Run()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to load schema from")
 }

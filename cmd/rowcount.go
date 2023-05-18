@@ -12,7 +12,7 @@ type RowCountCmd struct {
 }
 
 // Run does actual rowcount job
-func (c RowCountCmd) Run(ctx *Context) error {
+func (c RowCountCmd) Run() error {
 	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err

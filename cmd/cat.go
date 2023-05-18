@@ -43,7 +43,7 @@ var delimiter = map[string]struct {
 }
 
 // Run does actual cat job
-func (c CatCmd) Run(ctx *Context) error {
+func (c CatCmd) Run() error {
 	if c.PageSize < 1 {
 		return fmt.Errorf("invalid page size %d, needs to be at least 1", c.PageSize)
 	}

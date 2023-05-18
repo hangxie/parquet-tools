@@ -3,6 +3,7 @@
 # Required for globs to work correctly
 SHELL:=/bin/bash
 
+PKG_PREFIX  = github.com/hangxie/parquet-tools
 VERSION     = $(shell git describe --tags)
 BUILD       = $(shell date +%FT%T%z)
 BUILDDIR    = $(CURDIR)/build
@@ -23,7 +24,7 @@ GOFLAGS     :=
 GOSOURCES   := $(shell find . -type f -name '*.go')
 CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
-LDFLAGS     += -X main.version=$(VERSION) -X main.build=$(BUILD)
+LDFLAGS     += -X $(PKG_PREFIX)/cmd.version=$(VERSION) -X $(PKG_PREFIX)/cmd.build=$(BUILD)
 
 .EXPORT_ALL_VARIABLES:
 
@@ -34,7 +35,7 @@ all: deps tools format lint test build  ## Build all common targets
 format: tools  ## Format all go code
 	@echo "==> Formatting all go code"
 	@$(GOBIN)/gofumpt -w -extra $(GOSOURCES)
-	@$(GOBIN)/goimports -w -local github.com/hangxie/parquet-tools $(GOSOURCES)
+	@$(GOBIN)/goimports -w -local $(PKG_PREFIX) $(GOSOURCES)
 
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"

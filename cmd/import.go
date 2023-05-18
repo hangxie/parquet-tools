@@ -22,7 +22,7 @@ type ImportCmd struct {
 }
 
 // Run does actual import job
-func (c ImportCmd) Run(ctx *Context) error {
+func (c ImportCmd) Run() error {
 	switch c.Format {
 	case "csv":
 		return c.importCSV()
