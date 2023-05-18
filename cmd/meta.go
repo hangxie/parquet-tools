@@ -46,7 +46,7 @@ type parquetMeta struct {
 }
 
 // Run does actual meta job
-func (c *MetaCmd) Run(ctx *Context) error {
+func (c MetaCmd) Run(ctx *Context) error {
 	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func (c *MetaCmd) Run(ctx *Context) error {
 	return nil
 }
 
-func (c *MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Encode bool) interface{} {
+func (c MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Encode bool) interface{} {
 	if value == nil {
 		return nil
 	}

@@ -43,7 +43,7 @@ var delimiter = map[string]struct {
 }
 
 // Run does actual cat job
-func (c *CatCmd) Run(ctx *Context) error {
+func (c CatCmd) Run(ctx *Context) error {
 	if c.PageSize < 1 {
 		return fmt.Errorf("invalid page size %d, needs to be at least 1", c.PageSize)
 	}
@@ -68,7 +68,7 @@ func (c *CatCmd) Run(ctx *Context) error {
 	return c.outputRows(fileReader)
 }
 
-func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *internal.SchemaNode) ([]string, error) {
+func (c CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *internal.SchemaNode) ([]string, error) {
 	if c.Format != "csv" && c.Format != "tsv" {
 		// only CSV and TSV need header
 		return nil, nil
@@ -92,7 +92,7 @@ func (c *CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *inte
 	return fieldList, nil
 }
 
-func (c *CatCmd) outputRows(fileReader *reader.ParquetReader) error {
+func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	schemaRoot := internal.NewSchemaTree(fileReader)
 
 	// CSV snd TSV does not support nested schema
@@ -188,13 +188,13 @@ func rowToStruct(row interface{}, reinterpretFields map[string]internal.Reinterp
 
 	// convert to struct type to map of interface so we can change the value for formatting,
 	// fail back to original data for any kind of errors
-	var iface interface{}
 	buf, err := json.Marshal(row)
 	if err != nil {
 		return "", err
 	}
 
 	// this should not fail as we just Marshal it
+	var iface interface{}
 	_ = json.Unmarshal(buf, &iface)
 	for k, v := range reinterpretFields {
 		reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)

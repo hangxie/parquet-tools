@@ -22,7 +22,7 @@ type ImportCmd struct {
 }
 
 // Run does actual import job
-func (c *ImportCmd) Run(ctx *Context) error {
+func (c ImportCmd) Run(ctx *Context) error {
 	switch c.Format {
 	case "csv":
 		return c.importCSV()
@@ -34,7 +34,7 @@ func (c *ImportCmd) Run(ctx *Context) error {
 	return fmt.Errorf("[%s] is not a recognized source format", c.Format)
 }
 
-func (c *ImportCmd) importCSV() error {
+func (c ImportCmd) importCSV() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
@@ -85,7 +85,7 @@ func (c *ImportCmd) importCSV() error {
 	return nil
 }
 
-func (c *ImportCmd) importJSON() error {
+func (c ImportCmd) importJSON() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
@@ -123,7 +123,7 @@ func (c *ImportCmd) importJSON() error {
 	return nil
 }
 
-func (c *ImportCmd) importJSONL() error {
+func (c ImportCmd) importJSONL() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
