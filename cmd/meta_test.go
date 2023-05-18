@@ -85,7 +85,7 @@ func Test_MetaCmd_Run_non_existent(t *testing.T) {
 	cmd := &MetaCmd{}
 	cmd.URI = "file/does/not/exist"
 
-	err := cmd.Run(&Context{})
+	err := cmd.Run()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), string("failed to open local file"))
 }
@@ -96,7 +96,7 @@ func Test_MetaCmd_Run_good_base64(t *testing.T) {
 	cmd.URI = "../testdata/good.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-good-base64.json")
 	require.Equal(t, expected, stdout)
@@ -116,7 +116,7 @@ func Test_MetaCmd_Run_good_raw(t *testing.T) {
 	cmd.URI = "../testdata/good.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-good-raw.json")
 	require.Equal(t, expected, stdout)
@@ -136,7 +136,7 @@ func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
 	cmd.URI = "../testdata/nil-statistics.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-nil-statistics-raw.json")
 	require.Equal(t, expected, stdout)
@@ -158,7 +158,7 @@ func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
 	cmd.URI = "../testdata/int96-nil-min-max.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/int96-nil-min-max.json")
 	require.Equal(t, expected, stdout)
@@ -181,7 +181,7 @@ func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
 	cmd.URI = "../testdata/sorting-col.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-sorting-col-base64.json")
 	require.Equal(t, expected, stdout)
@@ -202,7 +202,7 @@ func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	cmd.URI = "../testdata/reinterpret-scalar.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-scalar-raw.json")
 	require.Equal(t, expected, stdout)
@@ -215,7 +215,7 @@ func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
 	cmd.URI = "../testdata/reinterpret-pointer.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-pointer-raw.json")
 	require.Equal(t, expected, stdout)
@@ -228,7 +228,7 @@ func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
 	cmd.URI = "../testdata/reinterpret-list.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-list-raw.json")
 	require.Equal(t, expected, stdout)
@@ -241,7 +241,7 @@ func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	cmd.URI = "../testdata/reinterpret-map-key.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-map-key-raw.json")
 	require.Equal(t, expected, stdout)
@@ -254,7 +254,7 @@ func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	cmd.URI = "../testdata/reinterpret-map-value.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-map-value-raw.json")
 	require.Equal(t, expected, stdout)
@@ -267,7 +267,7 @@ func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
 	cmd.URI = "../testdata/reinterpret-composite.parquet"
 
 	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run(&Context{}))
+		require.Nil(t, cmd.Run())
 	})
 	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-composite-raw.json")
 	require.Equal(t, expected, stdout)

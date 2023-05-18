@@ -20,7 +20,7 @@ type SchemaCmd struct {
 }
 
 // Run does actual schema job
-func (c SchemaCmd) Run(ctx *Context) error {
+func (c SchemaCmd) Run() error {
 	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err

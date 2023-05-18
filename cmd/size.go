@@ -22,7 +22,7 @@ type SizeCmd struct {
 }
 
 // Run does actual size job
-func (c SizeCmd) Run(ctx *Context) error {
+func (c SizeCmd) Run() error {
 	reader, err := internal.NewParquetFileReader(c.ReadOption)
 	if err != nil {
 		return err

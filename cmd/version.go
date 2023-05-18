@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+var (
+	version string
+	build   string
+)
+
 // VersionCmd is a kong command for version
 type VersionCmd struct {
 	JSON      bool `short:"j" help:"Output in JSON format." default:"false"`
@@ -12,15 +17,11 @@ type VersionCmd struct {
 }
 
 // Run does actual version job
-func (c VersionCmd) Run(ctx *Context) error {
-	if ctx == nil {
-		return fmt.Errorf("cannot retrieve build information")
-	}
-
+func (c VersionCmd) Run() error {
 	if !c.JSON {
-		fmt.Println(ctx.Version)
+		fmt.Println(version)
 		if c.BuildTime {
-			fmt.Println(ctx.Build)
+			fmt.Println(build)
 		}
 		return nil
 	}
@@ -29,11 +30,11 @@ func (c VersionCmd) Run(ctx *Context) error {
 		Version   string
 		BuildTime *string `json:",omitempty"`
 	}{
-		Version:   ctx.Version,
+		Version:   version,
 		BuildTime: nil,
 	}
 	if c.BuildTime {
-		v.BuildTime = &ctx.Build
+		v.BuildTime = &build
 	}
 	buf, _ := json.Marshal(v)
 	fmt.Println(string(buf))

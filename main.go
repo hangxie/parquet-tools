@@ -10,11 +10,6 @@ import (
 	"github.com/hangxie/parquet-tools/cmd"
 )
 
-var (
-	version string
-	build   string
-)
-
 var cli struct {
 	Cat              cmd.CatCmd                   `cmd:"" help:"Prints the content of a Parquet file, data only."`
 	Import           cmd.ImportCmd                `cmd:"" help:"Create Parquet file from other source data."`
@@ -37,8 +32,5 @@ func main() {
 
 	ctx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)
-	ctx.FatalIfErrorf(ctx.Run(&cmd.Context{
-		Version: version,
-		Build:   build,
-	}))
+	ctx.FatalIfErrorf(ctx.Run())
 }
