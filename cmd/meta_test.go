@@ -171,8 +171,7 @@ func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
 	require.Nil(t, meta.RowGroups[0].Columns[1].MaxValue)
 	require.Nil(t, meta.RowGroups[0].Columns[1].MinValue)
 	require.NotNil(t, meta.RowGroups[0].Columns[1].NullCount)
-	// https://github.com/xitongsys/parquet-go/issues/523
-	// require.Equal(t, *meta.RowGroups[0].Columns[1].NullCount, int64(10))
+	require.Equal(t, *meta.RowGroups[0].Columns[1].NullCount, int64(10))
 }
 
 func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
