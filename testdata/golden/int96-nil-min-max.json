@@ -38,7 +38,7 @@
           "CompressedSize": 160,
           "UncompressedSize": 108,
           "NumValues": 10,
-          "NullCount": 6,
+          "NullCount": 10,
           "CompressionCodec": "ZSTD"
         }
       ]
