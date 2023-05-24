@@ -56,7 +56,7 @@ type ReadOption struct {
 // WriteOption includes options for write operation
 type WriteOption struct {
 	CommonOption
-	Compression string `short:"z" help:"compressio codec (UNCOMPRESSED/SNAPPY/GZIP/LZO/BROTLI/LZ4/ZSTD/LZ4_RAW)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZO,BROTLI,LZ4,ZSTD,LZ4_RAW" default:"SNAPPY"`
+	Compression string `short:"z" help:"compressio codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/ZSTD/LZ4_RAW)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,ZSTD,LZ4_RAW" default:"SNAPPY"`
 }
 
 func parseURI(uri string) (*url.URL, error) {
@@ -289,6 +289,9 @@ func NewCSVWriter(option WriteOption, schema []string) (*writer.CSVWriter, error
 	if err != nil {
 		fileWriter.Close()
 		return nil, err
+	} else if codec == parquet.CompressionCodec_BROTLI || codec == parquet.CompressionCodec_LZO {
+		fileWriter.Close()
+		return nil, fmt.Errorf("%s compression is not supported at this moment", codec.String())
 	}
 	pw.CompressionType = codec
 	return pw, nil
@@ -309,6 +312,9 @@ func NewJSONWriter(option WriteOption, schema string) (*writer.JSONWriter, error
 	if err != nil {
 		fileWriter.Close()
 		return nil, err
+	} else if codec == parquet.CompressionCodec_BROTLI || codec == parquet.CompressionCodec_LZO {
+		fileWriter.Close()
+		return nil, fmt.Errorf("%s compression is not supported at this moment", codec.String())
 	}
 	pw.CompressionType = codec
 	return pw, nil

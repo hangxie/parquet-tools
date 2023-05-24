@@ -153,7 +153,7 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Source = "../testdata/csv.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
-	cmd.Compression = "BROTLI"
+	cmd.Compression = "LZ4_RAW"
 
 	err := cmd.importCSV()
 	require.Nil(t, err)
@@ -205,7 +205,7 @@ func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
 	cmd.Schema = "../testdata/json.schema"
 	cmd.Source = "../testdata/json.source"
 	cmd.URI = "s3://target"
-	cmd.Compression = "LZO"
+	cmd.Compression = "ZSTD"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -341,7 +341,7 @@ func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/jsonl.bad-source"
 	cmd.URI = "s3://target"
-	cmd.Compression = "LZO"
+	cmd.Compression = "UNCOMPRESSED"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -354,7 +354,7 @@ func Test_ImportCmd_importJSONL_good(t *testing.T) {
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/jsonl.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
-	cmd.Compression = "BROTLI"
+	cmd.Compression = "LZ4"
 
 	err := cmd.importJSONL()
 	require.Nil(t, err)

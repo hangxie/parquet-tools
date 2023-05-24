@@ -510,3 +510,23 @@ func Test_NewJSONWriter_invalid_compression_codec(t *testing.T) {
 	require.Nil(t, pw)
 	require.Contains(t, "not a valid CompressionCodec string", err.Error())
 }
+
+func Test_NewCSVWriter_unsupported_compression_codec(t *testing.T) {
+	option := WriteOption{}
+	option.Compression = "LZO"
+	option.URI = os.TempDir() + "/csv-writer.parquet"
+	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+	require.NotNil(t, err)
+	require.Nil(t, pw)
+	require.Contains(t, "LZO compression is not supported at this moment", err.Error())
+}
+
+func Test_NewJSONWriter_unsupported_compression_codec(t *testing.T) {
+	option := WriteOption{}
+	option.Compression = "BROTLI"
+	option.URI = os.TempDir() + "/json-writer.parquet"
+	pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+	require.NotNil(t, err)
+	require.Nil(t, pw)
+	require.Contains(t, "BROTLI compression is not supported at this moment", err.Error())
+}
