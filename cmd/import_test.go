@@ -17,6 +17,7 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Format = "csv"
 	cmd.URI = testFile
+	cmd.Compression = "SNAPPY"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
@@ -38,6 +39,7 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 	cmd.Format = "csv"
 	cmd.SkipHeader = true
 	cmd.URI = testFile
+	cmd.Compression = "LZ4_RAW"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
@@ -58,6 +60,7 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	cmd.Schema = "../testdata/json.schema"
 	cmd.Format = "json"
 	cmd.URI = testFile
+	cmd.Compression = "ZSTD"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
@@ -78,6 +81,21 @@ func Test_ImportCmd_Run_invalid_format(t *testing.T) {
 	err := cmd.Run()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "is not a recognized source format")
+}
+
+func Test_ImportCmd_Run_invalid_compression(t *testing.T) {
+	testFile := os.TempDir() + "/import-json.parquet"
+	os.Remove(testFile)
+	cmd := &ImportCmd{}
+	cmd.Source = "../testdata/json.source"
+	cmd.Schema = "../testdata/json.schema"
+	cmd.Format = "json"
+	cmd.URI = testFile
+	cmd.Compression = "foobar"
+
+	err := cmd.Run()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "not a valid CompressionCodec string")
 }
 
 func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
@@ -122,6 +140,7 @@ func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Source = "../testdata/csv.source"
 	cmd.URI = "s3://target"
+	cmd.Compression = "LZ4"
 
 	err := cmd.importCSV()
 	require.NotNil(t, err)
@@ -134,6 +153,7 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Source = "../testdata/csv.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.Compression = "BROTLI"
 
 	err := cmd.importCSV()
 	require.Nil(t, err)
@@ -185,6 +205,7 @@ func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
 	cmd.Schema = "../testdata/json.schema"
 	cmd.Source = "../testdata/json.source"
 	cmd.URI = "s3://target"
+	cmd.Compression = "LZO"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -221,6 +242,7 @@ func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
 	cmd.Schema = "../testdata/json.schema"
 	cmd.Source = "../testdata/json.bad-source"
 	cmd.URI = "s3://target"
+	cmd.Compression = "UNCOMPRESSED"
 
 	err := cmd.importJSON()
 	require.NotNil(t, err)
@@ -233,6 +255,7 @@ func Test_ImportCmd_importJSON_good(t *testing.T) {
 	cmd.Schema = "../testdata/json.schema"
 	cmd.Source = "../testdata/json.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.Compression = "GZIP"
 
 	err := cmd.importJSON()
 	require.Nil(t, err)
@@ -280,6 +303,7 @@ func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/jsonl.source"
 	cmd.URI = "s3://target"
+	cmd.Compression = "GZIP"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -304,6 +328,7 @@ func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/csv.source"
 	cmd.URI = "s3://target"
+	cmd.Compression = "SNAPPY"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -316,6 +341,7 @@ func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/jsonl.bad-source"
 	cmd.URI = "s3://target"
+	cmd.Compression = "LZO"
 
 	err := cmd.importJSONL()
 	require.NotNil(t, err)
@@ -328,6 +354,7 @@ func Test_ImportCmd_importJSONL_good(t *testing.T) {
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/jsonl.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.Compression = "BROTLI"
 
 	err := cmd.importJSONL()
 	require.Nil(t, err)

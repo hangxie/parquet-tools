@@ -15,12 +15,13 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 200,
+          "CompressedSize": 269,
           "UncompressedSize": 194,
           "NumValues": 3,
           "NullCount": 0,
           "MaxValue": "c3RlcGhfY3Vycnk=",
-          "MinValue": "ZmlsYQ=="
+          "MinValue": "ZmlsYQ==",
+          "CompressionCodec": "GZIP"
         },
         {
           "PathInSchema": [
@@ -32,12 +33,13 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 250,
+          "CompressedSize": 319,
           "UncompressedSize": 244,
           "NumValues": 3,
           "NullCount": 0,
           "MaxValue": "Z3JhbnRfaGlsbF8y",
-          "MinValue": "YWlyX2dyaWZmZXk="
+          "MinValue": "YWlyX2dyaWZmZXk=",
+          "CompressionCodec": "GZIP"
         }
       ]
     }

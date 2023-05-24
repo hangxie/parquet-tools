@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/writer"
 )
 
@@ -22,6 +23,7 @@ func main() {
 		log.Println("Can't create parquet writer", err)
 		return
 	}
+	pw.CompressionType = parquet.CompressionCodec_UNCOMPRESSED
 	if err = pw.WriteStop(); err != nil {
 		log.Println("WriteStop error", err)
 	}

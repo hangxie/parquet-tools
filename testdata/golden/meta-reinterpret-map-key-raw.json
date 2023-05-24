@@ -22,7 +22,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -41,7 +42,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": "INT32-[1.25]",
-          "MinValue": "INT32-[-0.25]"
+          "MinValue": "INT32-[-0.25]",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -60,7 +62,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -79,7 +82,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": "INT64-[1.25]",
-          "MinValue": "INT64-[-0.25]"
+          "MinValue": "INT64-[-0.25]",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -98,7 +102,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -117,7 +122,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": "FIXED_LEN_BYTE_ARRAY-[1.25]",
-          "MinValue": "FIXED_LEN_BYTE_ARRAY-[-0.25]"
+          "MinValue": "FIXED_LEN_BYTE_ARRAY-[-0.25]",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -136,7 +142,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -155,7 +162,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": "BYTE_ARRAY-[1.25]",
-          "MinValue": "BYTE_ARRAY-[-0.25]"
+          "MinValue": "BYTE_ARRAY-[-0.25]",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -174,7 +182,8 @@
           "NumValues": 6,
           "NullCount": 0,
           "MaxValue": 125,
-          "MinValue": 0
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -193,7 +202,8 @@
           "NumValues": 6,
           "NullCount": 0,
           "MaxValue": "INTERVAL-[75]",
-          "MinValue": "INTERVAL-[0]"
+          "MinValue": "INTERVAL-[0]",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -212,7 +222,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": "2022-01-01T11:11:11.011011Z",
-          "MinValue": "2022-01-01T01:01:01.001001Z"
+          "MinValue": "2022-01-01T01:01:01.001001Z",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -231,7 +242,8 @@
           "NumValues": 11,
           "NullCount": 0,
           "MaxValue": "INT96-[2022-01-01T11:11:11.011011Z]",
-          "MinValue": "INT96-[2022-01-01T01:01:01.001001Z]"
+          "MinValue": "INT96-[2022-01-01T01:01:01.001001Z]",
+          "CompressionCodec": "SNAPPY"
         }
       ]
     }

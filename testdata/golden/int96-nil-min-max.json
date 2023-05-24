@@ -17,12 +17,13 @@
             "PLAIN_DICTIONARY",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 343,
+          "CompressedSize": 226,
           "UncompressedSize": 380,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": "UTF8-9",
-          "MinValue": "UTF8-0"
+          "MinValue": "UTF8-0",
+          "CompressionCodec": "LZO"
         },
         {
           "PathInSchema": [
@@ -34,10 +35,11 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 116,
+          "CompressedSize": 84,
           "UncompressedSize": 108,
           "NumValues": 10,
-          "NullCount": 6
+          "NullCount": 6,
+          "CompressionCodec": "LZO"
         }
       ]
     }

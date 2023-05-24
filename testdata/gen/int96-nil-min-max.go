@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/writer"
 )
 
@@ -25,6 +26,7 @@ func main() {
 		return
 	}
 
+	pw.CompressionType = parquet.CompressionCodec_LZO
 	for i := 0; i < 10; i++ {
 		value := AllTypes{
 			Int96: nil,

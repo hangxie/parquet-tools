@@ -32,6 +32,7 @@ type columnMeta struct {
 	MaxValue         interface{} `json:",omitempty"`
 	MinValue         interface{} `json:",omitempty"`
 	Index            *string     `json:",omitempty"`
+	CompressionCodec string
 }
 
 type rowGroupMeta struct {
@@ -71,6 +72,7 @@ func (c MetaCmd) Run() error {
 				NullCount:        nil,
 				DistinctCount:    nil,
 				Index:            sortingToString(rg.SortingColumns, colIndex),
+				CompressionCodec: col.MetaData.Codec.String(),
 			}
 
 			if col.MetaData.Statistics == nil {

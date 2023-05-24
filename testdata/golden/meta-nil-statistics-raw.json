@@ -22,7 +22,8 @@
           "NumValues": 20,
           "NullCount": 0,
           "MaxValue": "Student Name_9",
-          "MinValue": "Student Name"
+          "MinValue": "Student Name",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -36,7 +37,8 @@
           ],
           "CompressedSize": 266,
           "UncompressedSize": 260,
-          "NumValues": 20
+          "NumValues": 20,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -50,7 +52,8 @@
           ],
           "CompressedSize": 346,
           "UncompressedSize": 404,
-          "NumValues": 20
+          "NumValues": 20,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -64,7 +67,8 @@
           ],
           "CompressedSize": 266,
           "UncompressedSize": 260,
-          "NumValues": 20
+          "NumValues": 20,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -78,7 +82,8 @@
           ],
           "CompressedSize": 144,
           "UncompressedSize": 136,
-          "NumValues": 20
+          "NumValues": 20,
+          "CompressionCodec": "SNAPPY"
         }
       ]
     }
