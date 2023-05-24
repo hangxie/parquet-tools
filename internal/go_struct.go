@@ -55,7 +55,11 @@ func (n GoStructNode) asList() (string, error) {
 	if n.Children[0].Type == nil {
 		// Parquet uses LIST -> "List"" -> actual element type
 		// oo struct will be []<actual element type>
-		typeStr, err = NewGoStructNode(*n.Children[0].Children[0]).String()
+		elementNode := n.Children[0].Children[0]
+		if elementNode.ConvertedType != nil && (*elementNode.ConvertedType == parquet.ConvertedType_MAP || *elementNode.ConvertedType == parquet.ConvertedType_LIST) {
+			return "", fmt.Errorf("go struct does not support composite type as list element in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
+		}
+		typeStr, err = NewGoStructNode(*elementNode).String()
 	} else {
 		// TODO find test case
 		// https://github.com/hangxie/parquet-tools/issues/187
