@@ -50,6 +50,7 @@
       - [Show All Sizes in JSON Format](#show-all-sizes-in-json-format)
     - [version Command](#version-command)
       - [Print Version](#print-version)
+      - [Print All Information](#print-all-information)
       - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
       - [Print Version in JSON Format](#print-version-in-json-format)
 
@@ -106,9 +107,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.16.0
+v1.17.1
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.16.0
+v1.17.1
 ```
 
 ### Prebuilt Packages
@@ -118,20 +119,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i  parquet-tools_1.16.0_amd64.deb
-Preparing to unpack parquet-tools_1.16.0_amd64.deb ...
-Unpacking parquet-tools (1.16.0) ...
-Setting up parquet-tools (1.16.0) ...
+$ sudo dpkg -i  parquet-tools_1.17.1_amd64.deb
+Preparing to unpack parquet-tools_1.17.1_amd64.deb ...
+Unpacking parquet-tools (1.17.1) ...
+Setting up parquet-tools (1.17.1) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.16.0-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.17.1-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.16.0-1           ################################# [100%]
+   1:parquet-tools-1.17.1-1           ################################# [100%]
 ```
 
 ## Usage
@@ -642,25 +643,34 @@ $ parquet-tools size -q all -j testdata/good.parquet
 
 ### version Command
 
-`version` command provides version and build information, it will be quite helpful when you are troubleshooting a problem from this tool itself.
+`version` command provides version, build information, and git hash, it will be quite helpful when you are troubleshooting a problem from this tool itself.
 
 #### Print Version
 
 ```bash
 $ parquet-tools version
-v1.16.0
+v1.17.1
+```
+
+#### Print All Information
+
+```bash
+$ parquet-tools version -bg
+v1.17.1
+2023-05-24T20:18:51+0800
+67de130
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.16.0","BuildTime":"2023-03-19T14:13:54+00:00"}
+{"Version":"v1.17.1","BuildTime":"2023-05-24T20:18:51+0800","GitHash":"67de130"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.16.0"}
+{"Version":"v1.17.1"}
 ```
