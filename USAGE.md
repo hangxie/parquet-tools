@@ -466,7 +466,7 @@ You can read data line by line and parse every single line as a JSON object if y
 
 `import` command creates a parquet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file holds schema. Optionally, if CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZO/BROTLI/LZ4/ZSTD/LZ4_RAW), default is "SNAPPY". If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
@@ -487,7 +487,7 @@ $ parquet-tools row-count /tmp/csv.parquet
 #### Import from JSON
 
 ```bash
-$ parquet-tools import -f json -s testdata/json.source -m testdata/json.schema /tmp/json.parquet
+$ parquet-tools import -f json -s testdata/json.source -m testdata/json.schema -z GZIP /tmp/json.parquet
 $ parquet-tools row-count /tmp/json.parquet
 1
 ```
@@ -514,14 +514,14 @@ Note that MinValue and MaxValue always show value with base type instead of conv
 
 ```bash
 $ parquet-tools meta testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"shoe_name","MinValue":"air_griffey"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
 ```
 
 #### Show Meta Data with Base64-encoded Values
 
 ```bash
 $ parquet-tools meta --base64 testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":4,"TotalByteSize":349,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":165,"UncompressedSize":161,"NumValues":4,"NullCount":0,"MaxValue":"c3RlcGhfY3Vycnk=","MinValue":"ZmlsYQ=="},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":192,"UncompressedSize":188,"NumValues":4,"NullCount":0,"MaxValue":"c2hvZV9uYW1l","MinValue":"YWlyX2dyaWZmZXk="}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["Shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"c3RlcGhfY3Vycnk=","MinValue":"ZmlsYQ==","CompressionCodec":"GZIP"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"Z3JhbnRfaGlsbF8y","MinValue":"YWlyX2dyaWZmZXk=","CompressionCodec":"GZIP"}]}]}
 ```
 
 Note that MinValue, MaxValue and NullCount are optional, if they do not show up in output then it means parquet file does not have that section.
@@ -624,7 +624,7 @@ Hit `<TAB>` key in command line when you need hint or want to auto complete curr
 
 ```bash
 $ parquet-tools size testdata/good.parquet
-450
+588
 ```
 
 #### Show Footer Size in JSON Format
@@ -638,7 +638,7 @@ $ parquet-tools size --query footer --json testdata/good.parquet
 
 ```bash
 $ parquet-tools size -q all -j testdata/good.parquet
-{"Raw":450,"Uncompressed":438,"Footer":323}
+{"Raw":588,"Uncompressed":438,"Footer":323}
 ```
 
 ### version Command
