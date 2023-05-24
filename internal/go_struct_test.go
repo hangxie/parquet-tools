@@ -143,3 +143,18 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "type not set")
 }
+
+func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/list-of-list.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	_, err = NewGoStructNode(*schemaRoot).String()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "go struct does not support composite type as list element in field [Parquet_go_root.Lol]")
+}
