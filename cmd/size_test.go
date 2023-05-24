@@ -33,7 +33,7 @@ func Test_SizeCmd_Run_good_raw(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	require.Equal(t, "18533\n", stdout)
+	require.Equal(t, "18482\n", stdout)
 	require.Equal(t, "", stderr)
 }
 
@@ -46,7 +46,7 @@ func Test_SizeCmd_Run_good_raw_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	require.Equal(t, `{"Raw":18533}`+"\n", stdout)
+	require.Equal(t, `{"Raw":18482}`+"\n", stdout)
 	require.Equal(t, "", stderr)
 }
 
@@ -58,7 +58,7 @@ func Test_SizeCmd_Run_good_uncompressed(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	require.Equal(t, "27169\n", stdout)
+	require.Equal(t, "27158\n", stdout)
 	require.Equal(t, "", stderr)
 }
 
@@ -71,7 +71,7 @@ func Test_SizeCmd_Run_good_uncompressed_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	require.Equal(t, `{"Uncompressed":27169}`+"\n", stdout)
+	require.Equal(t, `{"Uncompressed":27158}`+"\n", stdout)
 	require.Equal(t, "", stderr)
 }
 
@@ -108,7 +108,7 @@ func Test_SizeCmd_Run_good_all(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	require.Equal(t, "18533 27169 6674\n", stdout)
+	require.Equal(t, "18482 27158 6674\n", stdout)
 	require.Equal(t, "", stderr)
 }
 
@@ -121,6 +121,6 @@ func Test_SizeCmd_Run_good_all_json(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	require.Equal(t, `{"Raw":18533,"Uncompressed":27169,"Footer":6674}`+"\n", stdout)
+	require.Equal(t, `{"Raw":18482,"Uncompressed":27158,"Footer":6674}`+"\n", stdout)
 	require.Equal(t, "", stderr)
 }

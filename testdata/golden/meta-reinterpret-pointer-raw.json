@@ -20,7 +20,8 @@
           "NumValues": 12,
           "NullCount": 1,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -37,7 +38,8 @@
           "NumValues": 12,
           "NullCount": 1,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -54,7 +56,8 @@
           "NumValues": 12,
           "NullCount": 1,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -71,7 +74,8 @@
           "NumValues": 12,
           "NullCount": 1,
           "MaxValue": 1.25,
-          "MinValue": -1.25
+          "MinValue": -1.25,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -88,7 +92,8 @@
           "NumValues": 12,
           "NullCount": 1,
           "MaxValue": 125,
-          "MinValue": 0
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -105,7 +110,8 @@
           "NumValues": 12,
           "NullCount": 1,
           "MaxValue": "2022-01-01T11:11:11.011011Z",
-          "MinValue": "2022-01-01T01:01:01.001001Z"
+          "MinValue": "2022-01-01T01:01:01.001001Z",
+          "CompressionCodec": "SNAPPY"
         }
       ]
     }

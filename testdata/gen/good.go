@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/writer"
 )
 
@@ -25,6 +26,7 @@ func main() {
 		return
 	}
 
+	pw.CompressionType = parquet.CompressionCodec_GZIP
 	pw.Write(Shoe{"nike", "air_griffey"})
 	pw.Write(Shoe{"fila", "grant_hill_2"})
 	pw.Write(Shoe{"steph_curry", "curry7"})

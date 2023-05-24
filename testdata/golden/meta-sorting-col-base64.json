@@ -23,7 +23,8 @@
           "NullCount": 0,
           "MaxValue": "U3R1ZGVudCBOYW1lXzk=",
           "MinValue": "U3R1ZGVudCBOYW1l",
-          "Index": "DESC"
+          "Index": "DESC",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -41,7 +42,8 @@
           "NullCount": 0,
           "MaxValue": 24,
           "MinValue": 20,
-          "Index": "ASC"
+          "Index": "ASC",
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -58,7 +60,8 @@
           "NumValues": 20,
           "NullCount": 0,
           "MaxValue": 9,
-          "MinValue": 0
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -75,7 +78,8 @@
           "NumValues": 20,
           "NullCount": 0,
           "MaxValue": 50.9,
-          "MinValue": 50
+          "MinValue": 50,
+          "CompressionCodec": "SNAPPY"
         },
         {
           "PathInSchema": [
@@ -92,7 +96,8 @@
           "NumValues": 20,
           "NullCount": 0,
           "MaxValue": true,
-          "MinValue": false
+          "MinValue": false,
+          "CompressionCodec": "SNAPPY"
         }
       ]
     }

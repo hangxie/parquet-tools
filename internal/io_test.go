@@ -403,6 +403,7 @@ func Test_NewCSVWriter_invalid_schema(t *testing.T) {
 
 func Test_NewCSVWriter_good(t *testing.T) {
 	option := WriteOption{}
+	option.Compression = "LZ4_RAW"
 	option.URI = os.TempDir() + "/csv-writer.parquet"
 	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
 	require.Nil(t, err)
@@ -433,6 +434,7 @@ func Test_NewJSONWriter_invalid_schema(t *testing.T) {
 
 func Test_NewJSONWriter_good(t *testing.T) {
 	option := WriteOption{}
+	option.Compression = "ZSTD"
 	option.URI = os.TempDir() + "/json-writer.parquet"
 	pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.Nil(t, err)
@@ -487,4 +489,24 @@ func Test_newParquetFileWriter_hdfs_bad(t *testing.T) {
 	_, err := NewParquetFileWriter(option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "connection refused")
+}
+
+func Test_NewCSVWriter_invalid_compression_codec(t *testing.T) {
+	option := WriteOption{}
+	option.Compression = "foobar"
+	option.URI = os.TempDir() + "/csv-writer.parquet"
+	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+	require.NotNil(t, err)
+	require.Nil(t, pw)
+	require.Contains(t, "not a valid CompressionCodec string", err.Error())
+}
+
+func Test_NewJSONWriter_invalid_compression_codec(t *testing.T) {
+	option := WriteOption{}
+	option.Compression = "random-dude"
+	option.URI = os.TempDir() + "/json-writer.parquet"
+	pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+	require.NotNil(t, err)
+	require.Nil(t, pw)
+	require.Contains(t, "not a valid CompressionCodec string", err.Error())
 }
