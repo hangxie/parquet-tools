@@ -22,6 +22,7 @@ import (
 	"github.com/xitongsys/parquet-go-source/http"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3v2"
+	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/source"
 	"github.com/xitongsys/parquet-go/writer"
@@ -55,6 +56,7 @@ type ReadOption struct {
 // WriteOption includes options for write operation
 type WriteOption struct {
 	CommonOption
+	Compression string `short:"z" help:"compressio codec (UNCOMPRESSED/SNAPPY/GZIP/LZO/BROTLI/LZ4/ZSTD/LZ4_RAW)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZO,BROTLI,LZ4,ZSTD,LZ4_RAW" default:"SNAPPY"`
 }
 
 func parseURI(uri string) (*url.URL, error) {
@@ -278,7 +280,18 @@ func NewCSVWriter(option WriteOption, schema []string) (*writer.CSVWriter, error
 		return nil, err
 	}
 
-	return writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
+	pw, err := writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
+	if err != nil {
+		fileWriter.Close()
+		return nil, err
+	}
+	codec, err := parquet.CompressionCodecFromString(option.Compression)
+	if err != nil {
+		fileWriter.Close()
+		return nil, err
+	}
+	pw.CompressionType = codec
+	return pw, nil
 }
 
 func NewJSONWriter(option WriteOption, schema string) (*writer.JSONWriter, error) {
@@ -287,7 +300,18 @@ func NewJSONWriter(option WriteOption, schema string) (*writer.JSONWriter, error
 		return nil, err
 	}
 
-	return writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
+	pw, err := writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
+	if err != nil {
+		fileWriter.Close()
+		return nil, err
+	}
+	codec, err := parquet.CompressionCodecFromString(option.Compression)
+	if err != nil {
+		fileWriter.Close()
+		return nil, err
+	}
+	pw.CompressionType = codec
+	return pw, nil
 }
 
 func azureAccessDetail(azURL url.URL, anonymous bool) (string, *azblob.SharedKeyCredential, error) {
