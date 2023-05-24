@@ -5,6 +5,7 @@ SHELL:=/bin/bash
 
 PKG_PREFIX  = github.com/hangxie/parquet-tools
 VERSION     = $(shell git describe --tags)
+GIT_HASH    = $(shell git rev-parse --short HEAD)
 BUILD       = $(shell date +%FT%T%z)
 BUILDDIR    = $(CURDIR)/build
 GOBIN       = $(shell go env GOPATH)/bin
@@ -24,7 +25,7 @@ GOFLAGS     :=
 GOSOURCES   := $(shell find . -type f -name '*.go')
 CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
-LDFLAGS     += -X $(PKG_PREFIX)/cmd.version=$(VERSION) -X $(PKG_PREFIX)/cmd.build=$(BUILD)
+LDFLAGS     += -X $(PKG_PREFIX)/cmd.version=$(VERSION) -X $(PKG_PREFIX)/cmd.build=$(BUILD) -X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH)
 
 .EXPORT_ALL_VARIABLES:
 
