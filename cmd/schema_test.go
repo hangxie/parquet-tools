@@ -86,11 +86,8 @@ func Test_SchemaCmd_Run_map_composite_value_go(t *testing.T) {
 	cmd.URI = "../testdata/map-composite-value.parquet"
 	cmd.Format = "go"
 
-	stdout, stderr := captureStdoutStderr(func() {
-		require.NotNil(t, cmd.Run())
-	})
-	require.Equal(t, "", stdout)
-	require.Contains(t, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]", stderr)
+	err := cmd.Run()
+	require.Contains(t, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]", err.Error())
 }
 
 func Test_SchemaCmd_Run_map_value_map(t *testing.T) {
@@ -111,9 +108,6 @@ func Test_SchemaCmd_Run_list_of_list_go(t *testing.T) {
 	cmd.URI = "../testdata/list-of-list.parquet"
 	cmd.Format = "go"
 
-	stdout, stderr := captureStdoutStderr(func() {
-		require.NotNil(t, cmd.Run())
-	})
-	require.Equal(t, "", stdout)
-	require.Contains(t, "go struct does not support composite type as list element in field [Parquet_go_root.Lol]", stderr)
+	err := cmd.Run()
+	require.Contains(t, "go struct does not support composite type as list element in field [Parquet_go_root.Lol]", err.Error())
 }
