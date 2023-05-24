@@ -39,7 +39,7 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 	cmd.Format = "csv"
 	cmd.SkipHeader = true
 	cmd.URI = testFile
-	cmd.Compression = "LZ4_RAW"
+	cmd.Compression = "ZSTD"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
@@ -153,7 +153,7 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Source = "../testdata/csv.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
-	cmd.Compression = "LZ4_RAW"
+	cmd.Compression = "LZ4"
 
 	err := cmd.importCSV()
 	require.Nil(t, err)

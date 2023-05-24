@@ -403,7 +403,7 @@ func Test_NewCSVWriter_invalid_schema(t *testing.T) {
 
 func Test_NewCSVWriter_good(t *testing.T) {
 	option := WriteOption{}
-	option.Compression = "LZ4_RAW"
+	option.Compression = "LZ4"
 	option.URI = os.TempDir() + "/csv-writer.parquet"
 	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
 	require.Nil(t, err)
@@ -511,22 +511,33 @@ func Test_NewJSONWriter_invalid_compression_codec(t *testing.T) {
 	require.Contains(t, "not a valid CompressionCodec string", err.Error())
 }
 
+var unsupportedCodec = []string{
+	"BROTLI",
+	"LZ4_RAW",
+	"LZO",
+}
+
 func Test_NewCSVWriter_unsupported_compression_codec(t *testing.T) {
 	option := WriteOption{}
-	option.Compression = "LZO"
-	option.URI = os.TempDir() + "/csv-writer.parquet"
-	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
-	require.NotNil(t, err)
-	require.Nil(t, pw)
-	require.Contains(t, "LZO compression is not supported at this moment", err.Error())
+
+	for _, codec := range unsupportedCodec {
+		option.Compression = codec
+		option.URI = os.TempDir() + "/csv-writer.parquet"
+		pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+		require.NotNil(t, err)
+		require.Nil(t, pw)
+		require.Contains(t, err.Error(), "compression is not supported at this moment")
+	}
 }
 
 func Test_NewJSONWriter_unsupported_compression_codec(t *testing.T) {
 	option := WriteOption{}
-	option.Compression = "BROTLI"
-	option.URI = os.TempDir() + "/json-writer.parquet"
-	pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
-	require.NotNil(t, err)
-	require.Nil(t, pw)
-	require.Contains(t, "BROTLI compression is not supported at this moment", err.Error())
+	for _, codec := range unsupportedCodec {
+		option.Compression = codec
+		option.URI = os.TempDir() + "/json-writer.parquet"
+		pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+		require.NotNil(t, err)
+		require.Nil(t, pw)
+		require.Contains(t, err.Error(), "compression is not supported at this moment")
+	}
 }
