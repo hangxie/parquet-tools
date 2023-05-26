@@ -228,3 +228,21 @@ func Test_TimeUnitToTag(t *testing.T) {
 	unit = parquet.TimeUnit{MILLIS: &parquet.MilliSeconds{}}
 	require.Equal(t, "MILLIS", TimeUnitToTag(&unit))
 }
+
+func Test_list_variant(t *testing.T) {
+	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
+	require.Nil(t, err)
+
+	se := SchemaNode{}
+	require.Nil(t, json.Unmarshal(buf, &se))
+
+	schemaRoot := NewJSONSchemaNode(se)
+	schema := schemaRoot.Schema()
+	actual, err := json.MarshalIndent(schema, "", "  ")
+	require.Nil(t, err)
+
+	expected, err := os.ReadFile("../testdata/golden/schema-list-variants-json.json")
+	require.Nil(t, err)
+
+	require.Equal(t, string(expected), string(actual)+"\n")
+}

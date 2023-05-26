@@ -119,16 +119,39 @@ func (s *SchemaNode) getTagMapWithPrefix(prefix string) map[string]string {
 }
 
 func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
-	if len(s.Children) == 0 || s.Children[0].Type != nil {
+	if len(s.Children) == 0 {
 		return
 	}
-	// LIST has schema structure LIST->List->Element
-	// expected output is LIST->Element
-	for k, v := range s.Children[0].Children[0].getTagMapWithPrefix("value") {
-		tagMap[k] = v
+
+	if s.Children[0].LogicalType != nil {
+		// LIST => Element (of scalar type)
+		s.Children[0].Name = "Element"
+		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		for k, v := range s.Children[0].getTagMapWithPrefix("value") {
+			tagMap[k] = v
+		}
+		return
 	}
-	s.Children = s.Children[0].Children[:1]
-	s.Children[0].Name = "Element"
+
+	if len(s.Children[0].Children) > 1 {
+		// LIST => Element (of STRUCT)
+		s.Children[0].Name = "Element"
+		s.Children[0].Type = nil
+		s.Children[0].ConvertedType = nil
+		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		return
+	}
+
+	if len(s.Children[0].Children) == 1 {
+		// LIST => List => Element
+		for k, v := range s.Children[0].Children[0].getTagMapWithPrefix("value") {
+			tagMap[k] = v
+		}
+		// s.Children[0] = s.Children[0].Children[0]
+		s.Children = s.Children[0].Children
+		s.Children[0].Name = "Element"
+		return
+	}
 }
 
 func (s *SchemaNode) updateTagForMap(tagMap map[string]string) {

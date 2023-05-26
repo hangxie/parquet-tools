@@ -1,0 +1,622 @@
+{
+  "name": "list-variants",
+  "num_children": 37,
+  "children": [
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "Id",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "repetition_type": "OPTIONAL",
+      "name": "OrgList",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "logicalType": {
+        "LIST": {}
+      },
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "Array",
+          "num_children": 12,
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "Id",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "Name",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "Region",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "INT32",
+              "repetition_type": "OPTIONAL",
+              "name": "Status"
+            },
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "CreatedTime",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "repetition_type": "OPTIONAL",
+              "name": "ContactList",
+              "num_children": 1,
+              "converted_type": "LIST",
+              "logicalType": {
+                "LIST": {}
+              },
+              "children": [
+                {
+                  "repetition_type": "REPEATED",
+                  "name": "Array",
+                  "num_children": 11,
+                  "children": [
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "Id",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "Email",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "FirstName",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "LastName",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "JobName",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "CountryName",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "TelephoneNum",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    },
+                    {
+                      "type": "BYTE_ARRAY",
+                      "repetition_type": "OPTIONAL",
+                      "name": "MobileNum",
+                      "converted_type": "UTF8",
+                      "logicalType": {
+                        "STRING": {}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "repetition_type": "OPTIONAL",
+              "name": "ContractReport",
+              "num_children": 8,
+              "children": [
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "Id",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "Name",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "CityName",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "State",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "Country",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "PostalCd",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition_type": "OPTIONAL",
+      "name": "ContractReport",
+      "num_children": 8,
+      "children": [
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "OrgId",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "Name",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "CityName",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "State",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "Country",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "PostalCd",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "Id",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        }
+      ]
+    },
+    {
+      "repetition_type": "OPTIONAL",
+      "name": "InventoryMonitoring",
+      "num_children": 4,
+      "children": [
+        {
+          "type": "BOOLEAN",
+          "repetition_type": "REQUIRED",
+          "name": "Configured"
+        },
+        {
+          "repetition_type": "OPTIONAL",
+          "name": "Accounts",
+          "num_children": 1,
+          "converted_type": "LIST",
+          "logicalType": {
+            "LIST": {}
+          },
+          "children": [
+            {
+              "repetition_type": "REPEATED",
+              "name": "Array",
+              "num_children": 2,
+              "children": [
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "Id",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                },
+                {
+                  "type": "BYTE_ARRAY",
+                  "repetition_type": "OPTIONAL",
+                  "name": "Name",
+                  "converted_type": "UTF8",
+                  "logicalType": {
+                    "STRING": {}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "LastUpdatedBy",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "OPTIONAL",
+          "name": "LastUpdatedTimestamp",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "Status",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BOOLEAN",
+      "repetition_type": "REQUIRED",
+      "name": "VerifyContracts"
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "DefaultAssetGroupId",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "CustomerProvisionStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "EligibilityInfoStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "CollectionTriggerStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "SuperAdminStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "AccessPolicyStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "DefaultUserGroupStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "EmailNotificationStatus",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "CreatedTime",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "repetition_type": "OPTIONAL",
+      "name": "Orgs",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "logicalType": {
+        "LIST": {}
+      },
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "Array",
+          "num_children": 3,
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "Id",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "Name",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "OPTIONAL",
+              "name": "Region",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "ApiKeyUpdationTime",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "SecretId",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "ApiKeyUpdatedBy",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "INT64",
+      "repetition_type": "OPTIONAL",
+      "name": "LastUpdatedUnixTimestamp"
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "LastUpdatedHrTimestamp",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "Env",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BOOLEAN",
+      "repetition_type": "REQUIRED",
+      "name": "EnableInventoryDataCollection"
+    },
+    {
+      "repetition_type": "OPTIONAL",
+      "name": "ContractNumbers",
+      "num_children": 1,
+      "converted_type": "LIST",
+      "logicalType": {
+        "LIST": {}
+      },
+      "children": [
+        {
+          "type": "BYTE_ARRAY",
+          "repetition_type": "REPEATED",
+          "name": "Array",
+          "converted_type": "UTF8",
+          "logicalType": {
+            "STRING": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "ContractLastUpdatedAt",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "repetition_type": "OPTIONAL",
+      "name": "CollectionStatus",
+      "num_children": 1,
+      "converted_type": "MAP",
+      "logicalType": {
+        "MAP": {}
+      },
+      "children": [
+        {
+          "repetition_type": "REPEATED",
+          "name": "Key_value",
+          "num_children": 2,
+          "converted_type": "MAP_KEY_VALUE",
+          "children": [
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "REQUIRED",
+              "name": "Key",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            },
+            {
+              "type": "BYTE_ARRAY",
+              "repetition_type": "REQUIRED",
+              "name": "Value",
+              "converted_type": "UTF8",
+              "logicalType": {
+                "STRING": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
