@@ -52,18 +52,26 @@ func (n GoStructNode) asStruct() (string, error) {
 func (n GoStructNode) asList() (string, error) {
 	var typeStr string
 	var err error
-	if n.Children[0].Type == nil {
-		// Parquet uses LIST -> "List"" -> actual element type
-		// oo struct will be []<actual element type>
+	if n.Children[0].LogicalType != nil {
+		// LIST => Element (of scalar type)
+		n.Children[0].Name = "Element"
+		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		typeStr, err = NewGoStructNode(*n.Children[0]).String()
+	} else if len(n.Children[0].Children) > 1 {
+		// LIST => Element (of STRUCT)
+		n.Children[0].Name = "Element"
+		n.Children[0].Type = nil
+		n.Children[0].ConvertedType = nil
+		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		typeStr, err = NewGoStructNode(*n.Children[0]).String()
+	} else if len(n.Children[0].Children) == 1 {
+		// LIST => List => Element
+		// go struct will be []<actual element type>
 		elementNode := n.Children[0].Children[0]
 		if elementNode.ConvertedType != nil && (*elementNode.ConvertedType == parquet.ConvertedType_MAP || *elementNode.ConvertedType == parquet.ConvertedType_LIST) {
 			return "", fmt.Errorf("go struct does not support composite type as list element in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
 		}
 		typeStr, err = NewGoStructNode(*elementNode).String()
-	} else {
-		// TODO find test case
-		// https://github.com/hangxie/parquet-tools/issues/187
-		typeStr, err = NewGoStructNode(*n.Children[0]).String()
 	}
 	if err != nil {
 		return "", err
@@ -136,6 +144,13 @@ func (n GoStructNode) stringWithName() (string, error) {
 
 func (n GoStructNode) getStructTags() string {
 	tagMap := n.SchemaNode.getTagMap()
+	if n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
+		// make sure LISt always has "valuetype"
+		if _, found := tagMap["valuetype"]; !found {
+			tagMap["valuetype"] = "STRUCT"
+		}
+	}
+
 	annotations := []string{}
 	for _, tag := range orderedTags {
 		if val, found := tagMap[tag]; found {
