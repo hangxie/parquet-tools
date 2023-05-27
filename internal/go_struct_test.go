@@ -1,8 +1,11 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -157,4 +160,26 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	_, err = NewGoStructNode(*schemaRoot).String()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as list element in field [Parquet_go_root.Lol]")
+}
+
+func Test_go_struct_list_variant(t *testing.T) {
+	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
+	require.Nil(t, err)
+
+	se := SchemaNode{}
+	require.Nil(t, json.Unmarshal(buf, &se))
+
+	schemaRoot := NewGoStructNode(se)
+	actual, err := schemaRoot.String()
+	require.Nil(t, err)
+
+	buf, err = os.ReadFile("../testdata/golden/schema-list-variants-go.txt")
+	require.Nil(t, err)
+	// un-gofmt ...
+	expected := strings.ReplaceAll(string(buf), "\t", "")
+	re := regexp.MustCompile(" +")
+	expected = re.ReplaceAllString(expected, " ")
+	expected = strings.TrimRight(expected, "\n")
+
+	require.Equal(t, expected, actual)
 }

@@ -229,7 +229,7 @@ func Test_TimeUnitToTag(t *testing.T) {
 	require.Equal(t, "MILLIS", TimeUnitToTag(&unit))
 }
 
-func Test_list_variant(t *testing.T) {
+func Test_JSON_schema_list_variant(t *testing.T) {
 	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
 	require.Nil(t, err)
 
