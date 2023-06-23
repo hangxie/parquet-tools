@@ -56,7 +56,7 @@ type ReadOption struct {
 // WriteOption includes options for write operation
 type WriteOption struct {
 	CommonOption
-	Compression string `short:"z" help:"compressio codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,ZSTD" default:"SNAPPY"`
+	Compression string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,ZSTD" default:"SNAPPY"`
 }
 
 func parseURI(uri string) (*url.URL, error) {
