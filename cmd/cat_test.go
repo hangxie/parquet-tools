@@ -142,7 +142,7 @@ func Test_CatCmd_Run_good_skip(t *testing.T) {
 
 func Test_CatCmd_Run_good_all_skip(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.Skip = 12
+	cmd.Skip = 100_002
 	cmd.Limit = 10
 	cmd.PageSize = 10
 	cmd.SampleRatio = 1.0

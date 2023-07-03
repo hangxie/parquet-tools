@@ -42,6 +42,17 @@ var delimiter = map[string]struct {
 	"tsv":   {"", "\n", '\t', ""},
 }
 
+// here are performan number for different settings:
+// - using https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
+// - amateure test - on Mac with time command and Activity Monitor, numbers are for reference only
+// page_size max_memory_usage time_taken
+// 1K        1.9G             25s
+// 10K       1.8G             15s
+// 100K      2.4G             12s
+// 1M        7.1G             15s
+// 10M       52.1G            1m14s
+const pageSize int64 = 100_000
+
 // Run does actual cat job
 func (c CatCmd) Run() error {
 	if c.PageSize < 1 {
@@ -92,6 +103,23 @@ func (c CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *inter
 	return fieldList, nil
 }
 
+func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
+	// Do not abort if c.Skip is greater than total number of rows
+	// This gives users flexibility to handle this scenario by themselves
+
+	// use pagination to avoid excessive memory usage, see https://github.com/xitongsys/parquet-go/issues/545
+	rowsToSkip := int64(c.Skip)
+	for ; rowsToSkip > pageSize; rowsToSkip -= pageSize {
+		if err := fileReader.SkipRows(pageSize); err != nil {
+			return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
+		}
+	}
+	if err := fileReader.SkipRows(rowsToSkip); err != nil {
+		return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
+	}
+	return nil
+}
+
 func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	schemaRoot := internal.NewSchemaTree(fileReader)
 
@@ -104,10 +132,9 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	// retrieve schema for better formatting
 	reinterpretFields := schemaRoot.GetReinterpretFields("", true)
 
-	// Do not abort if c.Skip is greater than total number of rows
-	// This gives users flexibility to handle this scenario by themselves
-	if err := fileReader.SkipRows(int64(c.Skip)); err != nil {
-		return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
+	// skip rows
+	if err != c.skipRows(fileReader) {
+		return err
 	}
 
 	// Output rows one by one to avoid running out of memory with a jumbo list
