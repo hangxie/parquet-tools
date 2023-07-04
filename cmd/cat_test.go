@@ -9,7 +9,7 @@ import (
 func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "file/does/not/exist"
 	cmd.Format = "json"
@@ -22,7 +22,7 @@ func Test_CatCmd_Run_non_existent_file(t *testing.T) {
 func Test_CatCmd_Run_default_limit(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 0
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 0.5
 	cmd.URI = "../testdata/all-types.parquet"
 	cmd.Format = "json"
@@ -35,23 +35,52 @@ func Test_CatCmd_Run_default_limit(t *testing.T) {
 	require.Equal(t, "", stderr)
 }
 
-func Test_CatCmd_Run_invalid_page_size(t *testing.T) {
+func Test_CatCmd_Run_invalid_read_page_size(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 0
+	cmd.ReadPageSize = 0
 	cmd.SampleRatio = 0.5
 	cmd.URI = "../testdata/all-types.parquet"
 	cmd.Format = "json"
 
 	err := cmd.Run()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "invalid page size")
+	require.Contains(t, err.Error(), "invalid read page size")
+}
+
+func Test_CatCmd_Run_invalid_skip_size(t *testing.T) {
+	cmd := &CatCmd{}
+	cmd.Skip = -10
+	cmd.Limit = 10
+	cmd.ReadPageSize = 10
+	cmd.SampleRatio = 0.5
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "json"
+
+	err := cmd.Run()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid skip -10")
+}
+
+func Test_CatCmd_Run_invalid_skip_page_size(t *testing.T) {
+	cmd := &CatCmd{}
+	cmd.Skip = 10
+	cmd.SkipPageSize = 0
+	cmd.Limit = 10
+	cmd.ReadPageSize = 10
+	cmd.SampleRatio = 0.5
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "json"
+
+	err := cmd.Run()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid skip page size")
 }
 
 func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 2.0
 	cmd.URI = "../testdata/all-types.parquet"
 	cmd.Format = "json"
@@ -64,7 +93,7 @@ func Test_CatCmd_Run_invalid_sampling_too_big(t *testing.T) {
 func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = -0.5
 	cmd.URI = "../testdata/all-types.parquet"
 	cmd.Format = "json"
@@ -77,7 +106,7 @@ func Test_CatCmd_Run_invalid_sampling_too_small(t *testing.T) {
 func Test_CatCmd_Run_good_default(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "json"
@@ -93,7 +122,7 @@ func Test_CatCmd_Run_good_default(t *testing.T) {
 func Test_CatCmd_Run_good_stream(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "jsonl"
@@ -109,7 +138,7 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 func Test_CatCmd_Run_bad_format(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "random-dude"
@@ -126,8 +155,9 @@ func Test_CatCmd_Run_bad_format(t *testing.T) {
 func Test_CatCmd_Run_good_skip(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Skip = 2
+	cmd.SkipPageSize = 100_000
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "json"
@@ -142,9 +172,10 @@ func Test_CatCmd_Run_good_skip(t *testing.T) {
 
 func Test_CatCmd_Run_good_all_skip(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.Skip = 100_002
+	cmd.Skip = 12
+	cmd.SkipPageSize = 5
 	cmd.Limit = 10
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "json"
@@ -159,7 +190,7 @@ func Test_CatCmd_Run_good_all_skip(t *testing.T) {
 func Test_CatCmd_Run_good_limit(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 2
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "json"
@@ -175,7 +206,7 @@ func Test_CatCmd_Run_good_limit(t *testing.T) {
 func Test_CatCmd_Run_good_sampling(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 2
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 0.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "json"
@@ -190,7 +221,7 @@ func Test_CatCmd_Run_good_sampling(t *testing.T) {
 func Test_CatCmd_Run_good_empty(t *testing.T) {
 	cmd := &CatCmd{}
 	cmd.Limit = 2
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 0.0
 	cmd.URI = "../testdata/empty.parquet"
 	cmd.Format = "json"
@@ -204,7 +235,7 @@ func Test_CatCmd_Run_good_empty(t *testing.T) {
 
 func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/reinterpret-scalar.parquet"
 	cmd.Format = "jsonl"
@@ -219,7 +250,7 @@ func Test_CatCmd_Run_good_reinterpret_scalar(t *testing.T) {
 
 func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/reinterpret-pointer.parquet"
 	cmd.Format = "jsonl"
@@ -234,7 +265,7 @@ func Test_CatCmd_Run_good_reinterpret_decimal_pointer(t *testing.T) {
 
 func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/reinterpret-list.parquet"
 	cmd.Format = "jsonl"
@@ -249,7 +280,7 @@ func Test_CatCmd_Run_good_reinterpret_list(t *testing.T) {
 
 func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/reinterpret-map-key.parquet"
 	cmd.Format = "jsonl"
@@ -264,7 +295,7 @@ func Test_CatCmd_Run_good_reinterpret_map_key(t *testing.T) {
 
 func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/reinterpret-map-value.parquet"
 	cmd.Format = "jsonl"
@@ -279,7 +310,7 @@ func Test_CatCmd_Run_good_reinterpret_map_value(t *testing.T) {
 
 func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/reinterpret-composite.parquet"
 	cmd.Format = "jsonl"
@@ -295,7 +326,7 @@ func Test_CatCmd_Run_good_reinterpret_composite(t *testing.T) {
 
 func Test_CatCmd_Run_good_csv(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "csv"
@@ -320,7 +351,7 @@ func Test_CatCmd_Run_good_csv(t *testing.T) {
 
 func Test_CatCmd_Run_good_tsv(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/good.parquet"
 	cmd.Format = "tsv"
@@ -345,7 +376,7 @@ func Test_CatCmd_Run_good_tsv(t *testing.T) {
 
 func Test_CatCmd_Run_nested_csv(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/all-types.parquet"
 	cmd.Format = "csv"
@@ -357,7 +388,7 @@ func Test_CatCmd_Run_nested_csv(t *testing.T) {
 
 func Test_CatCmd_Run_nested_tsv(t *testing.T) {
 	cmd := &CatCmd{}
-	cmd.PageSize = 10
+	cmd.ReadPageSize = 10
 	cmd.SampleRatio = 1.0
 	cmd.URI = "../testdata/all-types.parquet"
 	cmd.Format = "tsv"

@@ -335,7 +335,10 @@ Similar to cloud storage, `parquet-tools` downloads only necessary data from HDF
 
 `cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduces the output to a certain level, these flags can be used together.
 
-There is a `--page-size` parameter that you probably will never touch it, it tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
+There are two parameters that you probably will never touch:
+
+* `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
+* `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read https://github.com/xitongsys/parquet-go/issues/545 for more details.
 
 #### Full Data Set
 
