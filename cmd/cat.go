@@ -22,13 +22,24 @@ import (
 // CatCmd is a kong command for cat
 type CatCmd struct {
 	internal.ReadOption
-	Skip        uint32  `short:"k" help:"Skip rows before apply other logics." default:"0"`
-	Limit       uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
-	PageSize    int     `short:"p" help:"Pagination size to read from Parquet." default:"1000"`
-	SampleRatio float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
-	Format      string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
-	NoHeader    bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
+	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
+	SkipPageSize int64   `help:"Page size to skip rows." default:"100000"`
+	Limit        uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
+	ReadPageSize int     `help:"Page size to read from Parquet." default:"1000"`
+	SampleRatio  float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
+	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
+	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 }
+
+// here are performance numbers for different SkipPageSize:
+// - using https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
+// - amateure test - on Mac with time command and Activity Monitor, numbers are for reference only
+// page_size max_memory_usage time_taken
+// 1K        1.9G             25s
+// 10K       1.8G             15s
+// 100K      2.4G             12s
+// 1M        7.1G             15s
+// 10M       52.1G            1m14s
 
 var delimiter = map[string]struct {
 	begin          string
@@ -42,21 +53,16 @@ var delimiter = map[string]struct {
 	"tsv":   {"", "\n", '\t', ""},
 }
 
-// here are performan number for different settings:
-// - using https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
-// - amateure test - on Mac with time command and Activity Monitor, numbers are for reference only
-// page_size max_memory_usage time_taken
-// 1K        1.9G             25s
-// 10K       1.8G             15s
-// 100K      2.4G             12s
-// 1M        7.1G             15s
-// 10M       52.1G            1m14s
-const pageSize int64 = 100_000
-
 // Run does actual cat job
 func (c CatCmd) Run() error {
-	if c.PageSize < 1 {
-		return fmt.Errorf("invalid page size %d, needs to be at least 1", c.PageSize)
+	if c.ReadPageSize < 1 {
+		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
+	}
+	if c.Skip < 0 {
+		return fmt.Errorf("invalid skip %d, needs to greater or equal to 0", c.Skip)
+	}
+	if c.Skip != 0 && c.SkipPageSize < 1 {
+		return fmt.Errorf("invalid skip page size %d, needs to be at least 1", c.SkipPageSize)
 	}
 	if c.Limit == 0 {
 		c.Limit = ^uint64(0)
@@ -108,9 +114,9 @@ func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
 	// This gives users flexibility to handle this scenario by themselves
 
 	// use pagination to avoid excessive memory usage, see https://github.com/xitongsys/parquet-go/issues/545
-	rowsToSkip := int64(c.Skip)
-	for ; rowsToSkip > pageSize; rowsToSkip -= pageSize {
-		if err := fileReader.SkipRows(pageSize); err != nil {
+	rowsToSkip := c.Skip
+	for ; rowsToSkip > c.SkipPageSize; rowsToSkip -= c.SkipPageSize {
+		if err := fileReader.SkipRows(c.SkipPageSize); err != nil {
 			return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
 		}
 	}
@@ -140,7 +146,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	// Output rows one by one to avoid running out of memory with a jumbo list
 	fmt.Print(delimiter[c.Format].begin)
 	for counter := uint64(0); counter < c.Limit; {
-		rows, err := fileReader.ReadByNumber(c.PageSize)
+		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
 			return fmt.Errorf("failed to cat: %s", err)
 		}
