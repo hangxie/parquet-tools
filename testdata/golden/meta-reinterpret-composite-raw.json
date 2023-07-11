@@ -42,7 +42,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 232,
+          "CompressedSize": 243,
           "UncompressedSize": 558,
           "NumValues": 71,
           "NullCount": 1,
@@ -67,7 +67,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 181,
+          "CompressedSize": 176,
           "UncompressedSize": 438,
           "NumValues": 71,
           "NullCount": 1,
@@ -92,7 +92,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 788,
+          "CompressedSize": 786,
           "UncompressedSize": 1030,
           "NumValues": 71,
           "NullCount": 1,
