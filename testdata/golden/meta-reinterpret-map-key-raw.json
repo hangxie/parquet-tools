@@ -37,7 +37,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 177,
+          "CompressedSize": 178,
           "UncompressedSize": 276,
           "NumValues": 11,
           "NullCount": 0,
@@ -77,7 +77,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 170,
+          "CompressedSize": 175,
           "UncompressedSize": 276,
           "NumValues": 11,
           "NullCount": 0,
@@ -97,7 +97,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 151,
+          "CompressedSize": 148,
           "UncompressedSize": 225,
           "NumValues": 11,
           "NullCount": 0,
@@ -117,7 +117,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 247,
+          "CompressedSize": 251,
           "UncompressedSize": 501,
           "NumValues": 11,
           "NullCount": 0,
@@ -157,7 +157,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 202,
+          "CompressedSize": 201,
           "UncompressedSize": 351,
           "NumValues": 11,
           "NullCount": 0,
@@ -237,7 +237,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 395,
+          "CompressedSize": 391,
           "UncompressedSize": 613,
           "NumValues": 11,
           "NullCount": 0,
