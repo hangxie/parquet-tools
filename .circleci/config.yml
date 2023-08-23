@@ -7,19 +7,19 @@ jobs:
     resource_class: large
     working_directory: ~/repo
     docker:
-      - image: cimg/go:1.20
+      - image: cimg/go:1.21
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.14
+          version: 20.10.23
       - restore_cache:
           keys:
-            - go-mod-v5-{{ checksum "go.sum" }}
+            - go-mod-v6-{{ checksum "go.sum" }}
       - run:
           name: Installing Dependencies
           command: make deps
       - save_cache:
-          key: go-mod-v5-{{ checksum "go.sum" }}
+          key: go-mod-v6-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/go"
       - run:
@@ -53,19 +53,19 @@ jobs:
     resource_class: large
     working_directory: ~/repo
     docker:
-      - image: cimg/go:1.20
+      - image: cimg/go:1.21
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.14
+          version: 20.10.23
       - restore_cache:
           keys:
-            - go-mod-v5-{{ checksum "go.sum" }}
+            - go-mod-v6-{{ checksum "go.sum" }}
       - run:
           name: Install Dependencies
           command: make deps
       - save_cache:
-          key: go-mod-v5-{{ checksum "go.sum" }}
+          key: go-mod-v6-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/go"
       - run:
@@ -112,7 +112,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.14
+          version: 20.10.23
       - run:
           name: Prepare workspace directory
           command: mkdir -p ./build
