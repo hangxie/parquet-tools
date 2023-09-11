@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.83
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
 	github.com/posener/complete v1.2.3
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.4
 	github.com/willabides/kongplete v0.2.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20230806034711-b6d7d8771e28
 	github.com/xitongsys/parquet-go-source v0.0.0-20230830030807-0dd610dbff1d
