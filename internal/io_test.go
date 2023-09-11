@@ -110,7 +110,7 @@ func Test_azureAccessDetail_good_shared_cred(t *testing.T) {
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
-	require.Equal(t, "*azblob.SharedKeyCredential", reflect.TypeOf(cred).String())
+	require.Equal(t, "*exported.SharedKeyCredential", reflect.TypeOf(cred).String())
 }
 
 func Test_getBucketRegion_s3_non_existent_bucket(t *testing.T) {

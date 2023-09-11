@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -130,7 +131,7 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 		return nil, err
 	}
 
-	fileReader, err := pqtazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, azblob.ClientOptions{})
+	fileReader, err := pqtazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", u.String(), err.Error())
 	}
@@ -227,7 +228,7 @@ func newAzureStorageBlobWriter(u *url.URL, option WriteOption) (source.ParquetFi
 		return nil, err
 	}
 
-	fileWriter, err := pqtazblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, azblob.ClientOptions{})
+	fileWriter, err := pqtazblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", u.String(), err.Error())
 	}
