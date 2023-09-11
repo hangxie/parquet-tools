@@ -4,14 +4,14 @@ go 1.17
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.1.0
-	github.com/alecthomas/kong v0.2.16
+	github.com/alecthomas/kong v0.2.22
 	github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.39
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.83
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.8.0
-	github.com/willabides/kongplete v0.2.0
+	github.com/willabides/kongplete v0.3.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20230806034711-b6d7d8771e28
 	github.com/xitongsys/parquet-go-source v0.0.0-20230830030807-0dd610dbff1d
 )
@@ -67,6 +67,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
