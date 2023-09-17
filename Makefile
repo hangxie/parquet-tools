@@ -21,7 +21,7 @@ TAGS        :=
 TESTS       := .
 TESTFLAGS   :=
 LDFLAGS     := -w -s
-GOFLAGS     :=
+GOFLAGS     := -trimpath
 GOSOURCES   := $(shell find . -type f -name '*.go')
 CGO_ENABLED := 0
 LDFLAGS     += -extldflags "-static"
@@ -81,7 +81,7 @@ test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
 	@set -euo pipefail ; \
-		CGO_ENABLED=1 go test -v -race -count 1 -coverprofile=$(BUILDDIR)/test/cover.out ./... \
+		CGO_ENABLED=1 go test -v -race -count 1 -trimpath -coverprofile=$(BUILDDIR)/test/cover.out ./... \
 			| tee $(BUILDDIR)/test/go-test.output ; \
 		go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html ; \
 		go tool cover -func=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.txt ; \
