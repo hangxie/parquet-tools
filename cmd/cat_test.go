@@ -130,7 +130,7 @@ func Test_CatCmd_Run_good_stream(t *testing.T) {
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	expected := loadExpected(t, "../testdata/golden/cat-good-jsonl.json")
+	expected := loadExpected(t, "../testdata/golden/cat-good-jsonl.jsonl")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
