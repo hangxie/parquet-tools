@@ -6,7 +6,7 @@ SHELL:=/bin/bash
 .PHONY: all help
 
 gen:  ## Generate all test parquet files
-	@for SRC in *.go; do \
+	@for SRC in */main.go; do \
 		echo === $${SRC} ===; \
 		go run $${SRC}; \
 	done
