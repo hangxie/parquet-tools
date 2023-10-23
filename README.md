@@ -2,6 +2,7 @@
 [![](https://circleci.com/gh/hangxie/parquet-tools/tree/main.svg?style=shield)](https://circleci.com/gh/hangxie/parquet-tools/tree/main)
 [![](https://goreportcard.com/badge/github.com/hangxie/parquet-tools)](https://goreportcard.com/report/github.com/hangxie/parquet-tools)
 [![](https://img.shields.io/badge/license-BSD%203-blue)](https://github.com/hangxie/parquet-tools/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/hangxie/parquet-tools/graph/badge.svg?token=ndcA88McUD)](https://codecov.io/gh/hangxie/parquet-tools)
 
 # parquet-tools
 Utility to inspect Parquet files.
