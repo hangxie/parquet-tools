@@ -124,11 +124,13 @@ func Test_getBucketRegion_s3_missing_credential(t *testing.T) {
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 	_, err := getS3Client("aws-roda-hcls-datalake", false)
-	// private bucket error happens at reading time
-	require.Nil(t, err)
+	// since aws-go-sdk-v2/config 1.18.45, non-existent profile becomes an error
+	require.NotNil(t, err)
 }
 
 func Test_getBucketRegion_aws_error(t *testing.T) {
+	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	os.Unsetenv("AWS_PROFILE")
 	_, err := getS3Client("*&^%", true)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "AWS error:")
@@ -204,8 +206,8 @@ func Test_NewParquetFileReader_local_good(t *testing.T) {
 
 func Test_NewParquetFileReader_s3_aws_error(t *testing.T) {
 	// Make sure there is no AWS access
-	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
+	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{}
 	option.URI = "s3:///path/to/object"
@@ -216,8 +218,9 @@ func Test_NewParquetFileReader_s3_aws_error(t *testing.T) {
 
 func Test_NewParquetFileReader_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
-	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
+	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	os.Unsetenv("AWS_PROFILE")
+
 	option := ReadOption{Anonymous: true}
 	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
 	_, err := NewParquetFileReader(option)
@@ -226,8 +229,8 @@ func Test_NewParquetFileReader_s3_good(t *testing.T) {
 
 func Test_NewParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	// Make sure there is no AWS access
-	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
+	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{ObjectVersion: "random-version-id", Anonymous: true}
 	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
@@ -310,8 +313,8 @@ func Test_NewFileWriter_s3_non_existent_bucket(t *testing.T) {
 
 func Test_NewFileWriter_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
-	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
+	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	os.Unsetenv("AWS_PROFILE")
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
