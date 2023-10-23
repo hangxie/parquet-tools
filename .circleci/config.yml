@@ -2,6 +2,7 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.4.2
+  codecov: codecov/codecov@3.2.4
 jobs:
   build:
     resource_class: large
@@ -42,6 +43,7 @@ jobs:
               cat /tmp/git-status.log
               false
             fi
+      - codecov/upload
       - store_artifacts:
           path: build/test/coverage.html
           destination: test-coverage.html
