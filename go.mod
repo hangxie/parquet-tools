@@ -5,10 +5,10 @@ go 1.17
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.0
 	github.com/alecthomas/kong v0.8.1
-	github.com/aws/aws-sdk-go-v2 v1.22.2
-	github.com/aws/aws-sdk-go-v2/config v1.23.0
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.13.5
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.42.1
+	github.com/aws/aws-sdk-go-v2 v1.23.0
+	github.com/aws/aws-sdk-go-v2/config v1.25.3
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.14.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.43.0
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.8.4
 	github.com/willabides/kongplete v0.3.0
@@ -19,15 +19,15 @@ require (
 replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20230917005036-03f098e3f12e
 
 require (
-	github.com/aws/aws-sdk-go-v2/credentials v1.15.2 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.3 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.6.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.16.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.17.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.25.1 // indirect
-	github.com/aws/smithy-go v1.16.0 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.16.2 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.7.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.16.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.17.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.25.3 // indirect
+	github.com/aws/smithy-go v1.17.0 // indirect
 )
 
 require (
@@ -41,12 +41,12 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/apache/arrow/go/v12 v12.0.1 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.2.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.2.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.19.1 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.1 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.2.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.2.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.20.0 // indirect
 	github.com/colinmarc/hdfs/v2 v2.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
