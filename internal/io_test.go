@@ -120,20 +120,31 @@ func Test_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
 	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
 
+func Test_getBucketRegion_s3_bucket_name_with_dot(t *testing.T) {
+	_, err := getS3Client("xiehang.com", false)
+	require.Nil(t, err)
+}
+
+func Test_getBucketRegion_s3_private_bucket(t *testing.T) {
+	_, err := getS3Client("doc-example-bucket", true)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "S3 bucket doc-example-bucket is not public")
+}
+
+func Test_getBucketRegion_s3_aws_error(t *testing.T) {
+	// AWS bucket name needs to be between 3 and 63 characters
+	// https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+	_, err := getS3Client("00", true)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unrecognized StatusCode from AWS: 400")
+}
+
 func Test_getBucketRegion_s3_missing_credential(t *testing.T) {
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 	_, err := getS3Client("aws-roda-hcls-datalake", false)
 	// since aws-go-sdk-v2/config 1.18.45, non-existent profile becomes an error
 	require.NotNil(t, err)
-}
-
-func Test_getBucketRegion_aws_error(t *testing.T) {
-	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	os.Unsetenv("AWS_PROFILE")
-	_, err := getS3Client("*&^%", true)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "AWS error:")
 }
 
 func Test_parseURI_invalid_uri(t *testing.T) {
@@ -202,18 +213,6 @@ func Test_NewParquetFileReader_local_good(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, pr)
 	pr.PFile.Close()
-}
-
-func Test_NewParquetFileReader_s3_aws_error(t *testing.T) {
-	// Make sure there is no AWS access
-	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	os.Unsetenv("AWS_PROFILE")
-
-	option := ReadOption{}
-	option.URI = "s3:///path/to/object"
-	_, err := NewParquetFileReader(option)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "AWS error:")
 }
 
 func Test_NewParquetFileReader_s3_good(t *testing.T) {
