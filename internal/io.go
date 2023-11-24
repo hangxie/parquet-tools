@@ -2,8 +2,9 @@ package internal
 
 import (
 	"context"
-	"errors"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"os/user"
@@ -15,12 +16,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	pqtazblob "github.com/xitongsys/parquet-go-source/azblob"
 	"github.com/xitongsys/parquet-go-source/gcs"
 	"github.com/xitongsys/parquet-go-source/hdfs"
-	"github.com/xitongsys/parquet-go-source/http"
+	pqhttp "github.com/xitongsys/parquet-go-source/http"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go-source/s3v2"
 	"github.com/xitongsys/parquet-go/parquet"
@@ -78,23 +78,43 @@ func parseURI(uri string) (*url.URL, error) {
 	return u, nil
 }
 
+func getS3BucketRegion(bucket string, isPublic bool) (string, error) {
+	if strings.Contains(bucket, ".") {
+		// AWS' wildcard cert covers *.s3.amazonaws.com, so if the bucket name contains dot the cert will be invalid
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	resp, err := http.Get(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
+	if err != nil {
+		return "", fmt.Errorf("unable to get region for S3 bucket %s: %s", bucket, err)
+	}
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return resp.Header.Get("x-amz-bucket-region"), nil
+	case http.StatusNotFound:
+		return "", fmt.Errorf("S3 bucket %s not found", bucket)
+	case http.StatusForbidden:
+		if isPublic {
+			return "", fmt.Errorf("S3 bucket %s is not public", bucket)
+		}
+		return resp.Header.Get("x-amz-bucket-region"), nil
+	default:
+		return "", fmt.Errorf("unrecognized StatusCode from AWS: %d", resp.StatusCode)
+	}
+}
+
 func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
+	region, err := getS3BucketRegion(bucket, isPublic)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find region of bucket [%s]: %s", bucket, err)
+	}
+	if isPublic {
+		return s3.NewFromConfig(aws.Config{Region: region}), nil
+	}
+
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithDefaultRegion("us-east-1"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config to determine bucket region: %s", err.Error())
-	}
-	region, err := manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket)
-	if err != nil {
-		var apiErr manager.BucketNotFound
-		if errors.As(err, &apiErr) {
-			return nil, fmt.Errorf("unable to find region of bucket [%s]", bucket)
-		}
-		return nil, fmt.Errorf("AWS error: %s", err.Error())
-	}
-
-	if isPublic {
-		return s3.NewFromConfig(aws.Config{Region: region}), nil
 	}
 	cfg.Region = region
 	return s3.NewFromConfig(cfg), nil
@@ -147,7 +167,7 @@ func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.Parquet
 }
 
 func newHTTPReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
-	fileReader, err := http.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
+	fileReader, err := pqhttp.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", u.String(), err.Error())
 	}
