@@ -43,7 +43,7 @@ require (
 	github.com/apache/arrow/go/v12 v12.0.1 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.1 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.14.0 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.14.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.2.4 // indirect
