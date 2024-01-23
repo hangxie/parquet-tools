@@ -12,12 +12,10 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/willabides/kongplete v0.4.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20230806034711-b6d7d8771e28
-	github.com/xitongsys/parquet-go-source v0.0.0-20230830030807-0dd610dbff1d
+	github.com/xitongsys/parquet-go-source v0.0.0-20240122235623-d6294584ab18
 )
 
 replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20230917005036-03f098e3f12e
-
-replace github.com/xitongsys/parquet-go-source => github.com/hangxie/parquet-go-source v0.0.0-20231120172956-e0ff36b2d553
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.14 // indirect

@@ -1049,8 +1049,6 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0/go.mod h1:hgWBS7lorOAVIJEQMi4Zs
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3/go.mod h1:o//XUCC/F+yRGJoPO/VU0GSB0f8Nhgmxx0VIRUvaC0w=
 github.com/hangxie/parquet-go v1.6.1-0.20230917005036-03f098e3f12e h1:QbGfgl+waXECDXm5Q3J2x9T6lMaGnppocFqbFBXgkRs=
 github.com/hangxie/parquet-go v1.6.1-0.20230917005036-03f098e3f12e/go.mod h1:Q9SExCb8JHBsgRwDMTZaf/EDmKfcYzcIFcnhqK6u7fk=
-github.com/hangxie/parquet-go-source v0.0.0-20231120172956-e0ff36b2d553 h1:loptDBfe1myQFJH8ykW9+pIOPrFF244cgjA6mbcJ/Tc=
-github.com/hangxie/parquet-go-source v0.0.0-20231120172956-e0ff36b2d553/go.mod h1:2ActxmJ4q17Cdruar9nKEkzKSOL1Ol03737Bkz10rTY=
 github.com/hanwen/go-fuse v1.0.0/go.mod h1:unqXarDXqzAk0rt98O2tVndEPIpUgLD9+rwFisZH3Ok=
 github.com/hanwen/go-fuse/v2 v2.1.0/go.mod h1:oRyA5eK+pvJyv5otpO/DgccS8y/RvYMaO00GgRLGryc=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
@@ -1255,6 +1253,9 @@ github.com/ugorji/go v1.1.7/go.mod h1:kZn38zHttfInRq0xu/PH0az30d+z6vm202qpg1oXVM
 github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLYF3GoBXY=
 github.com/willabides/kongplete v0.4.0 h1:eivXxkp5ud5+4+NVN9e4goxC5mSh3n1RHov+gsblM2g=
 github.com/willabides/kongplete v0.4.0/go.mod h1:0P0jtWD9aTsqPSUAl4de35DLghrr57XcayPyvqSi2X8=
+github.com/xitongsys/parquet-go-source v0.0.0-20200817004010-026bad9b25d0/go.mod h1:HYhIKsdns7xz80OgkbgJYrtQY7FjHWHKH6cvN7+czGE=
+github.com/xitongsys/parquet-go-source v0.0.0-20240122235623-d6294584ab18 h1:Loknf8YcZNXiweAsfz8GD79m4WE0MSbf1Bl4YCAfFYQ=
+github.com/xitongsys/parquet-go-source v0.0.0-20240122235623-d6294584ab18/go.mod h1:2ActxmJ4q17Cdruar9nKEkzKSOL1Ol03737Bkz10rTY=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
