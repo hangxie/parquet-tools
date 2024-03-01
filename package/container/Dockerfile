@@ -1,4 +1,4 @@
-FROM golang:1.20-bullseye as builder
+FROM golang:1.22-bullseye as builder
 
 ADD . /src
 WORKDIR /src
@@ -7,7 +7,7 @@ RUN apt-get update -qq \
     && apt-get install -y -qq bash make git \
     && make build
 
-FROM debian:11-slim
+FROM debian:12-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 COPY --from=builder /src/build/parquet-tools /tmp/
