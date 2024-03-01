@@ -8,7 +8,7 @@ jobs:
     resource_class: large
     working_directory: ~/repo
     docker:
-      - image: cimg/go:1.21
+      - image: cimg/go:1.22
     steps:
       - checkout
       - setup_remote_docker:
@@ -55,7 +55,7 @@ jobs:
     resource_class: large
     working_directory: ~/repo
     docker:
-      - image: cimg/go:1.21
+      - image: cimg/go:1.22
     steps:
       - checkout
       - setup_remote_docker:
