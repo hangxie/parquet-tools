@@ -1,0 +1,44 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '^v[0-9]+.[0-9]+.[0-9]+$'
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+  release-build:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: go.sum
+      - name: Installing Dependencies
+        run: make deps
+      - name: Build release
+        run: make release-build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: build
+  github-release:
+    runs-on: ubuntu-latest
+    needs: release-build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: build
+      - name: Push to github
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create $(cat ./build/VERSION) --notes-file ./build/CHANGELOG ./build/release/*

@@ -178,15 +178,16 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v\d+\.\d+\.\d+$/
-      - publish-github-release:
-          context: parquet-tools
-          requires:
-            - release-build
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
+# moved to github action
+#      - publish-github-release:
+#          context: parquet-tools
+#          requires:
+#            - release-build
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^v\d+\.\d+\.\d+$/
       - publish-docker-image:
           context: parquet-tools
           requires:
