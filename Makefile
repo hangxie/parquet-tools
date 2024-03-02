@@ -4,7 +4,7 @@
 SHELL:=/bin/bash
 
 PKG_PREFIX  = github.com/hangxie/parquet-tools
-VERSION     = $(shell git describe --tags)
+VERSION     = $(shell git describe --tags --always)
 GIT_HASH    = $(shell git rev-parse --short HEAD)
 BUILD       = $(shell date +%FT%T%z)
 BUILDDIR    = $(CURDIR)/build

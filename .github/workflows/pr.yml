@@ -1,0 +1,8 @@
+name: pr
+
+on:
+  pull_request:
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
