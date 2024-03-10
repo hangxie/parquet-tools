@@ -68,8 +68,12 @@ func (n GoStructNode) asList() (string, error) {
 		// LIST => List => Element
 		// go struct will be []<actual element type>
 		elementNode := n.Children[0].Children[0]
-		if elementNode.ConvertedType != nil && (*elementNode.ConvertedType == parquet.ConvertedType_MAP || *elementNode.ConvertedType == parquet.ConvertedType_LIST) {
-			return "", fmt.Errorf("go struct does not support composite type as list element in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
+		if elementNode.ConvertedType != nil &&
+			(*elementNode.ConvertedType == parquet.ConvertedType_MAP ||
+				*elementNode.ConvertedType == parquet.ConvertedType_LIST) {
+			return "", fmt.Errorf(
+				"go struct does not support composite type as list element in field [%s.%s]",
+				strings.Join(n.Parent, "."), n.Name)
 		}
 		typeStr, err = NewGoStructNode(*elementNode).String()
 	}
@@ -83,14 +87,16 @@ func (n GoStructNode) asMap() (string, error) {
 	// go struct tag does not support LIST or MAP as type of key/value
 	if n.Children[0].Children[0].ConvertedType != nil {
 		keyConvertedType := *n.Children[0].Children[0].ConvertedType
-		if keyConvertedType == parquet.ConvertedType_MAP || keyConvertedType == parquet.ConvertedType_LIST {
+		if keyConvertedType == parquet.ConvertedType_MAP ||
+			keyConvertedType == parquet.ConvertedType_LIST {
 			return "", fmt.Errorf("go struct does not support composite type as map key in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
 		}
 	}
 
 	if n.Children[0].Children[1].ConvertedType != nil {
 		valueConvertedType := *n.Children[0].Children[1].ConvertedType
-		if valueConvertedType == parquet.ConvertedType_MAP || valueConvertedType == parquet.ConvertedType_LIST {
+		if valueConvertedType == parquet.ConvertedType_MAP ||
+			valueConvertedType == parquet.ConvertedType_LIST {
 			return "", fmt.Errorf("go struct does not support composite type as map value in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
 		}
 	}
@@ -109,9 +115,10 @@ func (n GoStructNode) asMap() (string, error) {
 
 func (n GoStructNode) String() (string, error) {
 	typePrefix := ""
-	if n.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
+	switch n.GetRepetitionType() {
+	case parquet.FieldRepetitionType_OPTIONAL:
 		typePrefix = "*"
-	} else if n.GetRepetitionType() == parquet.FieldRepetitionType_REPEATED {
+	case parquet.FieldRepetitionType_REPEATED:
 		typePrefix = "[]"
 	}
 
@@ -144,20 +151,18 @@ func (n GoStructNode) stringWithName() (string, error) {
 
 func (n GoStructNode) getStructTags() string {
 	tagMap := n.SchemaNode.getTagMap()
-	if n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
+	if _, found := tagMap["valuetype"]; !found &&
+		n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
 		// make sure LISt always has "valuetype"
-		if _, found := tagMap["valuetype"]; !found {
-			tagMap["valuetype"] = "STRUCT"
-		}
+		tagMap["valuetype"] = "STRUCT"
 	}
 
-	annotations := []string{}
+	annotations := make([]string, 0, len(orderedTags))
 	for _, tag := range orderedTags {
-		if val, found := tagMap[tag]; found {
+		if val, found := tagMap[tag]; found &&
+			!(tag == "repetitiontype" && val == "REQUIRED") {
 			// repetitiontype=REQUIRED is redundant in go struct
-			if !(tag == "repetitiontype" && val == "REQUIRED") {
-				annotations = append(annotations, tag+"="+val)
-			}
+			annotations = append(annotations, tag+"="+val)
 		}
 	}
 
