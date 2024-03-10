@@ -3,7 +3,7 @@ module github.com/hangxie/parquet-tools
 go 1.17
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.0
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.1
 	github.com/alecthomas/kong v0.8.1
 	github.com/aws/aws-sdk-go-v2 v1.25.2
 	github.com/aws/aws-sdk-go-v2/config v1.27.4
