@@ -17,7 +17,9 @@ func Test_GoStructNode_String_good(t *testing.T) {
 	option.URI = "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot := NewSchemaTree(pr)
 	require.NotNil(t, schemaRoot)
