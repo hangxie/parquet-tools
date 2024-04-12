@@ -101,7 +101,7 @@ release-build: deps ## Build release binaries
 	@.circleci/gen-meta.sh
 
 	@echo "==> release info"
-	@cat $(BUILDDIR)/release/checksum-md5.txt
+	@cat $(BUILDDIR)/release/checksum-sha512.txt
 	@echo
 	@cat $(BUILDDIR)/CHANGELOG
 

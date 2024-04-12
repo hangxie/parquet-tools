@@ -3,8 +3,7 @@
 set -euo pipefail
 
 (cd ${BUILDDIR}/release; \
-    sha512sum parquet-tools* > checksum-sha512.txt; \
-    md5sum parquet-tools* > checksum-md5.txt)
+    sha512sum parquet-tools* > checksum-sha512.txt)
 
 # version file
 echo ${VERSION} > ${BUILDDIR}/VERSION
