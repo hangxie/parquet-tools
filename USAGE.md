@@ -199,10 +199,10 @@ $ aws sts get-caller-identity
     "Account": "123456789012",
     "Arn": "arn:aws:iam::123456789012:user/redacted"
 }
-$ aws s3 ls s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-$ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-908
+aws s3 ls s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
+2024-05-06 08:33:48  362267322 20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
+$ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
+2405462
 ```
 
 If an S3 object is publicly accessible and you do not have AWS credential, you can use `--anonymous` flag to bypass AWS authentation:
@@ -211,20 +211,20 @@ If an S3 object is publicly accessible and you do not have AWS credential, you c
 $ aws sts get-caller-identity
 
 Unable to locate credentials. You can configure credentials by running "aws configure".
-$ aws s3 ls --no-sign-request s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-2021-09-08 12:22:56     260887 run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-$ parquet-tools row-count --anonymous s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet
-908
+$ aws s3 --no-sign-request ls s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
+2024-05-06 08:33:48  362267322 20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
+$ parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
+2405462
 ```
 
-Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist, `parquet-tools` will report error:
+Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist or bucket does not have version enabled, `parquet-tools` will report error:
 
 ```bash
-$ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet --object-version non-existent-version
-parquet-tools: error: failed to open S3 object [s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet] version [non-existent-version]: operation error S3: HeadObject, https response error StatusCode: 403, RequestID: REDACTED, HostID: REDACTED, api error Forbidden: Forbidden
+$ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0 --object-version non-existent-version
+parquet-tools: error: failed to open S3 object [s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0] version [non-existent-version]: operation error S3: HeadObject, https response error StatusCode: 400, RequestID: 75GZZ1W5M4KMAK1H, HostID: hgDGBOolDqLgH+CHRuZU+dXZXv4CB+mmSpjEfGxF5fLnKhNkJCWEAZBSS0kbT/k2gFotuoWNLX+zaWNWzHR49w==, api error BadRequest: Bad Request
 ```
 
-> According to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), status code for non-existent object or version will be 403 instead of 404 if the caller does not have permission to `ListBucket`. 
+> According to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), status code for non-existent object or version will be 403 instead of 404 if the caller does not have permission to `ListBucket`, or return 400 if bucket does not have version enabled.
 
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 
