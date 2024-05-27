@@ -140,9 +140,10 @@ func Test_getBucketRegion_s3_aws_error(t *testing.T) {
 }
 
 func Test_getBucketRegion_s3_missing_credential(t *testing.T) {
+	// AWS provides open access: https://registry.opendata.aws/daylight-osm/
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
-	_, err := getS3Client("aws-roda-hcls-datalake", false)
+	_, err := getS3Client("daylight-openstreetmap", false)
 	// since aws-go-sdk-v2/config 1.18.45, non-existent profile becomes an error
 	require.NotNil(t, err)
 }
@@ -221,7 +222,7 @@ func Test_NewParquetFileReader_s3_good(t *testing.T) {
 	os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{Anonymous: true}
-	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
+	option.URI = "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
 	_, err := NewParquetFileReader(option)
 	require.Nil(t, err)
 }
@@ -232,12 +233,12 @@ func Test_NewParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{ObjectVersion: "random-version-id", Anonymous: true}
-	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
+	option.URI = "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
 	_, err := NewParquetFileReader(option)
 	require.NotNil(t, err)
 	// refer to https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html
-	// access to non-existent object/version without ListBucket permission will get 403 instead of 404
-	require.Contains(t, err.Error(), "https response error StatusCode: 403")
+	// the sample data bucket does not have version enabled so it will return HTTP/400
+	require.Contains(t, err.Error(), "https response error StatusCode: 400")
 }
 
 func Test_NewParquetFileReader_gcs_no_permission(t *testing.T) {
@@ -317,7 +318,7 @@ func Test_NewFileWriter_s3_good(t *testing.T) {
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
-	option.URI = "s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet"
+	option.URI = "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
 	fw, err := NewParquetFileWriter(option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
