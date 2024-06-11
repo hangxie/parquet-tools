@@ -3,29 +3,26 @@
 # Required for globs to work correctly
 SHELL:=/bin/bash
 
-PKG_PREFIX  = github.com/hangxie/parquet-tools
-VERSION     = $(shell git describe --tags --always)
+BUILD_TIME  = $(shell date +%FT%T%z)
+BUILD_DIR   = $(CURDIR)/build
 GIT_HASH    = $(shell git rev-parse --short HEAD)
-BUILD       = $(shell date +%FT%T%z)
-BUILDDIR    = $(CURDIR)/build
-GOBIN       = $(shell go env GOPATH)/bin
+PKG_PREFIX  = github.com/hangxie/parquet-tools
 REL_TARGET  = \
 	darwin-amd64 darwin-arm64 \
 	linux-amd64 linux-arm linux-arm64 \
 	windows-amd64 windows-arm64
+VERSION     = $(shell git describe --tags --always)
 
 # go option
+CGO_ENABLED := 0
 GO          ?= go
-PKG         :=
-TAGS        :=
-TESTS       := .
-TESTFLAGS   :=
-LDFLAGS     := -w -s
+GOBIN       = $(shell go env GOPATH)/bin
 GOFLAGS     := -trimpath
 GOSOURCES   := $(shell find . -type f -name '*.go')
-CGO_ENABLED := 0
+LDFLAGS     := -w -s
 LDFLAGS     += -extldflags "-static"
-LDFLAGS     += -X $(PKG_PREFIX)/cmd.version=$(VERSION) -X $(PKG_PREFIX)/cmd.build=$(BUILD) -X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH)
+LDFLAGS     += -X $(PKG_PREFIX)/cmd.version=$(VERSION) -X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) -X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH)
+TAGS        :=
 
 .EXPORT_ALL_VARIABLES:
 
@@ -63,15 +60,15 @@ tools:  ## Install build tools
 		go install golang.org/x/tools/cmd/goimports@latest; \
 	)
 
-build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
+build: deps  ## Build locally for local os/arch creating $(BUILD_DIR) in ./
 	@echo "==> Building executable"
-	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILD_DIR)
 	@CGO_ENABLED=$(CGO_ENABLED) \
-		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILDDIR) ./
+		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILD_DIR) ./
 
 clean:  ## Clean up the build dirs
 	@echo "==> Cleaning up build dirs"
-	@rm -rf $(BUILDDIR) vendor .venv
+	@rm -rf $(BUILD_DIR) vendor .venv
 
 docker-build:  ## Build docker image
 	@echo "==> Building docker image"
@@ -79,18 +76,18 @@ docker-build:  ## Build docker image
 
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
-	@mkdir -p $(BUILDDIR)/test $(BUILDDIR)/junit
+	@mkdir -p $(BUILD_DIR)/test $(BUILD_DIR)/junit
 	@set -euo pipefail ; \
-		CGO_ENABLED=1 go test -v -race -count 1 -trimpath -coverprofile=$(BUILDDIR)/test/cover.out ./... \
-			| tee $(BUILDDIR)/test/go-test.output ; \
-		go tool cover -html=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.html ; \
-		go tool cover -func=$(BUILDDIR)/test/cover.out -o $(BUILDDIR)/test/coverage.txt ; \
-		cat $(BUILDDIR)/test/go-test.output | $(GOBIN)/go-junit-report > $(BUILDDIR)/junit/junit.xml ; \
-		cat $(BUILDDIR)/test/coverage.txt
+		CGO_ENABLED=1 go test -v -race -count 1 -trimpath -coverprofile=$(BUILD_DIR)/test/cover.out ./... \
+			| tee $(BUILD_DIR)/test/go-test.output ; \
+		go tool cover -html=$(BUILD_DIR)/test/cover.out -o $(BUILD_DIR)/test/coverage.html ; \
+		go tool cover -func=$(BUILD_DIR)/test/cover.out -o $(BUILD_DIR)/test/coverage.txt ; \
+		cat $(BUILD_DIR)/test/go-test.output | $(GOBIN)/go-junit-report > $(BUILD_DIR)/junit/junit.xml ; \
+		cat $(BUILD_DIR)/test/coverage.txt
 
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
-	@mkdir -p $(BUILDDIR)/release/
+	@mkdir -p $(BUILD_DIR)/release/
 	@.circleci/build-bin.sh
 
 	@echo "==> generate RPM and deb packages"
@@ -101,9 +98,9 @@ release-build: deps ## Build release binaries
 	@.circleci/gen-meta.sh
 
 	@echo "==> release info"
-	@cat $(BUILDDIR)/release/checksum-sha512.txt
+	@cat $(BUILD_DIR)/release/checksum-sha512.txt
 	@echo
-	@cat $(BUILDDIR)/CHANGELOG
+	@cat $(BUILD_DIR)/CHANGELOG
 
 help:  ## Print list of Makefile targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
