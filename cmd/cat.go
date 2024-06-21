@@ -85,7 +85,7 @@ func (c CatCmd) Run() error {
 	return c.outputRows(fileReader)
 }
 
-func (c CatCmd) outputHeader(fileReader *reader.ParquetReader, schemaRoot *internal.SchemaNode) ([]string, error) {
+func (c CatCmd) outputHeader(schemaRoot *internal.SchemaNode) ([]string, error) {
 	if c.Format != "csv" && c.Format != "tsv" {
 		// only CSV and TSV need header
 		return nil, nil
@@ -130,7 +130,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	schemaRoot := internal.NewSchemaTree(fileReader)
 
 	// CSV snd TSV does not support nested schema
-	fieldList, err := c.outputHeader(fileReader, schemaRoot)
+	fieldList, err := c.outputHeader(schemaRoot)
 	if err != nil {
 		return err
 	}
@@ -326,11 +326,11 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr internal
 		}
 		*iface = mapValue
 	default:
-		reinterpretScalar(iface, locator, attr)
+		reinterpretScalar(iface, attr)
 	}
 }
 
-func reinterpretScalar(iface *interface{}, locator []string, attr internal.ReinterpretField) {
+func reinterpretScalar(iface *interface{}, attr internal.ReinterpretField) {
 	switch attr.ParquetType {
 	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 		switch v := (*iface).(type) {
