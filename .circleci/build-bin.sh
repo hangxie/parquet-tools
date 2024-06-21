@@ -4,7 +4,7 @@ set -euo pipefail
 
 for TARGET in ${REL_TARGET}; do
     echo "    ${TARGET}"
-    BINARY=${BUILDDIR}/release/parquet-tools-${VERSION}-${TARGET}
+    BINARY=${BUILD_DIR}/release/parquet-tools-${VERSION}-${TARGET}
     rm -f ${BINARY} ${BINARY}.gz ${BINARY}.zip
     export GOOS=$(echo ${TARGET} | cut -f 1 -d \-)
     export GOARCH=$(echo ${TARGET} | cut -f 2 -d \-)
