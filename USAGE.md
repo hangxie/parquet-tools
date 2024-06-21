@@ -40,6 +40,7 @@
       - [JSON Format](#json-format)
       - [Raw Format](#raw-format)
       - [Go Struct Format](#go-struct-format)
+      - [CSV Format](#CSV-format)
     - [shell-completions Command (Experimental)](#shell-completions-command-experimental)
       - [Install Shell Completions](#install-shell-completions)
       - [Uninstall Shell Completions](#uninstall-shell-completions)
@@ -585,6 +586,30 @@ exit status 1
 
 $ parquet-tools schema testdata/map-composite-value.parquet
 {"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Age, type=INT32, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"},{"Tag":"name=Weight, type=FLOAT, repetitiontype=REQUIRED"},{"Tag":"name=Sex, type=BOOLEAN, repetitiontype=REQUIRED"},{"Tag":"name=Classes, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]},{"Tag":"name=Scores, type=MAP, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Value, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=FLOAT, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Friends, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Teachers, type=STRUCT, repetitiontype=REPEATED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]}
+```
+
+#### CSV Format
+
+CSV format is the schema that can be used to import from CSV files:
+
+```bash
+$ parquet-tools schema --format csv testdata/csv-good.parquet
+name=Id, type=INT64
+name=Name, type=BYTE_ARRAY, convertedtype=UTF8
+name=Age, type=INT32
+name=Temperature, type=FLOAT
+name=Vaccinated, type=BOOLEAN
+```
+
+since CSV is a flat 2D format, we cannot generate CSV schema for nested or optional columns:
+
+```bash
+$ parquet-tools schema -f csv testdata/csv-optional.parquet
+parquet-tools: error: CSV does not support optional column
+exit status 1
+$ parquet-tools schema -f csv testdata/csv-nested.parquet
+parquet-tools: error: CSV supports flat schema only
+exit status 1
 ```
 
 ### shell-completions Command (Experimental)

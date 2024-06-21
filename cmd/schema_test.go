@@ -111,3 +111,43 @@ func Test_SchemaCmd_Run_list_of_list_go(t *testing.T) {
 	err := cmd.Run()
 	require.Contains(t, "go struct does not support composite type as list element in field [Parquet_go_root.Lol]", err.Error())
 }
+
+func Test_SchemaCmd_Run_good_csv(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/csv-good.parquet"
+	cmd.Format = "csv"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+	expected := loadExpected(t, "../testdata/golden/schema-csv-good.txt")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
+
+func Test_SchemaCmd_Run_nested_csv(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/csv-nested.parquet"
+	cmd.Format = "csv"
+
+	err := cmd.Run()
+	require.Contains(t, err.Error(), "CSV supports flat schema only")
+}
+
+func Test_SchemaCmd_Run_optional_csv(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/csv-optional.parquet"
+	cmd.Format = "csv"
+
+	err := cmd.Run()
+	require.Contains(t, err.Error(), "CSV does not support optional column")
+}
+
+func Test_SchemaCmd_Run_repeated_csv(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/csv-repeated.parquet"
+	cmd.Format = "csv"
+
+	err := cmd.Run()
+	require.Contains(t, err.Error(), "CSV does not support column in LIST type")
+}
