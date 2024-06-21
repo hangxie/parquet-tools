@@ -2,18 +2,18 @@
 
 set -euo pipefail
 
-(cd ${BUILDDIR}/release; \
+(cd ${BUILD_DIR}/release; \
     sha512sum parquet-tools* > checksum-sha512.txt)
 
 # version file
-echo ${VERSION} > ${BUILDDIR}/VERSION
+echo ${VERSION} > ${BUILD_DIR}/VERSION
 PREV_VERSION=$(git tag --sort=-committerdate | head -2 | tail -1)
 
 # changelog file
-echo "Changes since [${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/${PREV_VERSION}):" > ${BUILDDIR}/CHANGELOG
-echo >> ${BUILDDIR}/CHANGELOG
-git log --pretty=format:"* %h %s" ${VERSION}...${PREV_VERSION} >> ${BUILDDIR}/CHANGELOG
-echo >> ${BUILDDIR}/CHANGELOG
+echo "Changes since [${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/${PREV_VERSION}):" > ${BUILD_DIR}/CHANGELOG
+echo >> ${BUILD_DIR}/CHANGELOG
+git log --pretty=format:"* %h %s" ${VERSION}...${PREV_VERSION} >> ${BUILD_DIR}/CHANGELOG
+echo >> ${BUILD_DIR}/CHANGELOG
 
 # license file
-cp LICENSE ${BUILDDIR}/release/LICENSE
+cp LICENSE ${BUILD_DIR}/release/LICENSE
