@@ -236,7 +236,7 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	se := SchemaNode{}
 	require.Nil(t, json.Unmarshal(buf, &se))
 
-	schemaRoot := NewJSONSchemaNode(se)
+	schemaRoot := jsonSchemaNode{se}
 	schema := schemaRoot.Schema()
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.Nil(t, err)
@@ -245,4 +245,100 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, string(expected), string(actual)+"\n")
+}
+
+func Test_Json_schema_go_struct_good(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	actual, err := schemaRoot.GoStruct()
+	require.Nil(t, err)
+	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
+	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
+}
+
+func Test_Json_schema_json_schema_good(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	actual := schemaRoot.JSONSchema()
+
+	raw, _ := os.ReadFile("../testdata/golden/schema-all-types-json.json")
+	temp := JSONSchema{}
+	_ = json.Unmarshal([]byte(raw), &temp)
+	expected, _ := json.Marshal(temp)
+	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
+}
+
+func Test_Json_schema_csv_schema_good(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/csv-good.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	actual, err := schemaRoot.CSVSchema()
+	require.Nil(t, err)
+	expected, _ := os.ReadFile("../testdata/golden/schema-csv-good.txt")
+	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
+}
+
+func Test_Json_schema_csv_schema_nested(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/csv-nested.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	_, err = schemaRoot.CSVSchema()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "CSV supports flat schema only")
+}
+
+func Test_Json_schema_csv_schema_optional(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/csv-optional.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	_, err = schemaRoot.CSVSchema()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "CSV does not support optional column")
+}
+
+func Test_Json_schema_csv_schema_repeated(t *testing.T) {
+	option := ReadOption{}
+	option.URI = "../testdata/csv-repeated.parquet"
+	pr, err := NewParquetFileReader(option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot := NewSchemaTree(pr)
+	require.NotNil(t, schemaRoot)
+
+	_, err = schemaRoot.CSVSchema()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "CSV does not support column in LIST typ")
 }

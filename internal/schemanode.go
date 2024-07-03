@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -336,4 +337,35 @@ func TimeUnitToTag(timeUnit *parquet.TimeUnit) string {
 		return "MILLIS"
 	}
 	return "UNKNOWN_UNIT"
+}
+
+func (s SchemaNode) GoStruct() (string, error) {
+	goStruct, err := goStructNode{s}.String()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("type %s %s", s.Name, goStruct), nil
+}
+
+func (s SchemaNode) JSONSchema() string {
+	schema, _ := json.Marshal(jsonSchemaNode{s}.Schema())
+	return string(schema)
+}
+
+func (s SchemaNode) CSVSchema() (string, error) {
+	jsonSchema := jsonSchemaNode{s}.Schema()
+	schema := make([]string, len(jsonSchema.Fields))
+	for i, f := range jsonSchema.Fields {
+		if len(f.Fields) != 0 {
+			return "", fmt.Errorf("CSV supports flat schema only")
+		}
+		if strings.Contains(f.Tag, "repetitiontype=REPEATED") {
+			return "", fmt.Errorf("CSV does not support column in LIST type")
+		}
+		if strings.Contains(f.Tag, "repetitiontype=OPTIONAL") {
+			return "", fmt.Errorf("CSV does not support optional column")
+		}
+		schema[i] = strings.Replace(f.Tag, ", repetitiontype=REQUIRED", "", 1)
+	}
+	return strings.Join(schema, "\n"), nil
 }

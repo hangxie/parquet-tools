@@ -7,12 +7,8 @@ import (
 	"github.com/xitongsys/parquet-go/parquet"
 )
 
-type GoStructNode struct {
+type goStructNode struct {
 	SchemaNode
-}
-
-func NewGoStructNode(s SchemaNode) GoStructNode {
-	return GoStructNode{s}
 }
 
 var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
@@ -26,7 +22,7 @@ var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
 	parquet.Type_FIXED_LEN_BYTE_ARRAY: "string",
 }
 
-func (n GoStructNode) asScalar() (string, error) {
+func (n goStructNode) asScalar() (string, error) {
 	if n.Type == nil {
 		return "", fmt.Errorf("type not set")
 	}
@@ -36,10 +32,10 @@ func (n GoStructNode) asScalar() (string, error) {
 	return "", fmt.Errorf("unknown type: %d", *n.Type)
 }
 
-func (n GoStructNode) asStruct() (string, error) {
+func (n goStructNode) asStruct() (string, error) {
 	typeStr := "struct {\n"
 	for _, child := range n.Children {
-		structStr, err := NewGoStructNode(*child).stringWithName()
+		structStr, err := goStructNode{*child}.stringWithName()
 		if err != nil {
 			return "", err
 		}
@@ -49,21 +45,21 @@ func (n GoStructNode) asStruct() (string, error) {
 	return typeStr, nil
 }
 
-func (n GoStructNode) asList() (string, error) {
+func (n goStructNode) asList() (string, error) {
 	var typeStr string
 	var err error
 	if n.Children[0].LogicalType != nil {
 		// LIST => Element (of scalar type)
 		n.Children[0].Name = "Element"
 		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
-		typeStr, err = NewGoStructNode(*n.Children[0]).String()
+		typeStr, err = goStructNode{*n.Children[0]}.String()
 	} else if len(n.Children[0].Children) > 1 {
 		// LIST => Element (of STRUCT)
 		n.Children[0].Name = "Element"
 		n.Children[0].Type = nil
 		n.Children[0].ConvertedType = nil
 		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
-		typeStr, err = NewGoStructNode(*n.Children[0]).String()
+		typeStr, err = goStructNode{*n.Children[0]}.String()
 	} else if len(n.Children[0].Children) == 1 {
 		// LIST => List => Element
 		// go struct will be []<actual element type>
@@ -75,7 +71,7 @@ func (n GoStructNode) asList() (string, error) {
 				"go struct does not support composite type as list element in field [%s.%s]",
 				strings.Join(n.Parent, "."), n.Name)
 		}
-		typeStr, err = NewGoStructNode(*elementNode).String()
+		typeStr, err = goStructNode{*elementNode}.String()
 	}
 	if err != nil {
 		return "", err
@@ -83,7 +79,7 @@ func (n GoStructNode) asList() (string, error) {
 	return "[]" + typeStr, nil
 }
 
-func (n GoStructNode) asMap() (string, error) {
+func (n goStructNode) asMap() (string, error) {
 	// go struct tag does not support LIST or MAP as type of key/value
 	if n.Children[0].Children[0].ConvertedType != nil {
 		keyConvertedType := *n.Children[0].Children[0].ConvertedType
@@ -102,18 +98,18 @@ func (n GoStructNode) asMap() (string, error) {
 	}
 	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
 	// go struct will be map[<key type>]<value type>
-	keyStr, err := NewGoStructNode(*n.Children[0].Children[0]).asScalar()
+	keyStr, err := goStructNode{*n.Children[0].Children[0]}.asScalar()
 	if err != nil {
 		return "", err
 	}
-	valueStr, err := NewGoStructNode(*n.Children[0].Children[1]).String()
+	valueStr, err := goStructNode{*n.Children[0].Children[1]}.String()
 	if err != nil {
 		return "", err
 	}
 	return "map[" + keyStr + "]" + valueStr, nil
 }
 
-func (n GoStructNode) String() (string, error) {
+func (n goStructNode) String() (string, error) {
 	typePrefix := ""
 	switch n.GetRepetitionType() {
 	case parquet.FieldRepetitionType_OPTIONAL:
@@ -132,7 +128,7 @@ func (n GoStructNode) String() (string, error) {
 	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_MAP:
 		typeStr, err = n.asMap()
 	default:
-		typeStr, err = NewGoStructNode(n.SchemaNode).asScalar()
+		typeStr, err = goStructNode{n.SchemaNode}.asScalar()
 	}
 	if err != nil {
 		return "", err
@@ -140,7 +136,7 @@ func (n GoStructNode) String() (string, error) {
 	return typePrefix + typeStr, nil
 }
 
-func (n GoStructNode) stringWithName() (string, error) {
+func (n goStructNode) stringWithName() (string, error) {
 	typeStr, err := n.String()
 	if err != nil {
 		return "", err
@@ -149,7 +145,7 @@ func (n GoStructNode) stringWithName() (string, error) {
 	return typeStr, nil
 }
 
-func (n GoStructNode) getStructTags() string {
+func (n goStructNode) getStructTags() string {
 	tagMap := n.SchemaNode.getTagMap()
 	if _, found := tagMap["valuetype"]; !found &&
 		n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
