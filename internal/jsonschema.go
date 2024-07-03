@@ -7,15 +7,11 @@ type JSONSchema struct {
 	Fields []JSONSchema `json:",omitempty"`
 }
 
-type JSONSchemaNode struct {
+type jsonSchemaNode struct {
 	SchemaNode
 }
 
-func NewJSONSchemaNode(s SchemaNode) JSONSchemaNode {
-	return JSONSchemaNode{s}
-}
-
-func (s JSONSchemaNode) Schema() JSONSchema {
+func (s jsonSchemaNode) Schema() JSONSchema {
 	tagMap := s.SchemaNode.getTagMap()
 
 	annotations := []string{}
@@ -34,7 +30,7 @@ func (s JSONSchemaNode) Schema() JSONSchema {
 	}
 
 	for index, child := range s.Children {
-		ret.Fields[index] = NewJSONSchemaNode(*child).Schema()
+		ret.Fields[index] = jsonSchemaNode{*child}.Schema()
 	}
 
 	return ret

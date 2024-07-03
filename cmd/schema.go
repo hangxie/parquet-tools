@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/hangxie/parquet-tools/internal"
 )
@@ -32,34 +31,22 @@ func (c SchemaCmd) Run() error {
 	schemaRoot := internal.NewSchemaTree(reader)
 	switch c.Format {
 	case formatRaw:
-		res, _ := json.Marshal(*schemaRoot)
-		fmt.Printf("%s\n", res)
+		schema, _ := json.Marshal(*schemaRoot)
+		fmt.Println(string(schema))
 	case formatJSON:
-		s := internal.NewJSONSchemaNode(*schemaRoot).Schema()
-		res, _ := json.Marshal(s)
-		fmt.Printf("%s\n", res)
+		fmt.Println(schemaRoot.JSONSchema())
 	case formatGo:
-		snippet, err := internal.NewGoStructNode(*schemaRoot).String()
+		goStruct, err := schemaRoot.GoStruct()
 		if err != nil {
 			return err
 		}
-		fmt.Printf("type %s %s\n", schemaRoot.Name, snippet)
+		fmt.Println(goStruct)
 	case formatCSV:
-		jsonSchema := internal.NewJSONSchemaNode(*schemaRoot).Schema()
-		s := make([]string, len(jsonSchema.Fields))
-		for i, f := range jsonSchema.Fields {
-			if len(f.Fields) != 0 {
-				return fmt.Errorf("CSV supports flat schema only")
-			}
-			if strings.Contains(f.Tag, "repetitiontype=REPEATED") {
-				return fmt.Errorf("CSV does not support column in LIST type")
-			}
-			if strings.Contains(f.Tag, "repetitiontype=OPTIONAL") {
-				return fmt.Errorf("CSV does not support optional column")
-			}
-			s[i] = strings.Replace(f.Tag, ", repetitiontype=REQUIRED", "", 1)
+		schema, err := schemaRoot.CSVSchema()
+		if err != nil {
+			return err
 		}
-		fmt.Println(strings.Join(s, "\n"))
+		fmt.Println(schema)
 	default:
 		return fmt.Errorf("unknown schema format [%s]", c.Format)
 	}
