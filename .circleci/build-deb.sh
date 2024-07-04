@@ -20,12 +20,12 @@ function build() {
 
     DEB_VER=$(echo ${VERSION} | cut -f 1 -d \- | tr -d 'a-z')
     PKG_NAME=parquet-tools
-    DOCKER_NAME=deb-build
+    DOCKER_NAME=deb-build-${BIN_ARCH}
     SOURCE_DIR=$(dirname $0)/..
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-    docker run -dit --rm --name ${DOCKER_NAME} debian:12-slim
+    docker run -di --rm --name ${DOCKER_NAME} debian:12-slim
 
     # CCI does not support volume mount, so use docker cp instead
     docker cp ${SOURCE_DIR}/build/release/${PKG_NAME}-${VERSION}-linux-${BIN_ARCH}.gz ${DOCKER_NAME}:/tmp/${PKG_NAME}.gz

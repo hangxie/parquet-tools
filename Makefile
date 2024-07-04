@@ -26,15 +26,16 @@ TAGS        :=
 
 .EXPORT_ALL_VARIABLES:
 
-.PHONY: all deps tools format lint test build docker-build clean release-build help
-
+.PHONY: all
 all: deps tools format lint test build  ## Build all common targets
 
+.PHONY: format
 format: tools  ## Format all go code
 	@echo "==> Formatting all go code"
 	@$(GOBIN)/gofumpt -w -extra $(GOSOURCES)
 	@$(GOBIN)/goimports -w -local $(PKG_PREFIX) $(GOSOURCES)
 
+.PHONY: lint
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
 	@$(GOBIN)/golangci-lint cache clean
@@ -46,34 +47,42 @@ lint: tools  ## Run static code analysis
 			false; \
 		fi
 
+.PHONY: deps
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
 	@go mod tidy
 
+.PHONY: tools
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
 	@(cd /tmp; \
-		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.0; \
-		go install github.com/jstemmer/go-junit-report/v2@v2.0.0; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+		go install github.com/jstemmer/go-junit-report/v2@latest; \
 		go install mvdan.cc/gofumpt@latest; \
 		go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \
 		go install golang.org/x/tools/cmd/goimports@latest; \
 	)
 
+.PHONY: build
 build: deps  ## Build locally for local os/arch creating $(BUILD_DIR) in ./
 	@echo "==> Building executable"
 	@mkdir -p $(BUILD_DIR)
 	@CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILD_DIR) ./
 
+.PHONY: clean
 clean:  ## Clean up the build dirs
 	@echo "==> Cleaning up build dirs"
 	@rm -rf $(BUILD_DIR) vendor .venv
 
-docker-build:  ## Build docker image
+.PHONY: docker-build
+docker-build:  ## Build docker image for local test
 	@echo "==> Building docker image"
-	@.circleci/build-img.sh
+	@mkdir -p $(BUILD_DIR)/release/
+	@.circleci/build-bin.sh
+	@docker build . -f package/container/Dockerfile -t parquet-tools:local
 
+.PHONY: test
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
 	@mkdir -p $(BUILD_DIR)/test $(BUILD_DIR)/junit
@@ -85,6 +94,7 @@ test: deps tools  ## Run unit tests
 		cat $(BUILD_DIR)/test/go-test.output | $(GOBIN)/go-junit-report > $(BUILD_DIR)/junit/junit.xml ; \
 		cat $(BUILD_DIR)/test/coverage.txt
 
+.PHONY: release-build
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
 	@mkdir -p $(BUILD_DIR)/release/
@@ -102,6 +112,7 @@ release-build: deps ## Build release binaries
 	@echo
 	@cat $(BUILD_DIR)/CHANGELOG
 
+.PHONY: help
 help:  ## Print list of Makefile targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 	  cut -d ":" -f1- | \
