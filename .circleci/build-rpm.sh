@@ -19,13 +19,13 @@ function build() {
     esac
 
     PKG_NAME=parquet-tools
-    DOCKER_NAME=rpm-build
+    DOCKER_NAME=rpm-build-${BIN_ARCH}
     RPM_VER=$(echo ${VERSION} | cut -f 1 -d \- | tr -d 'a-z')
     SOURCE_DIR=$(dirname $0)/..
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-    docker run -dit --rm --name ${DOCKER_NAME} debian:12-slim
+    docker run -di --rm --name ${DOCKER_NAME} debian:12-slim
 
     # CCI does not support volume mount, so use docker cp instead
     git -C ${SOURCE_DIR} archive --format=tar.gz --prefix=${PKG_NAME}-${RPM_VER}/ -o /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ${VERSION}

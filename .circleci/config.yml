@@ -130,7 +130,7 @@ jobs:
             docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create multi-platform --platform ${PLATFORM} --use
             docker buildx build --progress plain \
-                -f package/container/Dockerfile-ci --push \
+                -f package/container/Dockerfile --push \
                 --platform ${PLATFORM} \
                 -t hangxie/parquet-tools:${CIRCLE_TAG} \
                 -t hangxie/parquet-tools:latest \
