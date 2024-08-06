@@ -84,74 +84,50 @@ func Test_typeStr(t *testing.T) {
 func Test_repetitionTyeStr(t *testing.T) {
 	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
 
-	rType := parquet.FieldRepetitionType_OPTIONAL
-	require.Equal(t, "OPTIONAL", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
+	testCases := map[string]parquet.FieldRepetitionType{
+		"OPTIONAL": parquet.FieldRepetitionType_OPTIONAL,
+		"REQUIRED": parquet.FieldRepetitionType_REQUIRED,
+		"REPEATED": parquet.FieldRepetitionType_REPEATED,
+	}
 
-	rType = parquet.FieldRepetitionType_REQUIRED
-	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
-
-	rType = parquet.FieldRepetitionType_REPEATED
-	require.Equal(t, "REPEATED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: &rType}))
+	for expected, repetitionType := range testCases {
+		t.Run(expected, func(t *testing.T) {
+			require.Equal(t, expected, repetitionTyeStr(parquet.SchemaElement{RepetitionType: &repetitionType}))
+		})
+	}
 }
 
 func Test_DecimalToFloat_int32(t *testing.T) {
 	fieldAttr := ReinterpretField{
 		Scale: 2,
 	}
-	f64, err := DecimalToFloat(fieldAttr, int32(0))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 0.0, *f64)
 
-	f64, err = DecimalToFloat(fieldAttr, int32(11))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 0.11, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, int32(222))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 2.22, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, int32(-11))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, -0.11, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, int32(-222))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, -2.22, *f64)
-}
-
-func Test_DecimalToFloat_int64(t *testing.T) {
-	fieldAttr := ReinterpretField{
-		Scale: 2,
+	testCases := map[string]struct {
+		intValue     int
+		decimalValue float64
+	}{
+		"zero":                   {0, 0.0},
+		"fraction-only":          {11, 0.11},
+		"decimal":                {222, 2.22},
+		"whole-only":             {300, 3.00},
+		"negative-fraction-only": {-11, -0.11},
+		"negative-decimal":       {-222, -2.22},
+		"negative-whole-only":    {-300, -3.00},
 	}
-	f64, err := DecimalToFloat(fieldAttr, int64(0))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 0.0, *f64)
 
-	f64, err = DecimalToFloat(fieldAttr, int64(11))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 0.11, *f64)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			f64, err := DecimalToFloat(fieldAttr, int32(tc.intValue))
+			require.Nil(t, err)
+			require.NotNil(t, f64)
+			require.Equal(t, tc.decimalValue, *f64)
 
-	f64, err = DecimalToFloat(fieldAttr, int64(222))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 2.22, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, int64(-11))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, -0.11, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, int64(-222))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, -2.22, *f64)
+			f64, err = DecimalToFloat(fieldAttr, int64(tc.intValue))
+			require.Nil(t, err)
+			require.NotNil(t, f64)
+			require.Equal(t, tc.decimalValue, *f64)
+		})
+	}
 }
 
 func Test_DecimalToFloat_string(t *testing.T) {
@@ -160,49 +136,48 @@ func Test_DecimalToFloat_string(t *testing.T) {
 		Precision: 10,
 	}
 
-	f64, err := DecimalToFloat(fieldAttr, types.StrIntToBinary("000", "BigEndian", 0, true))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 0.0, *f64)
+	testCases := map[string]struct {
+		strValue     string
+		decimalValue float64
+	}{
+		"zero":                   {"000", 0.0},
+		"fraction-only":          {"011", 0.11},
+		"decimal":                {"222", 2.22},
+		"whole-only":             {"300", 3.00},
+		"negative-fraction-only": {"-011", -0.11},
+		"negative-decimal":       {"-222", -2.22},
+		"negative-whole-only":    {"-300", -3.00},
+	}
 
-	f64, err = DecimalToFloat(fieldAttr, types.StrIntToBinary("011", "BigEndian", 0, true))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 0.11, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, types.StrIntToBinary("222", "BigEndian", 0, true))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, 2.22, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, types.StrIntToBinary("-011", "BigEndian", 0, true))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, -0.11, *f64)
-
-	f64, err = DecimalToFloat(fieldAttr, types.StrIntToBinary("-222", "BigEndian", 0, true))
-	require.Nil(t, err)
-	require.NotNil(t, f64)
-	require.Equal(t, -2.22, *f64)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			f64, err := DecimalToFloat(fieldAttr, types.StrIntToBinary(tc.strValue, "BigEndian", 0, true))
+			require.Nil(t, err)
+			require.NotNil(t, f64)
+			require.Equal(t, tc.decimalValue, *f64)
+		})
+	}
 }
 
 func Test_DecimalToFloat_invalid_type(t *testing.T) {
 	fieldAttr := ReinterpretField{}
+	testCases := []struct {
+		value  interface{}
+		errMsg string
+	}{
+		{int(0), "unknown type: int"},
+		{float32(0.0), "unknown type: float32"},
+		{float64(0.0), "unknown type: float64"},
+	}
 
-	f64, err := DecimalToFloat(fieldAttr, int(0))
-	require.NotNil(t, err)
-	require.Equal(t, "unknown type: int", err.Error())
-	require.Nil(t, f64)
-
-	f64, err = DecimalToFloat(fieldAttr, float32(0.0))
-	require.NotNil(t, err)
-	require.Equal(t, "unknown type: float32", err.Error())
-	require.Nil(t, f64)
-
-	f64, err = DecimalToFloat(fieldAttr, float64(0.0))
-	require.NotNil(t, err)
-	require.Equal(t, "unknown type: float64", err.Error())
-	require.Nil(t, f64)
+	for _, tc := range testCases {
+		t.Run(tc.errMsg, func(t *testing.T) {
+			f64, err := DecimalToFloat(fieldAttr, tc.value)
+			require.NotNil(t, err)
+			require.Equal(t, tc.errMsg, err.Error())
+			require.Nil(t, f64)
+		})
+	}
 }
 
 func Test_StringToBytes(t *testing.T) {
@@ -216,17 +191,21 @@ func Test_StringToBytes(t *testing.T) {
 func Test_TimeUnitToTag(t *testing.T) {
 	require.Equal(t, "", TimeUnitToTag(nil))
 
-	unit := parquet.TimeUnit{}
-	require.Equal(t, "UNKNOWN_UNIT", TimeUnitToTag(&unit))
+	testCases := map[string]struct {
+		unit    parquet.TimeUnit
+		unitTag string
+	}{
+		"empty-unit": {parquet.TimeUnit{}, "UNKNOWN_UNIT"},
+		"nanos":      {parquet.TimeUnit{NANOS: &parquet.NanoSeconds{}}, "NANOS"},
+		"micros":     {parquet.TimeUnit{MICROS: &parquet.MicroSeconds{}}, "MICROS"},
+		"millis":     {parquet.TimeUnit{MILLIS: &parquet.MilliSeconds{}}, "MILLIS"},
+	}
 
-	unit = parquet.TimeUnit{NANOS: &parquet.NanoSeconds{}}
-	require.Equal(t, "NANOS", TimeUnitToTag(&unit))
-
-	unit = parquet.TimeUnit{MICROS: &parquet.MicroSeconds{}}
-	require.Equal(t, "MICROS", TimeUnitToTag(&unit))
-
-	unit = parquet.TimeUnit{MILLIS: &parquet.MilliSeconds{}}
-	require.Equal(t, "MILLIS", TimeUnitToTag(&unit))
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tc.unitTag, TimeUnitToTag(&tc.unit))
+		})
+	}
 }
 
 func Test_JSON_schema_list_variant(t *testing.T) {
