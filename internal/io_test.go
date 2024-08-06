@@ -16,34 +16,27 @@ import (
 
 func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 	u := url.URL{
-		Host: "",
-		Path: "",
+		Host: "storageacconut",
 	}
 	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
 
-	uri, cred, err := azureAccessDetail(u, false)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "azure blob URI format:")
-	require.Equal(t, "", uri)
-	require.Nil(t, cred)
+	invalidPaths := []string{
+		"",
+		"missin/leading/slash",
+		"/no-container",
+		"/empty-blob/",
+	}
 
-	u.Host = "storageacconut"
-	u.Path = "missin/leading/slash"
-	_, _, err = azureAccessDetail(u, false)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "azure blob URI format:")
-
-	u.Host = "storageacconut"
-	u.Path = "/no-container"
-	_, _, err = azureAccessDetail(u, false)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "azure blob URI format:")
-
-	u.Host = "storageacconut"
-	u.Path = "/empty-blob/"
-	_, _, err = azureAccessDetail(u, false)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "azure blob URI format:")
+	for _, path := range invalidPaths {
+		t.Run(path, func(t *testing.T) {
+			u.Path = path
+			uri, cred, err := azureAccessDetail(u, false)
+			require.NotNil(t, err)
+			require.Contains(t, err.Error(), "azure blob URI format:")
+			require.Equal(t, "", uri)
+			require.Nil(t, cred)
+		})
+	}
 }
 
 func Test_azureAccessDetail_bad_shared_cred(t *testing.T) {
@@ -174,7 +167,6 @@ func Test_parseURI_good(t *testing.T) {
 	require.Equal(t, "path/to/file", u.Path)
 }
 
-// NewParquetFileReader
 func Test_NewParquetFileReader_invalid_uri(t *testing.T) {
 	option := ReadOption{}
 	option.URI = "://uri"
@@ -268,7 +260,6 @@ func Test_NewParquetFileReader_azblob_no_permission(t *testing.T) {
 	require.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
-// NewFileWriter
 func Test_NewFileWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
 	option.URI = "://uri"
@@ -383,7 +374,6 @@ func Test_NewFileWriter_http_not_supported(t *testing.T) {
 	require.Contains(t, err.Error(), "writing to https endpoint is not currently supported")
 }
 
-// NewCSVWriter
 func Test_NewCSVWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
 	option.URI = "://uri"
@@ -414,7 +404,6 @@ func Test_NewCSVWriter_good(t *testing.T) {
 	defer pw.PFile.Close()
 }
 
-// NewJSONWriter
 func Test_NewJSONWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
 	option.URI = "://uri"
