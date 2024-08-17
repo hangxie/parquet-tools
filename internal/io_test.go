@@ -396,7 +396,7 @@ func Test_NewCSVWriter_invalid_schema(t *testing.T) {
 
 func Test_NewCSVWriter_good(t *testing.T) {
 	option := WriteOption{}
-	option.Compression = "LZ4"
+	option.Compression = "LZ4_RAW"
 	option.URI = os.TempDir() + "/csv-writer.parquet"
 	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
 	require.Nil(t, err)
@@ -505,7 +505,6 @@ func Test_NewJSONWriter_invalid_compression_codec(t *testing.T) {
 
 var unsupportedCodec = []string{
 	"BROTLI",
-	"LZ4_RAW",
 	"LZO",
 }
 

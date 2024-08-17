@@ -15,7 +15,7 @@ require (
 	github.com/xitongsys/parquet-go-source v0.0.0-20240122235623-d6294584ab18
 )
 
-replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20230917005036-03f098e3f12e
+replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20240817021626-f9fb5367878a
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.26 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/hashicorp/go-uuid v0.0.0-20180228145832-27454136f036 // indirect
 	github.com/jcmturner/gofork v0.0.0-20180107083740-2aebee971930 // indirect
 	github.com/klauspost/asmfmt v1.3.2 // indirect
-	github.com/klauspost/compress v1.15.9 // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
 	github.com/minio/asm2plan9s v0.0.0-20200509001527-cdd76441f9d8 // indirect
 	github.com/minio/c2goasm v0.0.0-20190812172519-36a3d3bbc4f3 // indirect

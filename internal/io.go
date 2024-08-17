@@ -57,7 +57,7 @@ type ReadOption struct {
 // WriteOption includes options for write operation
 type WriteOption struct {
 	CommonOption
-	Compression string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,ZSTD" default:"SNAPPY"`
+	Compression string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,LZ4_RAW,ZSTD" default:"SNAPPY"`
 }
 
 func parseURI(uri string) (*url.URL, error) {
@@ -362,7 +362,7 @@ func compressionCodec(codecName string) (parquet.CompressionCodec, error) {
 		return parquet.CompressionCodec_UNCOMPRESSED, err
 	}
 	switch codec {
-	case parquet.CompressionCodec_BROTLI, parquet.CompressionCodec_LZO, parquet.CompressionCodec_LZ4_RAW:
+	case parquet.CompressionCodec_BROTLI, parquet.CompressionCodec_LZO:
 		return parquet.CompressionCodec_UNCOMPRESSED, fmt.Errorf("%s compression is not supported at this moment", codec.String())
 	}
 	return codec, nil

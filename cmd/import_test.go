@@ -153,7 +153,7 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Source = "../testdata/csv.source"
 	cmd.URI = os.TempDir() + "/import-csv.parquet"
-	cmd.Compression = "LZ4"
+	cmd.Compression = "LZ4_RAW"
 
 	err := cmd.importCSV()
 	require.Nil(t, err)
