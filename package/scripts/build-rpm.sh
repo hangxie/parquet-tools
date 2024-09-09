@@ -21,7 +21,7 @@ function build() {
     PKG_NAME=parquet-tools
     DOCKER_NAME=rpm-build-${BIN_ARCH}
     RPM_VER=$(echo ${VERSION} | cut -f 1 -d \- | tr -d 'a-z')
-    SOURCE_DIR=$(dirname $0)/..
+    SOURCE_DIR=$(dirname $0)/../..
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
