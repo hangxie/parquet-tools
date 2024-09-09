@@ -100,6 +100,9 @@ release-build: deps ## Build release binaries
 	@mkdir -p $(BUILD_DIR)/release/
 	@package/scripts/build-bin.sh
 
+	@echo "==> build homebrew bottles"
+	@package/scripts/build-brew.sh
+
 	@echo "==> generate RPM and deb packages"
 	@package/scripts/build-rpm.sh
 	@package/scripts/build-deb.sh
