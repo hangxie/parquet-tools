@@ -116,9 +116,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.20.0
+v1.22.2
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.20.0
+v1.22.2
 ```
 
 ### Prebuilt Packages
@@ -679,34 +679,35 @@ $ parquet-tools size -q all -j testdata/good.parquet
 
 ### version Command
 
-`version` command provides version, build information, and git hash, it will be quite helpful when you are troubleshooting a problem from this tool itself.
+`version` command provides version, build time, git hash, and source of the executable, it will be quite helpful when you are troubleshooting a problem from this tool itself. Source of the executable can be "source" (or "") which means it was built from source code, or "github" indicates it was from github release (include container images and deb/rpm packages as they share the same build result), or "bottle" if it was from homebrew bottles.
 
 #### Print Version
 
 ```bash
 $ parquet-tools version
-v1.20.0
+v1.22.2
 ```
 
 #### Print All Information
 
 ```bash
-$ parquet-tools version -bg
-v1.20.0
-2023-07-04T23:40:28+00:00
-f171552
+$ parquet-tools version -bgs
+v1.22.2
+2024-09-09T20:36:44+00:00
+0bcba77
+bottle
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.20.0","BuildTime":"2023-07-04T23:40:28+00:00","GitHash":"f171552"}
+{"Version":"v1.22.2","BuildTime":"2024-09-09T20:36:44+00:00","GitHash":"0bcba77","Source":"bottle"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.20.0"}
+{"Version":"v1.22.2"}
 ```

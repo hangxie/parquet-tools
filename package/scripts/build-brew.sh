@@ -21,7 +21,8 @@ for ARCH in arm64 amd64; do
 
     # rebuild just in case we need any special setting for homebrew
     GOOS=darwin GOARCH=${ARCH} \
-        ${GO} build ${GOFLAGS} -tags "${TAGS}" -ldflags "${LDFLAGS}" \
+        ${GO} build ${GOFLAGS} -tags "${TAGS}" \
+        -ldflags "${LDFLAGS} -X ${PKG_PREFIX}/cmd.source=bottle" \
         -o ${BOTTLE_DIR}/bin/parquet-tools ${SOURCE_DIR}
 
     # nice-to-have files
