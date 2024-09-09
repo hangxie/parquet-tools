@@ -97,6 +97,14 @@ Whenever you want to upgrade to latest version which you should:
 $ brew upgrade go-parquet-tools
 ```
 
+Starting from v1.22.1 go-parquet-tools will be installed from [bottles](https://docs.brew.sh/Bottles) by default, which can dramatically reduce time to install in environments with slow connection. The binary build comes from release of this repository. If you do not feel comfortable with prebuilt and still want to install from source, you can use `--build-from-source` flag:
+
+```bash
+$ brew install --build-from-source go-parquet-tools
+```
+
+same flag is needed for `reinstall`, also `brew upgrade` may bring bottles so you want to run `uninstall` followed by `install`.
+
 ### Container Image
 
 Container image supports amd64, arm64, and arm/v7, it is hosted in two registries:
