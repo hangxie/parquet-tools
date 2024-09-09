@@ -8,7 +8,10 @@ for TARGET in ${REL_TARGET}; do
         rm -f ${BINARY} ${BINARY}.gz ${BINARY}.zip
         export GOOS=$(echo ${TARGET} | cut -f 1 -d \-)
         export GOARCH=$(echo ${TARGET} | cut -f 2 -d \-)
-        ${GO} build ${GOFLAGS} -tags "${TAGS}" -ldflags "${LDFLAGS}" -o ${BINARY} ./
+        ${GO} build ${GOFLAGS} \
+            -tags "${TAGS}" \
+            -ldflags "${LDFLAGS} -X ${PKG_PREFIX}/cmd.source=github" \
+            -o ${BINARY} ./
         if [ ${GOOS} == "windows" ]; then
             (cd $(dirname ${BINARY});
                 BASE_NAME=$(basename ${BINARY});
