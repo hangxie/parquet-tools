@@ -79,7 +79,7 @@ clean:  ## Clean up the build dirs
 docker-build:  ## Build docker image for local test
 	@echo "==> Building docker image"
 	@mkdir -p $(BUILD_DIR)/release/
-	@.circleci/build-bin.sh
+	@package/scripts/build-bin.sh
 	@docker build . -f package/container/Dockerfile -t parquet-tools:local
 
 .PHONY: test
@@ -98,14 +98,14 @@ test: deps tools  ## Run unit tests
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
 	@mkdir -p $(BUILD_DIR)/release/
-	@.circleci/build-bin.sh
+	@package/scripts/build-bin.sh
 
 	@echo "==> generate RPM and deb packages"
-	@.circleci/build-rpm.sh
-	@.circleci/build-deb.sh
+	@package/scripts/build-rpm.sh
+	@package/scripts/build-deb.sh
 
 	@echo "==> generate build meta data"
-	@.circleci/gen-meta.sh
+	@package/scripts/gen-meta.sh
 
 	@echo "==> release info"
 	@cat $(BUILD_DIR)/release/checksum-sha512.txt

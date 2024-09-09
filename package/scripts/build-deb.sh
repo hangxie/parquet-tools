@@ -21,7 +21,7 @@ function build() {
     DEB_VER=$(echo ${VERSION} | cut -f 1 -d \- | tr -d 'a-z')
     PKG_NAME=parquet-tools
     DOCKER_NAME=deb-build-${BIN_ARCH}
-    SOURCE_DIR=$(dirname $0)/..
+    SOURCE_DIR=$(dirname $0)/../..
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
