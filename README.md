@@ -1,9 +1,9 @@
+[![](https://img.shields.io/badge/license-BSD%203-blue)](https://github.com/hangxie/parquet-tools/blob/main/LICENSE)
 [![](https://img.shields.io/github/v/tag/hangxie/parquet-tools.svg?color=brightgreen&label=version&sort=semver)](https://github.com/hangxie/parquet-tools/releases)
 [![](https://circleci.com/gh/hangxie/parquet-tools/tree/main.svg?style=shield)](https://circleci.com/gh/hangxie/parquet-tools/tree/main)
+[![[parquet-tools]](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml/badge.svg)](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml)
 [![](https://goreportcard.com/badge/github.com/hangxie/parquet-tools)](https://goreportcard.com/report/github.com/hangxie/parquet-tools)
-[![](https://img.shields.io/badge/license-BSD%203-blue)](https://github.com/hangxie/parquet-tools/blob/main/LICENSE)
-[![codecov](https://codecov.io/gh/hangxie/parquet-tools/graph/badge.svg?token=ndcA88McUD)](https://codecov.io/gh/hangxie/parquet-tools)
-[![[parquet-tools]](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml/badge.svg)](https://github.com/hangxie/parquet-tools/actions)
+[![Go Coverage](https://github.com/hangxie/parquet-tools/wiki/coverage.svg)](https://raw.githack.com/wiki/hangxie/parquet-tools/coverage.html)
 
 # parquet-tools
 Utility to inspect Parquet files.
