@@ -46,3 +46,7 @@ jobs:
           gh release create $(cat ./build/VERSION) --notes-file ./build/CHANGELOG ./build/release/*
       - name: Update coverage badge
         uses: ncruces/go-coverage-report@main
+        with:
+          report: true
+          chart: true
+          amend: true
