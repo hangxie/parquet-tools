@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.0
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.1
 	github.com/alecthomas/kong v1.2.1
 	github.com/aws/aws-sdk-go-v2 v1.31.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
@@ -37,7 +37,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.13.0 // indirect
 	cloud.google.com/go/storage v1.29.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.13.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.14.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.10.0 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/apache/arrow/go/v12 v12.0.1 // indirect
