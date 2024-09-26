@@ -1,1 +1,4 @@
-Moved to [README.md](README.md#Installation-and-Usage-of-parquet-tools)
+---
+layout: forward
+target: https://github.com/hangxie/parquet-tools/blob/main/README.md
+---
