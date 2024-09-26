@@ -385,7 +385,7 @@ appy.parquet
 `parquet-tools` can read and write files under HDFS with schema `hdfs://username@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
 
 ```bash
-$ parquet-tools import -f jsonl -s testdata/jsonl.schema -s testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
+$ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
 parquet-tools: error: failed to create JSON writer: failed to open HDFS source [hdfs://localhost:9000/temp/good.parquet]: create /temp/good.parquet: permission denied
 $ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
 $ parquet-tools row-count hdfs://localhost:9000/temp/good.parquet
