@@ -19,11 +19,12 @@ type SizeCmd struct {
 	internal.ReadOption
 	Query string `short:"q" help:"Size to query (raw/uncompressed/footer/all)." enum:"raw,uncompressed,footer,all" default:"raw"`
 	JSON  bool   `short:"j" help:"Output in JSON format." default:"false"`
+	URI   string `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
 // Run does actual size job
 func (c SizeCmd) Run() error {
-	reader, err := internal.NewParquetFileReader(c.ReadOption)
+	reader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}

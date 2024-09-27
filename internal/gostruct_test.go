@@ -14,8 +14,8 @@ import (
 
 func Test_GoStructNode_String_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -35,8 +35,8 @@ func Test_GoStructNode_String_good(t *testing.T) {
 
 func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/map-value-map.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/map-value-map.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -56,8 +56,8 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 
 func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/map-composite-value.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/map-composite-value.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -71,8 +71,8 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/good.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/good.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -89,8 +89,8 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/reinterpret-list.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/reinterpret-list.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -110,8 +110,8 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/reinterpret-map-key.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/reinterpret-map-key.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -131,8 +131,8 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/reinterpret-map-key.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/reinterpret-map-key.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -151,8 +151,8 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/list-of-list.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/list-of-list.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 

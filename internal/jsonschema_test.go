@@ -10,8 +10,8 @@ import (
 
 func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 

@@ -13,8 +13,8 @@ import (
 
 func Test_NewSchemaTree(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -28,8 +28,8 @@ func Test_NewSchemaTree(t *testing.T) {
 
 func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -228,8 +228,8 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 
 func Test_Json_schema_go_struct_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -244,8 +244,8 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 
 func Test_Json_schema_json_schema_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -263,8 +263,8 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 
 func Test_Json_schema_csv_schema_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/csv-good.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/csv-good.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -279,8 +279,8 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 
 func Test_Json_schema_csv_schema_nested(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/csv-nested.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/csv-nested.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -294,8 +294,8 @@ func Test_Json_schema_csv_schema_nested(t *testing.T) {
 
 func Test_Json_schema_csv_schema_optional(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/csv-optional.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/csv-optional.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
@@ -309,8 +309,8 @@ func Test_Json_schema_csv_schema_optional(t *testing.T) {
 
 func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/csv-repeated.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/csv-repeated.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 

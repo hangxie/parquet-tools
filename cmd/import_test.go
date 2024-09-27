@@ -158,7 +158,7 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	err := cmd.importCSV()
 	require.Nil(t, err)
 
-	reader, err := internal.NewParquetFileReader(internal.ReadOption{CommonOption: cmd.WriteOption.CommonOption})
+	reader, err := internal.NewParquetFileReader(cmd.URI, internal.ReadOption{})
 	require.Nil(t, err)
 	require.Equal(t, reader.GetNumRows(), int64(7))
 }

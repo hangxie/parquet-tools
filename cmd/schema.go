@@ -18,11 +18,12 @@ var (
 type SchemaCmd struct {
 	internal.ReadOption
 	Format string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
+	URI    string `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
 // Run does actual schema job
 func (c SchemaCmd) Run() error {
-	reader, err := internal.NewParquetFileReader(c.ReadOption)
+	reader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
