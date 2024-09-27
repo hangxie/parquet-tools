@@ -29,6 +29,7 @@ type CatCmd struct {
 	SampleRatio  float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
+	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
 // here are performance numbers for different SkipPageSize:
@@ -76,7 +77,7 @@ func (c CatCmd) Run() error {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
-	fileReader, err := internal.NewParquetFileReader(c.ReadOption)
+	fileReader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}

@@ -39,14 +39,8 @@ const (
 	schemeHDFS               string = "hdfs"
 )
 
-// CommonOption represents common options across most commands
-type CommonOption struct {
-	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
-}
-
 // ReadOption includes options for read operation
 type ReadOption struct {
-	CommonOption
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
@@ -56,7 +50,6 @@ type ReadOption struct {
 
 // WriteOption includes options for write operation
 type WriteOption struct {
-	CommonOption
 	Compression string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,LZ4_RAW,ZSTD" default:"SNAPPY"`
 }
 
@@ -190,7 +183,7 @@ func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error)
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
 
-func NewParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
+func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
 	readerFuncTable := map[string]func(*url.URL, ReadOption) (*reader.ParquetReader, error){
 		schemeLocal:              newLocalReader,
 		schemeAWSS3:              newAWSS3Reader,
@@ -201,7 +194,7 @@ func NewParquetFileReader(option ReadOption) (*reader.ParquetReader, error) {
 		schemeHDFS:               newHDFSReader,
 	}
 
-	u, err := parseURI(option.URI)
+	u, err := parseURI(URI)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +267,7 @@ func newHDFSWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	return fileWriter, nil
 }
 
-func NewParquetFileWriter(option WriteOption) (source.ParquetFile, error) {
+func NewParquetFileWriter(uri string, option WriteOption) (source.ParquetFile, error) {
 	writerFuncTable := map[string]func(*url.URL, WriteOption) (source.ParquetFile, error){
 		schemeLocal:              newLocalWriter,
 		schemeAWSS3:              newAWSS3Writer,
@@ -285,7 +278,7 @@ func NewParquetFileWriter(option WriteOption) (source.ParquetFile, error) {
 		schemeHDFS:               newHDFSWriter,
 	}
 
-	u, err := parseURI(option.URI)
+	u, err := parseURI(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -295,8 +288,8 @@ func NewParquetFileWriter(option WriteOption) (source.ParquetFile, error) {
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
-func NewCSVWriter(option WriteOption, schema []string) (*writer.CSVWriter, error) {
-	fileWriter, err := NewParquetFileWriter(option)
+func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVWriter, error) {
+	fileWriter, err := NewParquetFileWriter(uri, option)
 	if err != nil {
 		return nil, err
 	}
@@ -315,8 +308,8 @@ func NewCSVWriter(option WriteOption, schema []string) (*writer.CSVWriter, error
 	return pw, nil
 }
 
-func NewJSONWriter(option WriteOption, schema string) (*writer.JSONWriter, error) {
-	fileWriter, err := NewParquetFileWriter(option)
+func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONWriter, error) {
+	fileWriter, err := NewParquetFileWriter(uri, option)
 	if err != nil {
 		return nil, err
 	}

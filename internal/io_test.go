@@ -169,40 +169,40 @@ func Test_parseURI_good(t *testing.T) {
 
 func Test_NewParquetFileReader_invalid_uri(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "://uri"
-	_, err := NewParquetFileReader(option)
+	uri := "://uri"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_NewParquetFileReader_invalid_uri_scheme(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "invalid-scheme://something"
-	_, err := NewParquetFileReader(option)
+	uri := "invalid-scheme://something"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unknown location scheme")
 }
 
 func Test_NewParquetFileReader_local_non_existent_file(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "file/does/not/exist"
-	_, err := NewParquetFileReader(option)
+	uri := "file/does/not/exist"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "no such file or directory")
 }
 
 func Test_NewParquetFileReader_local_not_parquet(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/not-a-parquet-file"
-	_, err := NewParquetFileReader(option)
+	uri := "../testdata/not-a-parquet-file"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "invalid argument")
 }
 
 func Test_NewParquetFileReader_local_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "../testdata/good.parquet"
-	pr, err := NewParquetFileReader(option)
+	uri := "../testdata/good.parquet"
+	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, pr)
 	pr.PFile.Close()
@@ -214,8 +214,8 @@ func Test_NewParquetFileReader_s3_good(t *testing.T) {
 	os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{Anonymous: true}
-	option.URI = "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
-	_, err := NewParquetFileReader(option)
+	uri := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
+	_, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 }
 
@@ -225,8 +225,8 @@ func Test_NewParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{ObjectVersion: "random-version-id", Anonymous: true}
-	option.URI = "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
-	_, err := NewParquetFileReader(option)
+	uri := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	// refer to https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html
 	// the sample data bucket does not have version enabled so it will return HTTP/400
@@ -238,8 +238,8 @@ func Test_NewParquetFileReader_gcs_no_permission(t *testing.T) {
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
 	option := ReadOption{}
-	option.URI = "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
-	_, err := NewParquetFileReader(option)
+	uri := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to open GCS object")
 }
@@ -254,40 +254,40 @@ func Test_NewParquetFileReader_azblob_no_permission(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := ReadOption{}
-	option.URI = "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
-	_, err = NewParquetFileReader(option)
+	uri := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
+	_, err = NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
 func Test_NewFileWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "://uri"
-	_, err := NewParquetFileWriter(option)
+	uri := "://uri"
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_NewFileWriter_invalid_uri_scheme(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "invalid-scheme://something"
-	_, err := NewParquetFileWriter(option)
+	uri := "invalid-scheme://something"
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unknown location scheme")
 }
 
 func Test_NewFileWriter_local_not_a_file(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "../testdata/"
-	_, err := NewParquetFileWriter(option)
+	uri := "../testdata/"
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "is a directory")
 }
 
 func Test_NewFileWriter_local_good(t *testing.T) {
 	option := WriteOption{}
-	option.URI = os.TempDir() + "/file-writer.parquet"
-	fw, err := NewParquetFileWriter(option)
+	uri := os.TempDir() + "/file-writer.parquet"
+	fw, err := NewParquetFileWriter(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
 	defer fw.Close()
@@ -296,8 +296,8 @@ func Test_NewFileWriter_local_good(t *testing.T) {
 func Test_NewFileWriter_s3_non_existent_bucket(t *testing.T) {
 	option := WriteOption{}
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	option.URI = fmt.Sprintf("s3://bucket-does-not-exist-%d", intVal.Int64())
-	_, err := NewParquetFileWriter(option)
+	uri := fmt.Sprintf("s3://bucket-does-not-exist-%d", intVal.Int64())
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
 }
@@ -309,8 +309,8 @@ func Test_NewFileWriter_s3_good(t *testing.T) {
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
-	option.URI = "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
-	fw, err := NewParquetFileWriter(option)
+	uri := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
+	fw, err := NewParquetFileWriter(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
 	defer fw.Close()
@@ -322,8 +322,8 @@ func Test_NewFileWriter_gcs_no_permission(t *testing.T) {
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
-	option.URI = "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
-	_, err := NewParquetFileWriter(option)
+	uri := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to open GCS object")
 }
@@ -338,13 +338,13 @@ func Test_NewFileWriter_azblob_invalid_url(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := WriteOption{}
-	option.URI = "wasbs://bad/url"
-	_, err = NewParquetFileWriter(option)
+	uri := "wasbs://bad/url"
+	_, err = NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "azure blob URI format:")
 
-	option.URI = "wasbs://storageaccount.blob.core.windows.net//aa"
-	_, err = NewParquetFileWriter(option)
+	uri = "wasbs://storageaccount.blob.core.windows.net//aa"
+	_, err = NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "azure blob URI format:")
 }
@@ -359,37 +359,37 @@ func Test_NewFileWriter_azblob_good(t *testing.T) {
 	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := WriteOption{}
-	option.URI = "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/foobar.parquet"
+	uri := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/foobar.parquet"
 
 	// permission will be checked at close/flush time
-	_, err = NewParquetFileWriter(option)
+	_, err = NewParquetFileWriter(uri, option)
 	require.Nil(t, err)
 }
 
 func Test_NewFileWriter_http_not_supported(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "https://domain.tld/path/to/file"
-	_, err := NewParquetFileWriter(option)
+	uri := "https://domain.tld/path/to/file"
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "writing to https endpoint is not currently supported")
 }
 
 func Test_NewCSVWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "://uri"
-	_, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+	uri := "://uri"
+	_, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_NewCSVWriter_invalid_schema(t *testing.T) {
 	option := WriteOption{}
-	option.URI = os.TempDir() + "/csv-writer.parquet"
-	_, err := NewCSVWriter(option, []string{"invalid schema"})
+	uri := os.TempDir() + "/csv-writer.parquet"
+	_, err := NewCSVWriter(uri, option, []string{"invalid schema"})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "expect 'key=value'")
 
-	_, err = NewCSVWriter(option, []string{"name=Id"})
+	_, err = NewCSVWriter(uri, option, []string{"name=Id"})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "not a valid Type string")
 }
@@ -397,8 +397,8 @@ func Test_NewCSVWriter_invalid_schema(t *testing.T) {
 func Test_NewCSVWriter_good(t *testing.T) {
 	option := WriteOption{}
 	option.Compression = "LZ4_RAW"
-	option.URI = os.TempDir() + "/csv-writer.parquet"
-	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+	uri := os.TempDir() + "/csv-writer.parquet"
+	pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 	require.Nil(t, err)
 	require.NotNil(t, pw)
 	defer pw.PFile.Close()
@@ -406,20 +406,20 @@ func Test_NewCSVWriter_good(t *testing.T) {
 
 func Test_NewJSONWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "://uri"
-	_, err := NewJSONWriter(option, "")
+	uri := "://uri"
+	_, err := NewJSONWriter(uri, option, "")
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
 func Test_NewJSONWriter_invalid_schema(t *testing.T) {
 	option := WriteOption{}
-	option.URI = os.TempDir() + "/json-writer.parquet"
-	_, err := NewJSONWriter(option, "invalid schema")
+	uri := os.TempDir() + "/json-writer.parquet"
+	_, err := NewJSONWriter(uri, option, "invalid schema")
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "error in unmarshalling json schema string:")
 
-	_, err = NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`)
+	_, err = NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "type FOOBAR: not a valid Type string")
 }
@@ -427,8 +427,8 @@ func Test_NewJSONWriter_invalid_schema(t *testing.T) {
 func Test_NewJSONWriter_good(t *testing.T) {
 	option := WriteOption{}
 	option.Compression = "ZSTD"
-	option.URI = os.TempDir() + "/json-writer.parquet"
-	pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+	uri := os.TempDir() + "/json-writer.parquet"
+	pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.Nil(t, err)
 	require.NotNil(t, pw)
 	defer pw.PFile.Close()
@@ -436,22 +436,22 @@ func Test_NewJSONWriter_good(t *testing.T) {
 
 func Test_NewParquetFileReader_http_bad_url(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "https://no-such-host.tld/"
+	uri := "https://no-such-host.tld/"
 	option.HTTPMultipleConnection = true
 	option.HTTPIgnoreTLSError = true
 	option.HTTPExtraHeaders = map[string]string{"key": "value"}
-	_, err := NewParquetFileReader(option)
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "no such host")
 }
 
 func Test_NewParquetFileReader_http_no_range_support(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "https://www.google.com/"
+	uri := "https://www.google.com/"
 	option.HTTPMultipleConnection = false
 	option.HTTPIgnoreTLSError = true
 	option.HTTPExtraHeaders = map[string]string{"key": "value"}
-	_, err := NewParquetFileReader(option)
+	_, err := NewParquetFileReader(uri, option)
 
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "does not support range")
@@ -459,26 +459,26 @@ func Test_NewParquetFileReader_http_no_range_support(t *testing.T) {
 
 func Test_NewParquetFileReader_http_good(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-01.parquet"
+	uri := "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-01.parquet"
 	option.HTTPMultipleConnection = true
 	option.HTTPIgnoreTLSError = false
 	option.HTTPExtraHeaders = map[string]string{"key": "value"}
-	_, err := NewParquetFileReader(option)
+	_, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 }
 
 func Test_NewParquetFileReader_hdfs_bad(t *testing.T) {
 	option := ReadOption{}
-	option.URI = "hdfs://localhost:1/temp/good.parquet"
-	_, err := NewParquetFileReader(option)
+	uri := "hdfs://localhost:1/temp/good.parquet"
+	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "connection refused")
 }
 
 func Test_newParquetFileWriter_hdfs_bad(t *testing.T) {
 	option := WriteOption{}
-	option.URI = "hdfs://localhost:1/temp/good.parquet"
-	_, err := NewParquetFileWriter(option)
+	uri := "hdfs://localhost:1/temp/good.parquet"
+	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "connection refused")
 }
@@ -486,8 +486,8 @@ func Test_newParquetFileWriter_hdfs_bad(t *testing.T) {
 func Test_NewCSVWriter_invalid_compression_codec(t *testing.T) {
 	option := WriteOption{}
 	option.Compression = "foobar"
-	option.URI = os.TempDir() + "/csv-writer.parquet"
-	pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+	uri := os.TempDir() + "/csv-writer.parquet"
+	pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 	require.NotNil(t, err)
 	require.Nil(t, pw)
 	require.Contains(t, "not a valid CompressionCodec string", err.Error())
@@ -496,8 +496,8 @@ func Test_NewCSVWriter_invalid_compression_codec(t *testing.T) {
 func Test_NewJSONWriter_invalid_compression_codec(t *testing.T) {
 	option := WriteOption{}
 	option.Compression = "random-dude"
-	option.URI = os.TempDir() + "/json-writer.parquet"
-	pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+	uri := os.TempDir() + "/json-writer.parquet"
+	pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.NotNil(t, err)
 	require.Nil(t, pw)
 	require.Contains(t, "not a valid CompressionCodec string", err.Error())
@@ -513,8 +513,8 @@ func Test_NewCSVWriter_unsupported_compression_codec(t *testing.T) {
 
 	for _, codec := range unsupportedCodec {
 		option.Compression = codec
-		option.URI = os.TempDir() + "/csv-writer.parquet"
-		pw, err := NewCSVWriter(option, []string{"name=Id, type=INT64"})
+		uri := os.TempDir() + "/csv-writer.parquet"
+		pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 		require.NotNil(t, err)
 		require.Nil(t, pw)
 		require.Contains(t, err.Error(), "compression is not supported at this moment")
@@ -525,8 +525,8 @@ func Test_NewJSONWriter_unsupported_compression_codec(t *testing.T) {
 	option := WriteOption{}
 	for _, codec := range unsupportedCodec {
 		option.Compression = codec
-		option.URI = os.TempDir() + "/json-writer.parquet"
-		pw, err := NewJSONWriter(option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+		uri := os.TempDir() + "/json-writer.parquet"
+		pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 		require.NotNil(t, err)
 		require.Nil(t, pw)
 		require.Contains(t, err.Error(), "compression is not supported at this moment")
