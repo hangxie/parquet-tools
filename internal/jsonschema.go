@@ -12,6 +12,18 @@ type jsonSchemaNode struct {
 }
 
 func (s jsonSchemaNode) Schema() JSONSchema {
+	// these are tag/value pairs to be ignored as they are default values
+	type tagValPair struct {
+		tag string
+		val string
+	}
+
+	tagsToIgnore := map[tagValPair]struct{}{
+		{"type", "STRUCT"}:             {},
+		{"repetitiontype", "REQUIRED"}: {},
+		{"convertedtype", "LIST"}:      {},
+		{"convertedtype", "MAP"}:       {},
+	}
 	tagMap := s.SchemaNode.getTagMap()
 
 	annotations := []string{}
@@ -21,6 +33,9 @@ func (s jsonSchemaNode) Schema() JSONSchema {
 			continue
 		}
 		if val, found := tagMap[tag]; found {
+			if _, found := tagsToIgnore[tagValPair{tag, val}]; found {
+				continue
+			}
 			annotations = append(annotations, tag+"="+val)
 		}
 	}

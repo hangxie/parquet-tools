@@ -613,8 +613,14 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]}
+{"Tag":"name=Parquet_go_root","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
 ```
+
+Default setting will be ignored to make output shorter, eg
+* convertedtype=LIST
+* convertedtype=MAP
+* repetitiontype=REQUIRED
+* type=STRUCT
 
 #### Raw Format
 
@@ -647,7 +653,7 @@ parquet-tools: error: go struct does not support composite type as map value in 
 exit status 1
 
 $ parquet-tools schema testdata/map-composite-value.parquet
-{"Tag":"name=Parquet_go_root, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Age, type=INT32, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"},{"Tag":"name=Weight, type=FLOAT, repetitiontype=REQUIRED"},{"Tag":"name=Sex, type=BOOLEAN, repetitiontype=REQUIRED"},{"Tag":"name=Classes, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"}]},{"Tag":"name=Scores, type=MAP, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Value, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=FLOAT, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Friends, type=LIST, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Element, type=STRUCT, repetitiontype=REQUIRED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]},{"Tag":"name=Teachers, type=STRUCT, repetitiontype=REPEATED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"},{"Tag":"name=Id, type=INT64, repetitiontype=REQUIRED"}]}]}
+{"Tag":"name=Parquet_go_root","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Age, type=INT32"},{"Tag":"name=Id, type=INT64"},{"Tag":"name=Weight, type=FLOAT"},{"Tag":"name=Sex, type=BOOLEAN"},{"Tag":"name=Classes, type=LIST","Fields":[{"Tag":"name=Element, type=BYTE_ARRAY, convertedtype=UTF8"}]},{"Tag":"name=Scores, type=MAP","Fields":[{"Tag":"name=Key, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Value, type=LIST","Fields":[{"Tag":"name=Element, type=FLOAT"}]}]},{"Tag":"name=Friends, type=LIST","Fields":[{"Tag":"name=Element","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Id, type=INT64"}]}]},{"Tag":"name=Teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Id, type=INT64"}]}]}
 ```
 
 #### CSV Format

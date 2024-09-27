@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -71,6 +72,24 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 
 	_, err := os.Stat(testFile)
 	require.Nil(t, err)
+
+	// verify jsonSchema
+	type jsonSchema struct {
+		Tag    string
+		Fields []interface{}
+	}
+	sourceSchemaBuf, _ := os.ReadFile(cmd.Schema)
+	reader, _ := internal.NewParquetFileReader(testFile, internal.ReadOption{})
+	schema := internal.NewSchemaTree(reader)
+
+	var sourceSchema jsonSchema
+	_ = json.Unmarshal(sourceSchemaBuf, &sourceSchema)
+	var targetSchema jsonSchema
+	_ = json.Unmarshal([]byte(schema.JSONSchema()), &targetSchema)
+
+	// top level tag can be different
+	require.Equal(t, sourceSchema.Fields, targetSchema.Fields)
+	os.Remove(testFile)
 }
 
 func Test_ImportCmd_Run_invalid_format(t *testing.T) {

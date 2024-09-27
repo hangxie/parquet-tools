@@ -1,14 +1,14 @@
 {
-  "Tag": "name=list-variants, type=STRUCT, repetitiontype=REQUIRED",
+  "Tag": "name=list-variants",
   "Fields": [
     {
       "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=OrgList, type=LIST, convertedtype=LIST, repetitiontype=OPTIONAL",
+      "Tag": "name=OrgList, type=LIST, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",
+          "Tag": "name=Element",
           "Fields": [
             {
               "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -26,10 +26,10 @@
               "Tag": "name=CreatedTime, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
             },
             {
-              "Tag": "name=ContactList, type=LIST, convertedtype=LIST, repetitiontype=OPTIONAL",
+              "Tag": "name=ContactList, type=LIST, repetitiontype=OPTIONAL",
               "Fields": [
                 {
-                  "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",
+                  "Tag": "name=Element",
                   "Fields": [
                     {
                       "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -60,7 +60,7 @@
               ]
             },
             {
-              "Tag": "name=ContractReport, type=STRUCT, repetitiontype=OPTIONAL",
+              "Tag": "name=ContractReport, repetitiontype=OPTIONAL",
               "Fields": [
                 {
                   "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -87,7 +87,7 @@
       ]
     },
     {
-      "Tag": "name=ContractReport, type=STRUCT, repetitiontype=OPTIONAL",
+      "Tag": "name=ContractReport, repetitiontype=OPTIONAL",
       "Fields": [
         {
           "Tag": "name=OrgId, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -113,16 +113,16 @@
       ]
     },
     {
-      "Tag": "name=InventoryMonitoring, type=STRUCT, repetitiontype=OPTIONAL",
+      "Tag": "name=InventoryMonitoring, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Configured, type=BOOLEAN, repetitiontype=REQUIRED"
+          "Tag": "name=Configured, type=BOOLEAN"
         },
         {
-          "Tag": "name=Accounts, type=LIST, convertedtype=LIST, repetitiontype=OPTIONAL",
+          "Tag": "name=Accounts, type=LIST, repetitiontype=OPTIONAL",
           "Fields": [
             {
-              "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",
+              "Tag": "name=Element",
               "Fields": [
                 {
                   "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -146,7 +146,7 @@
       "Tag": "name=Status, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=VerifyContracts, type=BOOLEAN, repetitiontype=REQUIRED"
+      "Tag": "name=VerifyContracts, type=BOOLEAN"
     },
     {
       "Tag": "name=DefaultAssetGroupId, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -176,10 +176,10 @@
       "Tag": "name=CreatedTime, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=Orgs, type=LIST, convertedtype=LIST, repetitiontype=OPTIONAL",
+      "Tag": "name=Orgs, type=LIST, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Element, type=STRUCT, repetitiontype=REQUIRED",
+          "Tag": "name=Element",
           "Fields": [
             {
               "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
@@ -213,13 +213,13 @@
       "Tag": "name=Env, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=EnableInventoryDataCollection, type=BOOLEAN, repetitiontype=REQUIRED"
+      "Tag": "name=EnableInventoryDataCollection, type=BOOLEAN"
     },
     {
-      "Tag": "name=ContractNumbers, type=LIST, convertedtype=LIST, repetitiontype=OPTIONAL",
+      "Tag": "name=ContractNumbers, type=LIST, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8"
         }
       ]
     },
@@ -227,13 +227,13 @@
       "Tag": "name=ContractLastUpdatedAt, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=CollectionStatus, type=MAP, convertedtype=MAP, repetitiontype=OPTIONAL",
+      "Tag": "name=CollectionStatus, type=MAP, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
         },
         {
-          "Tag": "name=Value, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=REQUIRED"
+          "Tag": "name=Value, type=BYTE_ARRAY, convertedtype=UTF8"
         }
       ]
     }
