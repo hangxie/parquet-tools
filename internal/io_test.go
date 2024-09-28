@@ -434,6 +434,36 @@ func Test_NewJSONWriter_good(t *testing.T) {
 	defer pw.PFile.Close()
 }
 
+func Test_NewGenericWriter_invalid_uri(t *testing.T) {
+	option := WriteOption{}
+	uri := "://uri"
+	_, err := NewGenericWriter(uri, option, "")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unable to parse file location")
+}
+
+func Test_NewGenericWriter_invalid_schema(t *testing.T) {
+	option := WriteOption{}
+	uri := os.TempDir() + "/json-writer.parquet"
+	_, err := NewGenericWriter(uri, option, "invalid schema")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "error in unmarshalling json schema string:")
+
+	_, err = NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "type FOOBAR: not a valid Type string")
+}
+
+func Test_NewGenericWriter_good(t *testing.T) {
+	option := WriteOption{}
+	option.Compression = "ZSTD"
+	uri := os.TempDir() + "/json-writer.parquet"
+	pw, err := NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+	require.Nil(t, err)
+	require.NotNil(t, pw)
+	defer pw.PFile.Close()
+}
+
 func Test_NewParquetFileReader_http_bad_url(t *testing.T) {
 	option := ReadOption{}
 	uri := "https://no-such-host.tld/"

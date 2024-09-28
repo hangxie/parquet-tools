@@ -83,6 +83,7 @@ TODO list is tracked as enhancement in issues.
       - [Import from CSV](#import-from-csv)
       - [Import from JSON](#import-from-json)
       - [Import from JSONL](#import-from-jsonl)
+    - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
       - [Show Meta Data with Base64-encoded Values](#show-meta-data-with-base64-encoded-values)
@@ -569,6 +570,27 @@ $ parquet-tools import -f jsonl -s testdata/jsonl.source -m testdata/jsonl.schem
 $ parquet-tools row-count /tmp/jsonl.parquet
 7
 ```
+
+### merge Command
+
+`merge` command merge several parquet files with same schema to one parquet file, all source files and target files can be from and to different storage locations.
+
+```bash
+$ parquet-tools merge --sources testdata/good.parquet,testdata/good.parquet /tmp/doubled.parquet
+$ parquet-tools cat -f jsonl testdata/good.parquet
+{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+$ parquet-tools cat -f jsonl /tmp/doubled.parquet
+{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
+{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
+{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+```
+
+you can use `--read-page-size` to configure how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
 
 ### meta Command
 
