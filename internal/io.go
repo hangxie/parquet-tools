@@ -328,6 +328,26 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 	return pw, nil
 }
 
+func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.ParquetWriter, error) {
+	fileWriter, err := NewParquetFileWriter(uri, option)
+	if err != nil {
+		return nil, err
+	}
+
+	pw, err := writer.NewParquetWriter(fileWriter, schema, int64(runtime.NumCPU()))
+	if err != nil {
+		fileWriter.Close()
+		return nil, err
+	}
+	codec, err := compressionCodec(option.Compression)
+	if err != nil {
+		fileWriter.Close()
+		return nil, err
+	}
+	pw.CompressionType = codec
+	return pw, nil
+}
+
 func azureAccessDetail(azURL url.URL, anonymous bool) (string, *azblob.SharedKeyCredential, error) {
 	container := azURL.User.Username()
 	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
