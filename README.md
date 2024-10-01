@@ -3,7 +3,7 @@
 [![](https://circleci.com/gh/hangxie/parquet-tools/tree/main.svg?style=shield)](https://circleci.com/gh/hangxie/parquet-tools/tree/main)
 [![[parquet-tools]](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml/badge.svg)](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml)
 [![](https://goreportcard.com/badge/github.com/hangxie/parquet-tools)](https://goreportcard.com/report/github.com/hangxie/parquet-tools)
-[![Go Coverage](https://github.com/hangxie/parquet-tools/wiki/coverage.svg)](https://raw.githack.com/wiki/hangxie/parquet-tools/coverage.html)
+[![](https://github.com/hangxie/parquet-tools/wiki/coverage.svg)](https://github.com/hangxie/parquet-tools/wiki/Coverage-Report)
 
 # parquet-tools
 Utility to inspect Parquet files.
