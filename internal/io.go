@@ -56,7 +56,7 @@ type WriteOption struct {
 func parseURI(uri string) (*url.URL, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse file location [%s]: %s", uri, err.Error())
+		return nil, fmt.Errorf("unable to parse file location [%s]: %w", uri, err)
 	}
 
 	if u.Scheme == "" {
@@ -107,7 +107,7 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithDefaultRegion("us-east-1"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load config to determine bucket region: %s", err.Error())
+		return nil, fmt.Errorf("failed to load config to determine bucket region: %w", err)
 	}
 	cfg.Region = region
 	return s3.NewFromConfig(cfg), nil
@@ -116,7 +116,7 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 func newLocalReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
 	fileReader, err := local.NewLocalFileReader(u.Path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
+		return nil, fmt.Errorf("failed to open local file [%s]: %w", u.Path, err)
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -133,7 +133,7 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error
 	}
 	fileReader, err := s3v2.NewS3FileReaderWithClientVersioned(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %s", u.String(), option.ObjectVersion, err.Error())
+		return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %w", u.String(), option.ObjectVersion, err)
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -146,7 +146,7 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 
 	fileReader, err := pqtazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %w", u.String(), err)
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -154,7 +154,7 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
 	fileReader, err := gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open GCS object [%s]: %w", u.String(), err)
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -162,7 +162,7 @@ func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.Parquet
 func newHTTPReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
 	fileReader, err := pqhttp.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open HTTP source [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open HTTP source [%s]: %w", u.String(), err)
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -178,7 +178,7 @@ func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error)
 
 	fileReader, err := hdfs.NewHdfsFileReader([]string{u.Host}, userName, u.Path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open HDFS source [%s]: %w", u.String(), err)
 	}
 	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
 }
@@ -208,7 +208,7 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 func newLocalWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	fileWriter, err := local.NewLocalFileWriter(u.Path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open local file [%s]: %s", u.Path, err.Error())
+		return nil, fmt.Errorf("failed to open local file [%s]: %w", u.Path, err)
 	}
 	return fileWriter, nil
 }
@@ -221,7 +221,7 @@ func newAWSS3Writer(u *url.URL, option WriteOption) (source.ParquetFile, error) 
 
 	fileWriter, err := s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open S3 object [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open S3 object [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
@@ -229,7 +229,7 @@ func newAWSS3Writer(u *url.URL, option WriteOption) (source.ParquetFile, error) 
 func newGoogleCloudStorageWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	fileWriter, err := gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to open GCS object [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open GCS object [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
@@ -243,7 +243,7 @@ func newAzureStorageBlobWriter(u *url.URL, option WriteOption) (source.ParquetFi
 
 	fileWriter, err := pqtazblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
@@ -262,7 +262,7 @@ func newHDFSWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	}
 	fileWriter, err := hdfs.NewHdfsFileWriter([]string{u.Host}, userName, u.Path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open HDFS source [%s]: %s", u.String(), err.Error())
+		return nil, fmt.Errorf("failed to open HDFS source [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
@@ -363,7 +363,7 @@ func azureAccessDetail(azURL url.URL, anonymous bool) (string, *azblob.SharedKey
 
 	credential, err := azblob.NewSharedKeyCredential(strings.Split(azURL.Host, ".")[0], accessKey)
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to create Azure credential: %v", err)
+		return "", nil, fmt.Errorf("failed to create Azure credential: %w", err)
 	}
 
 	return httpURL, credential, nil
