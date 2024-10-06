@@ -38,7 +38,7 @@ func (c ImportCmd) Run() error {
 func (c ImportCmd) importCSV() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
-		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
+		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
 	}
 	schema := []string{}
 	for _, line := range strings.Split(string(schemaData), "\n") {
@@ -50,14 +50,14 @@ func (c ImportCmd) importCSV() error {
 
 	csvFile, err := os.Open(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to open CSV file %s: %s", c.Source, err.Error())
+		return fmt.Errorf("failed to open CSV file %s: %w", c.Source, err)
 	}
 	defer csvFile.Close()
 	csvReader := csv.NewReader(csvFile)
 
 	parquetWriter, err := internal.NewCSVWriter(c.URI, c.WriteOption, schema)
 	if err != nil {
-		return fmt.Errorf("failed to create CSV writer: %s", err.Error())
+		return fmt.Errorf("failed to create CSV writer: %w", err)
 	}
 
 	if c.SkipHeader {
@@ -73,14 +73,14 @@ func (c ImportCmd) importCSV() error {
 			parquetFields[i] = &fields[i]
 		}
 		if err = parquetWriter.WriteString(parquetFields); err != nil {
-			return fmt.Errorf("failed to write [%v] to parquet: %s", fields, err.Error())
+			return fmt.Errorf("failed to write [%v] to parquet: %w", fields, err)
 		}
 	}
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %s", c.URI, err.Error())
+		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
 	}
 	if err := parquetWriter.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %s", c.URI, err.Error())
+		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
 	}
 
 	return nil
@@ -89,12 +89,12 @@ func (c ImportCmd) importCSV() error {
 func (c ImportCmd) importJSON() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
-		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
+		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
 	}
 
 	jsonData, err := os.ReadFile(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to load source from %s: %s", c.Source, err.Error())
+		return fmt.Errorf("failed to load source from %s: %w", c.Source, err)
 	}
 
 	var dummy map[string]interface{}
@@ -107,18 +107,18 @@ func (c ImportCmd) importJSON() error {
 
 	parquetWriter, err := internal.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
 	if err != nil {
-		return fmt.Errorf("failed to create JSON writer: %s", err.Error())
+		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
 
 	if err := parquetWriter.Write(string(jsonData)); err != nil {
-		return fmt.Errorf("failed to write to parquet file: %s", err.Error())
+		return fmt.Errorf("failed to write to parquet file: %w", err)
 	}
 
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %s", c.URI, err.Error())
+		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
 	}
 	if err := parquetWriter.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %s", c.URI, err.Error())
+		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
 	}
 
 	return nil
@@ -127,7 +127,7 @@ func (c ImportCmd) importJSON() error {
 func (c ImportCmd) importJSONL() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
-		return fmt.Errorf("failed to load schema from %s: %s", c.Schema, err.Error())
+		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
 	}
 
 	var dummy map[string]interface{}
@@ -145,7 +145,7 @@ func (c ImportCmd) importJSONL() error {
 
 	parquetWriter, err := internal.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
 	if err != nil {
-		return fmt.Errorf("failed to create JSON writer: %s", err.Error())
+		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
 
 	for scanner.Scan() {
@@ -155,14 +155,14 @@ func (c ImportCmd) importJSONL() error {
 		}
 
 		if err := parquetWriter.Write(string(jsonData)); err != nil {
-			return fmt.Errorf("failed to write to parquet file: %s", err.Error())
+			return fmt.Errorf("failed to write to parquet file: %w", err)
 		}
 	}
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %s", c.URI, err.Error())
+		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
 	}
 	if err := parquetWriter.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %s", c.URI, err.Error())
+		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
 	}
 
 	return nil

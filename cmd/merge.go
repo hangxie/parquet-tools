@@ -40,7 +40,7 @@ func (c MergeCmd) Run() error {
 
 	fileWriter, err := internal.NewGenericWriter(c.URI, c.WriteOption, schema)
 	if err != nil {
-		return fmt.Errorf("failed to write to [%s]: %v", c.URI, err)
+		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
 	defer func() {
 		_ = fileWriter.WriteStop()
@@ -51,23 +51,23 @@ func (c MergeCmd) Run() error {
 		for {
 			rows, err := fileReaders[i].ReadByNumber(c.ReadPageSize)
 			if err != nil {
-				return fmt.Errorf("failed to read from [%s]: %v", c.Sources[i], err)
+				return fmt.Errorf("failed to read from [%s]: %w", c.Sources[i], err)
 			}
 			if len(rows) == 0 {
 				break
 			}
 			for _, row := range rows {
 				if err := fileWriter.Write(row); err != nil {
-					return fmt.Errorf("failed to write data from [%s] to [%s]: %v", c.Sources[i], c.URI, err)
+					return fmt.Errorf("failed to write data from [%s] to [%s]: %w", c.Sources[i], c.URI, err)
 				}
 			}
 		}
 	}
 	if err := fileWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to end write [%s]: %v", c.URI, err)
+		return fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
 	}
 	if err := fileWriter.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close [%s]: %v", c.URI, err)
+		return fmt.Errorf("failed to close [%s]: %w", c.URI, err)
 	}
 
 	return nil
@@ -80,7 +80,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, error) {
 	for i, source := range c.Sources {
 		fileReaders[i], err = internal.NewParquetFileReader(source, c.ReadOption)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read from [%s]: %v", source, err)
+			return nil, fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
 		currSchema := internal.NewSchemaTree(fileReaders[i])
