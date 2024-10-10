@@ -20,9 +20,10 @@ GOBIN       = $(shell go env GOPATH)/bin
 GOFLAGS     := -trimpath
 GOSOURCES   := $(shell find . -type f -name '*.go')
 LDFLAGS     := -w -s
-LDFLAGS     += -extldflags "-static"
-LDFLAGS     += -X $(PKG_PREFIX)/cmd.version=$(VERSION) -X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) -X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH)
-TAGS        :=
+LDFLAGS     += -extldflags "-static" \
+	-X $(PKG_PREFIX)/cmd.version=$(VERSION) \
+	-X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) \
+	-X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH)
 
 .EXPORT_ALL_VARIABLES:
 
@@ -68,7 +69,9 @@ build: deps  ## Build locally for local os/arch creating $(BUILD_DIR) in ./
 	@echo "==> Building executable"
 	@mkdir -p $(BUILD_DIR)
 	@CGO_ENABLED=$(CGO_ENABLED) \
-		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILD_DIR) ./
+		$(GO) build $(GOFLAGS) \
+			-ldflags '$(LDFLAGS)' \
+			-o $(BUILD_DIR) ./
 
 .PHONY: clean
 clean:  ## Clean up the build dirs
@@ -80,19 +83,22 @@ docker-build:  ## Build docker image for local test
 	@echo "==> Building docker image"
 	@mkdir -p $(BUILD_DIR)/release/
 	@package/scripts/build-bin.sh
+	@sleep 2 # to address podman volume issue on MacOS
 	@docker build . -f package/container/Dockerfile -t parquet-tools:local
 
 .PHONY: test
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
-	@mkdir -p $(BUILD_DIR)/test $(BUILD_DIR)/junit
+	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail ; \
-		CGO_ENABLED=1 go test -v -race -count 1 -trimpath -coverprofile=$(BUILD_DIR)/test/cover.out ./... \
-			| tee $(BUILD_DIR)/test/go-test.output ; \
-		go tool cover -html=$(BUILD_DIR)/test/cover.out -o $(BUILD_DIR)/test/coverage.html ; \
-		go tool cover -func=$(BUILD_DIR)/test/cover.out -o $(BUILD_DIR)/test/coverage.txt ; \
-		cat $(BUILD_DIR)/test/go-test.output | $(GOBIN)/go-junit-report > $(BUILD_DIR)/junit/junit.xml ; \
-		cat $(BUILD_DIR)/test/coverage.txt
+		cd $(BUILD_DIR)/test; \
+		CGO_ENABLED=1 go test -v -race -count 1 -trimpath \
+			-coverprofile=coverage.out $(CURDIR)/... \
+			| tee go-test.output ; \
+		go tool cover -html=coverage.out -o coverage.html ; \
+		go tool cover -func=coverage.out -o coverage.txt ; \
+		cat go-test.output | $(GOBIN)/go-junit-report > junit.xml ; \
+		cat coverage.txt
 
 .PHONY: release-build
 release-build: deps ## Build release binaries
