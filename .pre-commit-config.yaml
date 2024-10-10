@@ -1,6 +1,6 @@
 repos:
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-byte-order-marker
@@ -19,3 +19,4 @@ repos:
       - id: no-commit-to-branch
       - id: pretty-format-json
         args: [--no-sort-keys]
+      - id: trailing-whitespace
