@@ -11,14 +11,27 @@ import (
 	"github.com/xitongsys/parquet-go/types"
 )
 
-func Test_NewSchemaTree(t *testing.T) {
+func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 	option := ReadOption{}
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	_, err = NewSchemaTree(pr, SchemaOption{FailOnInt96: true})
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "type INT96 which is not supporte")
+}
+
+func Test_NewSchemaTree_good(t *testing.T) {
+	option := ReadOption{}
+	uri := "../testdata/all-types.parquet"
+	pr, err := NewParquetFileReader(uri, option)
+	require.Nil(t, err)
+	defer pr.PFile.Close()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual, _ := json.MarshalIndent(schemaRoot, "", "  ")
@@ -33,7 +46,8 @@ func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	expected := []string{
@@ -233,7 +247,8 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual, err := schemaRoot.GoStruct()
@@ -249,7 +264,8 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual := schemaRoot.JSONSchema()
@@ -268,7 +284,8 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual, err := schemaRoot.CSVSchema()
@@ -284,7 +301,8 @@ func Test_Json_schema_csv_schema_nested(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
@@ -299,7 +317,8 @@ func Test_Json_schema_csv_schema_optional(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
@@ -314,7 +333,8 @@ func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()

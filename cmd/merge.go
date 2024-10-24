@@ -16,6 +16,7 @@ type MergeCmd struct {
 	ReadPageSize int      `help:"Page size to read from Parquet." default:"1000"`
 	Sources      []string `help:"Files to be merged."`
 	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FailOnInt96  bool     `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
 }
 
 // Run does actual merge job
@@ -36,9 +37,15 @@ func (c MergeCmd) Run() error {
 			_ = fileReader.PFile.Close()
 		}
 	}()
-	schema := internal.NewSchemaTree(fileReaders[0]).JSONSchema()
 
-	fileWriter, err := internal.NewGenericWriter(c.URI, c.WriteOption, schema)
+	// configu INT96 behavior through read option
+	schema, err := internal.NewSchemaTree(fileReaders[0], internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+	if err != nil {
+		return err
+	}
+	schemaJson := schema.JSONSchema()
+
+	fileWriter, err := internal.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
@@ -83,7 +90,11 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, error) {
 			return nil, fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
-		currSchema := internal.NewSchemaTree(fileReaders[i])
+		currSchema, err := internal.NewSchemaTree(fileReaders[i], internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+		if err != nil {
+			return nil, err
+		}
+
 		if schema == nil {
 			schema = currSchema
 		} else if !reflect.DeepEqual(schema, currSchema) {

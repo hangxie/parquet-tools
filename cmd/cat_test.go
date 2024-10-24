@@ -397,3 +397,21 @@ func Test_CatCmd_Run_nested_tsv(t *testing.T) {
 	require.NotNil(t, err)
 	require.Equal(t, err.Error(), "field [Map] is not scalar type, cannot output in tsv format")
 }
+
+func Test_CatCmd_Run_fail_on_int96(t *testing.T) {
+	cmd := &CatCmd{}
+	cmd.Limit = 0
+	cmd.ReadPageSize = 10
+	cmd.SampleRatio = 0.5
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.Format = "json"
+	cmd.FailOnInt96 = true
+
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run()
+		require.NotNil(t, err)
+		require.Contains(t, err.Error(), "type INT96 which is not supported")
+	})
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
+}

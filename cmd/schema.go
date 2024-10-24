@@ -29,7 +29,10 @@ func (c SchemaCmd) Run() error {
 	}
 	defer reader.PFile.Close()
 
-	schemaRoot := internal.NewSchemaTree(reader)
+	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: false})
+	if err != nil {
+		return err
+	}
 	switch c.Format {
 	case formatRaw:
 		schema, _ := json.Marshal(*schemaRoot)

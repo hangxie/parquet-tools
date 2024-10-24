@@ -413,6 +413,16 @@ $ parquet-tools cat --format jsonl testdata/good.parquet
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
 ```
 
+You can set `--fail-on-int96` option to fail `cat` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
+
+```bash
+$ parquet-tools cat --fail-on-int96 testdata/all-types.parquet
+parquet-tools: error: field Int96 has type INT96 which is not supported
+exit status 1
+$ parquet-tools cat testdata/all-types.parquet
+[{"Bool":true,"ByteArray":"ByteArray-0","Date":1640995200,...
+```
+
 #### Skip Rows
 
 `--skip` is similar to OFFSET in SQL, `parquet-tools` will skip this many rows from beginning of the parquet file before applying other logics.
@@ -541,7 +551,7 @@ Each source data file format has its own dedicated schema format:
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/json.schema).
 * JSONL: use same schema as JSON format.
 
-You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149. 
+You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149.
 
 #### Import from CSV
 
@@ -590,8 +600,9 @@ $ parquet-tools cat -f jsonl /tmp/doubled.parquet
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
 ```
 
-you can use `--read-page-size` to configure how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+You can use `--read-page-size` to configure how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
 
+You can set `--fail-on-int96` option to fail `merge` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 ### meta Command
 
 `meta` command shows meta data of every row group in a parquet file.
@@ -614,6 +625,7 @@ $ parquet-tools meta --base64 testdata/good.parquet
 
 Note that MinValue, MaxValue and NullCount are optional, if they do not show up in output then it means parquet file does not have that section.
 
+You can set `--fail-on-int96` option to fail `meta` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 ### row-count Command
 
 `row-count` command provides total number of rows in the parquet file:

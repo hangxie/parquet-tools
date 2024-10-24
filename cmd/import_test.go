@@ -79,8 +79,10 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 		Fields []interface{}
 	}
 	sourceSchemaBuf, _ := os.ReadFile(cmd.Schema)
-	reader, _ := internal.NewParquetFileReader(testFile, internal.ReadOption{})
-	schema := internal.NewSchemaTree(reader)
+	reader, err := internal.NewParquetFileReader(testFile, internal.ReadOption{})
+	require.Nil(t, err)
+	schema, err := internal.NewSchemaTree(reader, internal.SchemaOption{})
+	require.Nil(t, err)
 
 	var sourceSchema jsonSchema
 	_ = json.Unmarshal(sourceSchemaBuf, &sourceSchema)

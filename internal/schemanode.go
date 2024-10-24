@@ -43,6 +43,10 @@ type SchemaNode struct {
 	Children []*SchemaNode `json:"children,omitempty"`
 }
 
+type SchemaOption struct {
+	FailOnInt96 bool
+}
+
 type ReinterpretField struct {
 	ParquetType   parquet.Type
 	ConvertedType parquet.ConvertedType
@@ -50,7 +54,7 @@ type ReinterpretField struct {
 	Scale         int
 }
 
-func NewSchemaTree(reader *reader.ParquetReader) *SchemaNode {
+func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	schemas := reader.SchemaHandler.SchemaElements
 	stack := []*SchemaNode{}
 	root := &SchemaNode{
@@ -62,6 +66,9 @@ func NewSchemaTree(reader *reader.ParquetReader) *SchemaNode {
 
 	for pos := 1; len(stack) > 0; {
 		node := stack[len(stack)-1]
+		if option.FailOnInt96 && node.Type != nil && *node.Type == parquet.Type_INT96 {
+			return nil, fmt.Errorf("field %s has type INT96 which is not supported", node.Name)
+		}
 		if len(node.Children) < int(node.GetNumChildren()) {
 			childNode := &SchemaNode{
 				SchemaElement: *schemas[pos],
@@ -79,7 +86,7 @@ func NewSchemaTree(reader *reader.ParquetReader) *SchemaNode {
 		}
 	}
 
-	return root
+	return root, nil
 }
 
 func (s *SchemaNode) getTagMap() map[string]string {

@@ -15,7 +15,8 @@ func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	schema := jsonSchemaNode{*schemaRoot}.Schema()

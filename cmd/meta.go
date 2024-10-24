@@ -17,8 +17,9 @@ import (
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
 	internal.ReadOption
-	Base64 bool   `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
-	URI    string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	Base64      bool   `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
+	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FailOnInt96 bool   `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
 }
 
 type columnMeta struct {
@@ -54,7 +55,10 @@ func (c MetaCmd) Run() error {
 		return err
 	}
 
-	schemaRoot := internal.NewSchemaTree(reader)
+	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+	if err != nil {
+		return err
+	}
 	reinterpretFields := schemaRoot.GetReinterpretFields("", false)
 
 	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
