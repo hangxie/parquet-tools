@@ -30,6 +30,7 @@ type CatCmd struct {
 	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FailOnInt96  bool    `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
 }
 
 // here are performance numbers for different SkipPageSize:
@@ -127,17 +128,28 @@ func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
 	return nil
 }
 
-func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
-	schemaRoot := internal.NewSchemaTree(fileReader)
+func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, map[string]internal.ReinterpretField, error) {
+	schemaRoot, err := internal.NewSchemaTree(fileReader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	// CSV snd TSV does not support nested schema
 	fieldList, err := c.outputHeader(schemaRoot)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// retrieve schema for better formatting
 	reinterpretFields := schemaRoot.GetReinterpretFields("", true)
+	return fieldList, reinterpretFields, nil
+}
+
+func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
+	fieldList, reinterpretFields, err := c.retrieveFieldDef(fileReader)
+	if err != nil {
+		return err
+	}
 
 	// skip rows
 	if err != c.skipRows(fileReader) {

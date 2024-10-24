@@ -21,7 +21,8 @@ func Test_GoStructNode_String_good(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	typeStr, err := goStructNode{*schemaRoot}.String()
@@ -40,7 +41,8 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	mapType := parquet.ConvertedType_MAP
@@ -61,7 +63,8 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = goStructNode{*schemaRoot}.String()
@@ -76,7 +79,8 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	// A bit explanation:
@@ -94,7 +98,8 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
@@ -115,7 +120,8 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
@@ -136,7 +142,8 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	// A bit explanation:
@@ -156,7 +163,8 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	require.Nil(t, err)
 	defer pr.PFile.Close()
 
-	schemaRoot := NewSchemaTree(pr)
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = goStructNode{*schemaRoot}.String()

@@ -272,3 +272,18 @@ func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
+
+func Test_MetaCmd_Run_fail_on_int96(t *testing.T) {
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/all-types.parquet"
+	cmd.FailOnInt96 = true
+
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run()
+		require.NotNil(t, err)
+		require.Contains(t, err.Error(), "type INT96 which is not supported")
+	})
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
+}

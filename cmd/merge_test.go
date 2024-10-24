@@ -145,3 +145,21 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 
 	_ = os.Remove(cmd.URI)
 }
+
+func Test_MergeCmd_Run_fail_on_int96(t *testing.T) {
+	cmd := &MergeCmd{}
+	cmd.ReadPageSize = 10
+	cmd.Sources = []string{
+		"../testdata/all-types.parquet",
+		"../testdata/all-types.parquet",
+	}
+	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.Compression = "SNAPPY"
+	cmd.FailOnInt96 = true
+
+	err := cmd.Run()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "type INT96 which is not supporte")
+
+	_ = os.Remove(cmd.URI)
+}
