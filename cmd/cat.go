@@ -119,11 +119,11 @@ func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
 	rowsToSkip := c.Skip
 	for ; rowsToSkip > c.SkipPageSize; rowsToSkip -= c.SkipPageSize {
 		if err := fileReader.SkipRows(c.SkipPageSize); err != nil {
-			return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
+			return fmt.Errorf("failed to skip %d rows: %w", c.Skip, err)
 		}
 	}
 	if err := fileReader.SkipRows(rowsToSkip); err != nil {
-		return fmt.Errorf("failed to skip %d rows: %s", c.Skip, err)
+		return fmt.Errorf("failed to skip %d rows: %w", c.Skip, err)
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	for counter := uint64(0); counter < c.Limit; {
 		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
-			return fmt.Errorf("failed to cat: %s", err)
+			return fmt.Errorf("failed to cat: %w", err)
 		}
 		if len(rows) == 0 {
 			break
