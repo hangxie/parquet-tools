@@ -6,6 +6,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_SchemaCmd_Run_invalid_uri(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "dummy://location"
+	cmd.Format = "invalid"
+
+	err := cmd.Run()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unknown location scheme")
+}
+
 func Test_SchemaCmd_Run_invalid_format(t *testing.T) {
 	cmd := &SchemaCmd{}
 	cmd.URI = "../testdata/all-types.parquet"
