@@ -28,7 +28,7 @@ func (c MergeCmd) Run() error {
 		return fmt.Errorf("needs at least 2 sources files")
 	}
 
-	fileReaders, err := c.openSources()
+	fileReaders, schema, err := c.openSources()
 	if err != nil {
 		return err
 	}
@@ -37,12 +37,6 @@ func (c MergeCmd) Run() error {
 			_ = fileReader.PFile.Close()
 		}
 	}()
-
-	// configu INT96 behavior through read option
-	schema, err := internal.NewSchemaTree(fileReaders[0], internal.SchemaOption{FailOnInt96: c.FailOnInt96})
-	if err != nil {
-		return err
-	}
 	schemaJson := schema.JSONSchema()
 
 	fileWriter, err := internal.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
@@ -80,27 +74,27 @@ func (c MergeCmd) Run() error {
 	return nil
 }
 
-func (c MergeCmd) openSources() ([]*reader.ParquetReader, error) {
+func (c MergeCmd) openSources() ([]*reader.ParquetReader, *internal.SchemaNode, error) {
 	var schema *internal.SchemaNode
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Sources))
 	for i, source := range c.Sources {
 		fileReaders[i], err = internal.NewParquetFileReader(source, c.ReadOption)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read from [%s]: %w", source, err)
+			return nil, nil, fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
 		currSchema, err := internal.NewSchemaTree(fileReaders[i], internal.SchemaOption{FailOnInt96: c.FailOnInt96})
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		if schema == nil {
 			schema = currSchema
 		} else if !reflect.DeepEqual(schema, currSchema) {
-			return nil, fmt.Errorf("[%s] does not have same schema as previous files", source)
+			return nil, nil, fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}
 
-	return fileReaders, nil
+	return fileReaders, schema, nil
 }
