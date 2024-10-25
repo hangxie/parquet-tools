@@ -78,7 +78,7 @@ func getS3BucketRegion(bucket string, isPublic bool) (string, error) {
 	}
 	resp, err := http.Get(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
 	if err != nil {
-		return "", fmt.Errorf("unable to get region for S3 bucket %s: %s", bucket, err)
+		return "", fmt.Errorf("unable to get region for S3 bucket %s: %w", bucket, err)
 	}
 	switch resp.StatusCode {
 	case http.StatusOK:
@@ -98,7 +98,7 @@ func getS3BucketRegion(bucket string, isPublic bool) (string, error) {
 func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 	region, err := getS3BucketRegion(bucket, isPublic)
 	if err != nil {
-		return nil, fmt.Errorf("unable to find region of bucket [%s]: %s", bucket, err)
+		return nil, fmt.Errorf("unable to find region of bucket [%s]: %w", bucket, err)
 	}
 	if isPublic {
 		return s3.NewFromConfig(aws.Config{Region: region}), nil
