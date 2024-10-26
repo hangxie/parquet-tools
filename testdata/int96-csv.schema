@@ -1,0 +1,3 @@
+name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
+name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
+name=Timestamp, type=INT96

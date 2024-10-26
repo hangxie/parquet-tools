@@ -380,3 +380,39 @@ func Test_ImportCmd_importJSONL_good(t *testing.T) {
 	err := cmd.importJSONL()
 	require.Nil(t, err)
 }
+
+func Test_ImportCmd_importCSV_int96(t *testing.T) {
+	cmd := &ImportCmd{}
+	cmd.Format = "csv"
+	cmd.URI = "/something/does/not/matter"
+	cmd.Schema = "../testdata/int96-csv.schema"
+	cmd.Source = "/something/does/not/matter"
+	cmd.Compression = "LZ4"
+	err := cmd.importCSV()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "import does not support INT96 type")
+}
+
+func Test_ImportCmd_importJSON_int96(t *testing.T) {
+	cmd := &ImportCmd{}
+	cmd.Format = "json"
+	cmd.URI = "/something/does/not/matter"
+	cmd.Schema = "../testdata/int96-json.schema"
+	cmd.Source = "/something/does/not/matter"
+	cmd.Compression = "LZ4"
+	err := cmd.importJSON()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "import does not support INT96 type")
+}
+
+func Test_ImportCmd_importJSONL_int96(t *testing.T) {
+	cmd := &ImportCmd{}
+	cmd.Format = "jsonl"
+	cmd.URI = "/something/does/not/matter"
+	cmd.Schema = "../testdata/int96-json.schema"
+	cmd.Source = "/something/does/not/matter"
+	cmd.Compression = "LZ4"
+	err := cmd.importJSONL()
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "import does not support INT96 type")
+}
