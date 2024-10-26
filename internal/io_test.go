@@ -145,6 +145,7 @@ func Test_getBucketRegion_s3_missing_credential(t *testing.T) {
 	_, err := getS3Client("daylight-openstreetmap", false)
 	// since aws-go-sdk-v2/config 1.18.45, non-existent profile becomes an error
 	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "failed to get shared config profile")
 }
 
 func Test_parseURI_invalid_uri(t *testing.T) {
@@ -471,6 +472,14 @@ func Test_NewGenericWriter_invalid_schema(t *testing.T) {
 	_, err = NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "type FOOBAR: not a valid Type string")
+}
+
+func Test_NewGenericWriter_invalid_compression(t *testing.T) {
+	option := WriteOption{Compression: "dummy"}
+	uri := os.TempDir() + "/json-writer.parquet"
+	_, err := NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "not a valid CompressionCodec string")
 }
 
 func Test_NewGenericWriter_good(t *testing.T) {
