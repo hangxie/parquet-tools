@@ -110,7 +110,13 @@ func Test_getBucketRegion_s3_non_existent_bucket(t *testing.T) {
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	_, err := getS3Client(fmt.Sprintf("bucket-does-not-exist-%d", intVal.Int64()), true)
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
+	require.Contains(t, err.Error(), "not found")
+}
+
+func Test_getBucketRegion_s3_unable_to_get_region(t *testing.T) {
+	_, err := getS3Client("localhost/something/does/not/matter", true)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "unable to get region for S3 bucket")
 }
 
 func Test_getBucketRegion_s3_bucket_name_with_dot(t *testing.T) {
@@ -208,6 +214,19 @@ func Test_NewParquetFileReader_local_good(t *testing.T) {
 	pr.PFile.Close()
 }
 
+func Test_NewParquetFileReader_s3_non_existent(t *testing.T) {
+	// Make sure there is no AWS access
+	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	os.Unsetenv("AWS_PROFILE")
+
+	option := ReadOption{Anonymous: true}
+	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	uri := fmt.Sprintf("s3://bucket-does-not-exist-%d", intVal.Int64())
+	_, err := NewParquetFileReader(uri, option)
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "not found")
+}
+
 func Test_NewParquetFileReader_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
@@ -260,7 +279,7 @@ func Test_NewParquetFileReader_azblob_no_permission(t *testing.T) {
 	require.Contains(t, err.Error(), "failed to open Azure blob object")
 }
 
-func Test_NewFileWriter_invalid_uri(t *testing.T) {
+func Test_NewParquetFileWriter_invalid_uri(t *testing.T) {
 	option := WriteOption{}
 	uri := "://uri"
 	_, err := NewParquetFileWriter(uri, option)
@@ -268,7 +287,7 @@ func Test_NewFileWriter_invalid_uri(t *testing.T) {
 	require.Contains(t, err.Error(), "unable to parse file location")
 }
 
-func Test_NewFileWriter_invalid_uri_scheme(t *testing.T) {
+func Test_NewParquetFileWriter_invalid_uri_scheme(t *testing.T) {
 	option := WriteOption{}
 	uri := "invalid-scheme://something"
 	_, err := NewParquetFileWriter(uri, option)
@@ -276,7 +295,7 @@ func Test_NewFileWriter_invalid_uri_scheme(t *testing.T) {
 	require.Contains(t, err.Error(), "unknown location scheme")
 }
 
-func Test_NewFileWriter_local_not_a_file(t *testing.T) {
+func Test_NewParquetFileWriter_local_not_a_file(t *testing.T) {
 	option := WriteOption{}
 	uri := "../testdata/"
 	_, err := NewParquetFileWriter(uri, option)
@@ -284,7 +303,7 @@ func Test_NewFileWriter_local_not_a_file(t *testing.T) {
 	require.Contains(t, err.Error(), "is a directory")
 }
 
-func Test_NewFileWriter_local_good(t *testing.T) {
+func Test_NewParquetFileWriter_local_good(t *testing.T) {
 	option := WriteOption{}
 	uri := os.TempDir() + "/file-writer.parquet"
 	fw, err := NewParquetFileWriter(uri, option)
@@ -293,16 +312,16 @@ func Test_NewFileWriter_local_good(t *testing.T) {
 	defer fw.Close()
 }
 
-func Test_NewFileWriter_s3_non_existent_bucket(t *testing.T) {
+func Test_NewParquetFileWriter_s3_non_existent_bucket(t *testing.T) {
 	option := WriteOption{}
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	uri := fmt.Sprintf("s3://bucket-does-not-exist-%d", intVal.Int64())
 	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unable to find region of bucket [bucket-does-not-exist-")
+	require.Contains(t, err.Error(), "unable to access to")
 }
 
-func Test_NewFileWriter_s3_good(t *testing.T) {
+func Test_NewParquetFileWriter_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
 	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
 	os.Unsetenv("AWS_PROFILE")
@@ -316,7 +335,7 @@ func Test_NewFileWriter_s3_good(t *testing.T) {
 	defer fw.Close()
 }
 
-func Test_NewFileWriter_gcs_no_permission(t *testing.T) {
+func Test_NewParquetFileWriter_gcs_no_permission(t *testing.T) {
 	// Make sure there is no GCS access
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
@@ -328,7 +347,7 @@ func Test_NewFileWriter_gcs_no_permission(t *testing.T) {
 	require.Contains(t, err.Error(), "failed to open GCS object")
 }
 
-func Test_NewFileWriter_azblob_invalid_url(t *testing.T) {
+func Test_NewParquetFileWriter_azblob_invalid_url(t *testing.T) {
 	// Make sure there is no Azure blob access
 	randBytes := make([]byte, 64)
 	_, err := rand.Read(randBytes)
@@ -349,7 +368,7 @@ func Test_NewFileWriter_azblob_invalid_url(t *testing.T) {
 	require.Contains(t, err.Error(), "azure blob URI format:")
 }
 
-func Test_NewFileWriter_azblob_good(t *testing.T) {
+func Test_NewParquetFileWriter_azblob_good(t *testing.T) {
 	// Make sure there is no Azure blob access
 	randBytes := make([]byte, 64)
 	_, err := rand.Read(randBytes)
@@ -366,7 +385,7 @@ func Test_NewFileWriter_azblob_good(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func Test_NewFileWriter_http_not_supported(t *testing.T) {
+func Test_NewParquetFileWriter_http_not_supported(t *testing.T) {
 	option := WriteOption{}
 	uri := "https://domain.tld/path/to/file"
 	_, err := NewParquetFileWriter(uri, option)
