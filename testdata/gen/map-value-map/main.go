@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/parquet"
@@ -62,7 +63,7 @@ func main() {
 	pw.CompressionType = parquet.CompressionCodec_LZ4_RAW
 	for i := 0; i < 10; i++ {
 		stu := Student{
-			Name: "StudentName",
+			Name: "StudentName" + strconv.Itoa(i+1),
 			Scores: map[string]map[string]float32{
 				"Math": {
 					"mid-term": 80.0 + float32(i),
