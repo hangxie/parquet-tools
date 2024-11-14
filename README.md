@@ -8,7 +8,7 @@
 # parquet-tools
 Utility to inspect Parquet files.
 
-## Installation
+## Quick Start
 
 `parquet-tools` support following methods to install:
 
@@ -54,6 +54,10 @@ TODO list is tracked as enhancement in issues.
 
 ## Table of Contents
 
+- [parquet-tools](#parquet-tools)
+  - [Quick Start](#quick-start)
+  - [Credit](#credit)
+  - [TODO](#todo)
 - [Installation and Usage of parquet-tools](#installation-and-usage-of-parquet-tools)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
@@ -93,7 +97,7 @@ TODO list is tracked as enhancement in issues.
       - [JSON Format](#json-format)
       - [Raw Format](#raw-format)
       - [Go Struct Format](#go-struct-format)
-      - [CSV Format](#CSV-format)
+      - [CSV Format](#csv-format)
     - [shell-completions Command (Experimental)](#shell-completions-command-experimental)
       - [Install Shell Completions](#install-shell-completions)
       - [Uninstall Shell Completions](#uninstall-shell-completions)
@@ -102,6 +106,9 @@ TODO list is tracked as enhancement in issues.
       - [Show Raw Size](#show-raw-size)
       - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
       - [Show All Sizes in JSON Format](#show-all-sizes-in-json-format)
+    - [split Command](#split-command)
+      - [Exact number of output files](#exact-number-of-output-files)
+      - [Maximum records in a file](#maximum-records-in-a-file)
     - [version Command](#version-command)
       - [Print Version](#print-version)
       - [Print All Information](#print-all-information)
@@ -769,6 +776,46 @@ $ parquet-tools size --query footer --json testdata/good.parquet
 ```bash
 $ parquet-tools size -q all -j testdata/good.parquet
 {"Raw":588,"Uncompressed":438,"Footer":323}
+```
+### split Command
+
+`split` command distributes data in source file into multiple parquet files, number of output files is either `--file-count` parameter, or total number of rows in source file divided by `--record-count` parameter.
+
+Name of output files is determined by `--name-format` and will be used by `fmt.Sprintf`, default value is `result-%06d.parquet` which means output files will be under current directory with name `result-000000.parquet`, `result-000001.parquet`, etc., you can use any of file locations that support write operation, eg S3, or HDFS.
+
+Other useful parameters include:
+* `--fail-on-int96` to fail the command if source parquet file contains INT96 fields
+* `--compression` to specify compression codec for output files, defailt is `SNAPPY`
+* `--read-page-size` to tell how many rows will be read per batch from source
+
+#### Exact number of output files
+
+```bash
+$ parquet-tools row-count testdata/all-types.parquet
+10
+$ parquet-tools split --file-count 3 testdata/all-types.parquet
+$ xiehang$ parquet-tools row-count result-000000.parquet
+4
+$ xiehang$ parquet-tools row-count result-000001.parquet
+3
+$ xiehang$ parquet-tools row-count result-000002.parquet
+3
+```
+
+#### Maximum records in a file
+
+```bash
+$ parquet-tools row-count testdata/all-types.parquet
+10
+$ parquet-tools split --record-count 3 --name-format %d.parquet testdata/all-types.parquet
+$ xiehang$ parquet-tools row-count 0.parquet
+3
+$ xiehang$ parquet-tools row-count 1.parquet
+3
+$ xiehang$ parquet-tools row-count 2.parquet
+3
+$ xiehang$ parquet-tools row-count 3.parquet
+1
 ```
 
 ### version Command
