@@ -19,6 +19,7 @@ var cli struct {
 	Schema           cmd.SchemaCmd                `cmd:"" help:"Prints the schema."`
 	ShellCompletions kongplete.InstallCompletions `cmd:"" help:"Install/uninstall shell completions"`
 	Size             cmd.SizeCmd                  `cmd:"" help:"Prints the size."`
+	Split            cmd.SplitCmd                 `cmd:"" help:"Split into multiple parquet files."`
 	Version          cmd.VersionCmd               `cmd:"" help:"Show build version."`
 }
 
