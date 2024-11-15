@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,12 @@ import (
 )
 
 func Test_ImportCmd_Run_CSV_good(t *testing.T) {
-	testFile := os.TempDir() + "/import-csv.parquet"
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	testFile := filepath.Join(tempDir, "import-csv.parquet")
 	os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/csv.source"
@@ -32,7 +38,12 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 }
 
 func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
-	testFile := os.TempDir() + "/import-csv.parquet"
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	testFile := filepath.Join(tempDir, "import-csv.parquet")
 	os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/csv-with-header.source"
@@ -54,7 +65,12 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 }
 
 func Test_ImportCmd_Run_JSON_good(t *testing.T) {
-	testFile := os.TempDir() + "/import-json.parquet"
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	testFile := filepath.Join(tempDir, "import-json.parquet")
 	os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/json.source"
@@ -105,7 +121,12 @@ func Test_ImportCmd_Run_invalid_format(t *testing.T) {
 }
 
 func Test_ImportCmd_Run_invalid_compression(t *testing.T) {
-	testFile := os.TempDir() + "/import-json.parquet"
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	testFile := filepath.Join(tempDir, "import-json.parquet")
 	os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/json.source"
@@ -169,11 +190,16 @@ func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
 }
 
 func Test_ImportCmd_importCSV_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	cmd := &ImportCmd{}
 	cmd.Format = "csv"
 	cmd.Schema = "../testdata/csv.schema"
 	cmd.Source = "../testdata/csv.source"
-	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
 	cmd.Compression = "LZ4_RAW"
 
 	err := cmd.importCSV()
@@ -271,11 +297,16 @@ func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSON_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	cmd := &ImportCmd{}
 	cmd.Format = "json"
 	cmd.Schema = "../testdata/json.schema"
 	cmd.Source = "../testdata/json.source"
-	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
 	cmd.Compression = "GZIP"
 
 	err := cmd.importJSON()
@@ -370,11 +401,16 @@ func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
 }
 
 func Test_ImportCmd_importJSONL_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	cmd := &ImportCmd{}
 	cmd.Format = "jsonl"
 	cmd.Schema = "../testdata/jsonl.schema"
 	cmd.Source = "../testdata/jsonl.source"
-	cmd.URI = os.TempDir() + "/import-csv.parquet"
+	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
 	cmd.Compression = "LZ4"
 
 	err := cmd.importJSONL()

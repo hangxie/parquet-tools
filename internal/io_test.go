@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net/url"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -305,8 +306,13 @@ func Test_NewParquetFileWriter_local_not_a_file(t *testing.T) {
 }
 
 func Test_NewParquetFileWriter_local_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
-	uri := os.TempDir() + "/file-writer.parquet"
+	uri := filepath.Join(tempDir, "file-writer.parquet")
 	fw, err := NewParquetFileWriter(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
@@ -403,8 +409,13 @@ func Test_NewCSVWriter_invalid_uri(t *testing.T) {
 }
 
 func Test_NewCSVWriter_invalid_schema(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
-	uri := os.TempDir() + "/csv-writer.parquet"
+	uri := filepath.Join(tempDir, "csv-writer.parquet")
 	_, err := NewCSVWriter(uri, option, []string{"invalid schema"})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "expect 'key=value'")
@@ -415,9 +426,14 @@ func Test_NewCSVWriter_invalid_schema(t *testing.T) {
 }
 
 func Test_NewCSVWriter_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 	option.Compression = "LZ4_RAW"
-	uri := os.TempDir() + "/csv-writer.parquet"
+	uri := filepath.Join(tempDir, "csv-writer.parquet")
 	pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 	require.Nil(t, err)
 	require.NotNil(t, pw)
@@ -433,8 +449,13 @@ func Test_NewJSONWriter_invalid_uri(t *testing.T) {
 }
 
 func Test_NewJSONWriter_invalid_schema(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
-	uri := os.TempDir() + "/json-writer.parquet"
+	uri := filepath.Join(tempDir, "json-writer.parquet")
 	_, err := NewJSONWriter(uri, option, "invalid schema")
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "error in unmarshalling json schema string:")
@@ -445,9 +466,14 @@ func Test_NewJSONWriter_invalid_schema(t *testing.T) {
 }
 
 func Test_NewJSONWriter_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 	option.Compression = "ZSTD"
-	uri := os.TempDir() + "/json-writer.parquet"
+	uri := filepath.Join(tempDir, "json-writer.parquet")
 	pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.Nil(t, err)
 	require.NotNil(t, pw)
@@ -463,8 +489,13 @@ func Test_NewGenericWriter_invalid_uri(t *testing.T) {
 }
 
 func Test_NewGenericWriter_invalid_schema(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
-	uri := os.TempDir() + "/json-writer.parquet"
+	uri := filepath.Join(tempDir, "json-writer.parquet")
 	_, err := NewGenericWriter(uri, option, "invalid schema")
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "error in unmarshalling json schema string:")
@@ -475,17 +506,27 @@ func Test_NewGenericWriter_invalid_schema(t *testing.T) {
 }
 
 func Test_NewGenericWriter_invalid_compression(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{Compression: "dummy"}
-	uri := os.TempDir() + "/json-writer.parquet"
+	uri := filepath.Join(tempDir, "json-writer.parquet")
 	_, err := NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "not a valid CompressionCodec string")
 }
 
 func Test_NewGenericWriter_good(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 	option.Compression = "ZSTD"
-	uri := os.TempDir() + "/json-writer.parquet"
+	uri := filepath.Join(tempDir, "json-writer.parquet")
 	pw, err := NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.Nil(t, err)
 	require.NotNil(t, pw)
@@ -542,9 +583,14 @@ func Test_newParquetFileWriter_hdfs_bad(t *testing.T) {
 }
 
 func Test_NewCSVWriter_invalid_compression_codec(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 	option.Compression = "foobar"
-	uri := os.TempDir() + "/csv-writer.parquet"
+	uri := filepath.Join(tempDir, "csv-writer.parquet")
 	pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 	require.NotNil(t, err)
 	require.Nil(t, pw)
@@ -552,9 +598,14 @@ func Test_NewCSVWriter_invalid_compression_codec(t *testing.T) {
 }
 
 func Test_NewJSONWriter_invalid_compression_codec(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 	option.Compression = "random-dude"
-	uri := os.TempDir() + "/json-writer.parquet"
+	uri := filepath.Join(tempDir, "json-writer.parquet")
 	pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.NotNil(t, err)
 	require.Nil(t, pw)
@@ -567,11 +618,16 @@ var unsupportedCodec = []string{
 }
 
 func Test_NewCSVWriter_unsupported_compression_codec(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 
 	for _, codec := range unsupportedCodec {
 		option.Compression = codec
-		uri := os.TempDir() + "/csv-writer.parquet"
+		uri := filepath.Join(tempDir, "csv-writer.parquet")
 		pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 		require.NotNil(t, err)
 		require.Nil(t, pw)
@@ -580,10 +636,15 @@ func Test_NewCSVWriter_unsupported_compression_codec(t *testing.T) {
 }
 
 func Test_NewJSONWriter_unsupported_compression_codec(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
 	option := WriteOption{}
 	for _, codec := range unsupportedCodec {
 		option.Compression = codec
-		uri := os.TempDir() + "/json-writer.parquet"
+		uri := filepath.Join(tempDir, "json-writer.parquet")
 		pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 		require.NotNil(t, err)
 		require.Nil(t, pw)
