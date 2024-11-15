@@ -794,11 +794,11 @@ Other useful parameters include:
 $ parquet-tools row-count testdata/all-types.parquet
 10
 $ parquet-tools split --file-count 3 testdata/all-types.parquet
-$ xiehang$ parquet-tools row-count result-000000.parquet
+$ parquet-tools row-count result-000000.parquet
 4
-$ xiehang$ parquet-tools row-count result-000001.parquet
+$ parquet-tools row-count result-000001.parquet
 3
-$ xiehang$ parquet-tools row-count result-000002.parquet
+$ parquet-tools row-count result-000002.parquet
 3
 ```
 
@@ -808,13 +808,13 @@ $ xiehang$ parquet-tools row-count result-000002.parquet
 $ parquet-tools row-count testdata/all-types.parquet
 10
 $ parquet-tools split --record-count 3 --name-format %d.parquet testdata/all-types.parquet
-$ xiehang$ parquet-tools row-count 0.parquet
+$ parquet-tools row-count 0.parquet
 3
-$ xiehang$ parquet-tools row-count 1.parquet
+$ parquet-tools row-count 1.parquet
 3
-$ xiehang$ parquet-tools row-count 2.parquet
+$ parquet-tools row-count 2.parquet
 3
-$ xiehang$ parquet-tools row-count 3.parquet
+$ parquet-tools row-count 3.parquet
 1
 ```
 
