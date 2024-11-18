@@ -98,6 +98,7 @@ TODO list is tracked as enhancement in issues.
       - [Raw Format](#raw-format)
       - [Go Struct Format](#go-struct-format)
       - [CSV Format](#csv-format)
+      - [PARGO\_PREFIX\_ Handling](#pargo_prefix_-handling)
     - [shell-completions Command (Experimental)](#shell-completions-command-experimental)
       - [Install Shell Completions](#install-shell-completions)
       - [Uninstall Shell Completions](#uninstall-shell-completions)
@@ -719,6 +720,34 @@ exit status 1
 $ parquet-tools schema -f csv testdata/csv-nested.parquet
 parquet-tools: error: CSV supports flat schema only
 exit status 1
+```
+
+#### PARGO_PREFIX_ Handling
+
+`parquet-go` package [uses `"PARGO_PREFIX_"` to deal with field names starting with non-alphabetic characters](https://github.com/xitongsys/parquet-go?tab=readme-ov-file#tips-4), hence output schema will also have this prefix. To restore origin field name, you can specify option `--pargo-prefix` with value of `"PARGO_PREFIX_"`, this applies to all output formats.
+
+```bash
+$ parquet-tools schema -f csv testdata/pargo-prefix.parquet
+name=PARGO_PREFIX__shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
+name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
+$ parquet-tools schema -f csv --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix.parquet
+name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
+name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
+```
+
+You need to change filed name to start with uppercase alphabetic character if you use this with go struct, otherwise the field will not be exported
+
+```bash
+$ parquet-tools schema -f go testdata/pargo-prefix.parquet | gofmt
+type Parquet_go_root struct {
+	PARGO_PREFIX__shoe_brand string `parquet:"name=PARGO_PREFIX__shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Shoe_name                string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+}
+$ parquet-tools schema -f go --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix.parquet | gofmt
+type Parquet_go_root struct {
+	_shoe_brand string `parquet:"name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Shoe_name   string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+}
 ```
 
 ### shell-completions Command (Experimental)

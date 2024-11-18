@@ -161,3 +161,30 @@ func Test_SchemaCmd_Run_repeated_csv(t *testing.T) {
 	err := cmd.Run()
 	require.Contains(t, err.Error(), "CSV does not support column in LIST type")
 }
+
+func Test_SchemaCmd_Run_keep_pargo_prefix(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/pargo-prefix.parquet"
+	cmd.Format = "json"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+	expected := loadExpected(t, "../testdata/golden/schema-pargo-prefix-keep.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
+
+func Test_SchemaCmd_Run_remove_pargo_prefix(t *testing.T) {
+	cmd := &SchemaCmd{}
+	cmd.URI = "../testdata/pargo-prefix.parquet"
+	cmd.Format = "json"
+	cmd.PargoPrefix = "PARGO_PREFIX_"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+	expected := loadExpected(t, "../testdata/golden/schema-pargo-prefix-remove.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hangxie/parquet-tools/internal"
 )
@@ -17,8 +18,9 @@ var (
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
 	internal.ReadOption
-	Format string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
-	URI    string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	Format      string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
+	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	PargoPrefix string `help:"remove this prefix from field names." default:""`
 }
 
 // Run does actual schema job
@@ -32,6 +34,9 @@ func (c SchemaCmd) Run() error {
 	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: false})
 	if err != nil {
 		return err
+	}
+	if c.PargoPrefix != "" {
+		removePargoPrefixFromSchema(schemaRoot, c.PargoPrefix)
 	}
 	switch c.Format {
 	case formatRaw:
@@ -56,4 +61,11 @@ func (c SchemaCmd) Run() error {
 	}
 
 	return nil
+}
+
+func removePargoPrefixFromSchema(schemaRoot *internal.SchemaNode, pargoPrefix string) {
+	schemaRoot.Name = strings.TrimPrefix(schemaRoot.Name, pargoPrefix)
+	for i := range schemaRoot.Children {
+		removePargoPrefixFromSchema(schemaRoot.Children[i], pargoPrefix)
+	}
 }

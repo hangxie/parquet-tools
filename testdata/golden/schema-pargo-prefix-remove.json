@@ -1,0 +1,11 @@
+{
+  "Tag": "name=Parquet_go_root",
+  "Fields": [
+    {
+      "Tag": "name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"
+    },
+    {
+      "Tag": "name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"
+    }
+  ]
+}
