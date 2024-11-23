@@ -287,3 +287,32 @@ func Test_MetaCmd_Run_fail_on_int96(t *testing.T) {
 	require.Equal(t, "", stdout)
 	require.Equal(t, "", stderr)
 }
+
+func Test_MetaCmd_Rnu_keep_pargo_prefix(t *testing.T) {
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run()
+		require.Nil(t, err)
+	})
+	expected := loadExpected(t, "../testdata/golden/meta-pargo-prefix-nested-keep.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
+
+func Test_MetaCmd_Rnu_remove_pargo_prefix(t *testing.T) {
+	cmd := &MetaCmd{}
+	cmd.Base64 = false
+	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
+	cmd.PargoPrefix = "PARGO_PREFIX_"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		err := cmd.Run()
+		require.Nil(t, err)
+	})
+	expected := loadExpected(t, "../testdata/golden/meta-pargo-prefix-nested-remove.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
