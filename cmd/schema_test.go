@@ -164,27 +164,27 @@ func Test_SchemaCmd_Run_repeated_csv(t *testing.T) {
 
 func Test_SchemaCmd_Run_keep_pargo_prefix(t *testing.T) {
 	cmd := &SchemaCmd{}
-	cmd.URI = "../testdata/pargo-prefix.parquet"
+	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
 	cmd.Format = "json"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	expected := loadExpected(t, "../testdata/golden/schema-pargo-prefix-keep.json")
+	expected := loadExpected(t, "../testdata/golden/schema-pargo-prefix-nested-keep.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
 
 func Test_SchemaCmd_Run_remove_pargo_prefix(t *testing.T) {
 	cmd := &SchemaCmd{}
-	cmd.URI = "../testdata/pargo-prefix.parquet"
+	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
 	cmd.Format = "json"
 	cmd.PargoPrefix = "PARGO_PREFIX_"
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
 	})
-	expected := loadExpected(t, "../testdata/golden/schema-pargo-prefix-remove.json")
+	expected := loadExpected(t, "../testdata/golden/schema-pargo-prefix-nested-remove.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
 }
