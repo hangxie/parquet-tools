@@ -10,7 +10,8 @@ PKG_PREFIX  = github.com/hangxie/parquet-tools
 REL_TARGET  = \
 	darwin-amd64 darwin-arm64 \
 	linux-amd64 linux-arm linux-arm64 \
-	windows-amd64 windows-arm64
+	windows-amd64 windows-arm64 \
+	freebsd-amd64
 VERSION     = $(shell git describe --tags --always)
 
 # go option
