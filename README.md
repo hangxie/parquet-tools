@@ -727,10 +727,10 @@ exit status 1
 `parquet-go` package [uses `"PARGO_PREFIX_"` to deal with field names starting with non-alphabetic characters](https://github.com/xitongsys/parquet-go?tab=readme-ov-file#tips-4), hence output schema will also have this prefix. To restore origin field name, you can specify option `--pargo-prefix` with value of `"PARGO_PREFIX_"`, this applies to all output formats.
 
 ```bash
-$ parquet-tools schema -f csv testdata/pargo-prefix.parquet
+$ parquet-tools schema -f csv testdata/pargo-prefix-flat.parquet
 name=PARGO_PREFIX__shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
 name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
-$ parquet-tools schema -f csv --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix.parquet
+$ parquet-tools schema -f csv --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-flat.parquet
 name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
 name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
 ```
@@ -738,15 +738,27 @@ name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
 You need to change filed name to start with uppercase alphabetic character if you use this with go struct, otherwise the field will not be exported
 
 ```bash
-$ parquet-tools schema -f go testdata/pargo-prefix.parquet | gofmt
+$ parquet-tools schema -f go testdata/pargo-prefix-nested.parquet | gofmt
 type Parquet_go_root struct {
-	PARGO_PREFIX__shoe_brand string `parquet:"name=PARGO_PREFIX__shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
-	Shoe_name                string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+	PARGO_PREFIX__NestedMap map[string]struct {
+		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=PARGO_PREFIX__Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
+		PARGO_PREFIX__List []string         `parquet:"name=PARGO_PREFIX__List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
+	} `parquet:"name=PARGO_PREFIX__NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT, convertedtype=MAP"`
+	PARGO_PREFIX__NestedList []struct {
+		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=PARGO_PREFIX__Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
+		PARGO_PREFIX__List []string         `parquet:"name=PARGO_PREFIX__List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
+	} `parquet:"name=PARGO_PREFIX__NestedList, type=LIST, valuetype=STRUCT, convertedtype=LIST"`
 }
-$ parquet-tools schema -f go --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix.parquet | gofmt
+$ parquet-tools schema -f go --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-nested.parquet | gofmt
 type Parquet_go_root struct {
-	_shoe_brand string `parquet:"name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
-	Shoe_name   string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+	_NestedMap map[string]struct {
+		_Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
+		_List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
+	} `parquet:"name=_NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT, convertedtype=MAP"`
+	_NestedList []struct {
+		_Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
+		_List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
+	} `parquet:"name=_NestedList, type=LIST, valuetype=STRUCT, convertedtype=LIST"`
 }
 ```
 
