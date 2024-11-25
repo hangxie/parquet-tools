@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.67.1
 	github.com/posener/complete v1.2.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/willabides/kongplete v0.4.0
 	github.com/xitongsys/parquet-go v1.6.3-0.20230806034711-b6d7d8771e28
 	github.com/xitongsys/parquet-go-source v0.0.0-20240122235623-d6294584ab18
