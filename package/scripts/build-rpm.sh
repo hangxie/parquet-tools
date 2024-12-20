@@ -25,7 +25,7 @@ function build() {
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-    docker run -di --rm --name ${DOCKER_NAME} debian:12-slim
+    docker run -di --rm --name ${DOCKER_NAME} rockylinux:9
 
     # CCI does not support volume mount, so use docker cp instead
     git -C ${SOURCE_DIR} archive --format=tar.gz --prefix=${PKG_NAME}-${RPM_VER}/ -o /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ${VERSION}
@@ -37,12 +37,11 @@ function build() {
     # Build RPM
     docker exec -t ${DOCKER_NAME} bash -c "
         set -eou pipefail;
-        apt-get update -qq;
-        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git rpm file binutils;
+        dnf install -y systemd-rpm-macros rpm-build;
         mkdir -p ~/rpmbuild/SOURCES;
         cp /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ~/rpmbuild/SOURCES/;
         rpmbuild -bb --target ${PKG_ARCH} /tmp/${PKG_NAME}.spec;
-        cp /root/rpmbuild/RPMS/${PKG_ARCH}/${PKG_NAME}-${RPM_VER}-1.${PKG_ARCH}.rpm /tmp/;
+        cp /root/rpmbuild/RPMS/${PKG_ARCH}/${PKG_NAME}-${RPM_VER}-1.el9.${PKG_ARCH}.rpm /tmp/${PKG_NAME}-${RPM_VER}-1.${PKG_ARCH}.rpm;
     "
     docker cp ${DOCKER_NAME}:/tmp/${PKG_NAME}-${RPM_VER}-1.${PKG_ARCH}.rpm ${SOURCE_DIR}/build/release/
 
