@@ -37,7 +37,7 @@ function build() {
     # Build RPM
     docker exec -t ${DOCKER_NAME} bash -c "
         set -eou pipefail;
-        dnf install -y systemd-rpm-macros rpm-build;
+        dnf install -q -y systemd-rpm-macros rpm-build;
         mkdir -p ~/rpmbuild/SOURCES;
         cp /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ~/rpmbuild/SOURCES/;
         rpmbuild -bb --target ${PKG_ARCH} /tmp/${PKG_NAME}.spec;
