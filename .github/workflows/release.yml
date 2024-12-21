@@ -43,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create $(cat ./build/VERSION) --notes-file ./build/CHANGELOG ./build/release/*
+          gh release create $(cat ./build/VERSION) --title $(cat ./build/VERSION) --notes-file ./build/CHANGELOG ./build/release/*
       - name: Update coverage badge
         uses: ncruces/go-coverage-report@main
         with:
