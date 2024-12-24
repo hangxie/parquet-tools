@@ -415,3 +415,63 @@ func Test_CatCmd_Run_fail_on_int96(t *testing.T) {
 	require.Equal(t, "", stdout)
 	require.Equal(t, "", stderr)
 }
+
+func Test_CatCmd_Run_csv_pargo_prefix(t *testing.T) {
+	cmd := &CatCmd{}
+	cmd.ReadPageSize = 10
+	cmd.SampleRatio = 1.0
+	cmd.URI = "../testdata/pargo-prefix-flat.parquet"
+	cmd.Format = "csv"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+
+	expected := loadExpected(t, "../testdata/golden/cat-pargo-prefix-flat-keep.csv")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+
+	cmd.PargoPrefix = "PARGO_PREFIX_"
+	stdout, stderr = captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+
+	expected = loadExpected(t, "../testdata/golden/cat-pargo-prefix-flat-remove.csv")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+}
+
+func Test_CatCmd_Run_json_pargo_prefix(t *testing.T) {
+	cmd := &CatCmd{}
+	cmd.ReadPageSize = 10
+	cmd.SampleRatio = 1.0
+	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
+	cmd.Format = "json"
+
+	stdout, stderr := captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+
+	expected := loadExpected(t, "../testdata/golden/cat-pargo-prefix-nested-keep.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+
+	cmd.PargoPrefix = "PARGO_PREFIX_"
+	stdout, stderr = captureStdoutStderr(func() {
+		require.Nil(t, cmd.Run())
+	})
+
+	expected = loadExpected(t, "../testdata/golden/cat-pargo-prefix-nested-remove.json")
+	require.Equal(t, expected, stdout)
+	require.Equal(t, "", stderr)
+
+	cmd.PargoPrefix = `\“`
+	stdout, stderr = captureStdoutStderr(func() {
+		err := cmd.Run()
+		require.NotNil(t, err)
+		require.Contains(t, err.Error(), `unable to use [\“] as prefix: invalid escape sequence`)
+	})
+
+	require.Equal(t, "", stdout)
+	require.Equal(t, "", stderr)
+}

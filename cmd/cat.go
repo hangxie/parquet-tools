@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/itchyny/gojq"
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/types"
@@ -31,6 +32,7 @@ type CatCmd struct {
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool    `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	PargoPrefix  string  `help:"remove this prefix from field names." default:""`
 }
 
 // here are performance numbers for different SkipPageSize:
@@ -100,7 +102,14 @@ func (c CatCmd) outputHeader(schemaRoot *internal.SchemaNode) ([]string, error) 
 		}
 		fieldList[index] = child.Name
 	}
-	line, err := valuesToCSV(fieldList, delimiter[c.Format].fieldDelimiter)
+	headerList := make([]string, len(schemaRoot.Children))
+	_ = copy(headerList, fieldList)
+	if c.PargoPrefix != "" {
+		for i := range headerList {
+			headerList[i] = strings.TrimPrefix(headerList[i], c.PargoPrefix)
+		}
+	}
+	line, err := valuesToCSV(headerList, delimiter[c.Format].fieldDelimiter)
 	if err != nil {
 		return nil, err
 	}
@@ -145,6 +154,34 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, ma
 	return fieldList, reinterpretFields, nil
 }
 
+func (c CatCmd) outputSingleRow(rowStruct interface{}, jq *gojq.Query, fieldList []string) error {
+	switch c.Format {
+	case "json", "jsonl":
+		v, _ := jq.Run(rowStruct).Next()
+		buf, _ := json.Marshal(v)
+		fmt.Print(string(buf))
+	case "csv", "tsv":
+		flatValues := rowStruct.(map[string]interface{})
+		values := make([]string, len(flatValues))
+		for index, field := range fieldList {
+			switch val := flatValues[field].(type) {
+			case nil:
+				// nil is just empty
+			default:
+				values[index] = fmt.Sprint(val)
+			}
+		}
+
+		line, err := valuesToCSV(values, delimiter[c.Format].fieldDelimiter)
+		if err != nil {
+			return err
+		}
+		fmt.Print(strings.TrimRight(line, "\n"))
+	}
+
+	return nil
+}
+
 func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	fieldList, reinterpretFields, err := c.retrieveFieldDef(fileReader)
 	if err != nil {
@@ -154,6 +191,13 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	// skip rows
 	if err != c.skipRows(fileReader) {
 		return err
+	}
+
+	// handle PARGO_PREFIX_ with jq jq
+	queryString := fmt.Sprintf(`walk(if type == "object" then with_entries(.key = (.key | sub("%s"; ""))) else . end)`, c.PargoPrefix)
+	jq, err := gojq.Parse(queryString)
+	if err != nil {
+		return fmt.Errorf("unable to use [%s] as prefix: %w", c.PargoPrefix, err)
 	}
 
 	// Output rows one by one to avoid running out of memory with a jumbo list
@@ -176,27 +220,8 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 			}
 			// there is no known error at this moment
 			rowStruct, _ := rowToStruct(rows[i], reinterpretFields)
-			switch c.Format {
-			case "json", "jsonl":
-				buf, _ := json.Marshal(rowStruct)
-				fmt.Print(string(buf))
-			case "csv", "tsv":
-				flatValues := rowStruct.(map[string]interface{})
-				values := make([]string, len(flatValues))
-				for index, field := range fieldList {
-					switch val := flatValues[field].(type) {
-					case nil:
-						// nil is just empty
-					default:
-						values[index] = fmt.Sprint(val)
-					}
-				}
-
-				line, err := valuesToCSV(values, delimiter[c.Format].fieldDelimiter)
-				if err != nil {
-					return err
-				}
-				fmt.Print(strings.TrimRight(line, "\n"))
+			if err := c.outputSingleRow(rowStruct, jq, fieldList); err != nil {
+				return err
 			}
 			counter++
 		}
