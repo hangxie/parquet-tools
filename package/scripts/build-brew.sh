@@ -3,10 +3,10 @@
 set -euo pipefail
 
 # this script builds brew bottles but for Mac only (arm64 and amd64)
-# tarball name is like go-parquet-tools-1.22.0.arm64_monterey.bottle.tar.gz,
+# tarball name is like go-parquet-tools-1.22.0.arm64_sequoia.bottle.tar.gz,
 # with content:
 # go-parquet-tools
-# └── 1.22.0
+# └── 1.25.7
 #     ├── LICENSE
 #     ├── README.md
 #     └── bin
@@ -33,7 +33,7 @@ for ARCH in arm64 amd64; do
     tar zcf ${BUILD_DIR}/brew/${ARCH}.tar.gz -C ${ARCH_DIR} go-parquet-tools/
 done
 
-for OSX in monterey sequoia sonoma ventura; do
+for OSX in sequoia sonoma ventura; do
     # for Apple Silicon
     cp ${BUILD_DIR}/brew/arm64.tar.gz \
         ${BUILD_DIR}/release/go-parquet-tools-${VERSION:1}.arm64_${OSX}.bottle.tar.gz
