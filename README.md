@@ -547,6 +547,15 @@ $ parquet-tools cat --format jsonl testdata/good.parquet
 
 You can read data line by line and parse every single line as a JSON object if you do not have a toolchain to process JSONL format.
 
+You can also set `--pargo-prefix` parameter to `"PARGO_PREFIX_"` to remove the prefix added by parquet-go package:
+
+```bash
+$ parquet-tools cat testdata/pargo-prefix-flat.parquet
+[{"PARGO_PREFIX__shoe_brand":"nike","Shoe_name":"air_griffey"},{"PARGO_PREFIX__shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"PARGO_PREFIX__shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+$ parquet-tools cat --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-flat.parquet
+[{"Shoe_name":"air_griffey","_shoe_brand":"nike"},{"Shoe_name":"grant_hill_2","_shoe_brand":"fila"},{"Shoe_name":"curry7","_shoe_brand":"steph_curry"}]
+```
+
 ### import Command
 
 `import` command creates a parquet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
