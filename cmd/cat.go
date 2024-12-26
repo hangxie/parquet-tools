@@ -194,7 +194,10 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	}
 
 	// handle PARGO_PREFIX_ with jq jq
-	queryString := fmt.Sprintf(`walk(if type == "object" then with_entries(.key = (.key | sub("%s"; ""))) else . end)`, c.PargoPrefix)
+	queryString := "."
+	if c.PargoPrefix != "" {
+		queryString = fmt.Sprintf(`walk(if type == "object" then with_entries(.key = (.key | sub("%s"; ""))) else . end)`, c.PargoPrefix)
+	}
 	jq, err := gojq.Parse(queryString)
 	if err != nil {
 		return fmt.Errorf("unable to use [%s] as prefix: %w", c.PargoPrefix, err)
