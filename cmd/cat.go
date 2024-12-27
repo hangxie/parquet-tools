@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/itchyny/gojq"
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/types"
@@ -154,11 +153,12 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, ma
 	return fieldList, reinterpretFields, nil
 }
 
-func (c CatCmd) outputSingleRow(rowStruct interface{}, jq *gojq.Query, fieldList []string) error {
+func (c CatCmd) outputSingleRow(rowStruct interface{}, fieldList []string) error {
 	switch c.Format {
 	case "json", "jsonl":
-		v, _ := jq.Run(rowStruct).Next()
-		buf, _ := json.Marshal(v)
+		// remove pargo prefix
+		removePargoPrefix(&rowStruct, c.PargoPrefix)
+		buf, _ := json.Marshal(rowStruct)
 		fmt.Print(string(buf))
 	case "csv", "tsv":
 		flatValues := rowStruct.(map[string]interface{})
@@ -193,16 +193,6 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 		return err
 	}
 
-	// handle PARGO_PREFIX_ with jq jq
-	queryString := "."
-	if c.PargoPrefix != "" {
-		queryString = fmt.Sprintf(`walk(if type == "object" then with_entries(.key = (.key | sub("%s"; ""))) else . end)`, c.PargoPrefix)
-	}
-	jq, err := gojq.Parse(queryString)
-	if err != nil {
-		return fmt.Errorf("unable to use [%s] as prefix: %w", c.PargoPrefix, err)
-	}
-
 	// Output rows one by one to avoid running out of memory with a jumbo list
 	fmt.Print(delimiter[c.Format].begin)
 	for counter := uint64(0); counter < c.Limit; {
@@ -223,7 +213,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 			}
 			// there is no known error at this moment
 			rowStruct, _ := rowToStruct(rows[i], reinterpretFields)
-			if err := c.outputSingleRow(rowStruct, jq, fieldList); err != nil {
+			if err := c.outputSingleRow(rowStruct, fieldList); err != nil {
 				return err
 			}
 			counter++
@@ -397,5 +387,29 @@ func reinterpretScalar(iface *interface{}, attr internal.ReinterpretField) {
 				*iface = types.INT96ToTime(string(encoded)).Format(time.RFC3339Nano)
 			}
 		}
+	}
+}
+
+func removePargoPrefix(iface *interface{}, pargoPrefix string) {
+	if iface == nil || *iface == nil {
+		return
+	}
+	v := reflect.ValueOf(*iface)
+	switch v.Kind() {
+	case reflect.Array, reflect.Slice:
+		for i := range (*iface).([]interface{}) {
+			value := (*iface).([]interface{})[i]
+			removePargoPrefix(&value, pargoPrefix)
+			(*iface).([]interface{})[i] = value
+		}
+	case reflect.Map:
+		mapValue := (*iface).(map[string]interface{})
+		newMapValue := make(map[string]interface{})
+		for k, v := range mapValue {
+			removePargoPrefix(&v, pargoPrefix)
+			newMapValue[strings.TrimPrefix(k, pargoPrefix)] = v
+		}
+		mapValue = newMapValue
+		*iface = mapValue
 	}
 }
