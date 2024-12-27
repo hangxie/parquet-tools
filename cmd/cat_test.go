@@ -464,14 +464,4 @@ func Test_CatCmd_Run_json_pargo_prefix(t *testing.T) {
 	expected = loadExpected(t, "../testdata/golden/cat-pargo-prefix-nested-remove.json")
 	require.Equal(t, expected, stdout)
 	require.Equal(t, "", stderr)
-
-	cmd.PargoPrefix = `\“`
-	stdout, stderr = captureStdoutStderr(func() {
-		err := cmd.Run()
-		require.NotNil(t, err)
-		require.Contains(t, err.Error(), `unable to use [\“] as prefix: invalid escape sequence`)
-	})
-
-	require.Equal(t, "", stdout)
-	require.Equal(t, "", stderr)
 }
