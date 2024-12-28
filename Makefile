@@ -24,7 +24,8 @@ LDFLAGS     := -w -s
 LDFLAGS     += -extldflags "-static" \
 	-X $(PKG_PREFIX)/cmd.version=$(VERSION) \
 	-X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) \
-	-X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH)
+	-X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH) \
+	-X ${PKG_PREFIX}/cmd.source=Makefile
 
 .EXPORT_ALL_VARIABLES:
 

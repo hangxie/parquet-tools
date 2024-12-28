@@ -22,13 +22,20 @@ var (
 // VersionCmd is a kong command for version
 type VersionCmd struct {
 	JSON      bool `short:"j" help:"Output in JSON format." default:"false"`
-	BuildTime bool `short:"b" help:"Output build time as well." default:"false"`
+	All       bool `short:"a" help:"Output all version details." default:"false"`
+	BuildTime bool `short:"b" help:"Output build time." default:"false"`
 	GitHash   bool `short:"g" help:"Output git hash." default:"false"`
 	Source    bool `short:"s" help:"Source of the executable." default:"false"`
 }
 
 // Run does actual version job
 func (c VersionCmd) Run() error {
+	if c.All {
+		c.BuildTime = true
+		c.GitHash = true
+		c.Source = true
+	}
+
 	if !c.JSON {
 		fmt.Println(version)
 		if c.BuildTime {
