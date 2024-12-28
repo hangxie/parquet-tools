@@ -899,8 +899,10 @@ v1.22.2
 
 #### Print All Information
 
+`-a` is equivalent to `-bgs`.
+
 ```bash
-$ parquet-tools version -bgs
+$ parquet-tools version -a
 v1.22.2
 2024-09-09T20:36:44+00:00
 0bcba77

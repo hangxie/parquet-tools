@@ -90,9 +90,7 @@ func Test_VersionCmd_Run_good_json_with_all_meta(t *testing.T) {
 	setupTest()
 	cmd := &VersionCmd{}
 	cmd.JSON = true
-	cmd.BuildTime = true
-	cmd.GitHash = true
-	cmd.Source = true
+	cmd.All = true
 
 	stdout, stderr := captureStdoutStderr(func() {
 		require.Nil(t, cmd.Run())
