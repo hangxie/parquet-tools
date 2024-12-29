@@ -10,12 +10,10 @@ var (
 	version string
 	// build time in ISO-8601 format
 	build string
-	// git hash for this build
-	gitHash string
 	// where the executable came from, can be:
 	// - "source" or "" for build from source
 	// - "github" for from github release
-	// - "bottle" for from homebrew bottles
+	// - "Homebrew" for from homebrew bottles
 	source string
 )
 
@@ -24,7 +22,6 @@ type VersionCmd struct {
 	JSON      bool `short:"j" help:"Output in JSON format." default:"false"`
 	All       bool `short:"a" help:"Output all version details." default:"false"`
 	BuildTime bool `short:"b" help:"Output build time." default:"false"`
-	GitHash   bool `short:"g" help:"Output git hash." default:"false"`
 	Source    bool `short:"s" help:"Source of the executable." default:"false"`
 }
 
@@ -32,7 +29,6 @@ type VersionCmd struct {
 func (c VersionCmd) Run() error {
 	if c.All {
 		c.BuildTime = true
-		c.GitHash = true
 		c.Source = true
 	}
 
@@ -40,9 +36,6 @@ func (c VersionCmd) Run() error {
 		fmt.Println(version)
 		if c.BuildTime {
 			fmt.Println(build)
-		}
-		if c.GitHash {
-			fmt.Println(gitHash)
 		}
 		if c.Source {
 			fmt.Println(source)
@@ -53,19 +46,14 @@ func (c VersionCmd) Run() error {
 	v := struct {
 		Version   string
 		BuildTime *string `json:",omitempty"`
-		GitHash   *string `json:",omitempty"`
 		Source    *string `json:",omitempty"`
 	}{
 		Version:   version,
 		BuildTime: nil,
-		GitHash:   nil,
 		Source:    nil,
 	}
 	if c.BuildTime {
 		v.BuildTime = &build
-	}
-	if c.GitHash {
-		v.GitHash = &gitHash
 	}
 	if c.Source {
 		v.Source = &source
