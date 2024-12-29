@@ -144,29 +144,23 @@ For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-
 
 ### Brew Install
 
-Mac user can use [Homebrew](https://brew.sh/) to install, it is not part of core formula yet but you can run:
+Mac user can use [Homebrew](https://brew.sh/) to install:
 
 ```bash
-$ brew uninstall parquet-tools
-$ brew tap hangxie/tap
 $ brew install go-parquet-tools
 ```
 
-`parquet-tools` installed by brew is a similar tool built by Java, however, it is [deprecated](https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools-deprecated), since both packages install same `parquet-tools` utility so you need to remove one before installing the other one.
-
-Whenever you want to upgrade to latest version which you should:
+To upgrade to latest version:
 
 ```bash
 $ brew upgrade go-parquet-tools
 ```
 
-Starting from v1.22.1 go-parquet-tools will be installed from [bottles](https://docs.brew.sh/Bottles) by default, which can dramatically reduce time to install in environments with slow connection. The binary build comes from release of this repository. If you do not feel comfortable with prebuilt and still want to install from source, you can use `--build-from-source` flag:
+If you used to install from `hangxie/tap`, make sure you untap first:
 
 ```bash
-$ brew install --build-from-source go-parquet-tools
+$ brew untap hangxie/tap
 ```
-
-same flag is needed for `reinstall`, also `brew upgrade` may bring bottles so you want to run `uninstall` followed by `install`.
 
 ### Container Image
 
@@ -179,9 +173,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.22.2
+v1.25.10
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.22.2
+v1.25.10
 ```
 
 ### Prebuilt Packages
@@ -191,20 +185,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i  parquet-tools_1.22.2_amd64.deb
-Preparing to unpack parquet-tools_1.22.2_amd64.deb ...
-Unpacking parquet-tools (1.22.2) ...
-Setting up parquet-tools (1.22.2) ...
+$ sudo dpkg -i parquet-tools_1.25.10_amd64.deb
+Preparing to unpack parquet-tools_1.25.10_amd64.deb ...
+Unpacking parquet-tools (1.25.10) ...
+Setting up parquet-tools (1.25.10) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.22.2-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.25.10-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.22.2-1           ################################# [100%]
+   1:parquet-tools-1.25.10-1          ################################# [100%]
 ```
 
 ## Usage
@@ -888,37 +882,37 @@ $ parquet-tools row-count 3.parquet
 
 ### version Command
 
-`version` command provides version, build time, git hash, and source of the executable, it will be quite helpful when you are troubleshooting a problem from this tool itself. Source of the executable can be "source" (or "") which means it was built from source code, or "github" indicates it was from github release (include container images and deb/rpm packages as they share the same build result), or "bottle" if it was from homebrew bottles.
+`version` command provides version, build time, git hash, and source of the executable, it will be quite helpful when you are troubleshooting a problem from this tool itself. Source of the executable can be "source" (or "") which means it was built from source code, or "github" indicates it was from github release (include container images and deb/rpm packages as they share the same build result), or "Homebrew" if it was from homebrew bottles.
 
 #### Print Version
 
 ```bash
 $ parquet-tools version
-v1.22.2
+v1.25.10
 ```
 
 #### Print All Information
 
-`-a` is equivalent to `-bgs`.
+`-a` is equivalent to `-bs`.
 
 ```bash
 $ parquet-tools version -a
-v1.22.2
-2024-09-09T20:36:44+00:00
-0bcba77
-bottle
+v1.25.10
+2024-12-28T16:14:01Z
+Deprecated
+Homebrew
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.22.2","BuildTime":"2024-09-09T20:36:44+00:00","GitHash":"0bcba77","Source":"bottle"}
+{"Version":"v1.25.10","BuildTime":"2024-12-28T16:14:01Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.22.2"}
+{"Version":"v1.25.10"}
 ```
