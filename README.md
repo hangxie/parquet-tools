@@ -271,7 +271,7 @@ $ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/relea
 2405462
 ```
 
-If an S3 object is publicly accessible and you do not have AWS credential, you can use `--anonymous` flag to bypass AWS authentation:
+If an S3 object is publicly accessible and you do not have AWS credential, you can use `--anonymous` flag to bypass AWS authentication:
 
 ```bash
 $ aws sts get-caller-identity
@@ -324,7 +324,7 @@ means the parquet file is at:
 * container `laborstatisticscontainer`
 * blob `lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet`
 
-`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access:
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment variable to identity access:
 
 ```bash
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s testdata/csv.source -m testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
@@ -443,7 +443,7 @@ $ parquet-tools cat --skip 20 testdata/good.parquet
 
 #### CSV/TSV Format
 
-There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpretted by other utilities, especially if they are from other programming laguages.
+There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpreted by other utilities, especially if they are from other programming languages.
 
 ```bash
 $ parquet-tools cat -f csv testdata/good.parquet
@@ -847,7 +847,7 @@ Name of output files is determined by `--name-format` and will be used by `fmt.S
 
 Other useful parameters include:
 * `--fail-on-int96` to fail the command if source parquet file contains INT96 fields
-* `--compression` to specify compression codec for output files, defailt is `SNAPPY`
+* `--compression` to specify compression codec for output files, default is `SNAPPY`
 * `--read-page-size` to tell how many rows will be read per batch from source
 
 #### Exact number of output files
