@@ -1,4 +1,4 @@
-name: tests
+name: Build Action
 
 on:
   workflow_call:
