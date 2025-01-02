@@ -1,6 +1,5 @@
 [![](https://img.shields.io/badge/license-BSD%203-blue)](https://github.com/hangxie/parquet-tools/blob/main/LICENSE)
 [![](https://img.shields.io/github/v/tag/hangxie/parquet-tools.svg?color=brightgreen&label=version&sort=semver)](https://github.com/hangxie/parquet-tools/releases)
-[![](https://circleci.com/gh/hangxie/parquet-tools/tree/main.svg?style=shield)](https://circleci.com/gh/hangxie/parquet-tools/tree/main)
 [![[parquet-tools]](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml/badge.svg)](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml)
 [![](https://goreportcard.com/badge/github.com/hangxie/parquet-tools)](https://goreportcard.com/report/github.com/hangxie/parquet-tools)
 [![](https://github.com/hangxie/parquet-tools/wiki/coverage.svg)](https://github.com/hangxie/parquet-tools/wiki/Coverage-Report)
@@ -36,13 +35,8 @@ Some test cases are from:
 * https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet
 * https://azure.microsoft.com/en-us/services/open-datasets/catalog/
 * https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
-
-Tools used:
-
-* https://golang.org/
-* https://github.com/golangci/golangci-lint
-* https://github.com/jstemmer/go-junit-report
-* https://circleci.com/
+* https://pro.dp.la/developers/bulk-download
+* https://exchange.aboutamazon.com/data-initiative
 
 ## TODO
 
