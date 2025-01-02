@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/xitongsys/parquet-go-source/local"
@@ -103,15 +104,15 @@ func main() {
 	var err error
 	fw, err := local.NewLocalFileWriter("map-composite-map.parquet")
 	if err != nil {
-		log.Println("Can't create local file", err)
-		return
+		fmt.Println("Can't create local file", err)
+		os.Exit(1)
 	}
 
 	// write
 	pw, err := writer.NewParquetWriter(fw, jsonSchema, 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
@@ -139,13 +140,12 @@ func main() {
 		}
 
 		if err = pw.Write(stu); err != nil {
-			log.Println("Write error", err)
+			fmt.Println("Write error", err)
 		}
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
-		return
+		fmt.Println("WriteStop error", err)
+		os.Exit(1)
 	}
-	log.Println("Write Finished")
 	fw.Close()
 }
