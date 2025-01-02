@@ -8,12 +8,12 @@ SHELL:=/bin/bash
 gen:  ## Generate all test parquet files
 	@for SRC in */main.go; do \
 		echo === $${SRC} ===; \
-		go run $${SRC}; \
+		(cd $$(dirname $${SRC}) && go run .); \
 	done
 
 clean:  ## Clean up generated parquet files
 	@echo "==> Cleaning up build dirs"
-	@rm -rf *.parquet
+	@find . -name \*.parquet | xargs rm -f
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile

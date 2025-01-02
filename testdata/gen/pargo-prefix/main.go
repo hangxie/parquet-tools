@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/parquet"
@@ -31,13 +32,13 @@ func main() {
 	fw, err := local.NewLocalFileWriter("pargo-prefix-nested.parquet")
 	if err != nil {
 		fmt.Println("Can't create local file", err)
-		return
+		os.Exit(1)
 	}
 
 	pw, err := writer.NewParquetWriter(fw, new(PargoPrefix), 4)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
-		return
+		os.Exit(1)
 	}
 
 	pw.RowGroupSize = 128 * 1024 * 1024
@@ -70,7 +71,7 @@ func main() {
 	}
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
-		return
+		os.Exit(1)
 	}
 	fw.Close()
 
@@ -78,13 +79,13 @@ func main() {
 	fw, err = local.NewLocalFileWriter("pargo-prefix-flat.parquet")
 	if err != nil {
 		fmt.Println("Can't create local file", err)
-		return
+		os.Exit(1)
 	}
 
 	pw, err = writer.NewParquetWriter(fw, new(Shoe), 4)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
-		return
+		os.Exit(1)
 	}
 
 	pw.CompressionType = parquet.CompressionCodec_GZIP
@@ -93,7 +94,7 @@ func main() {
 	pw.Write(Shoe{"steph_curry", "curry7"})
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
-		return
+		os.Exit(1)
 	}
 	fw.Close()
 }

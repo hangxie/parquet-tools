@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"time"
 
 	"github.com/xitongsys/parquet-go-source/local"
@@ -76,13 +76,13 @@ func main() {
 func genScalar() {
 	fw, err := local.NewLocalFileWriter("reinterpret-scalar.parquet")
 	if err != nil {
-		log.Println("Can't create file", err)
-		return
+		fmt.Println("Can't create file", err)
+		os.Exit(1)
 	}
 	pw, err := writer.NewParquetWriter(fw, new(Scalar), 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
@@ -99,26 +99,25 @@ func genScalar() {
 			V6: types.TimeToINT96(timeValue),
 		}
 		if err = pw.Write(value); err != nil {
-			log.Println("Write error", err)
+			fmt.Println("Write error", err)
 		}
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
+		fmt.Println("WriteStop error", err)
 	}
-	log.Println("Write scalar finished")
 	fw.Close()
 }
 
 func genPointer() {
 	fw, err := local.NewLocalFileWriter("reinterpret-pointer.parquet")
 	if err != nil {
-		log.Println("Can't create file", err)
-		return
+		fmt.Println("Can't create file", err)
+		os.Exit(1)
 	}
 	pw, err := writer.NewParquetWriter(fw, new(Pointer), 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
@@ -141,29 +140,28 @@ func genPointer() {
 		*value.V5 = types.StrIntToBinary(strValue, "LittleEndian", 12, false)
 		*value.V6 = types.TimeToINT96(timeValue)
 		if err = pw.Write(value); err != nil {
-			log.Println("Write error", err)
+			fmt.Println("Write error", err)
 		}
 	}
 	if err = pw.Write(Pointer{}); err != nil {
-		log.Println("Write error", err)
+		fmt.Println("Write error", err)
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
+		fmt.Println("WriteStop error", err)
 	}
-	log.Println("Write pointer finished")
 	fw.Close()
 }
 
 func genList() {
 	fw, err := local.NewLocalFileWriter("reinterpret-list.parquet")
 	if err != nil {
-		log.Println("Can't create file", err)
-		return
+		fmt.Println("Can't create file", err)
+		os.Exit(1)
 	}
 	pw, err := writer.NewParquetWriter(fw, new(List), 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
@@ -192,26 +190,25 @@ func genList() {
 			value.V6[j] = types.TimeToINT96(timeValue)
 		}
 		if err = pw.Write(value); err != nil {
-			log.Println("Write error", err)
+			fmt.Println("Write error", err)
 		}
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
+		fmt.Println("WriteStop error", err)
 	}
-	log.Println("Write list finished")
 	fw.Close()
 }
 
 func genMapKey() {
 	fw, err := local.NewLocalFileWriter("reinterpret-map-key.parquet")
 	if err != nil {
-		log.Println("Can't create file", err)
-		return
+		fmt.Println("Can't create file", err)
+		os.Exit(1)
 	}
 	pw, err := writer.NewParquetWriter(fw, new(MapKey), 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
@@ -235,25 +232,24 @@ func genMapKey() {
 		value.V6[types.TimeToINT96(timeValue)] = fmt.Sprintf("INT96-[%s]", timeValue.Format(time.RFC3339Nano))
 	}
 	if err = pw.Write(value); err != nil {
-		log.Println("Write error", err)
+		fmt.Println("Write error", err)
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
+		fmt.Println("WriteStop error", err)
 	}
-	log.Println("Write map-key finished")
 	fw.Close()
 }
 
 func genMapValue() {
 	fw, err := local.NewLocalFileWriter("reinterpret-map-value.parquet")
 	if err != nil {
-		log.Println("Can't create file", err)
-		return
+		fmt.Println("Can't create file", err)
+		os.Exit(1)
 	}
 	pw, err := writer.NewParquetWriter(fw, new(MapValue), 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
@@ -278,25 +274,24 @@ func genMapValue() {
 		value.V6[key] = types.TimeToINT96(timeValue)
 	}
 	if err = pw.Write(value); err != nil {
-		log.Println("Write error", err)
+		fmt.Println("Write error", err)
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
+		fmt.Println("WriteStop error", err)
 	}
-	log.Println("Write map-value finished")
 	fw.Close()
 }
 
 func genComposite() {
 	fw, err := local.NewLocalFileWriter("reinterpret-composite.parquet")
 	if err != nil {
-		log.Println("Can't create file", err)
-		return
+		fmt.Println("Can't create file", err)
+		os.Exit(1)
 	}
 	pw, err := writer.NewParquetWriter(fw, new(Composite), 4)
 	if err != nil {
-		log.Println("Can't create parquet writer", err)
-		return
+		fmt.Println("Can't create parquet writer", err)
+		os.Exit(1)
 	}
 
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
@@ -328,11 +323,10 @@ func genComposite() {
 		value.Map[int32(i)] = structList
 	}
 	if err = pw.Write(value); err != nil {
-		log.Println("Write error", err)
+		fmt.Println("Write error", err)
 	}
 	if err = pw.WriteStop(); err != nil {
-		log.Println("WriteStop error", err)
+		fmt.Println("WriteStop error", err)
 	}
-	log.Println("Write composite finished")
 	fw.Close()
 }
