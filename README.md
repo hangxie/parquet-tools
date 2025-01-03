@@ -167,9 +167,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.25.10
+v1.25.12
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.25.10
+v1.25.12
 ```
 
 ### Prebuilt Packages
@@ -179,20 +179,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.25.10_amd64.deb
-Preparing to unpack parquet-tools_1.25.10_amd64.deb ...
-Unpacking parquet-tools (1.25.10) ...
-Setting up parquet-tools (1.25.10) ...
+$ sudo dpkg -i parquet-tools_1.25.12_amd64.deb
+Preparing to unpack parquet-tools_1.25.12_amd64.deb ...
+Unpacking parquet-tools (1.25.12) ...
+Setting up parquet-tools (1.25.12) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.25.10-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.25.12-1.x86_64.rpm
 Verifying...                          ################################# [100%]
 Preparing...                          ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.25.10-1          ################################# [100%]
+   1:parquet-tools-1.25.12-1          ################################# [100%]
 ```
 
 ## Usage
@@ -882,7 +882,7 @@ $ parquet-tools row-count 3.parquet
 
 ```bash
 $ parquet-tools version
-v1.25.10
+v1.25.12
 ```
 
 #### Print All Information
@@ -891,9 +891,8 @@ v1.25.10
 
 ```bash
 $ parquet-tools version -a
-v1.25.10
-2024-12-28T16:14:01Z
-Deprecated
+v1.25.12
+2024-12-30T03:24:47Z
 Homebrew
 ```
 
@@ -901,12 +900,12 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.25.10","BuildTime":"2024-12-28T16:14:01Z"}
+{"Version":"v1.25.12","BuildTime":"2024-12-30T03:24:47Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.25.10"}
+{"Version":"v1.25.12"}
 ```
