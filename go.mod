@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.5.0
 	github.com/alecthomas/kong v1.6.1
-	github.com/aws/aws-sdk-go-v2 v1.32.7
+	github.com/aws/aws-sdk-go-v2 v1.32.8
 	github.com/aws/aws-sdk-go-v2/config v1.28.7
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.0
 	github.com/posener/complete v1.2.3
