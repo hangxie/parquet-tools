@@ -8,7 +8,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.5.0
 	github.com/alecthomas/kong v1.6.1
 	github.com/aws/aws-sdk-go-v2 v1.32.8
-	github.com/aws/aws-sdk-go-v2/config v1.28.10
+	github.com/aws/aws-sdk-go-v2/config v1.28.11
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.2
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.10.0
@@ -20,14 +20,14 @@ require (
 replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.6.1-0.20240817021626-f9fb5367878a
 
 require (
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.51 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.52 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.23 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.9 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.33.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.33.7 // indirect
 	github.com/aws/smithy-go v1.22.1 // indirect
 )
 
