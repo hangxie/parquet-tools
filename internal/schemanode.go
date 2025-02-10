@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -315,7 +314,7 @@ func DecimalToFloat(fieldAttr ReinterpretField, iface interface{}) (*float64, er
 		}
 		return &f64, nil
 	}
-	return nil, fmt.Errorf("unknown type: %s", reflect.TypeOf(iface))
+	return nil, fmt.Errorf("unknown type: %T", iface)
 }
 
 func StringToBytes(fieldAttr ReinterpretField, value string) []byte {
@@ -375,4 +374,53 @@ func (s SchemaNode) CSVSchema() (string, error) {
 		schema[i] = strings.Replace(f.Tag, ", repetitiontype=REQUIRED", "", 1)
 	}
 	return strings.Join(schema, "\n"), nil
+}
+
+func equals[T comparable](a, b *T) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return *a == *b
+}
+
+func schemaElementEquals(s, v parquet.SchemaElement) bool {
+	return s.Name == v.Name &&
+		equals(s.Type, v.Type) &&
+		equals(s.TypeLength, v.TypeLength) &&
+		equals(s.ConvertedType, v.ConvertedType) &&
+		equals(s.NumChildren, v.NumChildren) &&
+		equals(s.ConvertedType, v.ConvertedType) &&
+		equals(s.Scale, v.Scale) &&
+		equals(s.Precision, v.Precision) &&
+		equals(s.FieldID, v.FieldID) &&
+		equals(s.LogicalType, v.LogicalType)
+}
+
+func (s SchemaNode) Equals(v SchemaNode) bool {
+	if len(s.Parent) != len(v.Parent) || len(s.Children) != len(v.Children) {
+		return false
+	}
+
+	if len(s.Parent) != 0 {
+		// do not compare attributes of top level node as different libraries behave differently
+		if !schemaElementEquals(s.SchemaElement, v.SchemaElement) {
+			return false
+		}
+
+		for i := range s.Parent[1:] {
+			if s.Parent[i+1] != v.Parent[i+1] {
+				return false
+			}
+		}
+	}
+
+	for i := range s.Children {
+		if !s.Children[i].Equals(*v.Children[i]) {
+			return false
+		}
+	}
+	return true
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/xitongsys/parquet-go/reader"
 
@@ -91,7 +90,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, *internal.SchemaNode, 
 
 		if schema == nil {
 			schema = currSchema
-		} else if !reflect.DeepEqual(schema, currSchema) {
+		} else if !schema.Equals(*currSchema) {
 			return nil, nil, fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}
