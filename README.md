@@ -588,10 +588,10 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 
 ### merge Command
 
-`merge` command merge several parquet files with same schema to one parquet file, all source files and target files can be from and to different storage locations.
+`merge` command merge multiple parquet files into one parquet file, source parquet files need to have same schema, except top level node can have different names. All source files and target file can be from and to different storage locations.
 
 ```bash
-$ parquet-tools merge --sources testdata/good.parquet,testdata/good.parquet /tmp/doubled.parquet
+$ parquet-tools merge -s testdata/good.parquet,testdata/good.parquet /tmp/doubled.parquet
 $ parquet-tools cat -f jsonl testdata/good.parquet
 {"Shoe_brand":"nike","Shoe_name":"air_griffey"}
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
@@ -603,6 +603,10 @@ $ parquet-tools cat -f jsonl /tmp/doubled.parquet
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
 {"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
 {"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+
+$ parquet-tools merge -s testdata/top-level-tag1.parquet -s testdata/top-level-tag2.parquet /tmp/merged.parquet
+$ parquet-tools row-count /tmp/merged.parquet
+6
 ```
 
 You can use `--read-page-size` to configure how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
