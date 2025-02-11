@@ -199,3 +199,28 @@ func Test_MergeCmd_Run_fail_on_int96(t *testing.T) {
 
 	_ = os.Remove(cmd.URI)
 }
+
+func Test_MergeCmd_Run_diff_top_level_tag(t *testing.T) {
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	cmd := &MergeCmd{}
+	cmd.ReadPageSize = 10
+	cmd.Sources = []string{
+		"../testdata/top-level-tag1.parquet",
+		"../testdata/top-level-tag2.parquet",
+	}
+	cmd.URI = filepath.Join(tempDir, "top-level-tag.parquet")
+	cmd.Compression = "SNAPPY"
+
+	err := cmd.Run()
+	require.Nil(t, err)
+
+	reader, _ := internal.NewParquetFileReader(cmd.URI, internal.ReadOption{})
+	rowCount := reader.GetNumRows()
+	require.Equal(t, rowCount, int64(6))
+
+	_ = os.Remove(cmd.URI)
+}
