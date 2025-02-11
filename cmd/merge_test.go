@@ -18,7 +18,7 @@ func Test_MergeCmd_Run_pagesize_too_small(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 0
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/good.parquet",
 		"../testdata/good.parquet",
 	}
@@ -40,7 +40,7 @@ func Test_MergeCmd_Run_need_more_sources(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/good.parquet",
 	}
 	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
@@ -48,7 +48,7 @@ func Test_MergeCmd_Run_need_more_sources(t *testing.T) {
 
 	err := cmd.Run()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "needs at least 2 sources files")
+	require.Contains(t, err.Error(), "needs at least 2 source files")
 
 	_ = os.Remove(cmd.URI)
 }
@@ -61,7 +61,7 @@ func Test_MergeCmd_Run_nonexistent_source(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"/path/to/nowhere/file1",
 		"/path/to/nowhere/file2",
 	}
@@ -83,7 +83,7 @@ func Test_MergeCmd_Run_invalid_source(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/not-a-parquet-file",
 		"../testdata/not-a-parquet-file",
 	}
@@ -105,7 +105,7 @@ func Test_MergeCmd_Run_source_schema_not_match(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/good.parquet",
 		"../testdata/empty.parquet",
 	}
@@ -122,7 +122,7 @@ func Test_MergeCmd_Run_source_schema_not_match(t *testing.T) {
 func Test_MergeCmd_Run_invalid_target(t *testing.T) {
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/good.parquet",
 		"../testdata/good.parquet",
 	}
@@ -139,7 +139,7 @@ func Test_MergeCmd_Run_invalid_target(t *testing.T) {
 func Test_MergeCmd_Run_failed_to_write_stop(t *testing.T) {
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/good.parquet",
 		"../testdata/good.parquet",
 	}
@@ -161,7 +161,7 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/good.parquet",
 		"../testdata/good.parquet",
 	}
@@ -185,7 +185,7 @@ func Test_MergeCmd_Run_fail_on_int96(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/all-types.parquet",
 		"../testdata/all-types.parquet",
 	}
@@ -208,7 +208,7 @@ func Test_MergeCmd_Run_diff_top_level_tag(t *testing.T) {
 
 	cmd := &MergeCmd{}
 	cmd.ReadPageSize = 10
-	cmd.Sources = []string{
+	cmd.Source = []string{
 		"../testdata/top-level-tag1.parquet",
 		"../testdata/top-level-tag2.parquet",
 	}

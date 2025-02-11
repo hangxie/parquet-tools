@@ -13,7 +13,7 @@ type MergeCmd struct {
 	internal.ReadOption
 	internal.WriteOption
 	ReadPageSize int      `help:"Page size to read from Parquet." default:"1000"`
-	Sources      []string `help:"Files to be merged."`
+	Source       []string `short:"s" help:"Files to be merged."`
 	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool     `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
 }
@@ -23,8 +23,8 @@ func (c MergeCmd) Run() error {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
-	if len(c.Sources) <= 1 {
-		return fmt.Errorf("needs at least 2 sources files")
+	if len(c.Source) <= 1 {
+		return fmt.Errorf("needs at least 2 source files")
 	}
 
 	fileReaders, schema, err := c.openSources()
@@ -51,14 +51,14 @@ func (c MergeCmd) Run() error {
 		for {
 			rows, err := fileReaders[i].ReadByNumber(c.ReadPageSize)
 			if err != nil {
-				return fmt.Errorf("failed to read from [%s]: %w", c.Sources[i], err)
+				return fmt.Errorf("failed to read from [%s]: %w", c.Source[i], err)
 			}
 			if len(rows) == 0 {
 				break
 			}
 			for _, row := range rows {
 				if err := fileWriter.Write(row); err != nil {
-					return fmt.Errorf("failed to write data from [%s] to [%s]: %w", c.Sources[i], c.URI, err)
+					return fmt.Errorf("failed to write data from [%s] to [%s]: %w", c.Source[i], c.URI, err)
 				}
 			}
 		}
@@ -76,8 +76,8 @@ func (c MergeCmd) Run() error {
 func (c MergeCmd) openSources() ([]*reader.ParquetReader, *internal.SchemaNode, error) {
 	var schema *internal.SchemaNode
 	var err error
-	fileReaders := make([]*reader.ParquetReader, len(c.Sources))
-	for i, source := range c.Sources {
+	fileReaders := make([]*reader.ParquetReader, len(c.Source))
+	for i, source := range c.Source {
 		fileReaders[i], err = internal.NewParquetFileReader(source, c.ReadOption)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to read from [%s]: %w", source, err)
