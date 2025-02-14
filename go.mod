@@ -9,7 +9,7 @@ require (
 	github.com/alecthomas/kong v1.7.0
 	github.com/aws/aws-sdk-go-v2 v1.36.1
 	github.com/aws/aws-sdk-go-v2/config v1.29.6
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.76.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.76.1
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.10.0
 	github.com/willabides/kongplete v0.4.0
@@ -46,7 +46,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.32 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.32 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.32 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.5.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.6.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.14 // indirect
 	github.com/bobg/gcsobj v0.1.2 // indirect
 	github.com/colinmarc/hdfs/v2 v2.1.1 // indirect
