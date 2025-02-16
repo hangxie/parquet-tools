@@ -342,7 +342,7 @@ func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	require.Contains(t, err.Error(), "CSV does not support column in LIST typ")
 }
 
-func Test_nullableEquals(t *testing.T) {
+func Test_equals(t *testing.T) {
 	var a, b *int32
 	t.Run("both-nil", func(t *testing.T) {
 		require.True(t, equals(a, b))
@@ -369,53 +369,61 @@ func Test_nullableEquals(t *testing.T) {
 func Test_schemaElementEquals(t *testing.T) {
 	var a, b parquet.SchemaElement
 	t.Run("zero-value", func(t *testing.T) {
-		require.True(t, schemaElementEquals(a, b))
+		require.True(t, schemaElementEquals(a, b, true))
 	})
 
 	a.Name = "node"
 	t.Run("diff-name", func(t *testing.T) {
-		require.False(t, schemaElementEquals(a, b))
+		require.False(t, schemaElementEquals(a, b, true))
+	})
+
+	b.Name = "Node"
+	t.Run("same-name-case-insensitive", func(t *testing.T) {
+		require.True(t, schemaElementEquals(a, b, true))
+		require.False(t, schemaElementEquals(a, b, false))
 	})
 
 	b.Name = "node"
-	t.Run("same-name", func(t *testing.T) {
-		require.True(t, schemaElementEquals(a, b))
+	t.Run("same-name-case-sensitive", func(t *testing.T) {
+		require.True(t, schemaElementEquals(a, b, false))
+		require.True(t, schemaElementEquals(a, b, true))
 	})
 
 	a.ConvertedType = new(parquet.ConvertedType)
 	*a.ConvertedType = parquet.ConvertedType_INT_16
 	t.Run("converted-type-one-nil", func(t *testing.T) {
-		require.False(t, schemaElementEquals(a, b))
+		require.False(t, schemaElementEquals(a, b, true))
 	})
 
 	b.ConvertedType = new(parquet.ConvertedType)
 	*b.ConvertedType = parquet.ConvertedType_INT_32
 	t.Run("converted-type-not-equal", func(t *testing.T) {
-		require.False(t, schemaElementEquals(a, b))
+		require.False(t, schemaElementEquals(a, b, true))
 	})
 
 	*b.ConvertedType = parquet.ConvertedType_INT_16
 	t.Run("converted-type-equal", func(t *testing.T) {
-		require.True(t, schemaElementEquals(a, b))
+		require.True(t, schemaElementEquals(a, b, true))
 	})
 }
 
-func Test_SchemaNode_Equals(t *testing.T) {
+func Test_SchemaNode_Equals_top_level_tag(t *testing.T) {
 	var a, b SchemaNode
 	t.Run("zero-value", func(t *testing.T) {
-		require.True(t, a.Equals(b))
+		require.True(t, a.Equals(b, true))
+		require.True(t, a.Equals(b, false))
 	})
 
 	a.SchemaElement.Name = "top_node_lib1"
 	b.SchemaElement.Name = "top_node_lib2"
 	t.Run("ignore-top-node-attr", func(t *testing.T) {
-		require.True(t, a.Equals(b))
+		require.True(t, a.Equals(b, true))
 	})
 
 	a.Children = make([]*SchemaNode, 1)
 	b.Children = make([]*SchemaNode, 2)
 	t.Run("diff-children-len", func(t *testing.T) {
-		require.False(t, a.Equals(b))
+		require.False(t, a.Equals(b, true))
 	})
 
 	b.Children = make([]*SchemaNode, 1)
@@ -440,16 +448,56 @@ func Test_SchemaNode_Equals(t *testing.T) {
 		},
 	}
 	t.Run("diff-child-name", func(t *testing.T) {
-		require.False(t, a.Equals(b))
+		require.False(t, a.Equals(b, true))
 	})
 
 	b.Children[0].SchemaElement.Name = "node1"
 	t.Run("diff-parent-name", func(t *testing.T) {
-		require.False(t, a.Equals(b))
+		require.False(t, a.Equals(b, true))
+	})
+}
+
+func Test_SchemaNode_Equals_case_sensitive(t *testing.T) {
+	var a, b SchemaNode
+	a.Children = []*SchemaNode{
+		{
+			SchemaElement: parquet.SchemaElement{Name: "node1"},
+			Parent:        []string{a.SchemaElement.Name},
+			Children: []*SchemaNode{
+				{
+					SchemaElement: parquet.SchemaElement{Name: "node3"},
+					Parent:        []string{a.SchemaElement.Name, "node1"},
+				},
+			},
+		},
+	}
+	b.Children = []*SchemaNode{
+		{
+			SchemaElement: parquet.SchemaElement{Name: "node1"},
+			Parent:        []string{b.SchemaElement.Name},
+			Children: []*SchemaNode{
+				{
+					SchemaElement: parquet.SchemaElement{Name: "node3"},
+					Parent:        []string{a.SchemaElement.Name, "node2"},
+				},
+			},
+		},
+	}
+
+	t.Run("diff-parent-name", func(t *testing.T) {
+		require.False(t, a.Equals(b, false))
+		require.False(t, a.Equals(b, true))
+	})
+
+	b.Children[0].Children[0].Parent[1] = "Node1"
+	t.Run("same-parent-name-case-insensitive", func(t *testing.T) {
+		require.True(t, a.Equals(b, true))
+		require.False(t, a.Equals(b, false))
 	})
 
 	b.Children[0].Children[0].Parent[1] = "node1"
-	t.Run("same-schema", func(t *testing.T) {
-		require.True(t, a.Equals(b))
+	t.Run("diff-parent-name-case-insensitive", func(t *testing.T) {
+		require.True(t, a.Equals(b, true))
+		require.True(t, a.Equals(b, false))
 	})
 }

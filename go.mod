@@ -15,7 +15,7 @@ require (
 	github.com/xitongsys/parquet-go-source v0.0.0-20240122235623-d6294584ab18
 )
 
-replace github.com/xitongsys/parquet-go => github.com/hangxie/parquet-go v1.7.3
+replace github.com/xitongsys/parquet-go => ../xitongsys-parquet-go/
 
 require (
 	cloud.google.com/go v0.112.0 // indirect

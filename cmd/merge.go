@@ -12,10 +12,11 @@ import (
 type MergeCmd struct {
 	internal.ReadOption
 	internal.WriteOption
-	ReadPageSize int      `help:"Page size to read from Parquet." default:"1000"`
-	Source       []string `short:"s" help:"Files to be merged."`
-	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
-	FailOnInt96  bool     `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	FieldNameCaseInsensitive bool     `short:"c" help:"field names are case sensitive."`
+	FailOnInt96              bool     `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	ReadPageSize             int      `help:"Page size to read from Parquet." default:"1000"`
+	Source                   []string `short:"s" help:"Files to be merged."`
+	URI                      string   `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
 // Run does actual merge job
@@ -27,6 +28,8 @@ func (c MergeCmd) Run() error {
 		return fmt.Errorf("needs at least 2 source files")
 	}
 
+	// This is to pass CLI option to internal ReadOption, which does not want to expose this option as it's used by merge only
+	c.CaseInsensitive = c.FieldNameCaseInsensitive
 	fileReaders, schema, err := c.openSources()
 	if err != nil {
 		return err
@@ -90,7 +93,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, *internal.SchemaNode, 
 
 		if schema == nil {
 			schema = currSchema
-		} else if !schema.Equals(*currSchema) {
+		} else if !schema.Equals(*currSchema, c.CaseInsensitive) {
 			return nil, nil, fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}

@@ -588,7 +588,9 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 
 ### merge Command
 
-`merge` command merge multiple parquet files into one parquet file, source parquet files need to have same schema, except top level node can have different names. All source files and target file can be from and to different storage locations.
+`merge` command merge multiple parquet files into one parquet file, source parquet files need to have same schema, except top level node can have different names, you can use `--case-sensitive` to control either field names in source parquet files are case sensitive or not, default is case sensitive.
+
+All source files and target file can be from and to different storage locations.
 
 ```bash
 $ parquet-tools merge -s testdata/good.parquet,testdata/good.parquet /tmp/doubled.parquet

@@ -46,6 +46,9 @@ type ReadOption struct {
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
 	Anonymous              bool              `help:"(S3 and Azure only) object is publicly accessible." default:"false"`
+
+	// don't want to have this option in all readers
+	CaseInsensitive bool `kong:"-"`
 }
 
 // WriteOption includes options for write operation
@@ -113,15 +116,15 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 	return s3.NewFromConfig(cfg), nil
 }
 
-func newLocalReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	fileReader, err := local.NewLocalFileReader(u.Path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local file [%s]: %w", u.Path, err)
 	}
-	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+	return fileReader, nil
 }
 
-func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	s3Client, err := getS3Client(u.Host, option.Anonymous)
 	if err != nil {
 		return nil, err
@@ -135,10 +138,10 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (*reader.ParquetReader, error
 	if err != nil {
 		return nil, fmt.Errorf("failed to open S3 object [%s] version [%s]: %w", u.String(), option.ObjectVersion, err)
 	}
-	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+	return fileReader, nil
 }
 
-func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	azURL, cred, err := azureAccessDetail(*u, option.Anonymous)
 	if err != nil {
 		return nil, err
@@ -148,26 +151,26 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %w", u.String(), err)
 	}
-	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+	return fileReader, nil
 }
 
-func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	fileReader, err := gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open GCS object [%s]: %w", u.String(), err)
 	}
-	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+	return fileReader, nil
 }
 
-func newHTTPReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+func newHTTPReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	fileReader, err := pqhttp.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open HTTP source [%s]: %w", u.String(), err)
 	}
-	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+	return fileReader, nil
 }
 
-func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
+func newHDFSReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	userName := u.User.Username()
 	if userName == "" {
 		osUser, err := user.Current()
@@ -180,11 +183,11 @@ func newHDFSReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open HDFS source [%s]: %w", u.String(), err)
 	}
-	return reader.NewParquetReader(fileReader, nil, int64(runtime.NumCPU()))
+	return fileReader, nil
 }
 
 func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
-	readerFuncTable := map[string]func(*url.URL, ReadOption) (*reader.ParquetReader, error){
+	readerFuncTable := map[string]func(*url.URL, ReadOption) (source.ParquetFile, error){
 		schemeLocal:              newLocalReader,
 		schemeAWSS3:              newAWSS3Reader,
 		schemeGoogleCloudStorage: newGoogleCloudStorageReader,
@@ -199,7 +202,14 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 		return nil, err
 	}
 	if readerFunc, found := readerFuncTable[u.Scheme]; found {
-		return readerFunc(u, option)
+		fileReader, err := readerFunc(u, option)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file: %w", err)
+		}
+		return reader.NewParquetReader(
+			fileReader, nil, int64(runtime.NumCPU()),
+			reader.ParquetReaderOptions{CaseInsensitive: option.CaseInsensitive},
+		)
 	}
 
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)

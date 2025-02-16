@@ -386,8 +386,15 @@ func equals[T comparable](a, b *T) bool {
 	return *a == *b
 }
 
-func schemaElementEquals(s, v parquet.SchemaElement) bool {
-	return s.Name == v.Name &&
+func schemaElementEquals(s, v parquet.SchemaElement, caseInsensitive bool) bool {
+	var hasSameName bool
+	if caseInsensitive {
+		hasSameName = strings.EqualFold(s.Name, v.Name)
+	} else {
+		hasSameName = s.Name == v.Name
+	}
+
+	return hasSameName &&
 		equals(s.Type, v.Type) &&
 		equals(s.TypeLength, v.TypeLength) &&
 		equals(s.ConvertedType, v.ConvertedType) &&
@@ -399,26 +406,29 @@ func schemaElementEquals(s, v parquet.SchemaElement) bool {
 		equals(s.LogicalType, v.LogicalType)
 }
 
-func (s SchemaNode) Equals(v SchemaNode) bool {
+func (s SchemaNode) Equals(v SchemaNode, caseInsensitive bool) bool {
 	if len(s.Parent) != len(v.Parent) || len(s.Children) != len(v.Children) {
 		return false
 	}
 
 	if len(s.Parent) != 0 {
 		// do not compare attributes of top level node as different libraries behave differently
-		if !schemaElementEquals(s.SchemaElement, v.SchemaElement) {
+		if !schemaElementEquals(s.SchemaElement, v.SchemaElement, caseInsensitive) {
 			return false
 		}
 
 		for i := range s.Parent[1:] {
-			if s.Parent[i+1] != v.Parent[i+1] {
+			if !caseInsensitive && s.Parent[i+1] != v.Parent[i+1] {
+				return false
+			}
+			if caseInsensitive && !strings.EqualFold(s.Parent[i+1], v.Parent[i+1]) {
 				return false
 			}
 		}
 	}
 
 	for i := range s.Children {
-		if !s.Children[i].Equals(*v.Children[i]) {
+		if !s.Children[i].Equals(*v.Children[i], caseInsensitive) {
 			return false
 		}
 	}
