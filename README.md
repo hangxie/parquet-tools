@@ -128,7 +128,7 @@ Above command installs version v1.26.1 of `parquet-tools` to $GOPATH/bin, if you
 `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
 
 > [!IMPORTANT]
-> You cannot use `go install` directly as `replace` is used in go.mod.
+> You cannot use `go install` directly as `replace` is used in `go.mod`.
 
 ### Download Pre-built Binaries
 
@@ -237,7 +237,7 @@ Most commands can output JSON format result which can be processed by utilities 
 * HTTP/HTTPS URL
 
 > [!IMPORTANT]
-you need to have proper permission on the file you are going to process.
+> you need to have proper permission on the file you are going to process.
 
 #### File System
 
@@ -363,7 +363,7 @@ $ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.p
 Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessary data from remote server through [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range).
 
 > [!TIP]
-`parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by setting environment variable `GODEBUG` to `http2client=0`:
+> `parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by setting environment variable `GODEBUG` to `http2client=0`:
 
 ```
 $ parquet-tools row-count https://huggingface.co/datasets/laion/laion2B-en/resolve/main/part-00047-5114fd87-297e-42b0-9d11-50f1df323dfa-c000.snappy.parquet
@@ -416,7 +416,7 @@ $ parquet-tools cat --format jsonl testdata/good.parquet
 ```
 
 > [!TIP]
-You can set `--fail-on-int96` option to fail `cat` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
+> You can set `--fail-on-int96` option to fail `cat` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 
 ```bash
 $ parquet-tools cat --fail-on-int96 testdata/all-types.parquet
@@ -436,7 +436,7 @@ $ parquet-tools cat --skip 2 --format jsonl testdata/good.parquet
 ```
 
 > [!CAUTION]
-`parquet-tools` will not report error if `--skip` is greater than total number of rows in parquet file.
+> `parquet-tools` will not report error if `--skip` is greater than total number of rows in parquet file.
 
 ```bash
 $ parquet-tools cat --skip 20 testdata/good.parquet
@@ -446,7 +446,7 @@ $ parquet-tools cat --skip 20 testdata/good.parquet
 #### CSV/TSV Format
 
 > [!WARNING]
-There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpreted by other utilities, especially if they are from other programming languages.
+> There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpreted by other utilities, especially if they are from other programming languages.
 
 ```bash
 $ parquet-tools cat -f csv testdata/good.parquet
@@ -457,7 +457,7 @@ steph_curry,curry7
 ```
 
 > [!CAUTION]
-`nil` values will be presented as empty string:
+> `nil` values will be presented as empty string:
 
 ```bash
 $ parquet-tools cat -f csv --limit 2 testdata/int96-nil-min-max.parquet
@@ -476,7 +476,7 @@ steph_curry,curry7
 ```
 
 > [!IMPORTANT]
-CSV and TSV do not support parquet files with complex schema:
+> CSV and TSV do not support parquet files with complex schema:
 
 ```bash
 $ parquet-tools cat -f csv testdata/all-types.parquet
@@ -498,7 +498,7 @@ $ parquet-tools cat --limit 2 testdata/good.parquet
 `--sample-ratio` enables sampling, the ration is a number between 0.0 and 1.0 inclusively. `1.0` means output everything in the parquet file, while `0.0` means nothing. If you want to have 1 rows out of every 10 rows, use `0.1`.
 
 > [!CAUTION]
-This feature picks rows in parquet file randomly, so only `0.0` and `1.0` will output deterministic result, all other ratio may generate data set less or more than you want.
+> This feature picks rows in parquet file randomly, so only `0.0` and `1.0` will output deterministic result, all other ratio may generate data set less or more than you want.
 
 ```bash
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
@@ -529,7 +529,7 @@ $ parquet-tools cat --skip 2 --limit 1 testdata/good.parquet
 #### Output Format
 
 > [!CAUTION]
-`cat` supports two output formats, one is the default JSON format that wraps all JSON objects into a list, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
+> `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into a list, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
 ```bash
 $ parquet-tools cat testdata/good.parquet
@@ -539,7 +539,7 @@ $ parquet-tools cat testdata/good.parquet
 `cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
 
 > [!TIP]
-If you want to filter data, use JSONL format output and pipe to `jq`.
+> If you want to filter data, use JSONL format output and pipe to `jq`.
 
 ```bash
 $ parquet-tools cat --format jsonl testdata/good.parquet
@@ -572,7 +572,7 @@ Each source data file format has its own dedicated schema format:
 * JSONL: use same schema as JSON format.
 
 > [!WARNING]
-You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149.
+> You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149.
 
 #### Import from CSV
 
@@ -591,7 +591,7 @@ $ parquet-tools row-count /tmp/json.parquet
 ```
 
 > [!TIP]
-As most JSON processing utilities, the whole JSON file needs to be loaded to memory and is treated as single object, so memory footprint may be significant if you try to load a large JSON file. You should use JSONL format if you deal with large amount of data.
+> As most JSON processing utilities, the whole JSON file needs to be loaded to memory and is treated as single object, so memory footprint may be significant if you try to load a large JSON file. You should use JSONL format if you deal with large amount of data.
 
 #### Import from JSONL
 
@@ -635,7 +635,7 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files c
 `meta` command shows meta data of every row group in a parquet file.
 
 > [!NOTE]
-MinValue and MaxValue always show value with base type instead of converted type, i.e. INT32 instead of UINT_8. The `--base64` flag applies to column with type `BYTE_ARRAY` or `FIXED_LEN_BYTE_ARRAY` only, it tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as UTF8 string.
+> MinValue and MaxValue always show value with base type instead of converted type, i.e. INT32 instead of UINT_8. The `--base64` flag applies to column with type `BYTE_ARRAY` or `FIXED_LEN_BYTE_ARRAY` only, it tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as UTF8 string.
 
 #### Show Meta Data
 
@@ -652,7 +652,7 @@ $ parquet-tools meta --base64 testdata/good.parquet
 ```
 
 > [!NOTE]
-MinValue, MaxValue and NullCount are optional, if they do not show up in output then it means parquet file does not have that section.
+> MinValue, MaxValue and NullCount are optional, if they do not show up in output then it means parquet file does not have that section.
 
 You can set `--fail-on-int96` option to fail `meta` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 
@@ -696,7 +696,6 @@ $ parquet-tools schema testdata/good.parquet
 {"Tag":"name=Parquet_go_root","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
 ```
 
-> [!NOTE]
 Default setting will be ignored to make output shorter, eg
 * convertedtype=LIST
 * convertedtype=MAP
@@ -727,7 +726,7 @@ type Parquet_go_root struct {
 Based on your use case, type `Parquet_go_root` may need to be renamed.
 
 > [!IMPORTANT]
-parquet-go does not support composite type as map key or value in go struct tag as for now so `parquet-tools` will report error if there is such a field, you can still output in raw or JSON format:
+> parquet-go does not support composite type as map key or value in go struct tag as for now so `parquet-tools` will report error if there is such a field, you can still output in raw or JSON format:
 
 ```bash
 $ parquet-tools schema -f go testdata/map-composite-value.parquet
@@ -752,7 +751,7 @@ name=Vaccinated, type=BOOLEAN
 ```
 
 > [!NOTE]
-Since CSV is a flat 2D format, we cannot generate CSV schema for nested or optional columns:
+> Since CSV is a flat 2D format, we cannot generate CSV schema for nested or optional columns:
 
 ```bash
 $ parquet-tools schema -f csv testdata/csv-optional.parquet
