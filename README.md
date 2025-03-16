@@ -9,57 +9,51 @@ Utility to inspect Parquet files.
 
 ## Quick Start
 
-`parquet-tools` support following methods to install:
+Pre-built binary or package can be found from [release page](https://github.com/hangxie/parquet-tools/releases), on Mac you can install with brew:
 
-* [Download pre-built binaries](#download-pre-built-binaries)
-* [brew install on Mac](#brew-install)
-* [Container image](#container-image)
-* [Install from source](#install-from-source)
-* [Prebuilt packages](#prebuilt-packages)
+```bash
+$ brew install go-parquet-tools
+```
 
-Once it is installed you can refer to [usage page](#usage) for details of how to use the tool.
+Once it is installed
 
-## Credit
+```bash
+$ parquet-tools
+Usage: parquet-tools <command> [flags]
 
-This project is inspired by:
+Utility inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md
 
-* parquet-go/parquet-tools: https://github.com/xitongsys/parquet-go/tree/master/tool/parquet-tools/
-* Python parquet-tools: https://pypi.org/project/parquet-tools/
-* Java parquet-tools: https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools
-* Makefile: https://github.com/cisco-sso/kdk/blob/master/Makefile
+Flags:
+  -h, --help    Show context-sensitive help.
 
-Some test cases are from:
+Commands:
+  cat                  Prints the content of a Parquet file, data only.
+  import               Create Parquet file from other source data.
+  merge                Merge multiple parquet files into one.
+  meta                 Prints the metadata.
+  row-count            Prints the count of rows.
+  schema               Prints the schema.
+  shell-completions    Install/uninstall shell completions
+  size                 Prints the size.
+  split                Split into multiple parquet files.
+  version              Show build version.
 
-* https://registry.opendata.aws/binding-db/
-* https://github.com/xitongsys/parquet-go/tree/master/example/
-* https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet
-* https://azure.microsoft.com/en-us/services/open-datasets/catalog/
-* https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
-* https://pro.dp.la/developers/bulk-download
-* https://exchange.aboutamazon.com/data-initiative
+Run "parquet-tools <command> --help" for more information on a command.
 
-## TODO
-
-TODO list is tracked as enhancement in issues.
-
----
----
-# Installation and Usage of parquet-tools
+parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-count", ...
+```
 
 ## Table of Contents
 
 - [parquet-tools](#parquet-tools)
   - [Quick Start](#quick-start)
-  - [Credit](#credit)
-  - [TODO](#todo)
-- [Installation and Usage of parquet-tools](#installation-and-usage-of-parquet-tools)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
     - [Install from Source](#install-from-source)
     - [Download Pre-built Binaries](#download-pre-built-binaries)
     - [Brew Install](#brew-install)
     - [Container Image](#container-image)
-    - [Prebuilt Packages](#prebuilt-packages)
+    - [Prebuilt RPM and deb Packages](#prebuilt-rpm-and-deb-packages)
   - [Usage](#usage)
     - [Obtain Help](#obtain-help)
     - [Parquet File Location](#parquet-file-location)
@@ -109,6 +103,7 @@ TODO list is tracked as enhancement in issues.
       - [Print All Information](#print-all-information)
       - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
       - [Print Version in JSON Format](#print-version-in-json-format)
+  - [Credit](#credit)
 
 ## Installation
 
@@ -116,16 +111,17 @@ You can choose one of the installation methods from below, the functionality wil
 
 ### Install from Source
 
-Good for people who are familiar with [Go](https://golang.org/), you need 1.23 or newer version.
+Good for people who are familiar with [Go](https://go.dev/), you need 1.23 or newer version.
 
 ```bash
 $ git clone --depth 1 https://github.com/hangxie/parquet-tools -b v1.26.1 /tmp/your-own-path
 $ go install -C /tmp/your-own-path .
 ```
 
-Above command installs version v1.26.1 of `parquet-tools` to $GOPATH/bin, if you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.
+Above command installs version v1.26.1 of `parquet-tools` to $GOPATH/bin, `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
 
-`parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
+> [!TIP]
+> If you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.
 
 > [!IMPORTANT]
 > You cannot use `go install` directly as `replace` is used in `go.mod`.
@@ -134,9 +130,9 @@ Above command installs version v1.26.1 of `parquet-tools` to $GOPATH/bin, if you
 
 Good for people do not want to build and all other installation approaches do not work.
 
-Go to [release page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux or Mac, then run the program.
+Go to [release page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux, Mac, or FreeBSD, then run the program.
 
-For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-386 build, if you are in Windows Insider program, windows-amd64 build should work too.
+For Windows 10 on ARM (like Surface Pro X), use windows-arm64, if you are using Windows 11 on ARM, both windows-arm64 and windows-amd64 build should work.
 
 ### Brew Install
 
@@ -175,7 +171,7 @@ $ podman run --rm ghcr.io/hangxie/parquet-tools version
 v1.25.12
 ```
 
-### Prebuilt Packages
+### Prebuilt RPM and deb Packages
 
 RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases), only amd64/x86_64 and arm64/aarch64 arch are available at this moment, download the proper package and run corresponding installation command:
 
@@ -935,3 +931,22 @@ $ parquet-tools version --build-time --json
 $ parquet-tools version -j
 {"Version":"v1.25.12"}
 ```
+
+## Credit
+
+This project is inspired by:
+
+* parquet-go/parquet-tools: https://github.com/xitongsys/parquet-go/tree/master/tool/parquet-tools/
+* Python parquet-tools: https://pypi.org/project/parquet-tools/
+* Java parquet-tools: https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools
+* Makefile: https://github.com/cisco-sso/kdk/blob/master/Makefile
+
+Some test cases are from:
+
+* https://registry.opendata.aws/binding-db/
+* https://github.com/xitongsys/parquet-go/tree/master/example/
+* https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet
+* https://azure.microsoft.com/en-us/services/open-datasets/catalog/
+* https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+* https://pro.dp.la/developers/bulk-download
+* https://exchange.aboutamazon.com/data-initiative
