@@ -11,7 +11,7 @@ type goStructNode struct {
 	SchemaNode
 }
 
-var goTypeStrMap map[parquet.Type]string = map[parquet.Type]string{
+var goTypeStrMap = map[parquet.Type]string{
 	parquet.Type_BOOLEAN:              "bool",
 	parquet.Type_INT32:                "int32",
 	parquet.Type_INT64:                "int64",

@@ -13,7 +13,7 @@ type RecordType struct {
 	Lol [][]string
 }
 
-var jsonSchema string = `
+var jsonSchema = `
 {
   "Tag": "name=parquet_go_root, repetitiontype=REQUIRED",
   "Fields": [
