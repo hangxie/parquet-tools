@@ -34,23 +34,23 @@ type SplitCmd struct {
 }
 
 func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
-	reader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
+	parquetReader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
 	}
-	defer reader.PFile.Close()
-	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+	defer parquetReader.PFile.Close()
+	schemaRoot, err := internal.NewSchemaTree(parquetReader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
 	}
 	c.current.schemaJSON = schemaRoot.JSONSchema()
 
 	if c.FileCount != 0 {
-		c.RecordCount = reader.GetNumRows() / c.FileCount
-		c.current.paddingCount = reader.GetNumRows() % c.RecordCount
+		c.RecordCount = parquetReader.GetNumRows() / c.FileCount
+		c.current.paddingCount = parquetReader.GetNumRows() % c.RecordCount
 	}
 
-	return reader, nil
+	return parquetReader, nil
 }
 
 func (c *SplitCmd) switchWriter() error {
@@ -90,7 +90,7 @@ func (c SplitCmd) Run() error {
 		return fmt.Errorf("needs either --file-count or --record-count")
 	}
 
-	reader, err := c.openReader()
+	parquetReader, err := c.openReader()
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (c SplitCmd) Run() error {
 	c.current.recordCount = c.RecordCount
 
 	for {
-		rows, err := reader.ReadByNumber(c.ReadPageSize)
+		rows, err := parquetReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
 			return fmt.Errorf("failed to read from [%s]: %w", c.URI, err)
 		}
