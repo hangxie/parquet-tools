@@ -45,7 +45,7 @@ func (c ImportCmd) importCSV() error {
 		return fmt.Errorf("import does not support INT96 type")
 	}
 
-	schema := []string{}
+	var schema []string
 	for _, line := range strings.Split(string(schemaData), "\n") {
 		line = strings.Trim(line, "\r\n\t ")
 		if line == "" {
