@@ -58,13 +58,13 @@ func genParquet(name, jsonSchema string) error {
 	var err error
 	fw, err := local.NewLocalFileWriter(name)
 	if err != nil {
-		return fmt.Errorf("Can't create local file: %w", err)
+		return fmt.Errorf("cannot create local file: %w", err)
 	}
 
 	// write
 	pw, err := writer.NewParquetWriter(fw, jsonSchema, 4)
 	if err != nil {
-		return fmt.Errorf("Can't create parquet writer: %w", err)
+		return fmt.Errorf("cannot create parquet writer: %w", err)
 	}
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
@@ -76,11 +76,11 @@ func genParquet(name, jsonSchema string) error {
 		}
 
 		if err = pw.Write(stu); err != nil {
-			return fmt.Errorf("Write error: %w", err)
+			return fmt.Errorf("error from Write(): %w", err)
 		}
 	}
 	if err = pw.WriteStop(); err != nil {
-		return fmt.Errorf("WriteStop error; %w", err)
+		return fmt.Errorf("error from WriteStop(): %w", err)
 	}
 	_ = fw.Close()
 
