@@ -16,7 +16,9 @@ func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	_, err = NewSchemaTree(pr, SchemaOption{FailOnInt96: true})
 	require.NotNil(t, err)
@@ -28,7 +30,9 @@ func Test_NewSchemaTree_good(t *testing.T) {
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -44,7 +48,9 @@ func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -245,7 +251,9 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -262,7 +270,9 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -282,7 +292,9 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 	uri := "../testdata/csv-good.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -299,7 +311,9 @@ func Test_Json_schema_csv_schema_nested(t *testing.T) {
 	uri := "../testdata/csv-nested.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -315,7 +329,9 @@ func Test_Json_schema_csv_schema_optional(t *testing.T) {
 	uri := "../testdata/csv-optional.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -331,7 +347,9 @@ func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	uri := "../testdata/csv-repeated.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)

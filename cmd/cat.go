@@ -83,7 +83,9 @@ func (c CatCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	defer fileReader.PFile.Close()
+	defer func() {
+		_ = fileReader.PFile.Close()
+	}()
 
 	return c.outputRows(fileReader)
 }

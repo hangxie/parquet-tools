@@ -73,7 +73,7 @@ func main() {
 		fmt.Println("WriteStop error", err)
 		os.Exit(1)
 	}
-	fw.Close()
+	_ = fw.Close()
 
 	// "flat" parquet file for cat command's CSV/TSV tests
 	fw, err = local.NewLocalFileWriter("pargo-prefix-flat.parquet")
@@ -89,12 +89,12 @@ func main() {
 	}
 
 	pw.CompressionType = parquet.CompressionCodec_GZIP
-	pw.Write(Shoe{"nike", "air_griffey"})
-	pw.Write(Shoe{"fila", "grant_hill_2"})
-	pw.Write(Shoe{"steph_curry", "curry7"})
+	_ = pw.Write(Shoe{"nike", "air_griffey"})
+	_ = pw.Write(Shoe{"fila", "grant_hill_2"})
+	_ = pw.Write(Shoe{"steph_curry", "curry7"})
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 		os.Exit(1)
 	}
-	fw.Close()
+	_ = fw.Close()
 }

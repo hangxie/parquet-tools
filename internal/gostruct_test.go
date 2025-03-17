@@ -39,7 +39,9 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	uri := "../testdata/map-value-map.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -61,7 +63,9 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	uri := "../testdata/map-composite-value.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -77,7 +81,9 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	uri := "../testdata/good.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -96,7 +102,9 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	uri := "../testdata/reinterpret-list.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -118,7 +126,9 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	uri := "../testdata/reinterpret-map-key.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -140,7 +150,9 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	uri := "../testdata/reinterpret-map-key.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)
@@ -161,7 +173,9 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	uri := "../testdata/list-of-list.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)

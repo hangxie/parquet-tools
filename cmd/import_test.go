@@ -18,7 +18,7 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 	}()
 
 	testFile := filepath.Join(tempDir, "import-csv.parquet")
-	os.Remove(testFile)
+	_ = os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/csv.source"
 	cmd.Schema = "../testdata/csv.schema"
@@ -44,7 +44,7 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 	}()
 
 	testFile := filepath.Join(tempDir, "import-csv.parquet")
-	os.Remove(testFile)
+	_ = os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/csv-with-header.source"
 	cmd.Schema = "../testdata/csv.schema"
@@ -71,7 +71,7 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	}()
 
 	testFile := filepath.Join(tempDir, "import-json.parquet")
-	os.Remove(testFile)
+	_ = os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/json.source"
 	cmd.Schema = "../testdata/json.schema"
@@ -107,7 +107,7 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 
 	// top level tag can be different
 	require.Equal(t, sourceSchema.Fields, targetSchema.Fields)
-	os.Remove(testFile)
+	_ = os.Remove(testFile)
 }
 
 func Test_ImportCmd_Run_invalid_format(t *testing.T) {
@@ -127,7 +127,7 @@ func Test_ImportCmd_Run_invalid_compression(t *testing.T) {
 	}()
 
 	testFile := filepath.Join(tempDir, "import-json.parquet")
-	os.Remove(testFile)
+	_ = os.Remove(testFile)
 	cmd := &ImportCmd{}
 	cmd.Source = "../testdata/json.source"
 	cmd.Schema = "../testdata/json.schema"

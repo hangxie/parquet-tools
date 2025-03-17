@@ -83,7 +83,7 @@ func genParquet(name, jsonSchema string) error {
 	if err = pw.WriteStop(); err != nil {
 		return fmt.Errorf("WriteStop error; %w", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 
 	return nil
 }

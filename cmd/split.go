@@ -38,7 +38,9 @@ func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
 	}
-	defer parquetReader.PFile.Close()
+	defer func() {
+		_ = parquetReader.PFile.Close()
+	}()
 	schemaRoot, err := internal.NewSchemaTree(parquetReader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
