@@ -119,7 +119,7 @@ func Test_SplitCmd_Run_good_with_recordcount(t *testing.T) {
 			/// all other files contains 3 records
 			require.Equal(t, reader.GetNumRows(), int64(3))
 		}
-		reader.PFile.Close()
+		_ = reader.PFile.Close()
 	}
 }
 
@@ -149,6 +149,6 @@ func Test_SplitCmd_Run_good_with_filecount(t *testing.T) {
 			/// all other files contains 3 records
 			require.Equal(t, reader.GetNumRows(), int64(3))
 		}
-		reader.PFile.Close()
+		_ = reader.PFile.Close()
 	}
 }

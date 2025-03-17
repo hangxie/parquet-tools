@@ -28,7 +28,9 @@ func (c SizeCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	defer reader.PFile.Close()
+	defer func() {
+		_ = reader.PFile.Close()
+	}()
 
 	footerSize, err := reader.GetFooterSize()
 	if err != nil {

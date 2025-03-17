@@ -13,7 +13,9 @@ func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 	uri := "../testdata/all-types.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
-	defer pr.PFile.Close()
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.Nil(t, err)

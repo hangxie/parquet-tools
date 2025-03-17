@@ -19,12 +19,12 @@ func captureStdoutStderr(f func()) (string, string) {
 	os.Stdout = wOut
 	os.Stderr = wErr
 	f()
-	wOut.Close()
-	wErr.Close()
+	_ = wOut.Close()
+	_ = wErr.Close()
 	stdout, _ := io.ReadAll(rOut)
 	stderr, _ := io.ReadAll(rErr)
-	rOut.Close()
-	rErr.Close()
+	_ = rOut.Close()
+	_ = rErr.Close()
 
 	os.Stdout = savedStdout
 	os.Stderr = savedStderr

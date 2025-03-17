@@ -19,7 +19,7 @@ func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 	u := url.URL{
 		Host: "storageacconut",
 	}
-	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+	_ = os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
 
 	invalidPaths := []string{
 		"",
@@ -47,7 +47,7 @@ func Test_azureAccessDetail_bad_shared_cred(t *testing.T) {
 		User: url.User("container-name"),
 	}
 
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
 	uri, cred, err := azureAccessDetail(u, false)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "failed to create Azure credential")
@@ -62,13 +62,13 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 		User: url.User("container"),
 	}
 	// anonymous access by lack of environment variable
-	os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+	_ = os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
 
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err = azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
@@ -80,7 +80,7 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 	uri, cred, err = azureAccessDetail(u, true)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
@@ -100,7 +100,7 @@ func Test_azureAccessDetail_good_shared_cred(t *testing.T) {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
@@ -142,7 +142,7 @@ func Test_getBucketRegion_s3_aws_error(t *testing.T) {
 func Test_getBucketRegion_s3_missing_credential(t *testing.T) {
 	// AWS provides open access: https://registry.opendata.aws/daylight-osm/
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
+	_ = os.Setenv("AWS_PROFILE", fmt.Sprintf("%d", intVal.Int64()))
 	_, err := getS3Client("daylight-openstreetmap", false)
 	// since aws-go-sdk-v2/config 1.18.45, non-existent profile becomes an error
 	require.NotNil(t, err)
@@ -213,13 +213,13 @@ func Test_NewParquetFileReader_local_good(t *testing.T) {
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, pr)
-	pr.PFile.Close()
+	_ = pr.PFile.Close()
 }
 
 func Test_NewParquetFileReader_s3_non_existent(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	os.Unsetenv("AWS_PROFILE")
+	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	_ = os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{Anonymous: true}
 	intVal, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
@@ -231,8 +231,8 @@ func Test_NewParquetFileReader_s3_non_existent(t *testing.T) {
 
 func Test_NewParquetFileReader_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	os.Unsetenv("AWS_PROFILE")
+	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	_ = os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{Anonymous: true}
 	uri := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
@@ -242,8 +242,8 @@ func Test_NewParquetFileReader_s3_good(t *testing.T) {
 
 func Test_NewParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	os.Unsetenv("AWS_PROFILE")
+	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	_ = os.Unsetenv("AWS_PROFILE")
 
 	option := ReadOption{ObjectVersion: "random-version-id", Anonymous: true}
 	uri := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
@@ -256,7 +256,7 @@ func Test_NewParquetFileReader_s3_non_existent_versioned(t *testing.T) {
 
 func Test_NewParquetFileReader_gcs_no_permission(t *testing.T) {
 	// Make sure there is no GCS access
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+	_ = os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
 	option := ReadOption{}
 	uri := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
@@ -272,7 +272,7 @@ func Test_NewParquetFileReader_azblob_no_permission(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := ReadOption{}
 	uri := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
@@ -316,7 +316,7 @@ func Test_NewParquetFileWriter_local_good(t *testing.T) {
 	fw, err := NewParquetFileWriter(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
-	defer fw.Close()
+	_ = fw.Close()
 }
 
 func Test_NewParquetFileWriter_s3_non_existent_bucket(t *testing.T) {
@@ -330,8 +330,8 @@ func Test_NewParquetFileWriter_s3_non_existent_bucket(t *testing.T) {
 
 func Test_NewParquetFileWriter_s3_good(t *testing.T) {
 	// Make sure there is no AWS access
-	os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	os.Unsetenv("AWS_PROFILE")
+	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	_ = os.Unsetenv("AWS_PROFILE")
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
@@ -339,12 +339,12 @@ func Test_NewParquetFileWriter_s3_good(t *testing.T) {
 	fw, err := NewParquetFileWriter(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, fw)
-	defer fw.Close()
+	_ = fw.Close()
 }
 
 func Test_NewParquetFileWriter_gcs_no_permission(t *testing.T) {
 	// Make sure there is no GCS access
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+	_ = os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 
 	// parquet writer does not actually write to destination immediately
 	option := WriteOption{}
@@ -361,7 +361,7 @@ func Test_NewParquetFileWriter_azblob_invalid_url(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := WriteOption{}
 	uri := "wasbs://bad/url"
@@ -382,7 +382,7 @@ func Test_NewParquetFileWriter_azblob_good(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
-	os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
+	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 
 	option := WriteOption{}
 	uri := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/foobar.parquet"
@@ -437,7 +437,7 @@ func Test_NewCSVWriter_good(t *testing.T) {
 	pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
 	require.Nil(t, err)
 	require.NotNil(t, pw)
-	defer pw.PFile.Close()
+	_ = pw.PFile.Close()
 }
 
 func Test_NewJSONWriter_invalid_uri(t *testing.T) {
@@ -477,7 +477,7 @@ func Test_NewJSONWriter_good(t *testing.T) {
 	pw, err := NewJSONWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.Nil(t, err)
 	require.NotNil(t, pw)
-	defer pw.PFile.Close()
+	_ = pw.PFile.Close()
 }
 
 func Test_NewGenericWriter_invalid_uri(t *testing.T) {
@@ -530,7 +530,9 @@ func Test_NewGenericWriter_good(t *testing.T) {
 	pw, err := NewGenericWriter(uri, option, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`)
 	require.Nil(t, err)
 	require.NotNil(t, pw)
-	defer pw.PFile.Close()
+	defer func() {
+		_ = pw.PFile.Close()
+	}()
 }
 
 func Test_NewParquetFileReader_http_bad_url(t *testing.T) {

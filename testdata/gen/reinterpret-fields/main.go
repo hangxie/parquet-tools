@@ -105,7 +105,7 @@ func genScalar() {
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }
 
 func genPointer() {
@@ -149,7 +149,7 @@ func genPointer() {
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }
 
 func genList() {
@@ -196,7 +196,7 @@ func genList() {
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }
 
 func genMapKey() {
@@ -237,7 +237,7 @@ func genMapKey() {
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }
 
 func genMapValue() {
@@ -279,7 +279,7 @@ func genMapValue() {
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }
 
 func genComposite() {
@@ -328,5 +328,5 @@ func genComposite() {
 	if err = pw.WriteStop(); err != nil {
 		fmt.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }

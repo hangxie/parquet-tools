@@ -58,7 +58,9 @@ func (c ImportCmd) importCSV() error {
 	if err != nil {
 		return fmt.Errorf("failed to open CSV file %s: %w", c.Source, err)
 	}
-	defer csvFile.Close()
+	defer func() {
+		_ = csvFile.Close()
+	}()
 	csvReader := csv.NewReader(csvFile)
 
 	parquetWriter, err := internal.NewCSVWriter(c.URI, c.WriteOption, schema)
@@ -151,7 +153,9 @@ func (c ImportCmd) importJSONL() error {
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s", c.Source)
 	}
-	defer jsonlFile.Close()
+	defer func() {
+		_ = jsonlFile.Close()
+	}()
 	scanner := bufio.NewScanner(jsonlFile)
 	scanner.Split(bufio.ScanLines)
 

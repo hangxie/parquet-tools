@@ -29,7 +29,9 @@ func (c SchemaCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	defer reader.PFile.Close()
+	defer func() {
+		_ = reader.PFile.Close()
+	}()
 
 	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: false})
 	if err != nil {

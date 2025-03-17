@@ -27,5 +27,5 @@ func main() {
 	if err = pw.WriteStop(); err != nil {
 		log.Println("WriteStop error", err)
 	}
-	fw.Close()
+	_ = fw.Close()
 }

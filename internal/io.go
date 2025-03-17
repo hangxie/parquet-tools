@@ -296,12 +296,12 @@ func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVW
 
 	pw, err := writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
 	if err != nil {
-		fileWriter.Close()
+		_ = fileWriter.Close()
 		return nil, err
 	}
 	codec, err := compressionCodec(option.Compression)
 	if err != nil {
-		fileWriter.Close()
+		_ = fileWriter.Close()
 		return nil, err
 	}
 	pw.CompressionType = codec
@@ -316,12 +316,12 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 
 	pw, err := writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
 	if err != nil {
-		fileWriter.Close()
+		_ = fileWriter.Close()
 		return nil, err
 	}
 	codec, err := compressionCodec(option.Compression)
 	if err != nil {
-		fileWriter.Close()
+		_ = fileWriter.Close()
 		return nil, err
 	}
 	pw.CompressionType = codec
@@ -336,12 +336,12 @@ func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.Pa
 
 	pw, err := writer.NewParquetWriter(fileWriter, schema, int64(runtime.NumCPU()))
 	if err != nil {
-		fileWriter.Close()
+		_ = fileWriter.Close()
 		return nil, err
 	}
 	codec, err := compressionCodec(option.Compression)
 	if err != nil {
-		fileWriter.Close()
+		_ = fileWriter.Close()
 		return nil, err
 	}
 	pw.CompressionType = codec

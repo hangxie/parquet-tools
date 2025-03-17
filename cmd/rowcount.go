@@ -18,7 +18,9 @@ func (c RowCountCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	defer reader.PFile.Close()
+	defer func() {
+		_ = reader.PFile.Close()
+	}()
 
 	fmt.Println(reader.GetNumRows())
 	return nil

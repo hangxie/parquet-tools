@@ -69,5 +69,5 @@ func main() {
 		fmt.Println("WriteStop error", err)
 		os.Exit(1)
 	}
-	fw.Close()
+	_ = fw.Close()
 }
