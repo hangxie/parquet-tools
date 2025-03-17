@@ -189,7 +189,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	}
 
 	// skip rows
-	if err != c.skipRows(fileReader) {
+	if err := c.skipRows(fileReader); err != nil {
 		return err
 	}
 
