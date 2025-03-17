@@ -185,9 +185,9 @@ func Test_DecimalToFloat_invalid_type(t *testing.T) {
 		value  interface{}
 		errMsg string
 	}{
-		{int(0), "unknown type: int"},
+		{0, "unknown type: int"},
 		{float32(0.0), "unknown type: float32"},
-		{float64(0.0), "unknown type: float64"},
+		{0.0, "unknown type: float64"},
 	}
 
 	for _, tc := range testCases {
@@ -262,7 +262,7 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 	actual, err := schemaRoot.GoStruct()
 	require.Nil(t, err)
 	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
+	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
 func Test_Json_schema_json_schema_good(t *testing.T) {
@@ -282,7 +282,7 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 
 	raw, _ := os.ReadFile("../testdata/golden/schema-all-types-json.json")
 	temp := JSONSchema{}
-	_ = json.Unmarshal([]byte(raw), &temp)
+	_ = json.Unmarshal(raw, &temp)
 	expected, _ := json.Marshal(temp)
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
@@ -303,7 +303,7 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 	actual, err := schemaRoot.CSVSchema()
 	require.Nil(t, err)
 	expected, _ := os.ReadFile("../testdata/golden/schema-csv-good.txt")
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
+	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
 func Test_Json_schema_csv_schema_nested(t *testing.T) {
