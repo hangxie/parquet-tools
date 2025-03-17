@@ -55,7 +55,7 @@ type ReinterpretField struct {
 
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	schemas := reader.SchemaHandler.SchemaElements
-	stack := []*SchemaNode{}
+	var stack []*SchemaNode
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],
 		Parent:        []string{},

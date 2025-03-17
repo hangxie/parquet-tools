@@ -26,7 +26,7 @@ func (s jsonSchemaNode) Schema() JSONSchema {
 	}
 	tagMap := s.SchemaNode.getTagMap()
 
-	annotations := []string{}
+	var annotations []string
 	for _, tag := range orderedTags {
 		// keytype and valuetype are for go struct tag only
 		if strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {

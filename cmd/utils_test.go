@@ -44,7 +44,7 @@ func loadExpected(t *testing.T, fileName string) string {
 
 	// JSON and JSONL golden files are formatted by jq
 	var result string
-	currentBuf := []byte{}
+	var currentBuf []byte
 	for _, line := range bytes.Split(buf, []byte("\n")) {
 		// in jq format, if the first character is not space than it's
 		// start (when currentBuf is empty) or end of an object (when
