@@ -42,7 +42,9 @@ format: tools  ## Format all go code
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
 	@$(GOBIN)/golangci-lint cache clean
-	@$(GOBIN)/golangci-lint run --timeout 5m ./...
+	@$(GOBIN)/golangci-lint run ./... \
+		--timeout 5m \
+		--exclude-use-default=false
 	@$(GOBIN)/gocyclo -over 15 . > /tmp/gocyclo.output; \
 		if [[ -s /tmp/gocyclo.output ]]; then \
 			echo functions with gocyclo score higher than 15; \
