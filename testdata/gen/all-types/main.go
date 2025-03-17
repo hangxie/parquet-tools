@@ -32,14 +32,14 @@ type AllTypes struct {
 	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
-	Int_8             int32               `parquet:"name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8"`
-	Int_16            int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16"`
-	Int_32            int32               `parquet:"name=Int_32, type=INT32, convertedtype=INT_32"`
-	Int_64            int64               `parquet:"name=Int_64, type=INT64, convertedtype=INT_64"`
-	Uint_8            int32               `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8"`
-	Uint_16           int32               `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16"`
-	Uint_32           int32               `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32"`
-	Uint_64           int64               `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64"`
+	ConvertedInt8     int32               `parquet:"name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8"`
+	ConvertedInt16    int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16"`
+	ConvertedInt32    int32               `parquet:"name=Int_32, type=INT32, convertedtype=INT_32"`
+	ConvertedInt64    int64               `parquet:"name=Int_64, type=INT64, convertedtype=INT_64"`
+	ConvertedUint8    int32               `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8"`
+	ConvertedUint16   int32               `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16"`
+	ConvertedUint32   int32               `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32"`
+	ConvertedUint64   int64               `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64"`
 	Date              int32               `parquet:"name=Date, type=INT32, convertedtype=DATE"`
 	Date2             int32               `parquet:"name=Date2, type=INT32, convertedtype=DATE, logicaltype=DATE"`
 	TimeMillis        int32               `parquet:"name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS"`
@@ -99,14 +99,14 @@ func main() {
 			Json:              `{"` + strI + `":` + strI + `}`,
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
-			Int_8:             int32(i),
-			Int_16:            int32(i),
-			Int_32:            int32(i),
-			Int_64:            int64(i),
-			Uint_8:            int32(i),
-			Uint_16:           int32(i),
-			Uint_32:           int32(i),
-			Uint_64:           int64(i),
+			ConvertedInt8:     int32(i),
+			ConvertedInt16:    int32(i),
+			ConvertedInt32:    int32(i),
+			ConvertedInt64:    int64(i),
+			ConvertedUint8:    int32(i),
+			ConvertedUint16:   int32(i),
+			ConvertedUint32:   int32(i),
+			ConvertedUint64:   int64(i),
 			Date:              int32(1640995200 + i),
 			Date2:             int32(1640995200 + i),
 			TimeMillis:        int32(i) * 1_001,
