@@ -68,7 +68,7 @@ func Test_retrieveValue_double(t *testing.T) {
 	require.Equal(t, float64(2), s)
 
 	s = cmd.retrieveValue([]byte{0, 0, 0, 0, 0, 0, 4, 192}, parquet.Type_DOUBLE, false)
-	require.Equal(t, float64(-2.5), s)
+	require.Equal(t, -2.5, s)
 
 	s = cmd.retrieveValue([]byte{}, parquet.Type_DOUBLE, false)
 	require.Equal(t, "failed to read data as DOUBLE", s)
@@ -87,7 +87,7 @@ func Test_MetaCmd_Run_non_existent(t *testing.T) {
 
 	err := cmd.Run()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), string("failed to open local file"))
+	require.Contains(t, err.Error(), "failed to open local file")
 }
 
 func Test_MetaCmd_Run_good_base64(t *testing.T) {

@@ -109,7 +109,7 @@ func (c ImportCmd) importJSON() error {
 	}
 
 	var dummy map[string]interface{}
-	if err := json.Unmarshal([]byte(schemaData), &dummy); err != nil {
+	if err := json.Unmarshal(schemaData, &dummy); err != nil {
 		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
 	}
 	if err := json.Unmarshal(jsonData, &dummy); err != nil {
@@ -145,7 +145,7 @@ func (c ImportCmd) importJSONL() error {
 	}
 
 	var dummy map[string]interface{}
-	if err := json.Unmarshal([]byte(schemaData), &dummy); err != nil {
+	if err := json.Unmarshal(schemaData, &dummy); err != nil {
 		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
 	}
 
