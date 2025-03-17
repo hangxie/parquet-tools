@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	formatRaw  string = "raw"
-	formatJSON string = "json"
-	formatGo   string = "go"
-	formatCSV  string = "csv"
+	formatRaw  = "raw"
+	formatJSON = "json"
+	formatGo   = "go"
+	formatCSV  = "csv"
 )
 
 // SchemaCmd is a kong command for schema

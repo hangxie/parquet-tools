@@ -26,7 +26,7 @@ type Student struct {
 	Teachers []Personal
 }
 
-var jsonSchema string = `
+var jsonSchema = `
 {
   "Tag": "name=Parquet_go_root",
   "Fields": [

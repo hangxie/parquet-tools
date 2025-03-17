@@ -13,7 +13,7 @@ import (
 )
 
 // this represents order of tags in JSON schema and go struct
-var orderedTags []string = []string{
+var orderedTags = []string{
 	"name",
 	"type",
 	"keytype",

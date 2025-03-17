@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	queryRaw          string = "raw"
-	queryUncompressed string = "uncompressed"
-	queryFooter       string = "footer"
-	queryAll          string = "all"
+	queryRaw          = "raw"
+	queryUncompressed = "uncompressed"
+	queryFooter       = "footer"
+	queryAll          = "all"
 )
 
 // SizeCmd is a kong command for size

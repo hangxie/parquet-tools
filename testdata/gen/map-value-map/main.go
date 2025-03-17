@@ -15,7 +15,7 @@ type Student struct {
 	Scores map[string]map[string]float32
 }
 
-var jsonSchema string = `
+var jsonSchema = `
 {
   "Tag": "name=parquet_go_root, repetitiontype=REQUIRED",
   "Fields": [
