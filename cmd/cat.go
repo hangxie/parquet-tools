@@ -177,6 +177,8 @@ func (c CatCmd) outputSingleRow(rowStruct interface{}, fieldList []string) error
 			return err
 		}
 		fmt.Print(strings.TrimRight(line, "\n"))
+	default:
+		return fmt.Errorf("unsupported format: %s", c.Format)
 	}
 
 	return nil
@@ -296,6 +298,8 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr intern
 				newValue.Set(v)
 				encodeNestedBinaryString(newValue, locator[1:], attr)
 				value.SetMapIndex(key, newValue)
+			default:
+				// do nothing
 			}
 		}
 	case reflect.Struct:
@@ -303,6 +307,8 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr intern
 	case reflect.String:
 		buf := internal.StringToBytes(attr, value.String())
 		value.SetString(base64.StdEncoding.EncodeToString(buf))
+	default:
+		// do nothing
 	}
 }
 
@@ -341,6 +347,8 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr internal
 				case float64:
 					format := fmt.Sprintf("%%0.%df", attr.Scale)
 					newMapValue[fmt.Sprintf(format, val)] = v
+				default:
+					// do nothing
 				}
 			}
 			mapValue = newMapValue
@@ -371,6 +379,8 @@ func reinterpretScalar(iface *interface{}, attr internal.ReinterpretField) {
 					*iface = f64
 				}
 			}
+		default:
+			// do nothing
 		}
 	case parquet.Type_INT32, parquet.Type_INT64:
 		switch v := (*iface).(type) {
@@ -380,6 +390,8 @@ func reinterpretScalar(iface *interface{}, attr internal.ReinterpretField) {
 			if f64, err := strconv.ParseFloat(v, 64); err == nil {
 				*iface = f64 / math.Pow10(attr.Scale)
 			}
+		default:
+			// do nothing
 		}
 	case parquet.Type_INT96:
 		if _, ok := (*iface).(string); ok {
@@ -387,6 +399,8 @@ func reinterpretScalar(iface *interface{}, attr internal.ReinterpretField) {
 				*iface = types.INT96ToTime(string(encoded)).Format(time.RFC3339Nano)
 			}
 		}
+	default:
+		// do nothing
 	}
 }
 
@@ -411,5 +425,7 @@ func removePargoPrefix(iface *interface{}, pargoPrefix string) {
 		}
 		mapValue = newMapValue
 		*iface = mapValue
+	default:
+		// do nothing
 	}
 }
