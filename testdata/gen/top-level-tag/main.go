@@ -65,7 +65,6 @@ func genParquet(name, jsonSchema string) error {
 	pw, err := writer.NewParquetWriter(fw, jsonSchema, 4)
 	if err != nil {
 		return fmt.Errorf("Can't create parquet writer: %w", err)
-		os.Exit(1)
 	}
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
