@@ -61,8 +61,8 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
       - [S3 Bucket](#s3-bucket)
       - [GCS Bucket](#gcs-bucket)
       - [Azure Storage Container](#azure-storage-container)
-      - [HTTP Endpoint](#http-endpoint)
       - [HDFS File](#hdfs-file)
+      - [HTTP Endpoint](#http-endpoint)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
       - [Skip Rows](#skip-rows)
@@ -228,6 +228,7 @@ Most commands can output JSON format result which can be processed by utilities 
 * AWS Simple Storage Service (S3) bucket
 * Google Cloud Storage (GCS) bucket
 * Azure Storage Container
+* HDFS file
 
 `parquet-tools` can read parquet files from these locations:
 * HTTP/HTTPS URL
@@ -338,6 +339,20 @@ $ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopen
 
 Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
 
+#### HDFS File
+
+`parquet-tools` can read and write files under HDFS with schema `hdfs://username@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
+
+```bash
+$ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
+parquet-tools: error: failed to create JSON writer: failed to open HDFS source [hdfs://localhost:9000/temp/good.parquet]: create /temp/good.parquet: permission denied
+$ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
+$ parquet-tools row-count hdfs://localhost:9000/temp/good.parquet
+7
+```
+
+Similar to cloud storage, `parquet-tools` downloads only necessary data from HDFS.
+
 #### HTTP Endpoint
 
 `parquet-tools` supports URI with `http` or `https` scheme, the remote server needs to support [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range), particularly with unit of `bytes`.
@@ -359,7 +374,7 @@ $ parquet-tools size https://dpla-provider-export.s3.amazonaws.com/2021/04/all.p
 Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessary data from remote server through [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range).
 
 > [!TIP]
-> `parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by setting environment variable `GODEBUG` to `http2client=0` if you see messages like these:
+> `parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by setting environment variable `GODEBUG` to `http2client=0`:
 
 ```
 $ parquet-tools row-count https://...
@@ -375,23 +390,8 @@ $ parquet-tools row-count https://...
 18141856
 
 $ GODEBUG=http2client=0 parquet-tools row-count https://...
-appy.parquet
 18141856
 ```
-
-#### HDFS File
-
-`parquet-tools` can read and write files under HDFS with schema `hdfs://username@hostname:port/path/to/file`, if `username` is not provided then current OS user will be used.
-
-```bash
-$ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://localhost:9000/temp/good.parquet
-parquet-tools: error: failed to create JSON writer: failed to open HDFS source [hdfs://localhost:9000/temp/good.parquet]: create /temp/good.parquet: permission denied
-$ parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
-$ parquet-tools row-count hdfs://localhost:9000/temp/good.parquet
-7
-```
-
-Similar to cloud storage, `parquet-tools` downloads only necessary data from HDFS.
 
 ### cat Command
 
