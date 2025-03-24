@@ -36,7 +36,7 @@ type CatCmd struct {
 
 // here are performance numbers for different SkipPageSize:
 // - using https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet
-// - amateure test - on Mac with time command and Activity Monitor, numbers are for reference only
+// - amateur test - on Mac with time command and Activity Monitor, numbers are for reference only
 // page_size max_memory_usage time_taken
 // 1K        1.9G             25s
 // 10K       1.8G             15s
@@ -245,7 +245,7 @@ func rowToStruct(row interface{}, reinterpretFields map[string]internal.Reinterp
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
 	for k, v := range reinterpretFields {
-		// There are data types that are represented as string but they are actually not UTF8, they
+		// There are data types that are represented as string, but they are actually not UTF8, they
 		// need to be re-interpreted so we will base64 encode them here to avoid losing data. For
 		// more details: https://github.com/xitongsys/parquet-go/issues/434
 		if v.ParquetType == parquet.Type_BYTE_ARRAY || v.ParquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.ParquetType == parquet.Type_INT96 {
