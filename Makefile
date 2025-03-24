@@ -3,29 +3,28 @@
 # Required for globs to work correctly
 SHELL:=/bin/bash
 
-BUILD_TIME  = $(shell date +%FT%T%z)
-BUILD_DIR   = $(CURDIR)/build
-GIT_HASH    = $(shell git rev-parse --short HEAD)
-PKG_PREFIX  = github.com/hangxie/parquet-tools
-REL_TARGET  = \
-	darwin-amd64 darwin-arm64 \
-	linux-amd64 linux-arm linux-arm64 \
-	windows-amd64 windows-arm64 \
-	freebsd-amd64
-VERSION     = $(shell git describe --tags --always)
+BUILD_TIME	= $(shell date +%FT%T%z)
+BUILD_DIR	= $(CURDIR)/build
+PKG_PREFIX	= github.com/hangxie/parquet-tools
+REL_TARGET	= \
+				darwin-amd64 darwin-arm64 \
+				linux-amd64 linux-arm linux-arm64 \
+				windows-amd64 windows-arm64 \
+				freebsd-amd64
+VERSION		= $(shell git describe --tags --always)
 
 # go option
 CGO_ENABLED := 0
-GO          ?= go
-GOBIN       = $(shell go env GOPATH)/bin
-GOFLAGS     := -trimpath
-GOSOURCES   := $(shell find . -type f -name '*.go')
-LDFLAGS     := -w -s
-LDFLAGS     += -extldflags "-static" \
-	-X $(PKG_PREFIX)/cmd.version=$(VERSION) \
-	-X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) \
-	-X $(PKG_PREFIX)/cmd.gitHash=$(GIT_HASH) \
-	-X ${PKG_PREFIX}/cmd.source=Makefile
+GO			?= go
+GOBIN		= $(shell go env GOPATH)/bin
+GOFLAGS		:= -trimpath
+GOSOURCES	:= $(shell find . -type f -name '*.go')
+LDFLAGS		:= -w -s
+LDFLAGS		+= \
+				-extldflags "-static" \
+				-X $(PKG_PREFIX)/cmd.version=$(VERSION) \
+				-X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) \
+				-X $(PKG_PREFIX)/cmd.source=Makefile
 
 .EXPORT_ALL_VARIABLES:
 
