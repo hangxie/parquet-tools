@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/hangxie/parquet-go/parquet"
 	"github.com/stretchr/testify/require"
-	"github.com/xitongsys/parquet-go/parquet"
 )
 
 func Test_retrieveValue_nil(t *testing.T) {

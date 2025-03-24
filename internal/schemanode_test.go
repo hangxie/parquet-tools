@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hangxie/parquet-go/parquet"
+	"github.com/hangxie/parquet-go/types"
 	"github.com/stretchr/testify/require"
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/types"
 )
 
 func Test_NewSchemaTree_fail_on_int96(t *testing.T) {

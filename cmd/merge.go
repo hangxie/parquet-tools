@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/xitongsys/parquet-go/reader"
+	"github.com/hangxie/parquet-go/reader"
 
 	"github.com/hangxie/parquet-tools/internal"
 )
