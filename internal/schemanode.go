@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/reader"
-	"github.com/xitongsys/parquet-go/types"
+	"github.com/hangxie/parquet-go/parquet"
+	"github.com/hangxie/parquet-go/reader"
+	"github.com/hangxie/parquet-go/types"
 )
 
 // this represents order of tags in JSON schema and go struct
