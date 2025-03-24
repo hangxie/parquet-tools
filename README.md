@@ -114,17 +114,13 @@ You can choose one of the installation methods from below, the functionality wil
 Good for people who are familiar with [Go](https://go.dev/), you need 1.23 or newer version.
 
 ```bash
-$ git clone --depth 1 https://github.com/hangxie/parquet-tools -b v1.26.1 /tmp/your-own-path
-$ go install -C /tmp/your-own-path .
+$ go install github.com/hangxie/parquet-tools@latest
 ```
 
-Above command installs version v1.26.1 of `parquet-tools` to $GOPATH/bin, `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
+Above command installs latest released version of `parquet-tools` to $GOPATH/bin, `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
 
 > [!TIP]
 > If you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.
-
-> [!IMPORTANT]
-> You cannot use `go install` directly as `replace` is used in `go.mod`.
 
 ### Download Pre-built Binaries
 
