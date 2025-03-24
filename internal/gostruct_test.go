@@ -48,10 +48,7 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	mapType := parquet.ConvertedType_MAP
-	// A bit explanation:
-	// 2nd field is "Scores", its
-	// 1st field is "Key_value", its
-	// 1st field is map's key
+	// 2nd field is "Scores", whose 1st field is "Key_value", whose 1st field is map's key
 	schemaRoot.Children[1].Children[0].Children[0].ConvertedType = &mapType
 	_, err = goStructNode{*schemaRoot}.String()
 	require.NotNil(t, err)
@@ -89,7 +86,6 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
-	// A bit explanation:
 	// 1st field is "Shoe_brand"
 	schemaRoot.Children[0].Type = nil
 	_, err = goStructNode{*schemaRoot}.String()
@@ -111,10 +107,7 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
-	// A bit explanation:
-	// 2nd field is "V1", its
-	// 1st field is "List", its
-	// 1st field is "Element"
+	// 2nd field is "V1", whose 1st field is "List", whose 1st field is "Element"
 	schemaRoot.Children[0].Children[0].Children[0].Type = &invalidType
 	_, err = goStructNode{*schemaRoot}.String()
 	require.NotNil(t, err)
@@ -135,10 +128,7 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
-	// A bit explanation:
-	// 2nd field is "V1", its
-	// 1st field is "Key_value", its
-	// 1st field is map's key
+	// 2nd field is "V1", whose 1st field is "Key_value", whose 1st field is map's key
 	schemaRoot.Children[1].Children[0].Children[0].Type = &invalidType
 	_, err = goStructNode{*schemaRoot}.String()
 	require.NotNil(t, err)
@@ -158,10 +148,7 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, schemaRoot)
 
-	// A bit explanation:
-	// 2nd field is "V1", its
-	// 1st field is "Key_value", its
-	// 3nd field is map's value
+	// 2nd field is "V1", whose 1st field is "Key_value", whose 3rd field is map's value
 	schemaRoot.Children[1].Children[0].Children[1].Type = nil
 	_, err = goStructNode{*schemaRoot}.String()
 	require.NotNil(t, err)
