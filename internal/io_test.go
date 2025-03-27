@@ -262,7 +262,17 @@ func Test_NewParquetFileReader_gcs_no_permission(t *testing.T) {
 	uri := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
 	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open GCS object")
+	require.Contains(t, err.Error(), "failed to create GCS client")
+}
+
+func Test_NewParquetFileReader_gcs_good(t *testing.T) {
+	// Make sure there is no GCS access
+	_ = os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+
+	option := ReadOption{Anonymous: true}
+	uri := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
+	_, err := NewParquetFileReader(uri, option)
+	require.Nil(t, err)
 }
 
 func Test_NewParquetFileReader_azblob_no_permission(t *testing.T) {

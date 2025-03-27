@@ -299,6 +299,15 @@ $ parquet-tools row-count gs://REDACTED/csv.parquet
 
 Similar to S3, `parquet-tools` downloads only necessary data from GCS bucket.
 
+If the GCS object is publicly accessible, you can use `--anonymous` option to indicate that anonymous access is expected:
+
+```
+$ parquet-tools row-count gs://cloud-samples-data/bigquery/us-states/us-states.parquet
+parquet-tools: error: failed to create GCS client: dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information
+$ parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet
+50
+```
+
 #### Azure Storage Container
 
 `parquet-tools` uses the [HDFS URL format](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage#access-files-from-within-cluster):
