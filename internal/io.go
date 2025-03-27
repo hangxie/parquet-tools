@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 
+	"cloud.google.com/go/storage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,6 +28,7 @@ import (
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/source"
 	"github.com/hangxie/parquet-go/writer"
+	googleoption "google.golang.org/api/option"
 )
 
 const (
@@ -45,7 +47,7 @@ type ReadOption struct {
 	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
-	Anonymous              bool              `help:"(S3 and Azure only) object is publicly accessible." default:"false"`
+	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
 }
 
 // WriteOption includes options for write operation
@@ -152,7 +154,18 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (*reader.ParquetRe
 }
 
 func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (*reader.ParquetReader, error) {
-	fileReader, err := gcs.NewGcsFileReader(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
+	ctx := context.Background()
+
+	options := []googleoption.ClientOption{}
+	if option.Anonymous {
+		options = append(options, googleoption.WithoutAuthentication())
+	}
+	client, err := storage.NewClient(ctx, options...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create GCS client: %w", err)
+	}
+
+	fileReader, err := gcs.NewGcsFileReaderWithClient(ctx, client, "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open GCS object [%s]: %w", u.String(), err)
 	}

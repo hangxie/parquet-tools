@@ -3,6 +3,7 @@ module github.com/hangxie/parquet-tools
 go 1.23.0
 
 require (
+	cloud.google.com/go/storage v1.50.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.0
 	github.com/alecthomas/kong v1.8.1
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -13,6 +14,7 @@ require (
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.10.0
 	github.com/willabides/kongplete v0.4.0
+	google.golang.org/api v0.224.0
 )
 
 require (
@@ -23,7 +25,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.4.1 // indirect
 	cloud.google.com/go/monitoring v1.24.0 // indirect
-	cloud.google.com/go/storage v1.50.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.17.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.10.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 // indirect
@@ -100,7 +101,6 @@ require (
 	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.31.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
-	google.golang.org/api v0.224.0 // indirect
 	google.golang.org/genproto v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250303144028-a0af3efb3deb // indirect
