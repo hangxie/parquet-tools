@@ -9,6 +9,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
+
+	parquetSource "github.com/hangxie/parquet-go/source"
 
 	"github.com/hangxie/parquet-tools/internal"
 )
@@ -34,6 +37,20 @@ func (c ImportCmd) Run() error {
 		return c.importJSONL()
 	}
 	return fmt.Errorf("[%s] is not a recognized source format", c.Format)
+}
+
+func (c ImportCmd) closeWriter(pf parquetSource.ParquetFile) error {
+	// retry on particular errors according to https://github.com/colinmarc/hdfs/blob/v2.4.0/file_writer.go#L220-L226
+	var err error
+	for i := 0; i < 10; i++ {
+		err = pf.Close()
+		if err != nil && strings.Contains(err.Error(), "replication in progress") {
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		break
+	}
+	return err
 }
 
 func (c ImportCmd) importCSV() error {
@@ -87,7 +104,8 @@ func (c ImportCmd) importCSV() error {
 	if err := parquetWriter.WriteStop(); err != nil {
 		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
 	}
-	if err := parquetWriter.PFile.Close(); err != nil {
+
+	if err := c.closeWriter(parquetWriter.PFile); err != nil {
 		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
 	}
 
@@ -128,7 +146,7 @@ func (c ImportCmd) importJSON() error {
 	if err := parquetWriter.WriteStop(); err != nil {
 		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
 	}
-	if err := parquetWriter.PFile.Close(); err != nil {
+	if err := c.closeWriter(parquetWriter.PFile); err != nil {
 		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
 	}
 
@@ -177,7 +195,7 @@ func (c ImportCmd) importJSONL() error {
 	if err := parquetWriter.WriteStop(); err != nil {
 		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
 	}
-	if err := parquetWriter.PFile.Close(); err != nil {
+	if err := c.closeWriter(parquetWriter.PFile); err != nil {
 		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
 	}
 
