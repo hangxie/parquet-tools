@@ -197,7 +197,7 @@ Updating / installing...
 
 ```bash
 $ parquet-tools meta -h
-Usage: parquet-tools meta <uri>
+Usage: parquet-tools meta <uri> [flags]
 
 Prints the metadata.
 
@@ -205,14 +205,16 @@ Arguments:
   <uri>    URI of Parquet file.
 
 Flags:
-  -h, --help                                Show context-sensitive help.
+  -h, --help                        Show context-sensitive help.
 
-      --http-multiple-connection            (HTTP URI only) use multiple HTTP connection.
-      --http-ignore-tls-error               (HTTP URI only) ignore TLS error.
-      --http-extra-headers=KEY=VALUE,...    (HTTP URI only) extra HTTP headers.
-      --object-version=STRING               (S3 URI only) object version.
-      --anonymous                           (S3 and Azure only) object is publicly accessible.
-  -b, --base64                              Encode min/max value.
+      --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
+      --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
+      --http-extra-headers=         (HTTP URI only) extra HTTP headers.
+      --object-version=""           (S3 URI only) object version.
+      --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
+  -b, --base64                      Encode min/max value.
+      --fail-on-int96               fail command if INT96 data type presents.
+      --pargo-prefix=""             remove this prefix from field names.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
