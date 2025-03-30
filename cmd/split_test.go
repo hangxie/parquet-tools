@@ -11,86 +11,35 @@ import (
 	"github.com/hangxie/parquet-tools/internal"
 )
 
-func Test_SplitCmd_Run_wrong_params(t *testing.T) {
-	cmd := &SplitCmd{}
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "invalid read page size")
-
-	cmd.ReadPageSize = 1000
-	err = cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "needs either --file-count or --record-count")
-}
-
-func Test_SplitCmd_Run_failed_to_open_for_read(t *testing.T) {
+func Test_SplitCmd_Run_error(t *testing.T) {
+	rOpt := internal.ReadOption{}
+	wOpt := internal.WriteOption{Compression: "SNAPPY"}
+	tw := TrunkWriter{}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
 
-	cmd := &SplitCmd{}
-	cmd.URI = "file/does/not/exist"
-	cmd.ReadPageSize = 1000
-	cmd.RecordCount = 10
-	cmd.NameFormat = filepath.Join(tempDir, "unit-test-%d.parquet")
+	testCases := map[string]struct {
+		cmd    SplitCmd
+		errMsg string
+	}{
+		"page-size":   {SplitCmd{rOpt, wOpt, 0, "", 0, 0, false, "", tw}, "invalid read page size"},
+		"no-count":    {SplitCmd{rOpt, wOpt, 1000, "", 0, 0, false, "", tw}, "needs either --file-count or --record-count"},
+		"sorce-file":  {SplitCmd{rOpt, wOpt, 1000, "does/not/exist", 0, 10, false, tempDir + "/%d.parquet", tw}, "failed to open"},
+		"int96":       {SplitCmd{rOpt, wOpt, 1000, "../testdata/all-types.parquet", 0, 10, true, tempDir + "/%d.parquet", tw}, "has type INT96 which is not supporte"},
+		"target-file": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 2, false, "dummy://%d.parquet", tw}, "unknown location scheme"},
+		"first-write": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 1, false, "s3://target/%d.parquet", tw}, "failed to close"},
+		"last-write":  {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 3, false, "s3://target/%d.parquet", tw}, "failed to close"},
+	}
 
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open")
-}
-
-func Test_SplitCmd_Run_failed_with_int96(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &SplitCmd{}
-	cmd.URI = "../testdata/all-types.parquet"
-	cmd.FailOnInt96 = true
-	cmd.ReadPageSize = 1000
-	cmd.RecordCount = 10
-	cmd.NameFormat = filepath.Join(tempDir, "unit-test-%d.parquet")
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to load schema")
-}
-
-func Test_SplitCmd_Run_failed_to_open_for_write(t *testing.T) {
-	cmd := &SplitCmd{}
-	cmd.URI = "../testdata/all-types.parquet"
-	cmd.WriteOption.Compression = "SNAPPY"
-	cmd.ReadPageSize = 1000
-	cmd.RecordCount = 10
-	cmd.NameFormat = "dummy://unit-test-%d.parquet"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unknown location scheme")
-}
-
-func Test_SplitCmd_Run_failed_to_close_for_write(t *testing.T) {
-	cmd := &SplitCmd{}
-	cmd.URI = "../testdata/all-types.parquet"
-	cmd.WriteOption.Compression = "SNAPPY"
-	cmd.ReadPageSize = 1000
-	cmd.RecordCount = 10
-
-	// failed to close last parquet file
-	cmd.NameFormat = "s3://daylight-openstreetmap/unit-test-%d.parquet"
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close [s3:")
-
-	// failed to close first parquet file
-	cmd.RecordCount = 3
-	cmd.NameFormat = "s3://daylight-openstreetmap/unit-test-%d.parquet"
-	err = cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close [s3:")
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.cmd.Run()
+			require.NotNil(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
 }
 
 func Test_SplitCmd_Run_good_with_recordcount(t *testing.T) {

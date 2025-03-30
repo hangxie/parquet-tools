@@ -6,82 +6,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest() {
-	version = "the-version"
-	build = "the-build"
-	source = "unit-test"
-}
+func Test_versionCmd(t *testing.T) {
+	testCases := map[string]struct {
+		cmd    VersionCmd
+		stdout string
+	}{
+		"plain":             {cmd: VersionCmd{false, false, false, false}, stdout: "v1.2.3\n"},
+		"plain-with-build":  {cmd: VersionCmd{false, false, true, false}, stdout: "v1.2.3\ntoday\n"},
+		"plain-with-source": {cmd: VersionCmd{false, false, false, true}, stdout: "v1.2.3\nUT\n"},
+		"plain-with-all":    {cmd: VersionCmd{false, true, false, false}, stdout: "v1.2.3\ntoday\nUT\n"},
+		"json":              {cmd: VersionCmd{true, false, false, false}, stdout: `{"Version":"v1.2.3"}` + "\n"},
+		"json-with-build":   {cmd: VersionCmd{true, false, true, false}, stdout: `{"Version":"v1.2.3","BuildTime":"today"}` + "\n"},
+		"json-with-source":  {cmd: VersionCmd{true, false, false, true}, stdout: `{"Version":"v1.2.3","Source":"UT"}` + "\n"},
+		"json-with-all":     {cmd: VersionCmd{true, true, false, false}, stdout: `{"Version":"v1.2.3","BuildTime":"today","Source":"UT"}` + "\n"},
+	}
 
-func Test_VersionCmd_Run_good_plain(t *testing.T) {
-	setupTest()
-	cmd := &VersionCmd{}
+	version = "v1.2.3"
+	build = "today"
+	source = "UT"
 
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	require.Equal(t, "the-version\n", stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_VersionCmd_Run_good_plain_with_build_time(t *testing.T) {
-	setupTest()
-	cmd := &VersionCmd{}
-	cmd.BuildTime = true
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	require.Equal(t, "the-version\nthe-build\n", stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_VersionCmd_Run_good_json(t *testing.T) {
-	setupTest()
-	cmd := &VersionCmd{}
-	cmd.JSON = true
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	require.Equal(t, `{"Version":"the-version"}`+"\n", stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_VersionCmd_Run_good_json_with_build_time(t *testing.T) {
-	setupTest()
-	cmd := &VersionCmd{}
-	cmd.JSON = true
-	cmd.BuildTime = true
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	require.Equal(t, `{"Version":"the-version","BuildTime":"the-build"}`+"\n", stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_VersionCmd_Run_good_json_with_source(t *testing.T) {
-	setupTest()
-	cmd := &VersionCmd{}
-	cmd.JSON = true
-	cmd.Source = true
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	require.Equal(t, `{"Version":"the-version","Source":"unit-test"}`+"\n", stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_VersionCmd_Run_good_json_with_all_meta(t *testing.T) {
-	setupTest()
-	cmd := &VersionCmd{}
-	cmd.JSON = true
-	cmd.All = true
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	require.Equal(t, `{"Version":"the-version","BuildTime":"the-build","Source":"unit-test"}`+"\n", stdout)
-	require.Equal(t, "", stderr)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			stdout, stderr := captureStdoutStderr(func() {
+				require.Nil(t, tc.cmd.Run())
+			})
+			require.Equal(t, tc.stdout, stdout)
+			require.Equal(t, "", stderr)
+		})
+	}
 }

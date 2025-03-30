@@ -10,147 +10,36 @@ import (
 	"github.com/hangxie/parquet-tools/internal"
 )
 
-func Test_MergeCmd_Run_pagesize_too_small(t *testing.T) {
+func Test_MergeCmd_Run_error(t *testing.T) {
+	rOpt := internal.ReadOption{}
+	wOpt := internal.WriteOption{Compression: "SNAPPY"}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
 
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 0
-	cmd.Source = []string{
-		"../testdata/good.parquet",
-		"../testdata/good.parquet",
+	testCases := map[string]struct {
+		cmd    MergeCmd
+		errMsg string
+	}{
+		"pagesize-too-small":  {MergeCmd{rOpt, wOpt, 0, []string{"src"}, tempDir + "/tgt", false}, "invalid read page size"},
+		"source-need-more":    {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet"}, tempDir + "/tgt", false}, "needs at least 2 source files"},
+		"source-non-existent": {MergeCmd{rOpt, wOpt, 10, []string{"does/not/exist1", "does/not/exist2"}, tempDir + "/tgt", false}, "no such file or directory"},
+		"source-not-parquet":  {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/not-a-parquet-file", "../testdata/not-a-parquet-file"}, tempDir + "/tgt", false}, "failed to read from"},
+		"source-diff-schema":  {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/empty.parquet"}, tempDir + "/tgt", false}, "does not have same schema"},
+		"target-file":         {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, "://uri", false}, "unable to parse file location"},
+		"target-compression":  {MergeCmd{rOpt, internal.WriteOption{}, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, tempDir + "/tgt", false}, "not a valid CompressionCode"},
+		"target-write":        {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, "s3://target", false}, "failed to close"},
+		"int96":               {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/all-types.parquet", "../testdata/all-types.parquet"}, tempDir + "/tgt", true}, "type INT96 which is not supported"},
 	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
 
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "invalid read page size")
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_need_more_sources(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/good.parquet",
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.cmd.Run()
+			require.NotNil(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
 	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "needs at least 2 source files")
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_nonexistent_source(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"/path/to/nowhere/file1",
-		"/path/to/nowhere/file2",
-	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "no such file or directory")
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_invalid_source(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/not-a-parquet-file",
-		"../testdata/not-a-parquet-file",
-	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to read from")
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_source_schema_not_match(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/good.parquet",
-		"../testdata/empty.parquet",
-	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "does not have same schema")
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_invalid_target(t *testing.T) {
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/good.parquet",
-		"../testdata/good.parquet",
-	}
-	cmd.URI = "://uri"
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unable to parse file location")
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_failed_to_write_stop(t *testing.T) {
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/good.parquet",
-		"../testdata/good.parquet",
-	}
-	cmd.URI = "s3://aws"
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "operation error S3: PutObject")
-
-	_ = os.Remove(cmd.URI)
 }
 
 func Test_MergeCmd_Run_good(t *testing.T) {
@@ -173,29 +62,6 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 	reader, _ := internal.NewParquetFileReader(cmd.URI, internal.ReadOption{})
 	rowCount := reader.GetNumRows()
 	require.Equal(t, rowCount, int64(6))
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_fail_on_int96(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/all-types.parquet",
-		"../testdata/all-types.parquet",
-	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
-	cmd.FailOnInt96 = true
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "type INT96 which is not supporte")
 
 	_ = os.Remove(cmd.URI)
 }

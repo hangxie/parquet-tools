@@ -1,318 +1,148 @@
 package cmd
 
 import (
-	"encoding/json"
+	"encoding/base64"
 	"testing"
 
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/stretchr/testify/require"
+
+	"github.com/hangxie/parquet-tools/internal"
 )
 
-func Test_retrieveValue_nil(t *testing.T) {
-	cmd := &MetaCmd{}
-	require.Nil(t, cmd.retrieveValue(nil, parquet.Type_INT32, true))
-	require.Nil(t, cmd.retrieveValue(nil, parquet.Type_INT32, false))
+func Test_retrieveValue_error(t *testing.T) {
+	testCases := map[string]struct {
+		pType  parquet.Type
+		errMsg string
+	}{
+		"int32":   {parquet.Type_INT32, "failed to read data as INT32"},
+		"int64":   {parquet.Type_INT64, "failed to read data as INT64"},
+		"float":   {parquet.Type_FLOAT, "failed to read data as FLOAT"},
+		"double":  {parquet.Type_DOUBLE, "failed to read data as DOUBLE"},
+		"boolean": {parquet.Type_BOOLEAN, "failed to read data as BOOLEAN"},
+	}
+	c := &MetaCmd{}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			msg := c.retrieveValue([]byte{}, tc.pType, false)
+			require.Equal(t, tc.errMsg, msg)
+		})
+	}
 }
 
-func Test_retrieveValue_boolean(t *testing.T) {
-	cmd := &MetaCmd{}
-	s := cmd.retrieveValue([]byte{0}, parquet.Type_BOOLEAN, true)
-	require.Equal(t, false, s)
+func Test_retrieveValue_numeric(t *testing.T) {
+	testCases := map[string]struct {
+		pType  parquet.Type
+		value  []byte
+		expect interface{}
+	}{
+		"nil-boolean":       {parquet.Type_BOOLEAN, nil, nil},
+		"nil-int32":         {parquet.Type_INT32, nil, nil},
+		"nil-int64":         {parquet.Type_INT64, nil, nil},
+		"nil-float":         {parquet.Type_FLOAT, nil, nil},
+		"nil-double":        {parquet.Type_DOUBLE, nil, nil},
+		"nil-bytearr":       {parquet.Type_BYTE_ARRAY, nil, nil},
+		"nil-fixed-bytearr": {parquet.Type_BYTE_ARRAY, nil, nil},
+		"boolean-true":      {parquet.Type_BOOLEAN, []byte{1}, true},
+		"boolean-false":     {parquet.Type_BOOLEAN, []byte{0}, false},
+		"int32=9":           {parquet.Type_INT32, []byte{9, 0, 0, 0}, int32(9)},
+		"int32=-5":          {parquet.Type_INT32, []byte{251, 255, 255, 255}, int32(-5)},
+		"int64=9":           {parquet.Type_INT64, []byte{9, 0, 0, 0, 0, 0, 0, 0}, int64(9)},
+		"int64=-5":          {parquet.Type_INT64, []byte{251, 255, 255, 255, 255, 255, 255, 255}, int64(-5)},
+		"float=-2.5":        {parquet.Type_FLOAT, []byte{0, 0, 32, 192}, float32(-2.5)},
+		"float=2":           {parquet.Type_FLOAT, []byte{0, 0, 0, 64}, float32(2)},
+		"double=-2.5":       {parquet.Type_DOUBLE, []byte{0, 0, 0, 0, 0, 0, 4, 192}, float64(-2.5)},
+		"double=2":          {parquet.Type_DOUBLE, []byte{0, 0, 0, 0, 0, 0, 0, 64}, float64(2)},
+	}
 
-	s = cmd.retrieveValue([]byte{1}, parquet.Type_BOOLEAN, false)
-	require.Equal(t, true, s)
-
-	s = cmd.retrieveValue([]byte{}, parquet.Type_BOOLEAN, false)
-	require.Equal(t, "failed to read data as BOOLEAN", s)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			c := &MetaCmd{}
+			result := c.retrieveValue(tc.value, tc.pType, false)
+			require.Equal(t, tc.expect, result)
+		})
+	}
 }
 
-func Test_retrieveValue_int32(t *testing.T) {
-	cmd := &MetaCmd{}
-	s := cmd.retrieveValue([]byte{9, 0, 0, 0}, parquet.Type_INT32, true)
-	require.Equal(t, int32(9), s)
+func Test_retrieveValue_byte_array(t *testing.T) {
+	testCases := map[string]struct {
+		pType  parquet.Type
+		value  []byte
+		expect interface{}
+	}{
+		"nil-byte-array":       {parquet.Type_BYTE_ARRAY, nil, nil},
+		"nil-fixed-byte-array": {parquet.Type_BYTE_ARRAY, nil, nil},
+		"byte-array":           {parquet.Type_BYTE_ARRAY, []byte("ab"), "ab"},
+		"fixed-byte-array":     {parquet.Type_FIXED_LEN_BYTE_ARRAY, []byte("ab"), "ab"},
+	}
 
-	s = cmd.retrieveValue([]byte{251, 255, 255, 255}, parquet.Type_INT32, false)
-	require.Equal(t, int32(-5), s)
-
-	s = cmd.retrieveValue([]byte{}, parquet.Type_INT32, false)
-	require.Equal(t, "failed to read data as INT32", s)
+	for name, tc := range testCases {
+		c := &MetaCmd{}
+		t.Run(name, func(t *testing.T) {
+			result := c.retrieveValue(tc.value, tc.pType, false)
+			require.Equal(t, tc.expect, result)
+		})
+		b64 := tc.expect
+		if b64 != nil {
+			b64 = base64.StdEncoding.EncodeToString([]byte(tc.expect.(string)))
+		}
+		t.Run(name+"-base64", func(t *testing.T) {
+			result := c.retrieveValue(tc.value, tc.pType, true)
+			require.Equal(t, b64, result)
+		})
+	}
 }
 
-func Test_retrieveValue_int64(t *testing.T) {
-	cmd := &MetaCmd{}
-	s := cmd.retrieveValue([]byte{9, 0, 0, 0, 0, 0, 0, 0}, parquet.Type_INT64, true)
-	require.Equal(t, int64(9), s)
+func Test_MetaCmd_Run_error(t *testing.T) {
+	rOpt := internal.ReadOption{}
+	testCases := map[string]struct {
+		cmd    MetaCmd
+		errMsg string
+	}{
+		"non-existent": {MetaCmd{rOpt, false, "file/does/not/exist", false, ""}, "failed to open local file"},
+		"no-int96":     {MetaCmd{rOpt, false, "../testdata/all-types.parquet", true, ""}, "type INT96 which is not supported"},
+	}
 
-	s = cmd.retrieveValue([]byte{251, 255, 255, 255, 255, 255, 255, 255}, parquet.Type_INT64, false)
-	require.Equal(t, int64(-5), s)
-
-	s = cmd.retrieveValue([]byte{}, parquet.Type_INT64, false)
-	require.Equal(t, "failed to read data as INT64", s)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.cmd.Run()
+			require.NotNil(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
 }
 
-func Test_retrieveValue_float(t *testing.T) {
-	cmd := &MetaCmd{}
-	s := cmd.retrieveValue([]byte{0, 0, 32, 192}, parquet.Type_FLOAT, true)
-	require.Equal(t, float32(-2.5), s)
+func Test_MetaCmd_Run_good(t *testing.T) {
+	rOpt := internal.ReadOption{}
+	testCases := map[string]struct {
+		cmd    MetaCmd
+		golden string
+	}{
+		"base64":              {MetaCmd{rOpt, true, "good.parquet", false, ""}, "meta-good-base64.json"},
+		"raw":                 {MetaCmd{rOpt, false, "good.parquet", false, ""}, "meta-good-raw.json"},
+		"nil-stat":            {MetaCmd{rOpt, false, "nil-statistics.parquet", false, ""}, "meta-nil-statistics-raw.json"},
+		"nil-int96-min-max":   {MetaCmd{rOpt, false, "nil-statistics.parquet", false, ""}, "meta-nil-statistics-raw.json"},
+		"sorting-col":         {MetaCmd{rOpt, true, "sorting-col.parquet", false, ""}, "meta-sorting-col-base64.json"},
+		"RI-scalar":           {MetaCmd{rOpt, false, "reinterpret-scalar.parquet", false, ""}, "meta-reinterpret-scalar-raw.json"},
+		"RI-pointer":          {MetaCmd{rOpt, false, "reinterpret-pointer.parquet", false, ""}, "meta-reinterpret-pointer-raw.json"},
+		"RI-list":             {MetaCmd{rOpt, false, "reinterpret-list.parquet", false, ""}, "meta-reinterpret-list-raw.json"},
+		"RI-map-key":          {MetaCmd{rOpt, false, "reinterpret-map-key.parquet", false, ""}, "meta-reinterpret-map-key-raw.json"},
+		"RI-map-value":        {MetaCmd{rOpt, false, "reinterpret-map-value.parquet", false, ""}, "meta-reinterpret-map-value-raw.json"},
+		"RI-composite":        {MetaCmd{rOpt, false, "reinterpret-composite.parquet", false, ""}, "meta-reinterpret-composite-raw.json"},
+		"pargo-prefix-keep":   {MetaCmd{rOpt, false, "pargo-prefix-nested.parquet", false, ""}, "meta-pargo-prefix-nested-keep.json"},
+		"pargo-prefix-remove": {MetaCmd{rOpt, false, "pargo-prefix-nested.parquet", false, "PARGO_PREFIX_"}, "meta-pargo-prefix-nested-remove.json"},
+	}
 
-	s = cmd.retrieveValue([]byte{0, 0, 0, 64}, parquet.Type_FLOAT, false)
-	require.Equal(t, float32(2), s)
-
-	s = cmd.retrieveValue([]byte{}, parquet.Type_FLOAT, false)
-	require.Equal(t, "failed to read data as FLOAT", s)
-}
-
-func Test_retrieveValue_double(t *testing.T) {
-	cmd := &MetaCmd{}
-	s := cmd.retrieveValue([]byte{0, 0, 0, 0, 0, 0, 0, 64}, parquet.Type_DOUBLE, true)
-	require.Equal(t, float64(2), s)
-
-	s = cmd.retrieveValue([]byte{0, 0, 0, 0, 0, 0, 4, 192}, parquet.Type_DOUBLE, false)
-	require.Equal(t, -2.5, s)
-
-	s = cmd.retrieveValue([]byte{}, parquet.Type_DOUBLE, false)
-	require.Equal(t, "failed to read data as DOUBLE", s)
-}
-
-func Test_retrieveValue_string(t *testing.T) {
-	cmd := &MetaCmd{}
-	testData := []byte("ab")
-	require.Equal(t, "YWI=", cmd.retrieveValue(testData, parquet.Type_BYTE_ARRAY, true))
-	require.Equal(t, "ab", cmd.retrieveValue(testData, parquet.Type_BYTE_ARRAY, false))
-}
-
-func Test_MetaCmd_Run_non_existent(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.URI = "file/does/not/exist"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open local file")
-}
-
-func Test_MetaCmd_Run_good_base64(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = true
-	cmd.URI = "../testdata/good.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-good-base64.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-
-	// double check fields we care about
-	meta := parquetMeta{}
-	err := json.Unmarshal([]byte(stdout), &meta)
-	require.Nil(t, err)
-	require.Equal(t, "c3RlcGhfY3Vycnk=", meta.RowGroups[0].Columns[0].MaxValue)
-	require.Equal(t, "ZmlsYQ==", meta.RowGroups[0].Columns[0].MinValue)
-}
-
-func Test_MetaCmd_Run_good_raw(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/good.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-good-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-
-	// double check fields we care about
-	meta := parquetMeta{}
-	err := json.Unmarshal([]byte(stdout), &meta)
-	require.Nil(t, err)
-	require.Equal(t, "steph_curry", meta.RowGroups[0].Columns[0].MaxValue)
-	require.Equal(t, "fila", meta.RowGroups[0].Columns[0].MinValue)
-}
-
-func Test_MetaCmd_Run_good_nil_statistics(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/nil-statistics.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-nil-statistics-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-
-	// double check fields we care about
-	meta := parquetMeta{}
-	err := json.Unmarshal([]byte(stdout), &meta)
-	require.Nil(t, err)
-	require.Nil(t, meta.RowGroups[0].Columns[1].MaxValue)
-	require.Nil(t, meta.RowGroups[0].Columns[1].MinValue)
-	require.Nil(t, meta.RowGroups[0].Columns[1].NullCount)
-	require.Nil(t, meta.RowGroups[0].Columns[1].DistinctCount)
-}
-
-func Test_MetaCmd_Run_good_nil_int96_min_max(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/int96-nil-min-max.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/int96-nil-min-max.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-
-	// double check fields we care about
-	meta := parquetMeta{}
-	err := json.Unmarshal([]byte(stdout), &meta)
-	require.Nil(t, err)
-	require.Nil(t, meta.RowGroups[0].Columns[1].MaxValue)
-	require.Nil(t, meta.RowGroups[0].Columns[1].MinValue)
-	require.NotNil(t, meta.RowGroups[0].Columns[1].NullCount)
-	require.Equal(t, *meta.RowGroups[0].Columns[1].NullCount, int64(10))
-}
-
-func Test_MetaCmd_Run_good_sorting_col(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = true
-	cmd.URI = "../testdata/sorting-col.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-sorting-col-base64.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-
-	// double check fields we care about
-	meta := parquetMeta{}
-	err := json.Unmarshal([]byte(stdout), &meta)
-	require.Nil(t, err)
-	require.Equal(t, "DESC", *meta.RowGroups[0].Columns[0].Index)
-	require.Equal(t, "ASC", *meta.RowGroups[0].Columns[1].Index)
-	require.Nil(t, meta.RowGroups[0].Columns[2].Index)
-}
-
-func Test_MetaCmd_Run_good_reinterpret_scalar(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/reinterpret-scalar.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-scalar-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Run_good_reinterpret_pointer(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/reinterpret-pointer.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-pointer-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Run_good_reinterpret_list(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/reinterpret-list.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-list-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Run_good_reinterpret_map_key(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/reinterpret-map-key.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-map-key-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Run_good_reinterpret_map_value(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/reinterpret-map-value.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-map-value-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Run_good_reinterpret_composite(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/reinterpret-composite.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-reinterpret-composite-raw.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Run_fail_on_int96(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/all-types.parquet"
-	cmd.FailOnInt96 = true
-
-	stdout, stderr := captureStdoutStderr(func() {
-		err := cmd.Run()
-		require.NotNil(t, err)
-		require.Contains(t, err.Error(), "type INT96 which is not supported")
-	})
-	require.Equal(t, "", stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Rnu_keep_pargo_prefix(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		err := cmd.Run()
-		require.Nil(t, err)
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-pargo-prefix-nested-keep.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
-}
-
-func Test_MetaCmd_Rnu_remove_pargo_prefix(t *testing.T) {
-	cmd := &MetaCmd{}
-	cmd.Base64 = false
-	cmd.URI = "../testdata/pargo-prefix-nested.parquet"
-	cmd.PargoPrefix = "PARGO_PREFIX_"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		err := cmd.Run()
-		require.Nil(t, err)
-	})
-	expected := loadExpected(t, "../testdata/golden/meta-pargo-prefix-nested-remove.json")
-	require.Equal(t, expected, stdout)
-	require.Equal(t, "", stderr)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			tc.cmd.URI = "../testdata/" + tc.cmd.URI
+			tc.golden = "../testdata/golden/" + tc.golden
+			stdout, stderr := captureStdoutStderr(func() {
+				require.Nil(t, tc.cmd.Run())
+			})
+			expected := loadExpected(t, tc.golden)
+			require.Equal(t, expected, stdout)
+			require.Equal(t, "", stderr)
+		})
+	}
 }
