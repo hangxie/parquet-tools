@@ -11,8 +11,58 @@ import (
 	"github.com/hangxie/parquet-tools/internal"
 )
 
+func Test_ImportCmd_Run_error(t *testing.T) {
+	wOpt := internal.WriteOption{Compression: "SNAPPY"}
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	testCases := map[string]struct {
+		cmd    ImportCmd
+		errMsg string
+	}{
+		"write-format":      {ImportCmd{wOpt, "src", "random", "../testdata/csv.schema", false, tempDir + "/tgt"}, "is not a recognized source format"},
+		"write-compression": {ImportCmd{internal.WriteOption{Compression: "foobar"}, "../testdata/json.source", "json", "../testdata/json.schema", false, tempDir + "/tgt"}, "not a valid CompressionCodec string"},
+
+		"csv-schema-file": {ImportCmd{wOpt, "does/not/exist", "csv", "schema", false, tempDir + "/tgt"}, "failed to load schema from"},
+		"csv-source-file": {ImportCmd{wOpt, "file/does/not/exist", "csv", "../testdata/csv.schema", false, tempDir + "/tgt"}, "failed to open CSV file"},
+		"csv-target-file": {ImportCmd{wOpt, "../testdata/csv.source", "csv", "../testdata/csv.schema", false, "://uri"}, "unable to parse file location"},
+		"csv-schema":      {ImportCmd{wOpt, "../testdata/csv.source", "csv", "../testdata/json.schema", false, tempDir + "/tgt"}, "expect 'key=value' but got '{'"},
+		"csv-source":      {ImportCmd{wOpt, "../testdata/json.source", "csv", "../testdata/csv.schema", false, tempDir + "/tgt"}, "failed to write [[{]] to parquet"},
+		"csv-target":      {ImportCmd{wOpt, "../testdata/csv.source", "csv", "../testdata/csv.schema", false, "s3://target"}, "failed to close Parquet file"},
+		"csv-int96":       {ImportCmd{wOpt, "../testdata/csv.source", "csv", "../testdata/int96-csv.schema", false, tempDir + "/tgt"}, "import does not support INT96 type"},
+
+		"json-schema-file":     {ImportCmd{wOpt, "does/not/exist", "json", "schema", false, tempDir + "/tgt"}, "failed to load schema from"},
+		"json-source-file":     {ImportCmd{wOpt, "file/does/not/exist", "json", "../testdata/json.schema", false, tempDir + "/tgt"}, "failed to load source from"},
+		"json-target-file":     {ImportCmd{wOpt, "../testdata/json.source", "json", "../testdata/json.schema", false, "://uri"}, "unable to parse file location"},
+		"json-schema":          {ImportCmd{wOpt, "../testdata/json.source", "json", "../testdata/csv.schema", false, tempDir + "/tgt"}, "is not a valid schema JSON"},
+		"json-source":          {ImportCmd{wOpt, "../testdata/csv.source", "json", "../testdata/json.schema", false, tempDir + "/tgt"}, "invalid JSON string:"},
+		"json-target":          {ImportCmd{wOpt, "../testdata/json.source", "json", "../testdata/json.schema", false, "s3://target"}, "failed to close Parquet file"},
+		"json-schema-mismatch": {ImportCmd{wOpt, "../testdata/json.bad-source", "json", "../testdata/json.schema", false, tempDir + "/tgt"}, "failed to close Parquet writer"},
+		"json-int96":           {ImportCmd{wOpt, "src", "json", "../testdata/int96-json.schema", false, tempDir + "/tgt"}, "import does not support INT96 type"},
+
+		"jsonl-schema-file":     {ImportCmd{wOpt, "does/not/exist", "jsonl", "schema", false, tempDir + "/tgt"}, "failed to load schema from"},
+		"jsonl-source-file":     {ImportCmd{wOpt, "file/does/not/exist", "jsonl", "../testdata/jsonl.schema", false, tempDir + "/tgt"}, "failed to open source file"},
+		"jsonl-target-file":     {ImportCmd{wOpt, "../testdata/jsonl.source", "jsonl", "../testdata/jsonl.schema", false, "://uri"}, "unable to parse file location"},
+		"jsonl-schema":          {ImportCmd{wOpt, "../testdata/jsonl.source", "jsonl", "../testdata/csv.schema", false, tempDir + "/tgt"}, "is not a valid schema JSON"},
+		"jsonl-source":          {ImportCmd{wOpt, "../testdata/csv.source", "jsonl", "../testdata/jsonl.schema", false, tempDir + "/tgt"}, "invalid JSON string:"},
+		"jsonl-target":          {ImportCmd{wOpt, "../testdata/jsonl.source", "jsonl", "../testdata/jsonl.schema", false, "s3://target"}, "failed to close Parquet file"},
+		"jsonl-schema-mismatch": {ImportCmd{wOpt, "../testdata/jsonl.source", "jsonl", "../testdata/json.schema", false, tempDir + "/tgt"}, "failed to close Parquet writer"},
+		"jsonl-int96":           {ImportCmd{wOpt, "src", "jsonl", "../testdata/int96-json.schema", false, tempDir + "/tgt"}, "import does not support INT96 type"},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.cmd.Run()
+			require.NotNil(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
+}
+
 func Test_ImportCmd_Run_CSV_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
@@ -38,7 +88,7 @@ func Test_ImportCmd_Run_CSV_good(t *testing.T) {
 }
 
 func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
@@ -65,7 +115,7 @@ func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
 }
 
 func Test_ImportCmd_Run_JSON_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
@@ -110,87 +160,8 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 	_ = os.Remove(testFile)
 }
 
-func Test_ImportCmd_Run_invalid_format(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Format = "random"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "is not a recognized source format")
-}
-
-func Test_ImportCmd_Run_invalid_compression(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	testFile := filepath.Join(tempDir, "import-json.parquet")
-	_ = os.Remove(testFile)
-	cmd := &ImportCmd{}
-	cmd.Source = "../testdata/json.source"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Format = "json"
-	cmd.URI = testFile
-	cmd.Compression = "foobar"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "not a valid CompressionCodec string")
-}
-
-func Test_ImportCmd_importCSV_bad_schema_file(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Schema = "file/does/not/exist"
-	cmd.Format = "csv"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to load schema from")
-}
-
-func Test_ImportCmd_importCSV_invalid_uri(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "csv"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Source = "../testdata/csv.source"
-	cmd.URI = "://uri"
-
-	err := cmd.importCSV()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unable to parse file location")
-}
-
-func Test_ImportCmd_importCSV_non_existent_source(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "csv"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Source = "file/does/not/exist"
-	cmd.URI = "s3://target"
-
-	// non-existent source
-	err := cmd.importCSV()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open CSV file")
-}
-
-func Test_ImportCmd_importCSV_fail_to_write(t *testing.T) {
-	// fail to write
-	cmd := &ImportCmd{}
-	cmd.Format = "csv"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Source = "../testdata/csv.source"
-	cmd.URI = "s3://target"
-	cmd.Compression = "LZ4"
-
-	err := cmd.importCSV()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close Parquet file")
-}
-
 func Test_ImportCmd_importCSV_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
@@ -210,94 +181,8 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	require.Equal(t, reader.GetNumRows(), int64(7))
 }
 
-func Test_ImportCmd_importJSON_bad_schema_file(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Schema = "file/does/not/exist"
-	cmd.Format = "json"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to load schema from")
-}
-
-func Test_ImportCmd_importJSON_invalid_uri(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Source = "../testdata/json.source"
-	cmd.URI = "://uri"
-
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unable to parse file location")
-}
-
-func Test_ImportCmd_importJSON_non_existent_source(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Source = "file/does/not/exist"
-	cmd.URI = "s3://target"
-
-	// non-existent source
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to load source from")
-}
-
-func Test_ImportCmd_importJSON_fail_to_write(t *testing.T) {
-	// fail to write
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Source = "../testdata/json.source"
-	cmd.URI = "s3://target"
-	cmd.Compression = "ZSTD"
-
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close Parquet file")
-}
-
-func Test_ImportCmd_importJSON_invalid_schema(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Source = "../testdata/json.source"
-	cmd.URI = "s3://target"
-
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "is not a valid schema JSON")
-}
-
-func Test_ImportCmd_importJSON_invalid_source(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Source = "../testdata/csv.source"
-	cmd.URI = "s3://target"
-
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "invalid JSON string")
-}
-
-func Test_ImportCmd_importJSON_schema_mismatch(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Source = "../testdata/json.bad-source"
-	cmd.URI = "s3://target"
-	cmd.Compression = "UNCOMPRESSED"
-
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close Parquet")
-}
-
 func Test_ImportCmd_importJSON_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
@@ -311,97 +196,10 @@ func Test_ImportCmd_importJSON_good(t *testing.T) {
 
 	err := cmd.importJSON()
 	require.Nil(t, err)
-}
-
-func Test_ImportCmd_importJSONL_bad_schema_file(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Schema = "file/does/not/exist"
-	cmd.Format = "jsonl"
-
-	err := cmd.Run()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to load schema from")
-}
-
-func Test_ImportCmd_importJSONL_invalid_uri(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/jsonl.schema"
-	cmd.Source = "../testdata/jsonl.source"
-	cmd.URI = "://uri"
-
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "unable to parse file location")
-}
-
-func Test_ImportCmd_importJSONL_non_existent_source(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/jsonl.schema"
-	cmd.Source = "file/does/not/exist"
-	cmd.URI = "s3://target"
-
-	// non-existent source
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open source file")
-}
-
-func Test_ImportCmd_importJSONL_fail_to_write(t *testing.T) {
-	// fail to write
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/jsonl.schema"
-	cmd.Source = "../testdata/jsonl.source"
-	cmd.URI = "s3://target"
-	cmd.Compression = "GZIP"
-
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close Parquet file")
-}
-
-func Test_ImportCmd_importJSONL_invalid_schema(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Source = "../testdata/jsonl.source"
-	cmd.URI = "s3://target"
-
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "is not a valid schema JSON")
-}
-
-func Test_ImportCmd_importJSONL_invalid_source(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/jsonl.schema"
-	cmd.Source = "../testdata/csv.source"
-	cmd.URI = "s3://target"
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "invalid JSON string")
-}
-
-func Test_ImportCmd_importJSONL_schema_mismatch(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/jsonl.schema"
-	cmd.Source = "../testdata/jsonl.bad-source"
-	cmd.URI = "s3://target"
-	cmd.Compression = "UNCOMPRESSED"
-
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to close Parquet")
 }
 
 func Test_ImportCmd_importJSONL_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
@@ -415,40 +213,4 @@ func Test_ImportCmd_importJSONL_good(t *testing.T) {
 
 	err := cmd.importJSONL()
 	require.Nil(t, err)
-}
-
-func Test_ImportCmd_importCSV_int96(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "csv"
-	cmd.URI = "/something/does/not/matter"
-	cmd.Schema = "../testdata/int96-csv.schema"
-	cmd.Source = "/something/does/not/matter"
-	cmd.Compression = "LZ4"
-	err := cmd.importCSV()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "import does not support INT96 type")
-}
-
-func Test_ImportCmd_importJSON_int96(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.URI = "/something/does/not/matter"
-	cmd.Schema = "../testdata/int96-json.schema"
-	cmd.Source = "/something/does/not/matter"
-	cmd.Compression = "LZ4"
-	err := cmd.importJSON()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "import does not support INT96 type")
-}
-
-func Test_ImportCmd_importJSONL_int96(t *testing.T) {
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.URI = "/something/does/not/matter"
-	cmd.Schema = "../testdata/int96-json.schema"
-	cmd.Source = "/something/does/not/matter"
-	cmd.Compression = "LZ4"
-	err := cmd.importJSONL()
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "import does not support INT96 type")
 }
