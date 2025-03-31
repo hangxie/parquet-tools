@@ -11,12 +11,13 @@ import (
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/hangxie/parquet-go/types"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
+	pschema "github.com/hangxie/parquet-tools/internal/schema"
 )
 
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
-	internal.ReadOption
+	pio.ReadOption
 	Base64      bool   `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96 bool   `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
@@ -51,12 +52,12 @@ type parquetMeta struct {
 
 // Run does actual meta job
 func (c MetaCmd) Run() error {
-	reader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
 
-	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return err
 	}
@@ -110,12 +111,12 @@ func (c MetaCmd) Run() error {
 			// reformat decimal values
 			var err error
 			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-			if columns[colIndex].MaxValue, err = internal.DecimalToFloat(field, maxValue); err != nil {
+			if columns[colIndex].MaxValue, err = pschema.DecimalToFloat(field, maxValue); err != nil {
 				return err
 			}
 
 			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-			if columns[colIndex].MinValue, err = internal.DecimalToFloat(field, minValue); err != nil {
+			if columns[colIndex].MinValue, err = pschema.DecimalToFloat(field, minValue); err != nil {
 				return err
 			}
 		}

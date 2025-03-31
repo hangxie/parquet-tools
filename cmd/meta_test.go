@@ -7,7 +7,7 @@ import (
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_retrieveValue_error(t *testing.T) {
@@ -94,7 +94,7 @@ func Test_retrieveValue_byte_array(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_error(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    MetaCmd
 		errMsg string
@@ -113,7 +113,7 @@ func Test_MetaCmd_Run_error(t *testing.T) {
 }
 
 func Test_MetaCmd_Run_good(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    MetaCmd
 		golden string

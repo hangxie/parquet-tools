@@ -6,7 +6,8 @@ import (
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/writer"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
+	pschema "github.com/hangxie/parquet-tools/internal/schema"
 )
 
 // current writer state
@@ -21,8 +22,8 @@ type TrunkWriter struct {
 
 // SplitCmd is a kong command for split
 type SplitCmd struct {
-	internal.ReadOption
-	internal.WriteOption
+	pio.ReadOption
+	pio.WriteOption
 	ReadPageSize int    `help:"Page size to read from Parquet." default:"1000"`
 	URI          string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FileCount    int64  `xor:"RecordCount" help:"Generate this number of result files with potential empty ones"`
@@ -34,14 +35,14 @@ type SplitCmd struct {
 }
 
 func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
-	parquetReader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
+	parquetReader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
 	}
 	defer func() {
 		_ = parquetReader.PFile.Close()
 	}()
-	schemaRoot, err := internal.NewSchemaTree(parquetReader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+	schemaRoot, err := pschema.NewSchemaTree(parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
 	}
@@ -68,7 +69,7 @@ func (c *SplitCmd) switchWriter() error {
 
 	var err error
 	c.current.targetFile = fmt.Sprintf(c.NameFormat, c.current.fileIndex)
-	c.current.writer, err = internal.NewGenericWriter(c.current.targetFile, c.WriteOption, c.current.schemaJSON)
+	c.current.writer, err = pio.NewGenericWriter(c.current.targetFile, c.WriteOption, c.current.schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.current.targetFile, err)
 	}

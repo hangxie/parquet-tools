@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_MergeCmd_Run_error(t *testing.T) {
-	rOpt := internal.ReadOption{}
-	wOpt := internal.WriteOption{Compression: "SNAPPY"}
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
@@ -28,7 +28,7 @@ func Test_MergeCmd_Run_error(t *testing.T) {
 		"source-not-parquet":  {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/not-a-parquet-file", "../testdata/not-a-parquet-file"}, tempDir + "/tgt", false}, "failed to read from"},
 		"source-diff-schema":  {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/empty.parquet"}, tempDir + "/tgt", false}, "does not have same schema"},
 		"target-file":         {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, "://uri", false}, "unable to parse file location"},
-		"target-compression":  {MergeCmd{rOpt, internal.WriteOption{}, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, tempDir + "/tgt", false}, "not a valid CompressionCode"},
+		"target-compression":  {MergeCmd{rOpt, pio.WriteOption{}, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, tempDir + "/tgt", false}, "not a valid CompressionCode"},
 		"target-write":        {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, "s3://target", false}, "failed to close"},
 		"int96":               {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/all-types.parquet", "../testdata/all-types.parquet"}, tempDir + "/tgt", true}, "type INT96 which is not supported"},
 	}
@@ -59,7 +59,7 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 
 	require.Nil(t, cmd.Run())
 
-	reader, _ := internal.NewParquetFileReader(cmd.URI, internal.ReadOption{})
+	reader, _ := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
 	rowCount := reader.GetNumRows()
 	require.Equal(t, rowCount, int64(6))
 
@@ -84,7 +84,7 @@ func Test_MergeCmd_Run_diff_top_level_tag(t *testing.T) {
 	err := cmd.Run()
 	require.Nil(t, err)
 
-	reader, _ := internal.NewParquetFileReader(cmd.URI, internal.ReadOption{})
+	reader, _ := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
 	rowCount := reader.GetNumRows()
 	require.Equal(t, rowCount, int64(6))
 

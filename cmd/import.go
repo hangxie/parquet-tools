@@ -13,12 +13,12 @@ import (
 
 	parquetSource "github.com/hangxie/parquet-go/source"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 // ImportCmd is a kong command for import
 type ImportCmd struct {
-	internal.WriteOption
+	pio.WriteOption
 	Source     string `required:"" short:"s" predictor:"file" help:"Source file name."`
 	Format     string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
 	Schema     string `required:"" short:"m" predictor:"file" help:"Schema file name."`
@@ -80,7 +80,7 @@ func (c ImportCmd) importCSV() error {
 	}()
 	csvReader := csv.NewReader(csvFile)
 
-	parquetWriter, err := internal.NewCSVWriter(c.URI, c.WriteOption, schema)
+	parquetWriter, err := pio.NewCSVWriter(c.URI, c.WriteOption, schema)
 	if err != nil {
 		return fmt.Errorf("failed to create CSV writer: %w", err)
 	}
@@ -134,7 +134,7 @@ func (c ImportCmd) importJSON() error {
 		return fmt.Errorf("invalid JSON string: %s", string(jsonData))
 	}
 
-	parquetWriter, err := internal.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
+	parquetWriter, err := pio.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
@@ -177,7 +177,7 @@ func (c ImportCmd) importJSONL() error {
 	scanner := bufio.NewScanner(jsonlFile)
 	scanner.Split(bufio.ScanLines)
 
-	parquetWriter, err := internal.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
+	parquetWriter, err := pio.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}

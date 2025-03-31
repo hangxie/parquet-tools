@@ -5,11 +5,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_CatCmd_Run_error(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	fileName := "../testdata/all-types.parquet"
 	testCases := map[string]struct {
 		cmd    CatCmd
@@ -41,7 +41,7 @@ func Test_CatCmd_Run_error(t *testing.T) {
 }
 
 func Test_CatCmd_Run_good(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    CatCmd
 		golden string
