@@ -5,11 +5,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_SchemaCmd_Run_error(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    SchemaCmd
 		errMsg string
@@ -33,7 +33,7 @@ func Test_SchemaCmd_Run_error(t *testing.T) {
 }
 
 func Test_SchemaCmd_Run_good(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    SchemaCmd
 		golden string

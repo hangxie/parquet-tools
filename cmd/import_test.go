@@ -8,11 +8,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
+	pschema "github.com/hangxie/parquet-tools/internal/schema"
 )
 
 func Test_ImportCmd_Run_error(t *testing.T) {
-	wOpt := internal.WriteOption{Compression: "SNAPPY"}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
@@ -23,7 +24,7 @@ func Test_ImportCmd_Run_error(t *testing.T) {
 		errMsg string
 	}{
 		"write-format":      {ImportCmd{wOpt, "src", "random", "../testdata/csv.schema", false, tempDir + "/tgt"}, "is not a recognized source format"},
-		"write-compression": {ImportCmd{internal.WriteOption{Compression: "foobar"}, "../testdata/json.source", "json", "../testdata/json.schema", false, tempDir + "/tgt"}, "not a valid CompressionCodec string"},
+		"write-compression": {ImportCmd{pio.WriteOption{Compression: "foobar"}, "../testdata/json.source", "json", "../testdata/json.schema", false, tempDir + "/tgt"}, "not a valid CompressionCodec string"},
 
 		"csv-schema-file": {ImportCmd{wOpt, "does/not/exist", "csv", "schema", false, tempDir + "/tgt"}, "failed to load schema from"},
 		"csv-source-file": {ImportCmd{wOpt, "file/does/not/exist", "csv", "../testdata/csv.schema", false, tempDir + "/tgt"}, "failed to open CSV file"},
@@ -145,9 +146,9 @@ func Test_ImportCmd_Run_JSON_good(t *testing.T) {
 		Fields []interface{}
 	}
 	sourceSchemaBuf, _ := os.ReadFile(cmd.Schema)
-	reader, err := internal.NewParquetFileReader(testFile, internal.ReadOption{})
+	reader, err := pio.NewParquetFileReader(testFile, pio.ReadOption{})
 	require.Nil(t, err)
-	schema, err := internal.NewSchemaTree(reader, internal.SchemaOption{})
+	schema, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{})
 	require.Nil(t, err)
 
 	var sourceSchema jsonSchema
@@ -176,7 +177,7 @@ func Test_ImportCmd_importCSV_good(t *testing.T) {
 	err := cmd.importCSV()
 	require.Nil(t, err)
 
-	reader, err := internal.NewParquetFileReader(cmd.URI, internal.ReadOption{})
+	reader, err := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
 	require.Nil(t, err)
 	require.Equal(t, reader.GetNumRows(), int64(7))
 }

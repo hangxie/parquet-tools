@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
+	pschema "github.com/hangxie/parquet-tools/internal/schema"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
-	internal.ReadOption
+	pio.ReadOption
 	Format      string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	PargoPrefix string `help:"remove this prefix from field names." default:""`
@@ -25,7 +26,7 @@ type SchemaCmd struct {
 
 // Run does actual schema job
 func (c SchemaCmd) Run() error {
-	reader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -33,7 +34,7 @@ func (c SchemaCmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	schemaRoot, err := internal.NewSchemaTree(reader, internal.SchemaOption{FailOnInt96: false})
+	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false})
 	if err != nil {
 		return err
 	}
@@ -65,7 +66,7 @@ func (c SchemaCmd) Run() error {
 	return nil
 }
 
-func removePargoPrefixFromSchema(schemaRoot *internal.SchemaNode, pargoPrefix string) {
+func removePargoPrefixFromSchema(schemaRoot *pschema.SchemaNode, pargoPrefix string) {
 	schemaRoot.Name = strings.TrimPrefix(schemaRoot.Name, pargoPrefix)
 	for i := range schemaRoot.Children {
 		removePargoPrefixFromSchema(schemaRoot.Children[i], pargoPrefix)

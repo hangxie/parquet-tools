@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_SizeCmd_Run_error(t *testing.T) {
@@ -27,7 +27,7 @@ func Test_SizeCmd_Run_error(t *testing.T) {
 }
 
 func Test_SizeCmd_Run_good(t *testing.T) {
-	rOpt := internal.ReadOption{}
+	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    SizeCmd
 		stdout string

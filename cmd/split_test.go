@@ -8,12 +8,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_SplitCmd_Run_error(t *testing.T) {
-	rOpt := internal.ReadOption{}
-	wOpt := internal.WriteOption{Compression: "SNAPPY"}
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
 	tw := TrunkWriter{}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
 	defer func() {
@@ -58,7 +58,7 @@ func Test_SplitCmd_Run_good_with_recordcount(t *testing.T) {
 	err := cmd.Run()
 	require.Nil(t, err)
 	for i := 0; i < 4; i++ {
-		reader, err := internal.NewParquetFileReader(fmt.Sprintf(cmd.NameFormat, i), internal.ReadOption{})
+		reader, err := pio.NewParquetFileReader(fmt.Sprintf(cmd.NameFormat, i), pio.ReadOption{})
 		require.Nil(t, err)
 		require.NotNil(t, reader)
 		if i == 3 {
@@ -88,7 +88,7 @@ func Test_SplitCmd_Run_good_with_filecount(t *testing.T) {
 	err := cmd.Run()
 	require.Nil(t, err)
 	for i := 0; i < 3; i++ {
-		reader, err := internal.NewParquetFileReader(fmt.Sprintf(cmd.NameFormat, i), internal.ReadOption{})
+		reader, err := pio.NewParquetFileReader(fmt.Sprintf(cmd.NameFormat, i), pio.ReadOption{})
 		require.Nil(t, err)
 		require.NotNil(t, reader)
 		if i == 0 {

@@ -10,12 +10,14 @@ import (
 
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/stretchr/testify/require"
+
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_GoStructNode_String_good(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/all-types.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -28,16 +30,16 @@ func Test_GoStructNode_String_good(t *testing.T) {
 	typeStr, err := goStructNode{*schemaRoot}.String()
 	require.Nil(t, err)
 
-	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
+	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
 	// golden file has prefix of "type <root node name>"
 	prefix := fmt.Sprintf("type %s ", schemaRoot.Name)
 	require.Equal(t, string(expected), prefix+typeStr+"\n")
 }
 
 func Test_GoStructNode_String_composite_map_key(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/map-value-map.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/map-value-map.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -56,9 +58,9 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 }
 
 func Test_GoStructNode_String_composite_map_value(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/map-composite-value.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/map-composite-value.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -74,9 +76,9 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 }
 
 func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/good.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/good.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -94,9 +96,9 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 }
 
 func Test_GoStructNode_String_invalid_list(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/reinterpret-list.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/reinterpret-list.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -115,9 +117,9 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 }
 
 func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/reinterpret-map-key.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/reinterpret-map-key.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -136,9 +138,9 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 }
 
 func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/reinterpret-map-key.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/reinterpret-map-key.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -156,9 +158,9 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 }
 
 func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/list-of-list.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/list-of-list.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -174,7 +176,7 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 }
 
 func Test_go_struct_list_variant(t *testing.T) {
-	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
+	buf, err := os.ReadFile("../../testdata/golden/schema-list-variants-raw.json")
 	require.Nil(t, err)
 
 	se := SchemaNode{}
@@ -184,7 +186,7 @@ func Test_go_struct_list_variant(t *testing.T) {
 	actual, err := schemaRoot.String()
 	require.Nil(t, err)
 
-	buf, err = os.ReadFile("../testdata/golden/schema-list-variants-go.txt")
+	buf, err = os.ReadFile("../../testdata/golden/schema-list-variants-go.txt")
 	require.Nil(t, err)
 	// un-gofmt ...
 	expected := strings.ReplaceAll(string(buf), "\t", "")

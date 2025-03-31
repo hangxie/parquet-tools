@@ -3,18 +3,18 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 // RowCountCmd is a kong command for rowcount
 type RowCountCmd struct {
-	internal.ReadOption
+	pio.ReadOption
 	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
 }
 
 // Run does actual rowcount job
 func (c RowCountCmd) Run() error {
-	reader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}

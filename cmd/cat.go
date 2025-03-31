@@ -16,12 +16,13 @@ import (
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/types"
 
-	"github.com/hangxie/parquet-tools/internal"
+	pio "github.com/hangxie/parquet-tools/internal/io"
+	pschema "github.com/hangxie/parquet-tools/internal/schema"
 )
 
 // CatCmd is a kong command for cat
 type CatCmd struct {
-	internal.ReadOption
+	pio.ReadOption
 	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	SkipPageSize int64   `help:"Page size to skip rows." default:"100000"`
 	Limit        uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
@@ -79,7 +80,7 @@ func (c CatCmd) Run() error {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
-	fileReader, err := internal.NewParquetFileReader(c.URI, c.ReadOption)
+	fileReader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -90,7 +91,7 @@ func (c CatCmd) Run() error {
 	return c.outputRows(fileReader)
 }
 
-func (c CatCmd) outputHeader(schemaRoot *internal.SchemaNode) ([]string, error) {
+func (c CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	if c.Format != "csv" && c.Format != "tsv" {
 		// only CSV and TSV need header
 		return nil, nil
@@ -138,8 +139,8 @@ func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
 	return nil
 }
 
-func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, map[string]internal.ReinterpretField, error) {
-	schemaRoot, err := internal.NewSchemaTree(fileReader, internal.SchemaOption{FailOnInt96: c.FailOnInt96})
+func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, map[string]pschema.ReinterpretField, error) {
+	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -240,7 +241,7 @@ func valuesToCSV(values []string, delimiter rune) (string, error) {
 	return buf.String(), nil
 }
 
-func rowToStruct(row interface{}, reinterpretFields map[string]internal.ReinterpretField) (interface{}, error) {
+func rowToStruct(row interface{}, reinterpretFields map[string]pschema.ReinterpretField) (interface{}, error) {
 	rowValue := reflect.ValueOf(&row).Elem()
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
@@ -270,7 +271,7 @@ func rowToStruct(row interface{}, reinterpretFields map[string]internal.Reinterp
 	return iface, nil
 }
 
-func encodeNestedBinaryString(value reflect.Value, locator []string, attr internal.ReinterpretField) {
+func encodeNestedBinaryString(value reflect.Value, locator []string, attr pschema.ReinterpretField) {
 	// dereference pointer
 	if value.Kind() == reflect.Ptr {
 		if !value.IsNil() {
@@ -307,14 +308,14 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr intern
 	case reflect.Struct:
 		encodeNestedBinaryString(value.FieldByName(locator[0]), locator[1:], attr)
 	case reflect.String:
-		buf := internal.StringToBytes(attr, value.String())
+		buf := pschema.StringToBytes(attr, value.String())
 		value.SetString(base64.StdEncoding.EncodeToString(buf))
 	default:
 		// do nothing
 	}
 }
 
-func reinterpretNestedFields(iface *interface{}, locator []string, attr internal.ReinterpretField) {
+func reinterpretNestedFields(iface *interface{}, locator []string, attr pschema.ReinterpretField) {
 	if iface == nil || *iface == nil {
 		return
 	}
@@ -371,7 +372,7 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr internal
 	}
 }
 
-func reinterpretScalar(iface *interface{}, attr internal.ReinterpretField) {
+func reinterpretScalar(iface *interface{}, attr pschema.ReinterpretField) {
 	switch attr.ParquetType {
 	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 		switch v := (*iface).(type) {

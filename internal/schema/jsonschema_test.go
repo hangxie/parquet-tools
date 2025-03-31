@@ -6,12 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 func Test_JSONSchemaNode_Schema_good(t *testing.T) {
-	option := ReadOption{}
-	uri := "../testdata/all-types.parquet"
-	pr, err := NewParquetFileReader(uri, option)
+	option := pio.ReadOption{}
+	uri := "../../testdata/all-types.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
@@ -25,6 +27,6 @@ func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 	require.Nil(t, err)
 
 	actual, _ := json.MarshalIndent(schema, "", "  ")
-	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-json.json")
+	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-json.json")
 	require.Equal(t, string(expected), string(actual)+"\n")
 }

@@ -201,7 +201,7 @@ func Test_NewParquetFileReader_local_non_existent_file(t *testing.T) {
 
 func Test_NewParquetFileReader_local_not_parquet(t *testing.T) {
 	option := ReadOption{}
-	uri := "../testdata/not-a-parquet-file"
+	uri := "../../testdata/not-a-parquet-file"
 	_, err := NewParquetFileReader(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "invalid argument")
@@ -209,7 +209,7 @@ func Test_NewParquetFileReader_local_not_parquet(t *testing.T) {
 
 func Test_NewParquetFileReader_local_good(t *testing.T) {
 	option := ReadOption{}
-	uri := "../testdata/good.parquet"
+	uri := "../../testdata/good.parquet"
 	pr, err := NewParquetFileReader(uri, option)
 	require.Nil(t, err)
 	require.NotNil(t, pr)
@@ -309,7 +309,7 @@ func Test_NewParquetFileWriter_invalid_uri_scheme(t *testing.T) {
 
 func Test_NewParquetFileWriter_local_not_a_file(t *testing.T) {
 	option := WriteOption{}
-	uri := "../testdata/"
+	uri := "../../testdata/"
 	_, err := NewParquetFileWriter(uri, option)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "is a directory")
