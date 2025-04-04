@@ -33,13 +33,25 @@ jobs:
         run: make build
       - name: Validate README examples
         run: |
+          echo "==> local file ..."
           test "$(./build/parquet-tools row-count file://testdata/good.parquet)" == '3'
           test "$(./build/parquet-tools row-count file://./testdata/good.parquet)" == '3'
+
+          echo "==> AWS S3 ..."
           test "$(./build/parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0)" == '2405462'
+
+          echo "==> Azure blob storage ..."
           test "$(./build/parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet)" == '6582726'
+
+          echo "==> Google cloud storage ..."
           test "$(./build/parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet)" == '50'
+
+          echo "==> HTTP endpoint ..."
+          test "$(./build/parquet-tools size https://github.com/hangxie/parquet-tools/raw/refs/heads/main/testdata/good.parquet)" == "588"
           test "$(./build/parquet-tools row-count https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet)" == '6582726'
           test "$(./build/parquet-tools size -j https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet)" == '{"Raw":4632041101}'
+
+          echo "==> HDFS endpoint ..."
           docker run -dq --rm --name hadoop -p 9000:9000 -p 9866:9866 hangxie/hadoop-all-in-one && sleep 10
           docker exec hadoop hdfs dfs -mkdir /temp && sleep 3
           ./build/parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
