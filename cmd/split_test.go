@@ -23,10 +23,10 @@ func Test_SplitCmd_Run_error(t *testing.T) {
 		cmd    SplitCmd
 		errMsg string
 	}{
-		"page-size":   {SplitCmd{rOpt, wOpt, 0, "", 0, 0, false, "", tw}, "invalid read page size"},
-		"no-count":    {SplitCmd{rOpt, wOpt, 1000, "", 0, 0, false, "", tw}, "needs either --file-count or --record-count"},
-		"sorce-file":  {SplitCmd{rOpt, wOpt, 1000, "does/not/exist", 0, 10, false, tempDir + "/%d.parquet", tw}, "failed to open"},
-		"int96":       {SplitCmd{rOpt, wOpt, 1000, "../testdata/all-types.parquet", 0, 10, true, tempDir + "/%d.parquet", tw}, "has type INT96 which is not supporte"},
+		"page-size":   {SplitCmd{rOpt, wOpt, 0, "", 0, 0, false, "dummy", tw}, "invalid read page size"},
+		"no-count":    {SplitCmd{rOpt, wOpt, 1000, "", 0, 0, false, "dummy", tw}, "needs either --file-count or --record-count"},
+		"sorce-file":  {SplitCmd{rOpt, wOpt, 1000, "does/not/exist", 0, 10, false, "dummy", tw}, "failed to open"},
+		"int96":       {SplitCmd{rOpt, wOpt, 1000, "../testdata/all-types.parquet", 0, 10, true, "dummy", tw}, "has type INT96 which is not supporte"},
 		"target-file": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 2, false, "dummy://%d.parquet", tw}, "unknown location scheme"},
 		"first-write": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 1, false, "s3://target/%d.parquet", tw}, "failed to close"},
 		"last-write":  {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 3, false, "s3://target/%d.parquet", tw}, "failed to close"},
