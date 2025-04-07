@@ -43,50 +43,33 @@ func Test_MergeCmd_Run_error(t *testing.T) {
 }
 
 func Test_MergeCmd_Run_good(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	testCases := map[string]struct {
+		cmd      MergeCmd
+		rowCount int64
+	}{
+		"good":    {MergeCmd{rOpt, wOpt, 10, []string{"good.parquet", "good.parquet"}, "", false}, 6},
+		"empty":   {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false}, 0},
+		"top-tag": {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false}, 6},
+	}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
 
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/good.parquet",
-		"../testdata/good.parquet",
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			for i := range tc.cmd.Source {
+				tc.cmd.Source[i] = filepath.Join("..", "testdata", tc.cmd.Source[i])
+			}
+			tc.cmd.URI = filepath.Join(tempDir, name+".parquet")
+			err := tc.cmd.Run()
+			require.Nil(t, err)
+
+			reader, _ := pio.NewParquetFileReader(tc.cmd.URI, rOpt)
+			rowCount := reader.GetNumRows()
+			require.Equal(t, rowCount, tc.rowCount)
+		})
 	}
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "SNAPPY"
-
-	require.Nil(t, cmd.Run())
-
-	reader, _ := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
-	rowCount := reader.GetNumRows()
-	require.Equal(t, rowCount, int64(6))
-
-	_ = os.Remove(cmd.URI)
-}
-
-func Test_MergeCmd_Run_diff_top_level_tag(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &MergeCmd{}
-	cmd.ReadPageSize = 10
-	cmd.Source = []string{
-		"../testdata/top-level-tag1.parquet",
-		"../testdata/top-level-tag2.parquet",
-	}
-	cmd.URI = filepath.Join(tempDir, "top-level-tag.parquet")
-	cmd.Compression = "SNAPPY"
-
-	err := cmd.Run()
-	require.Nil(t, err)
-
-	reader, _ := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
-	rowCount := reader.GetNumRows()
-	require.Equal(t, rowCount, int64(6))
-
-	_ = os.Remove(cmd.URI)
 }
