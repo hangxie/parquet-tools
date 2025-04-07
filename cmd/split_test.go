@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -42,62 +41,62 @@ func Test_SplitCmd_Run_error(t *testing.T) {
 	}
 }
 
-func Test_SplitCmd_Run_good_with_recordcount(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &SplitCmd{}
-	cmd.URI = "../testdata/all-types.parquet"
-	cmd.WriteOption.Compression = "SNAPPY"
-	cmd.ReadPageSize = 1000
-	cmd.RecordCount = 3
-	cmd.NameFormat = filepath.Join(tempDir, "unit-test-%d.parquet")
-
-	err := cmd.Run()
-	require.Nil(t, err)
-	for i := 0; i < 4; i++ {
-		reader, err := pio.NewParquetFileReader(fmt.Sprintf(cmd.NameFormat, i), pio.ReadOption{})
-		require.Nil(t, err)
-		require.NotNil(t, reader)
-		if i == 3 {
-			// last file contains 1 record
-			require.Equal(t, reader.GetNumRows(), int64(1))
-		} else {
-			/// all other files contains 3 records
-			require.Equal(t, reader.GetNumRows(), int64(3))
-		}
-		_ = reader.PFile.Close()
+func Test_SplitCmd_Run_good(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	testCases := map[string]struct {
+		cmd    SplitCmd
+		result map[string]int64
+	}{
+		"recordcount": {
+			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 0, 3, false, "ut-%d.parquet", TrunkWriter{}},
+			map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 3, "ut-2.parquet": 3, "ut-3.parquet": 1},
+		},
+		"fileount": {
+			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 3, 0, false, "ut-%d.parquet", TrunkWriter{}},
+			map[string]int64{"ut-0.parquet": 4, "ut-1.parquet": 3, "ut-2.parquet": 3},
+		},
+		"one-result-recordcount": {
+			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 0, 20, false, "ut-%d.parquet", TrunkWriter{}},
+			map[string]int64{"ut-0.parquet": 10},
+		},
+		"one-result-filecount": {
+			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 1, 0, false, "ut-%d.parquet", TrunkWriter{}},
+			map[string]int64{"ut-0.parquet": 10},
+		},
+		"empty-recordcount": {
+			SplitCmd{rOpt, wOpt, 1000, "empty.parquet", 0, 3, false, "ut-%d.parquet", TrunkWriter{}},
+			map[string]int64{},
+		},
+		"empty-filecount": {
+			SplitCmd{rOpt, wOpt, 1000, "empty.parquet", 3, 0, false, "ut-%d.parquet", TrunkWriter{}},
+			map[string]int64{},
+		},
 	}
-}
 
-func Test_SplitCmd_Run_good_with_filecount(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
+			defer func() {
+				_ = os.RemoveAll(tempDir)
+			}()
 
-	cmd := &SplitCmd{}
-	cmd.URI = "../testdata/all-types.parquet"
-	cmd.WriteOption.Compression = "SNAPPY"
-	cmd.ReadPageSize = 1000
-	cmd.FileCount = 3
-	cmd.NameFormat = filepath.Join(tempDir, "unit-test-%d.parquet")
+			tc.cmd.URI = filepath.Join("../testdata", tc.cmd.URI)
+			tc.cmd.NameFormat = filepath.Join(tempDir, tc.cmd.NameFormat)
+			err := tc.cmd.Run()
+			require.Nil(t, err)
+			files, _ := os.ReadDir(tempDir)
+			require.Equal(t, len(files), len(tc.result))
 
-	err := cmd.Run()
-	require.Nil(t, err)
-	for i := 0; i < 3; i++ {
-		reader, err := pio.NewParquetFileReader(fmt.Sprintf(cmd.NameFormat, i), pio.ReadOption{})
-		require.Nil(t, err)
-		require.NotNil(t, reader)
-		if i == 0 {
-			// first file contains 4 records
-			require.Equal(t, reader.GetNumRows(), int64(4))
-		} else {
-			/// all other files contains 3 records
-			require.Equal(t, reader.GetNumRows(), int64(3))
-		}
-		_ = reader.PFile.Close()
+			for _, file := range files {
+				rowCount, ok := tc.result[file.Name()]
+				require.True(t, ok)
+				reader, err := pio.NewParquetFileReader(filepath.Join(tempDir, file.Name()), rOpt)
+				require.Nil(t, err)
+				require.NotNil(t, reader)
+				require.Equal(t, reader.GetNumRows(), rowCount)
+				_ = reader.PFile.Close()
+			}
+		})
 	}
 }

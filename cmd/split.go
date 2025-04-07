@@ -50,7 +50,11 @@ func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
 
 	if c.FileCount != 0 {
 		c.RecordCount = parquetReader.GetNumRows() / c.FileCount
-		c.current.paddingCount = parquetReader.GetNumRows() % c.RecordCount
+		if c.RecordCount == 0 {
+			c.current.paddingCount = parquetReader.GetNumRows()
+		} else {
+			c.current.paddingCount = parquetReader.GetNumRows() % c.RecordCount
+		}
 	}
 
 	return parquetReader, nil
