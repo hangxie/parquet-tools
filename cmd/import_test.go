@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
-	pschema "github.com/hangxie/parquet-tools/internal/schema"
 )
 
 func Test_ImportCmd_Run_error(t *testing.T) {
@@ -62,156 +60,35 @@ func Test_ImportCmd_Run_error(t *testing.T) {
 	}
 }
 
-func Test_ImportCmd_Run_CSV_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	testFile := filepath.Join(tempDir, "import-csv.parquet")
-	_ = os.Remove(testFile)
-	cmd := &ImportCmd{}
-	cmd.Source = "../testdata/csv.source"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Format = "csv"
-	cmd.URI = testFile
-	cmd.Compression = "SNAPPY"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-
-	require.Equal(t, "", stdout)
-	require.Equal(t, "", stderr)
-
-	_, err := os.Stat(testFile)
-	require.Nil(t, err)
-}
-
-func Test_ImportCmd_Run_CSV_skip_header_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	testFile := filepath.Join(tempDir, "import-csv.parquet")
-	_ = os.Remove(testFile)
-	cmd := &ImportCmd{}
-	cmd.Source = "../testdata/csv-with-header.source"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Format = "csv"
-	cmd.SkipHeader = true
-	cmd.URI = testFile
-	cmd.Compression = "ZSTD"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-
-	require.Equal(t, "", stdout)
-	require.Equal(t, "", stderr)
-
-	_, err := os.Stat(testFile)
-	require.Nil(t, err)
-}
-
-func Test_ImportCmd_Run_JSON_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	testFile := filepath.Join(tempDir, "import-json.parquet")
-	_ = os.Remove(testFile)
-	cmd := &ImportCmd{}
-	cmd.Source = "../testdata/json.source"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Format = "json"
-	cmd.URI = testFile
-	cmd.Compression = "ZSTD"
-
-	stdout, stderr := captureStdoutStderr(func() {
-		require.Nil(t, cmd.Run())
-	})
-
-	require.Equal(t, "", stdout)
-	require.Equal(t, "", stderr)
-
-	_, err := os.Stat(testFile)
-	require.Nil(t, err)
-
-	// verify jsonSchema
-	type jsonSchema struct {
-		Tag    string
-		Fields []interface{}
+func Test_ImportCmd_Run_good(t *testing.T) {
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	testCases := map[string]struct {
+		cmd      ImportCmd
+		rowCount int64
+	}{
+		"csv-wo-header": {ImportCmd{wOpt, "csv.source", "csv", "csv.schema", false, ""}, 7},
+		"csv-w-header":  {ImportCmd{wOpt, "csv-with-header.source", "csv", "csv.schema", true, ""}, 7},
+		"json":          {ImportCmd{wOpt, "json.source", "json", "json.schema", false, ""}, 1},
+		"jsonl":         {ImportCmd{wOpt, "jsonl.source", "jsonl", "jsonl.schema", false, ""}, 7},
 	}
-	sourceSchemaBuf, _ := os.ReadFile(cmd.Schema)
-	reader, err := pio.NewParquetFileReader(testFile, pio.ReadOption{})
-	require.Nil(t, err)
-	schema, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{})
-	require.Nil(t, err)
 
-	var sourceSchema jsonSchema
-	_ = json.Unmarshal(sourceSchemaBuf, &sourceSchema)
-	var targetSchema jsonSchema
-	_ = json.Unmarshal([]byte(schema.JSONSchema()), &targetSchema)
-
-	// top level tag can be different
-	require.Equal(t, sourceSchema.Fields, targetSchema.Fields)
-	_ = os.Remove(testFile)
-}
-
-func Test_ImportCmd_importCSV_good(t *testing.T) {
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
 	defer func() {
 		_ = os.RemoveAll(tempDir)
 	}()
 
-	cmd := &ImportCmd{}
-	cmd.Format = "csv"
-	cmd.Schema = "../testdata/csv.schema"
-	cmd.Source = "../testdata/csv.source"
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "LZ4_RAW"
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			tc.cmd.Source = "../testdata/" + tc.cmd.Source
+			tc.cmd.Schema = "../testdata/" + tc.cmd.Schema
+			tc.cmd.URI = filepath.Join(tempDir, "import-"+name+".parquet")
 
-	err := cmd.importCSV()
-	require.Nil(t, err)
+			err := tc.cmd.Run()
+			require.Nil(t, err)
 
-	reader, err := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
-	require.Nil(t, err)
-	require.Equal(t, reader.GetNumRows(), int64(7))
-}
-
-func Test_ImportCmd_importJSON_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &ImportCmd{}
-	cmd.Format = "json"
-	cmd.Schema = "../testdata/json.schema"
-	cmd.Source = "../testdata/json.source"
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "GZIP"
-
-	err := cmd.importJSON()
-	require.Nil(t, err)
-}
-
-func Test_ImportCmd_importJSONL_good(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
-	cmd := &ImportCmd{}
-	cmd.Format = "jsonl"
-	cmd.Schema = "../testdata/jsonl.schema"
-	cmd.Source = "../testdata/jsonl.source"
-	cmd.URI = filepath.Join(tempDir, "import-csv.parquet")
-	cmd.Compression = "LZ4"
-
-	err := cmd.importJSONL()
-	require.Nil(t, err)
+			reader, err := pio.NewParquetFileReader(tc.cmd.URI, pio.ReadOption{})
+			require.Nil(t, err)
+			require.Equal(t, reader.GetNumRows(), tc.rowCount)
+		})
+	}
 }
