@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/kong v1.10.0
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.13
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.79.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.79.2
 	github.com/hangxie/parquet-go v1.8.3
 	github.com/hangxie/parquet-go-source v1.0.0
 	github.com/posener/complete v1.2.3
