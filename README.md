@@ -162,9 +162,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.25.12
+v1.28.0
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.25.12
+v1.28.0
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -174,20 +174,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.25.12_amd64.deb
-Preparing to unpack parquet-tools_1.25.12_amd64.deb ...
-Unpacking parquet-tools (1.25.12) ...
-Setting up parquet-tools (1.25.12) ...
+$ sudo dpkg -i parquet-tools_1.28.0_amd64.deb
+Preparing to unpack parquet-tools_1.28.0_amd64.deb ...
+Unpacking parquet-tools (1.28.0) ...
+Setting up parquet-tools (1.28.0) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.25.12-1.x86_64.rpm
-Verifying...                          ################################# [100%]
-Preparing...                          ################################# [100%]
+$ sudo rpm -Uhv parquet-tools-1.28.0-1.x86_64.rpm
+Verifying...                         ################################# [100%]
+Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.25.12-1          ################################# [100%]
+   1:parquet-tools-1.28.0-1          ################################# [100%]
 ```
 
 ## Usage
@@ -911,7 +911,7 @@ $ parquet-tools row-count 3.parquet
 
 ```bash
 $ parquet-tools version
-v1.25.12
+v1.28.0
 ```
 
 #### Print All Information
@@ -920,8 +920,8 @@ v1.25.12
 
 ```bash
 $ parquet-tools version -a
-v1.25.12
-2024-12-30T03:24:47Z
+v1.28.0
+2025-04-04T16:27:10Z
 Homebrew
 ```
 
@@ -929,14 +929,14 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.25.12","BuildTime":"2024-12-30T03:24:47Z"}
+{"Version":"v1.28.0","BuildTime":"2025-04-04T16:27:10Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.25.12"}
+{"Version":"v1.28.0"}
 ```
 
 ## Credit
