@@ -171,6 +171,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 	s3URL := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0"
 	gcsURL := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
 	azblobURL := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
+	httpURL := "https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet"
 	testCases := map[string]struct {
 		uri    string
 		option ReadOption
@@ -190,7 +191,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 		"azblob-good":            {azblobURL, ReadOption{Anonymous: true}, ""},
 		"http-bad-url":           {"https://no-such-host.tld/", rOpt, "no such host"},
 		"http-no-range-support":  {"https://www.google.com/", rOpt, "does not support range"},
-		"http-good":              {"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-01.parquet", rOpt, ""},
+		"http-good":              {httpURL, rOpt, ""},
 		"hdfs-failed":            {"hdfs://localhost:1/temp/good.parquet", rOpt, "connection refused"},
 	}
 
