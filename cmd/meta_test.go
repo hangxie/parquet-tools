@@ -99,7 +99,7 @@ func Test_MetaCmd_Run_error(t *testing.T) {
 		cmd    MetaCmd
 		errMsg string
 	}{
-		"non-existent": {MetaCmd{rOpt, false, "file/does/not/exist", false, ""}, "failed to open local file"},
+		"non-existent": {MetaCmd{rOpt, false, "file/does/not/exist", false, ""}, "no such file or directory"},
 		"no-int96":     {MetaCmd{rOpt, false, "../testdata/all-types.parquet", true, ""}, "type INT96 which is not supported"},
 	}
 

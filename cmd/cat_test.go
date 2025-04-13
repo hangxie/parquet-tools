@@ -15,7 +15,7 @@ func Test_CatCmd_Run_error(t *testing.T) {
 		cmd    CatCmd
 		errMsg string
 	}{
-		"non-existent-file":      {CatCmd{rOpt, 0, 10, 10, 10, 1.0, "json", false, "file/does/not/exist", false, ""}, "failed to open local"},
+		"non-existent-file":      {CatCmd{rOpt, 0, 10, 10, 10, 1.0, "json", false, "file/does/not/exist", false, ""}, "no such file or directory"},
 		"invalid-read-page-size": {CatCmd{rOpt, 0, 10, 10, 0, 0.5, "json", false, "does/not/matter", false, ""}, "invalid read page size"},
 		"invalid-skip-size":      {CatCmd{rOpt, -10, 10, 10, 10, 0.5, "json", false, "does/not/matter", false, ""}, "invalid skip -10"},
 		"invalid-skip-page-size": {CatCmd{rOpt, 10, 0, 10, 10, 0.5, "json", false, "does/not/matter", false, ""}, "invalid skip page size"},

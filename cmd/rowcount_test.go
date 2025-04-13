@@ -12,7 +12,7 @@ func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 
 	err := cmd.Run()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to open local file")
+	require.Contains(t, err.Error(), "no such file or directory")
 }
 
 func Test_RowCountCmd_Run_good(t *testing.T) {
