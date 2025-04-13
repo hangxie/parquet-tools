@@ -30,7 +30,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 		"s3-wrong-version":       {s3URL, ReadOption{ObjectVersion: "random-version-id", Anonymous: true}, "https response error StatusCode: 400"},
 		"gcs-no-permission":      {gcsURL, rOpt, "failed to create GCS client"},
 		"gcs-good":               {gcsURL, ReadOption{Anonymous: true}, ""},
-		"azblob-no-permission":   {azblobURL, rOpt, "failed to open Azure blob object"},
+		"azblob-no-permission":   {azblobURL, rOpt, "Server failed to authenticate the request"},
 		"azblob-good":            {azblobURL, ReadOption{Anonymous: true}, ""},
 		"http-bad-url":           {"https://no-such-host.tld/", rOpt, "no such host"},
 		"http-no-range-support":  {"https://www.google.com/", rOpt, "does not support range"},

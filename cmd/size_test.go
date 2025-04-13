@@ -13,7 +13,7 @@ func Test_SizeCmd_Run_error(t *testing.T) {
 		cmd    SizeCmd
 		errMsg string
 	}{
-		"non-existent-file": {SizeCmd{URI: "file/does/not/exist"}, "failed to open local"},
+		"non-existent-file": {SizeCmd{URI: "file/does/not/exist"}, "no such file or directory"},
 		"invalid-query":     {SizeCmd{Query: "invalid", URI: "../testdata/all-types.parquet"}, "unknown query type"},
 	}
 
