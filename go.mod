@@ -10,8 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.79.2
 	github.com/google/uuid v1.6.0
-	github.com/hangxie/parquet-go v1.8.3
-	github.com/hangxie/parquet-go-source v1.0.0
+	github.com/hangxie/parquet-go v1.9.0
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.10.0
 	github.com/willabides/kongplete v0.4.0
