@@ -49,9 +49,10 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 		cmd      MergeCmd
 		rowCount int64
 	}{
-		"good":    {MergeCmd{rOpt, wOpt, 10, []string{"good.parquet", "good.parquet"}, "", false}, 6},
-		"empty":   {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false}, 0},
-		"top-tag": {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false}, 6},
+		"good":          {MergeCmd{rOpt, wOpt, 10, []string{"good.parquet", "good.parquet"}, "", false}, 6},
+		"empty":         {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false}, 0},
+		"top-tag":       {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false}, 6},
+		"has-logictype": {MergeCmd{rOpt, wOpt, 10, []string{"all-types.parquet", "all-types.parquet"}, "", false}, 20},
 	}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
 	defer func() {
