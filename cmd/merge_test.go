@@ -49,9 +49,11 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 		cmd      MergeCmd
 		rowCount int64
 	}{
-		"good":    {MergeCmd{rOpt, wOpt, 10, []string{"good.parquet", "good.parquet"}, "", false}, 6},
-		"empty":   {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false}, 0},
-		"top-tag": {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false}, 6},
+		"good":                    {MergeCmd{rOpt, wOpt, 10, []string{"good.parquet", "good.parquet"}, "", false}, 6},
+		"random-example-repeated": {MergeCmd{rOpt, wOpt, 10, []string{"random-example1.parquet", "random-example1.parquet"}, "", false}, 54},
+		"same-schema":             {MergeCmd{rOpt, wOpt, 10, []string{"random-example1.parquet", "random-example2.parquet"}, "", false}, 770},
+		"empty":                   {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false}, 0},
+		"top-tag":                 {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false}, 6},
 	}
 	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
 	defer func() {
@@ -69,7 +71,7 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 
 			reader, _ := pio.NewParquetFileReader(tc.cmd.URI, rOpt)
 			rowCount := reader.GetNumRows()
-			require.Equal(t, rowCount, tc.rowCount)
+			require.Equal(t, tc.rowCount, rowCount)
 		})
 	}
 }

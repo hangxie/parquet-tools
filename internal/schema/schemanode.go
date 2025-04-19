@@ -377,11 +377,8 @@ func (s SchemaNode) CSVSchema() (string, error) {
 }
 
 func equals[T comparable](a, b *T) bool {
-	if a == nil && b == nil {
-		return true
-	}
 	if a == nil || b == nil {
-		return false
+		return a == b
 	}
 	return *a == *b
 }
@@ -396,7 +393,7 @@ func schemaElementEquals(s, v parquet.SchemaElement) bool {
 		equals(s.Scale, v.Scale) &&
 		equals(s.Precision, v.Precision) &&
 		equals(s.FieldID, v.FieldID) &&
-		equals(s.LogicalType, v.LogicalType)
+		s.LogicalType.Equals(v.LogicalType)
 }
 
 func (s SchemaNode) Equals(v SchemaNode) bool {
