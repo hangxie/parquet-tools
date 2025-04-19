@@ -392,11 +392,21 @@ func schemaElementEquals(s, v parquet.SchemaElement) bool {
 		equals(s.TypeLength, v.TypeLength) &&
 		equals(s.ConvertedType, v.ConvertedType) &&
 		equals(s.NumChildren, v.NumChildren) &&
-		equals(s.ConvertedType, v.ConvertedType) &&
 		equals(s.Scale, v.Scale) &&
 		equals(s.Precision, v.Precision) &&
 		equals(s.FieldID, v.FieldID) &&
-		equals(s.LogicalType, v.LogicalType)
+		isSameLogicType(s.LogicalType, v.LogicalType)
+}
+
+func isSameLogicType(s, v *parquet.LogicalType) bool {
+	if s == nil && v == nil {
+		return true
+	}
+	if s == nil || v == nil {
+		return false
+	}
+
+	return s.String() == v.String()
 }
 
 func (s SchemaNode) Equals(v SchemaNode) bool {
