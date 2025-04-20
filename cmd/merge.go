@@ -92,7 +92,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, *pschema.SchemaNode, e
 		if schema == nil {
 			schema = currSchema
 		} else if !schema.Equals(*currSchema) {
-			return nil, nil, fmt.Errorf("[%s] does not have same schema as previous files.Want: %v\nGot: %v", source, schema, *currSchema)
+			return nil, nil, fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}
 
