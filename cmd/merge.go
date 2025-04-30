@@ -28,7 +28,7 @@ func (c MergeCmd) Run() error {
 		return fmt.Errorf("needs at least 2 source files")
 	}
 
-	fileReaders, schema, err := c.openSources()
+	fileReaders, schemaJson, err := c.openSources()
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,6 @@ func (c MergeCmd) Run() error {
 			_ = fileReader.PFile.Close()
 		}
 	}()
-	schemaJson := schema.JSONSchema()
 
 	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
 	if err != nil {
@@ -74,27 +73,34 @@ func (c MergeCmd) Run() error {
 	return nil
 }
 
-func (c MergeCmd) openSources() ([]*reader.ParquetReader, *pschema.SchemaNode, error) {
-	var schema *pschema.SchemaNode
+func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
+	var schemaJson string
+	var rootTag string
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Source))
 	for i, source := range c.Source {
 		fileReaders[i], err = pio.NewParquetFileReader(source, c.ReadOption)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to read from [%s]: %w", source, err)
+			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
 		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 		if err != nil {
-			return nil, nil, err
+			return nil, "", err
 		}
 
-		if schema == nil {
-			schema = currSchema
-		} else if !schema.Equals(*currSchema) {
-			return nil, nil, fmt.Errorf("[%s] does not have same schema as previous files", source)
+		if schemaJson == "" {
+			schemaJson = currSchema.JSONSchema()
+			rootTag = currSchema.Name
+			continue
+		}
+
+		currSchema.Name = rootTag
+		newSchema := currSchema.JSONSchema()
+		if newSchema != schemaJson {
+			return nil, "", fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}
 
-	return fileReaders, schema, nil
+	return fileReaders, schemaJson, nil
 }
