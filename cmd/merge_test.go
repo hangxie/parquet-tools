@@ -70,7 +70,46 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 
 			reader, _ := pio.NewParquetFileReader(tc.cmd.URI, rOpt)
 			rowCount := reader.GetNumRows()
+			_ = reader.PFile.Close()
 			require.Equal(t, tc.rowCount, rowCount)
 		})
 	}
+}
+
+func Test_MergeCmd_Run_good_repeat(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	source := "../testdata/all-types.parquet"
+
+	cmd := MergeCmd{rOpt, wOpt, 10, []string{source, source}, "", false}
+	cmd.URI = filepath.Join(tempDir, "1.parquet")
+	require.Nil(t, cmd.Run())
+
+	reader, _ := pio.NewParquetFileReader(cmd.URI, rOpt)
+	rowCount := reader.GetNumRows()
+	_ = reader.PFile.Close()
+	require.Equal(t, int64(20), rowCount)
+
+	cmd.Source = []string{cmd.URI, source}
+	cmd.URI = filepath.Join(tempDir, "2.parquet")
+	require.Nil(t, cmd.Run())
+
+	reader, _ = pio.NewParquetFileReader(cmd.URI, rOpt)
+	rowCount = reader.GetNumRows()
+	_ = reader.PFile.Close()
+	require.Equal(t, int64(30), rowCount)
+
+	cmd.Source = []string{cmd.URI, source}
+	cmd.URI = filepath.Join(tempDir, "3.parquet")
+	require.Nil(t, cmd.Run())
+
+	reader, _ = pio.NewParquetFileReader(cmd.URI, rOpt)
+	rowCount = reader.GetNumRows()
+	_ = reader.PFile.Close()
+	require.Equal(t, int64(40), rowCount)
 }
