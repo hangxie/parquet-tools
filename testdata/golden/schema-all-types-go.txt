@@ -36,7 +36,7 @@ Decimal1 int32 `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale
 Decimal2 int64 `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18"`
 Decimal3 string `parquet:"name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12"`
 Decimal4 string `parquet:"name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20"`
-Decimal5 int32 `parquet:"name=Decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"`
+Decimal5 int32 `parquet:"name=decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"`
 DecimalPointer *string `parquet:"name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"`
 Map map[string]int32 `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
 List []string `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8, convertedtype=LIST"`

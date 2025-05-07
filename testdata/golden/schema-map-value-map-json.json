@@ -1,23 +1,23 @@
 {
-  "Tag": "name=Parquet_go_root",
+  "Tag": "name=parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8"
+      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
     },
     {
-      "Tag": "name=Scores, type=MAP",
+      "Tag": "name=scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
         },
         {
-          "Tag": "name=Value, type=MAP",
+          "Tag": "name=value, type=MAP",
           "Fields": [
             {
-              "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+              "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
             },
             {
-              "Tag": "name=Value, type=FLOAT"
+              "Tag": "name=value, type=FLOAT"
             }
           ]
         }

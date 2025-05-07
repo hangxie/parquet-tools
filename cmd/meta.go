@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hangxie/parquet-go/common"
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/hangxie/parquet-go/types"
 
@@ -21,7 +22,7 @@ type MetaCmd struct {
 	Base64      bool   `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96 bool   `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
-	PargoPrefix string `help:"remove this prefix from field names." default:""`
+	PargoPrefix string `help:"deprecated, will be removed from next release." default:""`
 }
 
 type columnMeta struct {
@@ -101,7 +102,7 @@ func (c MetaCmd) Run() error {
 				continue
 			}
 
-			field, found := reinterpretFields["."+strings.Join(columns[colIndex].PathInSchema, ".")]
+			field, found := reinterpretFields[common.PAR_GO_PATH_DELIMITER+strings.Join(columns[colIndex].PathInSchema, common.PAR_GO_PATH_DELIMITER)]
 			if !found {
 				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
 				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
@@ -118,12 +119,6 @@ func (c MetaCmd) Run() error {
 			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
 			if columns[colIndex].MinValue, err = pschema.DecimalToFloat(field, minValue); err != nil {
 				return err
-			}
-		}
-		// handle PARGO_PREFIX
-		for colIndex := range rg.Columns {
-			for i := range columns[colIndex].PathInSchema {
-				columns[colIndex].PathInSchema[i] = strings.TrimPrefix(columns[colIndex].PathInSchema[i], c.PargoPrefix)
 			}
 		}
 
