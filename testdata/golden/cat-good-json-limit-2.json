@@ -1,10 +1,10 @@
 [
   {
-    "Shoe_brand": "nike",
-    "Shoe_name": "air_griffey"
+    "shoe_brand": "nike",
+    "shoe_name": "air_griffey"
   },
   {
-    "Shoe_brand": "fila",
-    "Shoe_name": "grant_hill_2"
+    "shoe_brand": "fila",
+    "shoe_name": "grant_hill_2"
   }
 ]

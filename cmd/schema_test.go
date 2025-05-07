@@ -45,8 +45,8 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 		"raw-map-value-list":  {SchemaCmd{rOpt, "raw", "map-composite-value.parquet", ""}, "schema-map-composite-value-raw.json"},
 		"json-map-value-list": {SchemaCmd{rOpt, "json", "map-composite-value.parquet", ""}, "schema-map-composite-value-json.json"},
 		"json-map-value-map":  {SchemaCmd{rOpt, "json", "map-value-map.parquet", ""}, "schema-map-value-map-json.json"},
-		"pargo-prefix-keep":   {SchemaCmd{rOpt, "json", "pargo-prefix-nested.parquet", ""}, "schema-pargo-prefix-nested-keep.json"},
-		"pargo-prefix-remove": {SchemaCmd{rOpt, "json", "pargo-prefix-nested.parquet", "PARGO_PREFIX_"}, "schema-pargo-prefix-nested-remove.json"},
+		"parqo-prefix-flat":   {SchemaCmd{rOpt, "go", "pargo-prefix-flat.parquet", ""}, "schema-pargo-prefix-flat-go.txt"},
+		"parqo-prefix-nested": {SchemaCmd{rOpt, "go", "pargo-prefix-nested.parquet", ""}, "schema-pargo-prefix-nested-go.txt"},
 	}
 
 	for name, tc := range testCases {

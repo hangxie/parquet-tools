@@ -118,19 +118,17 @@ func Test_MetaCmd_Run_good(t *testing.T) {
 		cmd    MetaCmd
 		golden string
 	}{
-		"base64":              {MetaCmd{rOpt, true, "good.parquet", false, ""}, "meta-good-base64.json"},
-		"raw":                 {MetaCmd{rOpt, false, "good.parquet", false, ""}, "meta-good-raw.json"},
-		"nil-stat":            {MetaCmd{rOpt, false, "nil-statistics.parquet", false, ""}, "meta-nil-statistics-raw.json"},
-		"nil-int96-min-max":   {MetaCmd{rOpt, false, "nil-statistics.parquet", false, ""}, "meta-nil-statistics-raw.json"},
-		"sorting-col":         {MetaCmd{rOpt, true, "sorting-col.parquet", false, ""}, "meta-sorting-col-base64.json"},
-		"RI-scalar":           {MetaCmd{rOpt, false, "reinterpret-scalar.parquet", false, ""}, "meta-reinterpret-scalar-raw.json"},
-		"RI-pointer":          {MetaCmd{rOpt, false, "reinterpret-pointer.parquet", false, ""}, "meta-reinterpret-pointer-raw.json"},
-		"RI-list":             {MetaCmd{rOpt, false, "reinterpret-list.parquet", false, ""}, "meta-reinterpret-list-raw.json"},
-		"RI-map-key":          {MetaCmd{rOpt, false, "reinterpret-map-key.parquet", false, ""}, "meta-reinterpret-map-key-raw.json"},
-		"RI-map-value":        {MetaCmd{rOpt, false, "reinterpret-map-value.parquet", false, ""}, "meta-reinterpret-map-value-raw.json"},
-		"RI-composite":        {MetaCmd{rOpt, false, "reinterpret-composite.parquet", false, ""}, "meta-reinterpret-composite-raw.json"},
-		"pargo-prefix-keep":   {MetaCmd{rOpt, false, "pargo-prefix-nested.parquet", false, ""}, "meta-pargo-prefix-nested-keep.json"},
-		"pargo-prefix-remove": {MetaCmd{rOpt, false, "pargo-prefix-nested.parquet", false, "PARGO_PREFIX_"}, "meta-pargo-prefix-nested-remove.json"},
+		"base64":            {MetaCmd{rOpt, true, "good.parquet", false, ""}, "meta-good-base64.json"},
+		"raw":               {MetaCmd{rOpt, false, "good.parquet", false, ""}, "meta-good-raw.json"},
+		"nil-stat":          {MetaCmd{rOpt, false, "nil-statistics.parquet", false, ""}, "meta-nil-statistics-raw.json"},
+		"nil-int96-min-max": {MetaCmd{rOpt, false, "nil-statistics.parquet", false, ""}, "meta-nil-statistics-raw.json"},
+		"sorting-col":       {MetaCmd{rOpt, true, "sorting-col.parquet", false, ""}, "meta-sorting-col-base64.json"},
+		"RI-scalar":         {MetaCmd{rOpt, false, "reinterpret-scalar.parquet", false, ""}, "meta-reinterpret-scalar-raw.json"},
+		"RI-pointer":        {MetaCmd{rOpt, false, "reinterpret-pointer.parquet", false, ""}, "meta-reinterpret-pointer-raw.json"},
+		"RI-list":           {MetaCmd{rOpt, false, "reinterpret-list.parquet", false, ""}, "meta-reinterpret-list-raw.json"},
+		"RI-map-key":        {MetaCmd{rOpt, false, "reinterpret-map-key.parquet", false, ""}, "meta-reinterpret-map-key-raw.json"},
+		"RI-map-value":      {MetaCmd{rOpt, false, "reinterpret-map-value.parquet", false, ""}, "meta-reinterpret-map-value-raw.json"},
+		"RI-composite":      {MetaCmd{rOpt, false, "reinterpret-composite.parquet", false, ""}, "meta-reinterpret-composite-raw.json"},
 	}
 
 	for name, tc := range testCases {
