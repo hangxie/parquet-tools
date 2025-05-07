@@ -75,7 +75,8 @@ func (c MergeCmd) Run() error {
 
 func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 	var schemaJson string
-	var rootTag string
+	var rootExNamePath []string
+	var rootName string
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Source))
 	for i, source := range c.Source {
@@ -91,11 +92,13 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 
 		if schemaJson == "" {
 			schemaJson = currSchema.JSONSchema()
-			rootTag = currSchema.Name
+			rootName = currSchema.Name
+			rootExNamePath = currSchema.ExNamePath
 			continue
 		}
 
-		currSchema.Name = rootTag
+		currSchema.Name = rootName
+		currSchema.ExNamePath = rootExNamePath
 		newSchema := currSchema.JSONSchema()
 		if newSchema != schemaJson {
 			return nil, "", fmt.Errorf("[%s] does not have same schema as previous files", source)

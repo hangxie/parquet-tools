@@ -1,4 +1,4 @@
-package internal
+package schema
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hangxie/parquet-go/common"
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/hangxie/parquet-go/types"
 	"github.com/stretchr/testify/require"
@@ -59,21 +60,26 @@ func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	expected := []string{
-		".Decimal1",
-		".Decimal2",
-		".Decimal3",
-		".Decimal4",
-		".DecimalPointer",
-		".Int96",
-		".Interval",
-		".NestedList.Element.List.Element",
-		".NestedMap.Value.List.Element",
+		strings.Join([]string{"Decimal1"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"Decimal2"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"Decimal3"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"Decimal4"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"DecimalPointer"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"Int96"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"Interval"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"NestedList", "element", "List", "element"}, common.PAR_GO_PATH_DELIMITER),
+		strings.Join([]string{"NestedMap", "value", "List", "element"}, common.PAR_GO_PATH_DELIMITER),
 	}
 
-	fields := schemaRoot.GetReinterpretFields("", true)
-	require.Equal(t, len(expected), len(fields))
+	fieldMap := map[string]ReinterpretField{}
+	for _, field := range schemaRoot.GetReinterpretFields(true) {
+		fieldMap[field.ExPath] = field
+	}
+
+	require.Equal(t, len(expected), len(fieldMap))
 	for _, field := range expected {
-		require.Contains(t, fields, field)
+		_, found := fieldMap[field]
+		require.True(t, found)
 	}
 }
 

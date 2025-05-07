@@ -1,69 +1,69 @@
 {
-  "Tag": "name=Parquet_go_root",
+  "Tag": "name=parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8"
+      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
     },
     {
-      "Tag": "name=Age, type=INT32"
+      "Tag": "name=age, type=INT32"
     },
     {
-      "Tag": "name=Id, type=INT64"
+      "Tag": "name=id, type=INT64"
     },
     {
-      "Tag": "name=Weight, type=FLOAT"
+      "Tag": "name=weight, type=FLOAT"
     },
     {
-      "Tag": "name=Sex, type=BOOLEAN"
+      "Tag": "name=sex, type=BOOLEAN"
     },
     {
-      "Tag": "name=Classes, type=LIST",
+      "Tag": "name=classes, type=LIST",
       "Fields": [
         {
-          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8"
         }
       ]
     },
     {
-      "Tag": "name=Scores, type=MAP",
+      "Tag": "name=scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
         },
         {
-          "Tag": "name=Value, type=LIST",
+          "Tag": "name=value, type=LIST",
           "Fields": [
             {
-              "Tag": "name=Element, type=FLOAT"
+              "Tag": "name=element, type=FLOAT"
             }
           ]
         }
       ]
     },
     {
-      "Tag": "name=Friends, type=LIST",
+      "Tag": "name=friends, type=LIST",
       "Fields": [
         {
-          "Tag": "name=Element",
+          "Tag": "name=element",
           "Fields": [
             {
-              "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8"
+              "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
             },
             {
-              "Tag": "name=Id, type=INT64"
+              "Tag": "name=id, type=INT64"
             }
           ]
         }
       ]
     },
     {
-      "Tag": "name=Teachers, repetitiontype=REPEATED",
+      "Tag": "name=teachers, repetitiontype=REPEATED",
       "Fields": [
         {
-          "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
         },
         {
-          "Tag": "name=Id, type=INT64"
+          "Tag": "name=id, type=INT64"
         }
       ]
     }

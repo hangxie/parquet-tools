@@ -1,0 +1,4 @@
+type Parquet_go_root struct {
+PARGO_PREFIX__shoe_brand string `parquet:"name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+Shoe_name string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+}

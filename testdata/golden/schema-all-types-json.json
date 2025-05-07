@@ -1,5 +1,5 @@
 {
-  "Tag": "name=Parquet_go_root",
+  "Tag": "name=parquet_go_root",
   "Fields": [
     {
       "Tag": "name=Bool, type=BOOLEAN"
@@ -113,7 +113,7 @@
       "Tag": "name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20"
     },
     {
-      "Tag": "name=Decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"
+      "Tag": "name=decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"
     },
     {
       "Tag": "name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"
@@ -122,10 +122,10 @@
       "Tag": "name=Map, type=MAP",
       "Fields": [
         {
-          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
         },
         {
-          "Tag": "name=Value, type=INT32"
+          "Tag": "name=value, type=INT32"
         }
       ]
     },
@@ -133,7 +133,7 @@
       "Tag": "name=List, type=LIST",
       "Fields": [
         {
-          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8"
         }
       ]
     },
@@ -144,19 +144,19 @@
       "Tag": "name=NestedMap, type=MAP",
       "Fields": [
         {
-          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
         },
         {
-          "Tag": "name=Value",
+          "Tag": "name=value",
           "Fields": [
             {
               "Tag": "name=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
                 },
                 {
-                  "Tag": "name=Value, type=INT32"
+                  "Tag": "name=value, type=INT32"
                 }
               ]
             },
@@ -164,7 +164,7 @@
               "Tag": "name=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10"
+                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10"
                 }
               ]
             }
@@ -176,16 +176,16 @@
       "Tag": "name=NestedList, type=LIST",
       "Fields": [
         {
-          "Tag": "name=Element",
+          "Tag": "name=element",
           "Fields": [
             {
               "Tag": "name=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
                 },
                 {
-                  "Tag": "name=Value, type=INT32"
+                  "Tag": "name=value, type=INT32"
                 }
               ]
             },
@@ -193,7 +193,7 @@
               "Tag": "name=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10"
+                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10"
                 }
               ]
             }

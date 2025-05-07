@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hangxie/parquet-go/common"
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/types"
@@ -32,7 +33,7 @@ type CatCmd struct {
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool    `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
-	PargoPrefix  string  `help:"remove this prefix from field names." default:""`
+	PargoPrefix  string  `help:"deprecated, will be removed from next release." default:""`
 }
 
 // here are performance numbers for different SkipPageSize:
@@ -102,15 +103,10 @@ func (c CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 		if len(child.Children) != 0 {
 			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
-		fieldList[index] = child.Name
+		fieldList[index] = child.ExNamePath[len(child.ExNamePath)-1]
 	}
 	headerList := make([]string, len(schemaRoot.Children))
 	_ = copy(headerList, fieldList)
-	if c.PargoPrefix != "" {
-		for i := range headerList {
-			headerList[i] = strings.TrimPrefix(headerList[i], c.PargoPrefix)
-		}
-	}
 	line, err := valuesToCSV(headerList, delimiter[c.Format].fieldDelimiter)
 	if err != nil {
 		return nil, err
@@ -139,7 +135,7 @@ func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
 	return nil
 }
 
-func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, map[string]pschema.ReinterpretField, error) {
+func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, []pschema.ReinterpretField, error) {
 	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, nil, err
@@ -152,7 +148,7 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, ma
 	}
 
 	// retrieve schema for better formatting
-	reinterpretFields := schemaRoot.GetReinterpretFields("", true)
+	reinterpretFields := schemaRoot.GetReinterpretFields(true)
 	return fieldList, reinterpretFields, nil
 }
 
@@ -160,7 +156,6 @@ func (c CatCmd) outputSingleRow(rowStruct interface{}, fieldList []string) error
 	switch c.Format {
 	case "json", "jsonl":
 		// remove pargo prefix
-		removePargoPrefix(&rowStruct, c.PargoPrefix)
 		buf, _ := json.Marshal(rowStruct)
 		fmt.Print(string(buf))
 	case "csv", "tsv":
@@ -241,16 +236,16 @@ func valuesToCSV(values []string, delimiter rune) (string, error) {
 	return buf.String(), nil
 }
 
-func rowToStruct(row interface{}, reinterpretFields map[string]pschema.ReinterpretField) (interface{}, error) {
+func rowToStruct(row interface{}, reinterpretFields []pschema.ReinterpretField) (interface{}, error) {
 	rowValue := reflect.ValueOf(&row).Elem()
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
-	for k, v := range reinterpretFields {
+	for _, field := range reinterpretFields {
 		// There are data types that are represented as string, but they are actually not UTF8, they
 		// need to be re-interpreted so we will base64 encode them here to avoid losing data. For
 		// more details: https://github.com/xitongsys/parquet-go/issues/434
-		if v.ParquetType == parquet.Type_BYTE_ARRAY || v.ParquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.ParquetType == parquet.Type_INT96 {
-			encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
+		if field.ParquetType == parquet.Type_BYTE_ARRAY || field.ParquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || field.ParquetType == parquet.Type_INT96 {
+			encodeNestedBinaryString(tmp, strings.Split(field.InPath, common.PAR_GO_PATH_DELIMITER), field)
 		}
 	}
 	rowValue.Set(tmp)
@@ -265,8 +260,8 @@ func rowToStruct(row interface{}, reinterpretFields map[string]pschema.Reinterpr
 	// this should not fail as we just Marshal it
 	var iface interface{}
 	_ = json.Unmarshal(buf, &iface)
-	for k, v := range reinterpretFields {
-		reinterpretNestedFields(&iface, strings.Split(k, ".")[1:], v)
+	for _, field := range reinterpretFields {
+		reinterpretNestedFields(&iface, strings.Split(field.ExPath, common.PAR_GO_PATH_DELIMITER), field)
 	}
 	return iface, nil
 }
@@ -282,7 +277,7 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr pschem
 
 	switch value.Kind() {
 	case reflect.Array, reflect.Slice:
-		for elementIndex := 0; elementIndex < value.Len(); elementIndex++ {
+		for elementIndex := range value.Len() {
 			encodeNestedBinaryString(value.Index(elementIndex), locator[1:], attr)
 		}
 	case reflect.Map:
@@ -336,7 +331,7 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr pschema.
 		}
 		mapValue := (*iface).(map[string]interface{})
 		switch locator[0] {
-		case "Key":
+		case "key":
 			newMapValue := make(map[string]interface{})
 			for k, v := range mapValue {
 				var newKey interface{} = k
@@ -355,7 +350,7 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr pschema.
 				}
 			}
 			mapValue = newMapValue
-		case "Value":
+		case "value":
 			for k, v := range mapValue {
 				reinterpretNestedFields(&v, locator[1:], attr)
 				mapValue[k] = v
@@ -402,32 +397,6 @@ func reinterpretScalar(iface *interface{}, attr pschema.ReinterpretField) {
 				*iface = types.INT96ToTime(string(encoded)).Format(time.RFC3339Nano)
 			}
 		}
-	default:
-		// do nothing
-	}
-}
-
-func removePargoPrefix(iface *interface{}, pargoPrefix string) {
-	if iface == nil || *iface == nil {
-		return
-	}
-	v := reflect.ValueOf(*iface)
-	switch v.Kind() {
-	case reflect.Array, reflect.Slice:
-		for i := range (*iface).([]interface{}) {
-			value := (*iface).([]interface{})[i]
-			removePargoPrefix(&value, pargoPrefix)
-			(*iface).([]interface{})[i] = value
-		}
-	case reflect.Map:
-		mapValue := (*iface).(map[string]interface{})
-		newMapValue := make(map[string]interface{})
-		for k, v := range mapValue {
-			removePargoPrefix(&v, pargoPrefix)
-			newMapValue[strings.TrimPrefix(k, pargoPrefix)] = v
-		}
-		mapValue = newMapValue
-		*iface = mapValue
 	default:
 		// do nothing
 	}

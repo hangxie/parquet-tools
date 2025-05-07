@@ -1,4 +1,4 @@
-package internal
+package schema
 
 import (
 	"fmt"
@@ -68,8 +68,8 @@ func (n goStructNode) asList() (string, error) {
 			(*elementNode.ConvertedType == parquet.ConvertedType_MAP ||
 				*elementNode.ConvertedType == parquet.ConvertedType_LIST) {
 			return "", fmt.Errorf(
-				"go struct does not support composite type as list element in field [%s.%s]",
-				strings.Join(n.Parent, "."), n.Name)
+				"go struct does not support composite type as list element in field [%s]",
+				strings.Join(n.InNamePath, "."))
 		}
 		typeStr, err = goStructNode{*elementNode}.String()
 	}
@@ -85,7 +85,7 @@ func (n goStructNode) asMap() (string, error) {
 		keyConvertedType := *n.Children[0].Children[0].ConvertedType
 		if keyConvertedType == parquet.ConvertedType_MAP ||
 			keyConvertedType == parquet.ConvertedType_LIST {
-			return "", fmt.Errorf("go struct does not support composite type as map key in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
+			return "", fmt.Errorf("go struct does not support composite type as map key in field [%s]", strings.Join(n.InNamePath, "."))
 		}
 	}
 
@@ -93,7 +93,7 @@ func (n goStructNode) asMap() (string, error) {
 		valueConvertedType := *n.Children[0].Children[1].ConvertedType
 		if valueConvertedType == parquet.ConvertedType_MAP ||
 			valueConvertedType == parquet.ConvertedType_LIST {
-			return "", fmt.Errorf("go struct does not support composite type as map value in field [%s.%s]", strings.Join(n.Parent, "."), n.Name)
+			return "", fmt.Errorf("go struct does not support composite type as map value in field [%s]", strings.Join(n.InNamePath, "."))
 		}
 	}
 	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
