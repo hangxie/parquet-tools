@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
 	pschema "github.com/hangxie/parquet-tools/internal/schema"
@@ -21,7 +20,7 @@ type SchemaCmd struct {
 	pio.ReadOption
 	Format      string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
-	PargoPrefix string `help:"remove this prefix from field names." default:""`
+	PargoPrefix string `help:"deprecated, will be removed from next release." default:""`
 }
 
 // Run does actual schema job
@@ -38,9 +37,7 @@ func (c SchemaCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	if c.PargoPrefix != "" {
-		removePargoPrefixFromSchema(schemaRoot, c.PargoPrefix)
-	}
+
 	switch c.Format {
 	case formatRaw:
 		schema, _ := json.Marshal(*schemaRoot)
@@ -64,11 +61,4 @@ func (c SchemaCmd) Run() error {
 	}
 
 	return nil
-}
-
-func removePargoPrefixFromSchema(schemaRoot *pschema.SchemaNode, pargoPrefix string) {
-	schemaRoot.Name = strings.TrimPrefix(schemaRoot.Name, pargoPrefix)
-	for i := range schemaRoot.Children {
-		removePargoPrefixFromSchema(schemaRoot.Children[i], pargoPrefix)
-	}
 }

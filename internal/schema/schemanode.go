@@ -1,12 +1,14 @@
-package internal
+package schema
 
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"math"
 	"strconv"
 	"strings"
 
+	"github.com/hangxie/parquet-go/common"
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/types"
@@ -38,8 +40,9 @@ var orderedTags = []string{
 
 type SchemaNode struct {
 	parquet.SchemaElement
-	Parent   []string      `json:"-"`
-	Children []*SchemaNode `json:"children,omitempty"`
+	Parent     []string      `json:"-"`
+	Children   []*SchemaNode `json:"children,omitempty"`
+	ExNamePath []string      `json:"-"`
 }
 
 type SchemaOption struct {
@@ -53,6 +56,11 @@ type ReinterpretField struct {
 	Scale         int
 }
 
+func exNamePath(pathMap map[string]string, path []string) []string {
+	pathKey := strings.Join(path, common.PAR_GO_PATH_DELIMITER)
+	return strings.Split(pathMap[pathKey], common.PAR_GO_PATH_DELIMITER)
+}
+
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	schemas := reader.SchemaHandler.SchemaElements
 	var stack []*SchemaNode
@@ -60,6 +68,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		SchemaElement: *schemas[0],
 		Parent:        []string{},
 		Children:      []*SchemaNode{},
+		ExNamePath:    strings.Split(reader.SchemaHandler.InPathToExPath[schemas[0].Name], common.PAR_GO_PATH_DELIMITER)[:1],
 	}
 	stack = append(stack, root)
 
@@ -74,6 +83,8 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 				Parent:        append(node.Parent, node.Name),
 				Children:      []*SchemaNode{},
 			}
+
+			childNode.ExNamePath = exNamePath(reader.SchemaHandler.InPathToExPath, append(childNode.Parent, schemas[pos].Name))
 			node.Children = append(node.Children, childNode)
 			stack = append(stack, childNode)
 			pos++
@@ -90,7 +101,11 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 
 func (s *SchemaNode) getTagMap() map[string]string {
 	tagMap := map[string]string{}
-	tagMap["name"] = s.Name
+	if len(s.ExNamePath) != 0 {
+		tagMap["name"] = s.ExNamePath[len(s.ExNamePath)-1]
+	} else {
+		tagMap["name"] = s.Name
+	}
 	tagMap["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
 	tagMap["type"] = typeStr(s.SchemaElement)
 
@@ -173,12 +188,8 @@ func (s *SchemaNode) updateTagForMap(tagMap map[string]string) {
 
 	// MAP has schema structure of MAP->MAP_KEY_VALUE->(Field1, Field2)
 	// expected output is MAP->(Key, Value)
-	for k, v := range s.Children[0].Children[0].getTagMapWithPrefix("key") {
-		tagMap[k] = v
-	}
-	for k, v := range s.Children[0].Children[1].getTagMapWithPrefix("value") {
-		tagMap[k] = v
-	}
+	maps.Copy(tagMap, s.Children[0].Children[0].getTagMapWithPrefix("key"))
+	maps.Copy(tagMap, s.Children[0].Children[1].getTagMapWithPrefix("value"))
 	s.Children = s.Children[0].Children[0:2]
 	s.Children[0].Name = "Key"
 	s.Children[1].Name = "Value"
@@ -233,12 +244,10 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 func (s *SchemaNode) GetReinterpretFields(rootPath string, noInterimLayer bool) map[string]ReinterpretField {
 	reinterpretFields := make(map[string]ReinterpretField)
 	for _, child := range s.Children {
-		currentPath := rootPath + "." + child.Name
+		currentPath := rootPath + common.PAR_GO_PATH_DELIMITER + child.ExNamePath[len(child.ExNamePath)-1]
 		if child.Type == nil && child.ConvertedType == nil && child.NumChildren != nil {
 			// STRUCT
-			for k, v := range child.GetReinterpretFields(currentPath, noInterimLayer) {
-				reinterpretFields[k] = v
-			}
+			maps.Copy(reinterpretFields, child.GetReinterpretFields(currentPath, noInterimLayer))
 			continue
 		}
 
@@ -258,11 +267,9 @@ func (s *SchemaNode) GetReinterpretFields(rootPath string, noInterimLayer bool) 
 				if noInterimLayer {
 					child = child.Children[0]
 				}
-				fallthrough
+				maps.Copy(reinterpretFields, child.GetReinterpretFields(currentPath, noInterimLayer))
 			case parquet.ConvertedType_MAP_KEY_VALUE:
-				for k, v := range child.GetReinterpretFields(currentPath, noInterimLayer) {
-					reinterpretFields[k] = v
-				}
+				maps.Copy(reinterpretFields, child.GetReinterpretFields(currentPath, noInterimLayer))
 			case parquet.ConvertedType_DECIMAL, parquet.ConvertedType_INTERVAL:
 				reinterpretFields[currentPath] = ReinterpretField{
 					ParquetType:   *child.Type,

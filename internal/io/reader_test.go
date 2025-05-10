@@ -1,4 +1,4 @@
-package internal
+package io
 
 import (
 	"encoding/base64"
