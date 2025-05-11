@@ -14,10 +14,6 @@ func Test_SplitCmd_Run_error(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{Compression: "SNAPPY"}
 	tw := TrunkWriter{}
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
 
 	testCases := map[string]struct {
 		cmd    SplitCmd
@@ -76,10 +72,7 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-			defer func() {
-				_ = os.RemoveAll(tempDir)
-			}()
+			tempDir := t.TempDir()
 
 			tc.cmd.URI = filepath.Join("../testdata", tc.cmd.URI)
 			tc.cmd.NameFormat = filepath.Join(tempDir, tc.cmd.NameFormat)
