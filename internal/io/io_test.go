@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/url"
-	"os"
 	"reflect"
 	"testing"
 
@@ -16,7 +15,7 @@ func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 	u := url.URL{
 		Host: "storageacconut",
 	}
-	_ = os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 
 	invalidPaths := []string{
 		"",
@@ -44,7 +43,7 @@ func Test_azureAccessDetail_bad_shared_cred(t *testing.T) {
 		User: url.User("container-name"),
 	}
 
-	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to create Azure credential")
@@ -59,13 +58,13 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 		User: url.User("container"),
 	}
 	// anonymous access by lack of environment variable
-	_ = os.Unsetenv("AZURE_STORAGE_ACCESS_KEY")
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
 
-	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err = azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
@@ -77,7 +76,7 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
-	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 	uri, cred, err = azureAccessDetail(u, true)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
@@ -97,7 +96,7 @@ func Test_azureAccessDetail_good_shared_cred(t *testing.T) {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
-	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	uri, cred, err := azureAccessDetail(u, false)
 	require.Nil(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
@@ -119,10 +118,10 @@ func Test_getBucketRegion(t *testing.T) {
 		"missing-credential":   {uuid.New().String(), "daylight-openstreetmap", false, "failed to get shared config profile"},
 	}
 
-	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			_ = os.Setenv("AWS_PROFILE", tc.profile)
+			t.Setenv("AWS_PROFILE", tc.profile)
 			_, err := getS3Client(tc.bucket, tc.public)
 			if tc.errMsg == "" {
 				require.Nil(t, err)
