@@ -86,7 +86,6 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
       - [Raw Format](#raw-format)
       - [Go Struct Format](#go-struct-format)
       - [CSV Format](#csv-format)
-      - [PARGO\_PREFIX\_ Handling](#pargo_prefix_-handling)
     - [shell-completions Command (Experimental)](#shell-completions-command-experimental)
       - [Install Shell Completions](#install-shell-completions)
       - [Uninstall Shell Completions](#uninstall-shell-completions)
@@ -162,9 +161,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.28.0
+v1.29.0
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.28.0
+v1.29.0
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -174,20 +173,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.28.0_amd64.deb
-Preparing to unpack parquet-tools_1.28.0_amd64.deb ...
-Unpacking parquet-tools (1.28.0) ...
-Setting up parquet-tools (1.28.0) ...
+$ sudo dpkg -i parquet-tools_1.29.0_amd64.deb
+Preparing to unpack parquet-tools_1.29.0_amd64.deb ...
+Unpacking parquet-tools (1.29.0) ...
+Setting up parquet-tools (1.29.0) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.28.0-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.29.0-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.28.0-1          ################################# [100%]
+   1:parquet-tools-1.29.0-1          ################################# [100%]
 ```
 
 ## Usage
@@ -214,7 +213,7 @@ Flags:
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
   -b, --base64                      Encode min/max value.
       --fail-on-int96               fail command if INT96 data type presents.
-      --pargo-prefix=""             remove this prefix from field names.
+      --pargo-prefix=""             deprecated, will be removed from next release.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
@@ -409,13 +408,16 @@ There are two parameters that you probably will never touch:
 * `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 * `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read https://github.com/xitongsys/parquet-go/issues/545 for more details.
 
+> [!NOTE]
+> Starting from v1.29.0, `cat` command output field names from parquet file, they were go struct field name till v1.28.3.
+
 #### Full Data Set
 
 ```bash
 $ parquet-tools cat --format jsonl testdata/good.parquet
-{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
-{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
 ```
 
 > [!TIP]
@@ -424,7 +426,6 @@ $ parquet-tools cat --format jsonl testdata/good.parquet
 ```bash
 $ parquet-tools cat --fail-on-int96 testdata/all-types.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
-exit status 1
 $ parquet-tools cat testdata/all-types.parquet
 [{"Bool":true,"ByteArray":"ByteArray-0","Date":1640995200,...
 ```
@@ -435,7 +436,7 @@ $ parquet-tools cat testdata/all-types.parquet
 
 ```bash
 $ parquet-tools cat --skip 2 --format jsonl testdata/good.parquet
-{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
 ```
 
 > [!CAUTION]
@@ -453,7 +454,7 @@ $ parquet-tools cat --skip 20 testdata/good.parquet
 
 ```bash
 $ parquet-tools cat -f csv testdata/good.parquet
-Shoe_brand,Shoe_name
+shoe_brand,shoe_name
 nike,air_griffey
 fila,grant_hill_2
 steph_curry,curry7
@@ -484,7 +485,6 @@ steph_curry,curry7
 ```bash
 $ parquet-tools cat -f csv testdata/all-types.parquet
 parquet-tools: error: field [Map] is not scalar type, cannot output in csv format
-exit status 1
 ```
 
 #### Limit Number of Rows
@@ -493,7 +493,7 @@ exit status 1
 
 ```bash
 $ parquet-tools cat --limit 2 testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
+[{"shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"}]
 ```
 
 #### Sampling
@@ -505,17 +505,17 @@ $ parquet-tools cat --limit 2 testdata/good.parquet
 
 ```bash
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"}]
+[{"shoe_brand":"nike","shoe_name":"air_griffey"}]
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
 []
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
-[{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+[{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
+[{"Shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"}]
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
-[{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}]
+[{"shoe_brand":"fila","shoe_name":"grant_hill_2"}]
 $ parquet-tools cat --sample-ratio 1.0 testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+[{"shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"},{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 $ parquet-tools cat --sample-ratio 0.0 testdata/good.parquet
 []
 ```
@@ -526,7 +526,7 @@ $ parquet-tools cat --sample-ratio 0.0 testdata/good.parquet
 
 ```bash
 $ parquet-tools cat --skip 2 --limit 1 testdata/good.parquet
-[{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+[{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 ```
 
 #### Output Format
@@ -536,7 +536,7 @@ $ parquet-tools cat --skip 2 --limit 1 testdata/good.parquet
 
 ```bash
 $ parquet-tools cat testdata/good.parquet
-[{"Shoe_brand":"nike","Shoe_name":"air_griffey"},{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}]
+[{"shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"},{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 ```
 
 `cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
@@ -546,21 +546,12 @@ $ parquet-tools cat testdata/good.parquet
 
 ```bash
 $ parquet-tools cat --format jsonl testdata/good.parquet
-{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
-{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
 ```
 
 You can read data line by line and parse every single line as a JSON object if you do not have a toolchain to process JSONL format.
-
-You can also set `--pargo-prefix` parameter to `"PARGO_PREFIX_"` to remove the prefix added by parquet-go package:
-
-```bash
-$ parquet-tools cat testdata/pargo-prefix-flat.parquet
-[{"PARGO_PREFIX__shoe_brand":"nike","Shoe_name":"air_griffey"},{"PARGO_PREFIX__shoe_brand":"fila","Shoe_name":"grant_hill_2"},{"PARGO_PREFIX__shoe_brand":"steph_curry","Shoe_name":"curry7"}]
-$ parquet-tools cat --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-flat.parquet
-[{"Shoe_name":"air_griffey","_shoe_brand":"nike"},{"Shoe_name":"grant_hill_2","_shoe_brand":"fila"},{"Shoe_name":"curry7","_shoe_brand":"steph_curry"}]
-```
 
 ### import Command
 
@@ -613,16 +604,16 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 ```bash
 $ parquet-tools merge -s testdata/good.parquet,testdata/good.parquet /tmp/doubled.parquet
 $ parquet-tools cat -f jsonl testdata/good.parquet
-{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
-{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
 $ parquet-tools cat -f jsonl /tmp/doubled.parquet
-{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
-{"Shoe_brand":"nike","Shoe_name":"air_griffey"}
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
-{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
-{"Shoe_brand":"fila","Shoe_name":"grant_hill_2"}
-{"Shoe_brand":"steph_curry","Shoe_name":"curry7"}
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
 
 $ parquet-tools merge -s testdata/top-level-tag1.parquet -s testdata/top-level-tag2.parquet /tmp/merged.parquet
 $ parquet-tools row-count /tmp/merged.parquet
@@ -638,7 +629,7 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files c
 `meta` command shows meta data of every row group in a parquet file.
 
 > [!NOTE]
-> MinValue and MaxValue always show value with base type instead of converted type, i.e. INT32 instead of UINT_8. The `--base64` flag applies to column with type `BYTE_ARRAY` or `FIXED_LEN_BYTE_ARRAY` only, it tells `parquet-tools` to output base64 encoded MinValue and MaxValue of a column, otherwise those values will be shown as UTF8 string.
+> `PathInSchema` uses field name from go struct, ideally it should use field name from parquet file, this is tracked by https://github.com/hangxie/parquet-tools/issues/598.
 
 #### Show Meta Data
 
@@ -666,15 +657,6 @@ $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
 
-You can also set `--pargo-prefix` parameter to `"PARGO_PREFIX_"` to remove the prefix added by parquet-go package:
-
-```bash
-$ parquet-tools meta testdata/pargo-prefix-flat.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["PARGO_PREFIX__shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
-$ parquet-tools meta --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-flat.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["_shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["Shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
-```
-
 ### row-count Command
 
 `row-count` command provides total number of rows in the parquet file:
@@ -696,7 +678,7 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=Parquet_go_root","Fields":[{"Tag":"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
+{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
 ```
 
 Default setting will be ignored to make output shorter, eg
@@ -704,6 +686,9 @@ Default setting will be ignored to make output shorter, eg
 * convertedtype=MAP
 * repetitiontype=REQUIRED
 * type=STRUCT
+
+> [!NOTE]
+> `schema` command uses field names from go struct, they will be changed to use field names from parquet file in the future, this is tracked by https://github.com/hangxie/parquet-tools/issues/596
 
 #### Raw Format
 
@@ -721,8 +706,8 @@ go struct format generate go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet | gofmt
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
-	Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
 }
 ```
 
@@ -734,10 +719,9 @@ Based on your use case, type `Parquet_go_root` may need to be renamed.
 ```bash
 $ parquet-tools schema -f go testdata/map-composite-value.parquet
 parquet-tools: error: go struct does not support composite type as map value in field [Parquet_go_root.Scores]
-exit status 1
 
 $ parquet-tools schema testdata/map-composite-value.parquet
-{"Tag":"name=Parquet_go_root","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Age, type=INT32"},{"Tag":"name=Id, type=INT64"},{"Tag":"name=Weight, type=FLOAT"},{"Tag":"name=Sex, type=BOOLEAN"},{"Tag":"name=Classes, type=LIST","Fields":[{"Tag":"name=Element, type=BYTE_ARRAY, convertedtype=UTF8"}]},{"Tag":"name=Scores, type=MAP","Fields":[{"Tag":"name=Key, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Value, type=LIST","Fields":[{"Tag":"name=Element, type=FLOAT"}]}]},{"Tag":"name=Friends, type=LIST","Fields":[{"Tag":"name=Element","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Id, type=INT64"}]}]},{"Tag":"name=Teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=Name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=Id, type=INT64"}]}]}
+{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=age, type=INT32"},{"Tag":"name=id, type=INT64"},{"Tag":"name=weight, type=FLOAT"},{"Tag":"name=sex, type=BOOLEAN"},{"Tag":"name=classes, type=LIST","Fields":[{"Tag":"name=element, type=BYTE_ARRAY, convertedtype=UTF8"}]},{"Tag":"name=scores, type=MAP","Fields":[{"Tag":"name=key, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=value, type=LIST","Fields":[{"Tag":"name=element, type=FLOAT"}]}]},{"Tag":"name=friends, type=LIST","Fields":[{"Tag":"name=element","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=id, type=INT64"}]}]},{"Tag":"name=teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=id, type=INT64"}]}]}
 ```
 
 #### CSV Format
@@ -759,50 +743,8 @@ name=Vaccinated, type=BOOLEAN
 ```bash
 $ parquet-tools schema -f csv testdata/csv-optional.parquet
 parquet-tools: error: CSV does not support optional column
-exit status 1
 $ parquet-tools schema -f csv testdata/csv-nested.parquet
 parquet-tools: error: CSV supports flat schema only
-exit status 1
-```
-
-#### PARGO_PREFIX_ Handling
-
-`parquet-go` package [uses `"PARGO_PREFIX_"` to deal with field names starting with non-alphabetic characters](https://github.com/xitongsys/parquet-go?tab=readme-ov-file#tips-4), hence output schema will also have this prefix. To restore origin field name, you can specify option `--pargo-prefix` with value of `"PARGO_PREFIX_"`, this applies to all output formats.
-
-```bash
-$ parquet-tools schema -f csv testdata/pargo-prefix-flat.parquet
-name=PARGO_PREFIX__shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
-name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
-$ parquet-tools schema -f csv --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-flat.parquet
-name=_shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8
-name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8
-```
-
-You need to change field name to start with uppercase alphabetic character if you use this with go struct, otherwise the field will not be exported
-
-```bash
-$ parquet-tools schema -f go testdata/pargo-prefix-nested.parquet | gofmt
-type Parquet_go_root struct {
-	PARGO_PREFIX__NestedMap map[string]struct {
-		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=PARGO_PREFIX__Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
-		PARGO_PREFIX__List []string         `parquet:"name=PARGO_PREFIX__List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
-	} `parquet:"name=PARGO_PREFIX__NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT, convertedtype=MAP"`
-	PARGO_PREFIX__NestedList []struct {
-		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=PARGO_PREFIX__Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
-		PARGO_PREFIX__List []string         `parquet:"name=PARGO_PREFIX__List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
-	} `parquet:"name=PARGO_PREFIX__NestedList, type=LIST, valuetype=STRUCT, convertedtype=LIST"`
-}
-$ parquet-tools schema -f go --pargo-prefix PARGO_PREFIX_ testdata/pargo-prefix-nested.parquet | gofmt
-type Parquet_go_root struct {
-	_NestedMap map[string]struct {
-		_Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
-		_List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
-	} `parquet:"name=_NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT, convertedtype=MAP"`
-	_NestedList []struct {
-		_Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
-		_List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
-	} `parquet:"name=_NestedList, type=LIST, valuetype=STRUCT, convertedtype=LIST"`
-}
 ```
 
 ### shell-completions Command (Experimental)
@@ -911,7 +853,7 @@ $ parquet-tools row-count 3.parquet
 
 ```bash
 $ parquet-tools version
-v1.28.0
+v1.29.0
 ```
 
 #### Print All Information
@@ -920,23 +862,23 @@ v1.28.0
 
 ```bash
 $ parquet-tools version -a
-v1.28.0
-2025-04-04T16:27:10Z
-Homebrew
+v1.29.0
+2025-05-11T02:50:50+0000
+github
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.28.0","BuildTime":"2025-04-04T16:27:10Z"}
+{"Version":"v1.29.0","BuildTime":"2025-05-11T02:50:50+0000"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.28.0"}
+{"Version":"v1.29.0"}
 ```
 
 ## Credit
