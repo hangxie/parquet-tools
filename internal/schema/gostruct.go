@@ -141,7 +141,7 @@ func (n goStructNode) stringWithName() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	typeStr = n.Name + " " + typeStr + " " + n.getStructTags()
+	typeStr = n.InNamePath[len(n.InNamePath)-1] + " " + typeStr + " " + n.getStructTags()
 	return typeStr, nil
 }
 

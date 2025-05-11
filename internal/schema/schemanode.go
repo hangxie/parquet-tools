@@ -103,6 +103,12 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		}
 	}
 
+	queue := []*SchemaNode{root}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = append(queue[1:], node.Children...)
+		node.Name = node.ExNamePath[len(node.ExNamePath)-1]
+	}
 	return root, nil
 }
 
@@ -382,7 +388,7 @@ func (s SchemaNode) GoStruct() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("type %s %s", s.Name, goStruct), nil
+	return fmt.Sprintf("type %s %s", s.InNamePath[0], goStruct), nil
 }
 
 func (s SchemaNode) JSONSchema() string {

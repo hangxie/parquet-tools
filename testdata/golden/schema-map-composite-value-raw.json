@@ -1,13 +1,13 @@
 {
   "repetition_type": "REQUIRED",
-  "name": "Parquet_go_root",
+  "name": "parquet_go_root",
   "num_children": 9,
   "children": [
     {
       "type": "BYTE_ARRAY",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Name",
+      "name": "name",
       "converted_type": "UTF8",
       "scale": 0,
       "precision": 0,
@@ -20,7 +20,7 @@
       "type": "INT32",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Age",
+      "name": "age",
       "scale": 0,
       "precision": 0,
       "field_id": 0
@@ -29,7 +29,7 @@
       "type": "INT64",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Id",
+      "name": "id",
       "scale": 0,
       "precision": 0,
       "field_id": 0
@@ -38,7 +38,7 @@
       "type": "FLOAT",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Weight",
+      "name": "weight",
       "scale": 0,
       "precision": 0,
       "field_id": 0
@@ -47,27 +47,27 @@
       "type": "BOOLEAN",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Sex",
+      "name": "sex",
       "scale": 0,
       "precision": 0,
       "field_id": 0
     },
     {
       "repetition_type": "REQUIRED",
-      "name": "Classes",
+      "name": "classes",
       "num_children": 1,
       "converted_type": "LIST",
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "List",
+          "name": "list",
           "num_children": 1,
           "children": [
             {
               "type": "BYTE_ARRAY",
               "type_length": 0,
               "repetition_type": "REQUIRED",
-              "name": "Element",
+              "name": "element",
               "converted_type": "UTF8",
               "scale": 0,
               "precision": 0,
@@ -82,13 +82,13 @@
     },
     {
       "repetition_type": "REQUIRED",
-      "name": "Scores",
+      "name": "scores",
       "num_children": 1,
       "converted_type": "MAP",
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "Key_value",
+          "name": "key_value",
           "num_children": 2,
           "converted_type": "MAP_KEY_VALUE",
           "children": [
@@ -96,7 +96,7 @@
               "type": "BYTE_ARRAY",
               "type_length": 0,
               "repetition_type": "REQUIRED",
-              "name": "Key",
+              "name": "key",
               "converted_type": "UTF8",
               "scale": 0,
               "precision": 0,
@@ -107,20 +107,20 @@
             },
             {
               "repetition_type": "REQUIRED",
-              "name": "Value",
+              "name": "value",
               "num_children": 1,
               "converted_type": "LIST",
               "children": [
                 {
                   "repetition_type": "REPEATED",
-                  "name": "List",
+                  "name": "list",
                   "num_children": 1,
                   "children": [
                     {
                       "type": "FLOAT",
                       "type_length": 0,
                       "repetition_type": "REQUIRED",
-                      "name": "Element",
+                      "name": "element",
                       "scale": 0,
                       "precision": 0,
                       "field_id": 0
@@ -135,25 +135,25 @@
     },
     {
       "repetition_type": "REQUIRED",
-      "name": "Friends",
+      "name": "friends",
       "num_children": 1,
       "converted_type": "LIST",
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "List",
+          "name": "list",
           "num_children": 1,
           "children": [
             {
               "repetition_type": "REQUIRED",
-              "name": "Element",
+              "name": "element",
               "num_children": 2,
               "children": [
                 {
                   "type": "BYTE_ARRAY",
                   "type_length": 0,
                   "repetition_type": "REQUIRED",
-                  "name": "Name",
+                  "name": "name",
                   "converted_type": "UTF8",
                   "scale": 0,
                   "precision": 0,
@@ -166,7 +166,7 @@
                   "type": "INT64",
                   "type_length": 0,
                   "repetition_type": "REQUIRED",
-                  "name": "Id",
+                  "name": "id",
                   "scale": 0,
                   "precision": 0,
                   "field_id": 0
@@ -179,14 +179,14 @@
     },
     {
       "repetition_type": "REPEATED",
-      "name": "Teachers",
+      "name": "teachers",
       "num_children": 2,
       "children": [
         {
           "type": "BYTE_ARRAY",
           "type_length": 0,
           "repetition_type": "REQUIRED",
-          "name": "Name",
+          "name": "name",
           "converted_type": "UTF8",
           "scale": 0,
           "precision": 0,
@@ -199,7 +199,7 @@
           "type": "INT64",
           "type_length": 0,
           "repetition_type": "REQUIRED",
-          "name": "Id",
+          "name": "id",
           "scale": 0,
           "precision": 0,
           "field_id": 0

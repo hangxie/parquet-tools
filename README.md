@@ -687,16 +687,13 @@ Default setting will be ignored to make output shorter, eg
 * repetitiontype=REQUIRED
 * type=STRUCT
 
-> [!NOTE]
-> `schema` command uses field names from go struct, they will be changed to use field names from parquet file in the future, this is tracked by https://github.com/hangxie/parquet-tools/issues/596
-
 #### Raw Format
 
 Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format.
 
 ```bash
 $ parquet-tools schema --format raw testdata/good.parquet
-{"repetition_type":"REQUIRED","name":"Parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"Shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
+{"repetition_type":"REQUIRED","name":"parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
 ```
 
 #### Go Struct Format
