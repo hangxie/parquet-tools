@@ -7,9 +7,9 @@
       "Columns": [
         {
           "PathInSchema": [
-            "V1",
-            "List",
-            "Element"
+            "v1",
+            "list",
+            "element"
           ],
           "Type": "INT32",
           "Encodings": [
@@ -27,9 +27,9 @@
         },
         {
           "PathInSchema": [
-            "V2",
-            "List",
-            "Element"
+            "v2",
+            "list",
+            "element"
           ],
           "Type": "INT64",
           "Encodings": [
@@ -47,9 +47,9 @@
         },
         {
           "PathInSchema": [
-            "V3",
-            "List",
-            "Element"
+            "v3",
+            "list",
+            "element"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "Encodings": [
@@ -67,9 +67,9 @@
         },
         {
           "PathInSchema": [
-            "V4",
-            "List",
-            "Element"
+            "v4",
+            "list",
+            "element"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -87,9 +87,9 @@
         },
         {
           "PathInSchema": [
-            "V5",
-            "List",
-            "Element"
+            "v5",
+            "list",
+            "element"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "Encodings": [
@@ -107,9 +107,9 @@
         },
         {
           "PathInSchema": [
-            "V6",
-            "List",
-            "Element"
+            "v6",
+            "list",
+            "element"
           ],
           "Type": "INT96",
           "Encodings": [
