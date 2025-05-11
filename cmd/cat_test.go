@@ -31,7 +31,7 @@ func Test_CatCmd_Run_error(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			err := tc.cmd.Run()
 			if tc.errMsg == "" {
-				require.Nil(t, err)
+				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)

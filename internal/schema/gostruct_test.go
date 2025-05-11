@@ -15,17 +15,17 @@ func Test_GoStructNode_String_good(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	typeStr, err := goStructNode{*schemaRoot}.String()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
 	// golden file has prefix of "type <root node name>"
@@ -37,13 +37,13 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/map-value-map.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	mapType := parquet.ConvertedType_MAP
@@ -58,13 +58,13 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/map-composite-value.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = goStructNode{*schemaRoot}.String()
@@ -76,13 +76,13 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/good.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	// 1st field is "Shoe_brand"
@@ -96,13 +96,13 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/reinterpret-list.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
@@ -117,13 +117,13 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/reinterpret-map-key.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
@@ -138,13 +138,13 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/reinterpret-map-key.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	// 2nd field is "V1", whose 1st field is "Key_value", whose 3rd field is map's value
@@ -158,13 +158,13 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/list-of-list.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = goStructNode{*schemaRoot}.String()

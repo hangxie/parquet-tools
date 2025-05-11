@@ -77,7 +77,7 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 			tc.cmd.URI = filepath.Join("../testdata", tc.cmd.URI)
 			tc.cmd.NameFormat = filepath.Join(tempDir, tc.cmd.NameFormat)
 			err := tc.cmd.Run()
-			require.Nil(t, err)
+			require.NoError(t, err)
 			files, _ := os.ReadDir(tempDir)
 			require.Equal(t, len(files), len(tc.result))
 
@@ -85,7 +85,7 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 				rowCount, ok := tc.result[file.Name()]
 				require.True(t, ok)
 				reader, err := pio.NewParquetFileReader(filepath.Join(tempDir, file.Name()), rOpt)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.NotNil(t, reader)
 				require.Equal(t, reader.GetNumRows(), rowCount)
 				_ = reader.PFile.Close()

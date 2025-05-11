@@ -60,13 +60,13 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	// anonymous access by lack of environment variable
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err := azureAccessDetail(u, false)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
 
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 	uri, cred, err = azureAccessDetail(u, false)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
 
@@ -78,7 +78,7 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	}
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
 	uri, cred, err = azureAccessDetail(u, true)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
 }
@@ -98,7 +98,7 @@ func Test_azureAccessDetail_good_shared_cred(t *testing.T) {
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
 	uri, cred, err := azureAccessDetail(u, false)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Equal(t, "*exported.SharedKeyCredential", reflect.TypeOf(cred).String())
 }
@@ -124,7 +124,7 @@ func Test_getBucketRegion(t *testing.T) {
 			t.Setenv("AWS_PROFILE", tc.profile)
 			_, err := getS3Client(tc.bucket, tc.public)
 			if tc.errMsg == "" {
-				require.Nil(t, err)
+				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -156,7 +156,7 @@ func Test_parseURI(t *testing.T) {
 				require.Contains(t, err.Error(), tc.errMsg)
 				return
 			}
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, tc.scheme, u.Scheme)
 			require.Equal(t, tc.host, u.Host)
 			require.Equal(t, tc.path, u.Path)

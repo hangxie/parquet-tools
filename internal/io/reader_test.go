@@ -45,7 +45,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			_, err := NewParquetFileReader(tc.uri, tc.option)
 			if tc.errMsg == "" {
-				require.Nil(t, err)
+				require.NoError(t, err)
 				return
 			}
 			require.Error(t, err)
