@@ -7,7 +7,7 @@
       "Columns": [
         {
           "PathInSchema": [
-            "Shoe_brand"
+            "shoe_brand"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -25,7 +25,7 @@
         },
         {
           "PathInSchema": [
-            "Shoe_name"
+            "shoe_name"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [

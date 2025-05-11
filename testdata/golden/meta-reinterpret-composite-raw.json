@@ -7,9 +7,9 @@
       "Columns": [
         {
           "PathInSchema": [
-            "Map",
-            "Key_value",
-            "Key"
+            "map",
+            "key_value",
+            "key"
           ],
           "Type": "INT32",
           "Encodings": [
@@ -27,14 +27,14 @@
         },
         {
           "PathInSchema": [
-            "Map",
-            "Key_value",
-            "Value",
-            "List",
-            "Element",
-            "EmbeddedMap",
-            "Key_value",
-            "Key"
+            "map",
+            "key_value",
+            "value",
+            "list",
+            "element",
+            "embeddedMap",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -52,14 +52,14 @@
         },
         {
           "PathInSchema": [
-            "Map",
-            "Key_value",
-            "Value",
-            "List",
-            "Element",
-            "EmbeddedMap",
-            "Key_value",
-            "Value"
+            "map",
+            "key_value",
+            "value",
+            "list",
+            "element",
+            "embeddedMap",
+            "key_value",
+            "value"
           ],
           "Type": "INT32",
           "Encodings": [
@@ -77,14 +77,14 @@
         },
         {
           "PathInSchema": [
-            "Map",
-            "Key_value",
-            "Value",
-            "List",
-            "Element",
-            "EmbeddedList",
-            "List",
-            "Element"
+            "map",
+            "key_value",
+            "value",
+            "list",
+            "element",
+            "embeddedList",
+            "list",
+            "element"
           ],
           "Type": "INT96",
           "Encodings": [

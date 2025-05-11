@@ -7,9 +7,9 @@
       "Columns": [
         {
           "PathInSchema": [
-            "V1",
-            "Key_value",
-            "Key"
+            "v1",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -27,9 +27,9 @@
         },
         {
           "PathInSchema": [
-            "V1",
-            "Key_value",
-            "Value"
+            "v1",
+            "key_value",
+            "value"
           ],
           "Type": "INT32",
           "Encodings": [
@@ -47,9 +47,9 @@
         },
         {
           "PathInSchema": [
-            "V2",
-            "Key_value",
-            "Key"
+            "v2",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -67,9 +67,9 @@
         },
         {
           "PathInSchema": [
-            "V2",
-            "Key_value",
-            "Value"
+            "v2",
+            "key_value",
+            "value"
           ],
           "Type": "INT64",
           "Encodings": [
@@ -87,9 +87,9 @@
         },
         {
           "PathInSchema": [
-            "V3",
-            "Key_value",
-            "Key"
+            "v3",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -107,9 +107,9 @@
         },
         {
           "PathInSchema": [
-            "V3",
-            "Key_value",
-            "Value"
+            "v3",
+            "key_value",
+            "value"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "Encodings": [
@@ -127,9 +127,9 @@
         },
         {
           "PathInSchema": [
-            "V4",
-            "Key_value",
-            "Key"
+            "v4",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -147,9 +147,9 @@
         },
         {
           "PathInSchema": [
-            "V4",
-            "Key_value",
-            "Value"
+            "v4",
+            "key_value",
+            "value"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -167,9 +167,9 @@
         },
         {
           "PathInSchema": [
-            "V5",
-            "Key_value",
-            "Key"
+            "v5",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -187,9 +187,9 @@
         },
         {
           "PathInSchema": [
-            "V5",
-            "Key_value",
-            "Value"
+            "v5",
+            "key_value",
+            "value"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "Encodings": [
@@ -207,9 +207,9 @@
         },
         {
           "PathInSchema": [
-            "V6",
-            "Key_value",
-            "Key"
+            "v6",
+            "key_value",
+            "key"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -227,9 +227,9 @@
         },
         {
           "PathInSchema": [
-            "V6",
-            "Key_value",
-            "Value"
+            "v6",
+            "key_value",
+            "value"
           ],
           "Type": "INT96",
           "Encodings": [

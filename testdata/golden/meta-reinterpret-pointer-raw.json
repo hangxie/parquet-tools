@@ -7,7 +7,7 @@
       "Columns": [
         {
           "PathInSchema": [
-            "V1"
+            "v1"
           ],
           "Type": "INT32",
           "Encodings": [
@@ -25,7 +25,7 @@
         },
         {
           "PathInSchema": [
-            "V2"
+            "v2"
           ],
           "Type": "INT64",
           "Encodings": [
@@ -43,7 +43,7 @@
         },
         {
           "PathInSchema": [
-            "V3"
+            "v3"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "Encodings": [
@@ -61,7 +61,7 @@
         },
         {
           "PathInSchema": [
-            "V4"
+            "v4"
           ],
           "Type": "BYTE_ARRAY",
           "Encodings": [
@@ -79,7 +79,7 @@
         },
         {
           "PathInSchema": [
-            "V5"
+            "v5"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "Encodings": [
@@ -97,7 +97,7 @@
         },
         {
           "PathInSchema": [
-            "V6"
+            "v6"
           ],
           "Type": "INT96",
           "Encodings": [

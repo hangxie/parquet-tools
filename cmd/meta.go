@@ -62,6 +62,16 @@ func (c MetaCmd) Run() error {
 	if err != nil {
 		return err
 	}
+
+	inExNameMap := map[string][]string{}
+	queue := []*pschema.SchemaNode{schemaRoot}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = append(queue[1:], node.Children...)
+		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+		inExNameMap[inPath] = node.ExNamePath[1:]
+	}
+
 	riFieldMap := map[string]pschema.ReinterpretField{}
 	for _, field := range schemaRoot.GetReinterpretFields(false) {
 		riFieldMap[field.InPath] = field
@@ -86,6 +96,12 @@ func (c MetaCmd) Run() error {
 				CompressionCodec: col.MetaData.Codec.String(),
 			}
 
+			pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+			if exPath, found := inExNameMap[pathKey]; found {
+				// should always reach here unless the schema or meta is corrupted
+				columns[colIndex].PathInSchema = exPath
+			}
+
 			if col.MetaData.Statistics == nil {
 				// no statistics info
 				continue
@@ -105,7 +121,7 @@ func (c MetaCmd) Run() error {
 				continue
 			}
 
-			field, found := riFieldMap[strings.Join(columns[colIndex].PathInSchema, common.PAR_GO_PATH_DELIMITER)]
+			field, found := riFieldMap[pathKey]
 			if !found {
 				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
 				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
