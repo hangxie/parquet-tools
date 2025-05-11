@@ -83,7 +83,7 @@ func main() {
 	pw.PageSize = 8 * 1024
 	pw.CompressionType = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
 		strI := fmt.Sprintf("%d", i)
 		value := AllTypes{
@@ -137,7 +137,7 @@ func main() {
 		} else {
 			value.DecimalPointer = &value.Decimal3
 		}
-		for j := 0; j < i; j++ {
+		for j := range i {
 			key := fmt.Sprintf("Composite-%d", j)
 			value.Map[key] = int32(j)
 			value.List = append(value.List, key)
@@ -146,7 +146,7 @@ func main() {
 				Map:  map[string]int32{},
 				List: []string{},
 			}
-			for k := 0; k < j; k++ {
+			for k := range j {
 				key := fmt.Sprintf("Embedded-%d", k)
 				nested.Map[key] = int32(k)
 				nested.List = append(nested.List, types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[k]/100.0)), "BigEndian", 12, true))

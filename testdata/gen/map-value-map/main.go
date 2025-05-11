@@ -62,7 +62,7 @@ func main() {
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
 	pw.CompressionType = parquet.CompressionCodec_LZ4_RAW
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		stu := Student{
 			Name: "StudentName" + strconv.Itoa(i+1),
 			Scores: map[string]map[string]float32{

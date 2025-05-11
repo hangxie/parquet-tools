@@ -42,7 +42,7 @@ func (c ImportCmd) Run() error {
 func (c ImportCmd) closeWriter(pf parquetSource.ParquetFile) error {
 	// retry on particular errors according to https://github.com/colinmarc/hdfs/blob/v2.4.0/file_writer.go#L220-L226
 	var err error
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		err = pf.Close()
 		if err != nil && strings.Contains(err.Error(), "replication in progress") {
 			time.Sleep(1 * time.Second)

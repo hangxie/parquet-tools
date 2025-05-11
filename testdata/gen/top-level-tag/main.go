@@ -69,7 +69,7 @@ func genParquet(name, jsonSchema string) error {
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
 	pw.CompressionType = parquet.CompressionCodec_LZ4_RAW
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		stu := Student{
 			Name: "StudentName" + strconv.Itoa(i),
 			Id:   int64(i * i),
