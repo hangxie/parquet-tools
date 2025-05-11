@@ -60,21 +60,15 @@ type ReinterpretField struct {
 	ExPath        string
 }
 
-func exNamePath(pathMap map[string]string, path []string) []string {
-	pathKey := strings.Join(path, common.PAR_GO_PATH_DELIMITER)
-	return strings.Split(pathMap[pathKey], common.PAR_GO_PATH_DELIMITER)
-}
-
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	schemas := reader.SchemaHandler.SchemaElements
-	var stack []*SchemaNode
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],
 		Children:      []*SchemaNode{},
 		InNamePath:    []string{schemas[0].Name},
 		ExNamePath:    strings.Split(reader.SchemaHandler.InPathToExPath[schemas[0].Name], common.PAR_GO_PATH_DELIMITER)[:1],
 	}
-	stack = append(stack, root)
+	stack := []*SchemaNode{root}
 
 	for pos := 1; len(stack) > 0; {
 		node := stack[len(stack)-1]
@@ -91,7 +85,10 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 			childNode.InNamePath = make([]string, len(node.InNamePath)+1)
 			copy(childNode.InNamePath, node.InNamePath)
 			childNode.InNamePath[len(node.InNamePath)] = schemas[pos].Name
-			childNode.ExNamePath = exNamePath(reader.SchemaHandler.InPathToExPath, childNode.InNamePath)
+
+			inPathKey := strings.Join(childNode.InNamePath, common.PAR_GO_PATH_DELIMITER)
+			childNode.ExNamePath = strings.Split(reader.SchemaHandler.InPathToExPath[inPathKey], common.PAR_GO_PATH_DELIMITER)
+
 			node.Children = append(node.Children, childNode)
 			stack = append(stack, childNode)
 			pos++
@@ -113,14 +110,15 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 }
 
 func (s *SchemaNode) getTagMap() map[string]string {
-	tagMap := map[string]string{}
+	tagMap := map[string]string{
+		"repetitiontype": repetitionTyeStr(s.SchemaElement),
+		"type":           typeStr(s.SchemaElement),
+		"name":           s.Name,
+	}
+
 	if len(s.ExNamePath) != 0 {
 		tagMap["name"] = s.ExNamePath[len(s.ExNamePath)-1]
-	} else {
-		tagMap["name"] = s.Name
 	}
-	tagMap["repetitiontype"] = repetitionTyeStr(s.SchemaElement)
-	tagMap["type"] = typeStr(s.SchemaElement)
 
 	if tagMap["type"] == "STRUCT" {
 		return tagMap
@@ -162,9 +160,7 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 		// LIST => Element (of scalar type)
 		s.Children[0].Name = "Element"
 		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
-		for k, v := range s.Children[0].getTagMapWithPrefix("value") {
-			tagMap[k] = v
-		}
+		maps.Copy(tagMap, s.Children[0].getTagMapWithPrefix("value"))
 		return
 	}
 
@@ -179,10 +175,7 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 
 	if len(s.Children[0].Children) == 1 {
 		// LIST => List => Element
-		for k, v := range s.Children[0].Children[0].getTagMapWithPrefix("value") {
-			tagMap[k] = v
-		}
-		// s.Children[0] = s.Children[0].Children[0]
+		maps.Copy(tagMap, s.Children[0].Children[0].getTagMapWithPrefix("value"))
 		s.Children = s.Children[0].Children
 		s.Children[0].Name = "Element"
 		return
@@ -299,11 +292,14 @@ func (s *SchemaNode) GetReinterpretFields(skipInterimLayer bool) []ReinterpretFi
 		sort.Slice(interimPath, func(i, j int) bool {
 			return len(interimPath[i]) > len(interimPath[j])
 		})
+
+		// assuming the interim layer is root->level1->level2->interim, the goal is to remove "interim" from all paths, eg
+		// from "root->level1->level2->interim->field1" to "root->level1->level2->field1"
 		for _, path := range interimPath {
+			length := len(path)
 			for i := range result {
 				inPath := strings.Split(result[i].InPath, common.PAR_GO_PATH_DELIMITER)
 				exPath := strings.Split(result[i].ExPath, common.PAR_GO_PATH_DELIMITER)
-				length := len(path)
 				if len(inPath) > length && slices.Equal(path, inPath[:length]) {
 					result[i].InPath = strings.Join(slices.Delete(inPath, length-1, length), common.PAR_GO_PATH_DELIMITER)
 					result[i].ExPath = strings.Join(slices.Delete(exPath, length-1, length), common.PAR_GO_PATH_DELIMITER)
