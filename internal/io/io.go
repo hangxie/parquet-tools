@@ -54,16 +54,20 @@ func getS3BucketRegion(bucket string, isPublic bool) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("unable to get region for S3 bucket %s: %w", bucket, err)
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	switch resp.StatusCode {
 	case http.StatusOK:
-		return resp.Header.Get("x-amz-bucket-region"), nil
+		return resp.Header.Get("X-Amz-Bucket-Region"), nil
 	case http.StatusNotFound:
 		return "", fmt.Errorf("S3 bucket %s not found", bucket)
 	case http.StatusForbidden:
 		if isPublic {
 			return "", fmt.Errorf("S3 bucket %s is not public", bucket)
 		}
-		return resp.Header.Get("x-amz-bucket-region"), nil
+		return resp.Header.Get("X-Amz-Bucket-Region"), nil
 	default:
 		return "", fmt.Errorf("unrecognized StatusCode from AWS: %d", resp.StatusCode)
 	}
