@@ -24,7 +24,7 @@ func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 	}()
 
 	_, err = NewSchemaTree(pr, SchemaOption{FailOnInt96: true})
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "type INT96 which is not supporte")
 }
 
@@ -201,7 +201,7 @@ func Test_DecimalToFloat_invalid_type(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.errMsg, func(t *testing.T) {
 			f64, err := DecimalToFloat(fieldAttr, tc.value)
-			require.NotNil(t, err)
+			require.Error(t, err)
 			require.Equal(t, tc.errMsg, err.Error())
 			require.Nil(t, f64)
 		})
@@ -328,7 +328,7 @@ func Test_Json_schema_csv_schema_nested(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "CSV supports flat schema only")
 }
 
@@ -346,7 +346,7 @@ func Test_Json_schema_csv_schema_optional(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "CSV does not support optional column")
 }
 
@@ -364,6 +364,6 @@ func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "CSV does not support column in LIST typ")
 }

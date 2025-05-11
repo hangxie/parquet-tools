@@ -47,7 +47,7 @@ func Test_NewParquetFileWriter(t *testing.T) {
 				}
 			}()
 			if tc.errMsg != "" {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 				return
 			}
@@ -90,7 +90,7 @@ func Test_NewCSVWriter(t *testing.T) {
 				}
 			}()
 			if tc.errMsg != "" {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 				return
 			}
@@ -127,7 +127,7 @@ func Test_NewJSONWriter(t *testing.T) {
 				}
 			}()
 			if tc.errMsg != "" {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 				return
 			}
@@ -172,7 +172,7 @@ func Test_NewGenericWriter(t *testing.T) {
 				require.Nil(t, err)
 				return
 			}
-			require.NotNil(t, err)
+			require.Error(t, err)
 			require.Nil(t, pw)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})

@@ -11,7 +11,7 @@ func Test_RowCountCmd_Run_non_existent(t *testing.T) {
 	cmd.URI = "file/does/not/exist"
 
 	err := cmd.Run()
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "no such file or directory")
 }
 

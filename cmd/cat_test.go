@@ -33,7 +33,7 @@ func Test_CatCmd_Run_error(t *testing.T) {
 			if tc.errMsg == "" {
 				require.Nil(t, err)
 			} else {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			}
 		})
