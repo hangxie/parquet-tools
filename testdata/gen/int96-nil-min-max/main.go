@@ -27,7 +27,7 @@ func main() {
 	}
 
 	pw.CompressionType = parquet.CompressionCodec_ZSTD
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		value := AllTypes{
 			Int96: nil,
 			Utf8:  fmt.Sprintf("UTF8-%d", i),

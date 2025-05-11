@@ -181,7 +181,7 @@ func genList() {
 			V5: make([]string, length),
 			V6: make([]string, length),
 		}
-		for j := 0; j < length; j++ {
+		for j := range length {
 			value.V1[j] = int32(i)
 			value.V2[j] = int64(i)
 			value.V3[j] = types.StrIntToBinary(strValue, "BigEndian", 12, true)
@@ -306,12 +306,12 @@ func genComposite() {
 		}
 
 		structList := make([]Struct, length)
-		for j := 0; j < length; j++ {
+		for j := range length {
 			structList[j] = Struct{
 				EmbeddedMap:  make(map[string]int32),
 				EmbeddedList: make([]*string, j+1),
 			}
-			for k := 0; k < j+1; k++ {
+			for k := range j + 1 {
 				key := types.StrIntToBinary(fmt.Sprintf("%04d%03d", j, k), "BigEndian", 0, true)
 				structList[j].EmbeddedMap[key] = int32(j)
 

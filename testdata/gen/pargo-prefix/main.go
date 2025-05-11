@@ -45,18 +45,18 @@ func main() {
 	pw.PageSize = 8 * 1024
 	pw.CompressionType = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		value := PargoPrefix{
 			NestedMap:  map[string]InnerMap{},
 			NestedList: []InnerMap{},
 		}
-		for j := 0; j < i; j++ {
+		for j := range i {
 			key := fmt.Sprintf("Composite-%d", j)
 			nested := InnerMap{
 				Map:  map[string]int32{},
 				List: []string{},
 			}
-			for k := 0; k < j; k++ {
+			for k := range j {
 				key := fmt.Sprintf("Embedded-%d", k)
 				nested.Map[key] = int32(k)
 				nested.List = append(nested.List, types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[k]/100.0)), "BigEndian", 12, true))

@@ -51,13 +51,13 @@ func main() {
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
 	pw.CompressionType = parquet.CompressionCodec_LZ4
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		rec := RecordType{
 			Lol: make([][]string, i+1),
 		}
-		for j := 0; j <= i; j++ {
+		for j := range i {
 			rec.Lol[j] = make([]string, j+1)
-			for k := 0; k <= j; k++ {
+			for k := range j {
 				rec.Lol[j][k] = fmt.Sprintf("%d-%d-%d", i+1, j+1, k+1)
 			}
 		}
