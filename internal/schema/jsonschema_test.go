@@ -14,17 +14,17 @@ func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	schema := jsonSchemaNode{*schemaRoot}.Schema()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	actual, _ := json.MarshalIndent(schema, "", "  ")
 	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-json.json")

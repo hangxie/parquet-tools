@@ -18,7 +18,7 @@ func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
@@ -32,13 +32,13 @@ func Test_NewSchemaTree_good(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual, _ := json.MarshalIndent(schemaRoot, "", "  ")
@@ -50,13 +50,13 @@ func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	expected := []string{
@@ -85,7 +85,7 @@ func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 
 func Test_DecimalToFloat_nil(t *testing.T) {
 	f64, err := DecimalToFloat(ReinterpretField{}, nil)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Nil(t, f64)
 }
 
@@ -146,12 +146,12 @@ func Test_DecimalToFloat_int32(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			f64, err := DecimalToFloat(fieldAttr, int32(tc.intValue))
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.NotNil(t, f64)
 			require.Equal(t, tc.decimalValue, *f64)
 
 			f64, err = DecimalToFloat(fieldAttr, int64(tc.intValue))
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.NotNil(t, f64)
 			require.Equal(t, tc.decimalValue, *f64)
 		})
@@ -180,7 +180,7 @@ func Test_DecimalToFloat_string(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			f64, err := DecimalToFloat(fieldAttr, types.StrIntToBinary(tc.strValue, "BigEndian", 0, true))
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.NotNil(t, f64)
 			require.Equal(t, tc.decimalValue, *f64)
 		})
@@ -238,7 +238,7 @@ func Test_TimeUnitToTag(t *testing.T) {
 
 func Test_JSON_schema_list_variant(t *testing.T) {
 	buf, err := os.ReadFile("../../testdata/golden/schema-list-variants-raw.json")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	se := SchemaNode{}
 	require.Nil(t, json.Unmarshal(buf, &se))
@@ -246,10 +246,10 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	schemaRoot := jsonSchemaNode{se}
 	schema := schemaRoot.Schema()
 	actual, err := json.MarshalIndent(schema, "", "  ")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expected, err := os.ReadFile("../../testdata/golden/schema-list-variants-json.json")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	require.Equal(t, string(expected), string(actual)+"\n")
 }
@@ -258,17 +258,17 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual, err := schemaRoot.GoStruct()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
@@ -277,13 +277,13 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual := schemaRoot.JSONSchema()
@@ -299,17 +299,17 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/csv-good.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	actual, err := schemaRoot.CSVSchema()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	expected, _ := os.ReadFile("../../testdata/golden/schema-csv-good.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
@@ -318,13 +318,13 @@ func Test_Json_schema_csv_schema_nested(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/csv-nested.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
@@ -336,13 +336,13 @@ func Test_Json_schema_csv_schema_optional(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/csv-optional.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()
@@ -354,13 +354,13 @@ func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/csv-repeated.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
 	_, err = schemaRoot.CSVSchema()

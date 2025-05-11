@@ -59,7 +59,7 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 			}
 			tc.cmd.URI = filepath.Join(tempDir, name+".parquet")
 			err := tc.cmd.Run()
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			reader, _ := pio.NewParquetFileReader(tc.cmd.URI, rOpt)
 			rowCount := reader.GetNumRows()

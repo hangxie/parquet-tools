@@ -74,10 +74,10 @@ func Test_ImportCmd_Run_good(t *testing.T) {
 			tc.cmd.URI = filepath.Join(tempDir, "import-"+name+".parquet")
 
 			err := tc.cmd.Run()
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			reader, err := pio.NewParquetFileReader(tc.cmd.URI, pio.ReadOption{})
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, reader.GetNumRows(), tc.rowCount)
 		})
 	}
