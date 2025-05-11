@@ -1,6 +1,6 @@
 {
   "repetition_type": "REQUIRED",
-  "name": "Parquet_go_root",
+  "name": "parquet_go_root",
   "num_children": 44,
   "children": [
     {
@@ -529,7 +529,7 @@
       "type": "INT32",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Decimal5",
+      "name": "decimal5",
       "scale": 2,
       "precision": 9,
       "field_id": 0,
@@ -564,7 +564,7 @@
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "Key_value",
+          "name": "key_value",
           "num_children": 2,
           "converted_type": "MAP_KEY_VALUE",
           "children": [
@@ -572,7 +572,7 @@
               "type": "BYTE_ARRAY",
               "type_length": 0,
               "repetition_type": "REQUIRED",
-              "name": "Key",
+              "name": "key",
               "converted_type": "UTF8",
               "scale": 0,
               "precision": 0,
@@ -585,7 +585,7 @@
               "type": "INT32",
               "type_length": 0,
               "repetition_type": "REQUIRED",
-              "name": "Value",
+              "name": "value",
               "scale": 0,
               "precision": 0,
               "field_id": 0
@@ -602,14 +602,14 @@
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "List",
+          "name": "list",
           "num_children": 1,
           "children": [
             {
               "type": "BYTE_ARRAY",
               "type_length": 0,
               "repetition_type": "REQUIRED",
-              "name": "Element",
+              "name": "element",
               "converted_type": "UTF8",
               "scale": 0,
               "precision": 0,
@@ -639,7 +639,7 @@
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "Key_value",
+          "name": "key_value",
           "num_children": 2,
           "converted_type": "MAP_KEY_VALUE",
           "children": [
@@ -647,7 +647,7 @@
               "type": "BYTE_ARRAY",
               "type_length": 0,
               "repetition_type": "REQUIRED",
-              "name": "Key",
+              "name": "key",
               "converted_type": "UTF8",
               "scale": 0,
               "precision": 0,
@@ -658,7 +658,7 @@
             },
             {
               "repetition_type": "REQUIRED",
-              "name": "Value",
+              "name": "value",
               "num_children": 2,
               "children": [
                 {
@@ -669,7 +669,7 @@
                   "children": [
                     {
                       "repetition_type": "REPEATED",
-                      "name": "Key_value",
+                      "name": "key_value",
                       "num_children": 2,
                       "converted_type": "MAP_KEY_VALUE",
                       "children": [
@@ -677,7 +677,7 @@
                           "type": "BYTE_ARRAY",
                           "type_length": 0,
                           "repetition_type": "REQUIRED",
-                          "name": "Key",
+                          "name": "key",
                           "converted_type": "UTF8",
                           "scale": 0,
                           "precision": 0,
@@ -690,7 +690,7 @@
                           "type": "INT32",
                           "type_length": 0,
                           "repetition_type": "REQUIRED",
-                          "name": "Value",
+                          "name": "value",
                           "scale": 0,
                           "precision": 0,
                           "field_id": 0
@@ -707,14 +707,14 @@
                   "children": [
                     {
                       "repetition_type": "REPEATED",
-                      "name": "List",
+                      "name": "list",
                       "num_children": 1,
                       "children": [
                         {
                           "type": "BYTE_ARRAY",
                           "type_length": 0,
                           "repetition_type": "REQUIRED",
-                          "name": "Element",
+                          "name": "element",
                           "converted_type": "DECIMAL",
                           "scale": 2,
                           "precision": 10,
@@ -744,12 +744,12 @@
       "children": [
         {
           "repetition_type": "REPEATED",
-          "name": "List",
+          "name": "list",
           "num_children": 1,
           "children": [
             {
               "repetition_type": "REQUIRED",
-              "name": "Element",
+              "name": "element",
               "num_children": 2,
               "children": [
                 {
@@ -760,7 +760,7 @@
                   "children": [
                     {
                       "repetition_type": "REPEATED",
-                      "name": "Key_value",
+                      "name": "key_value",
                       "num_children": 2,
                       "converted_type": "MAP_KEY_VALUE",
                       "children": [
@@ -768,7 +768,7 @@
                           "type": "BYTE_ARRAY",
                           "type_length": 0,
                           "repetition_type": "REQUIRED",
-                          "name": "Key",
+                          "name": "key",
                           "converted_type": "UTF8",
                           "scale": 0,
                           "precision": 0,
@@ -781,7 +781,7 @@
                           "type": "INT32",
                           "type_length": 0,
                           "repetition_type": "REQUIRED",
-                          "name": "Value",
+                          "name": "value",
                           "scale": 0,
                           "precision": 0,
                           "field_id": 0
@@ -798,14 +798,14 @@
                   "children": [
                     {
                       "repetition_type": "REPEATED",
-                      "name": "List",
+                      "name": "list",
                       "num_children": 1,
                       "children": [
                         {
                           "type": "BYTE_ARRAY",
                           "type_length": 0,
                           "repetition_type": "REQUIRED",
-                          "name": "Element",
+                          "name": "element",
                           "converted_type": "DECIMAL",
                           "scale": 2,
                           "precision": 10,
