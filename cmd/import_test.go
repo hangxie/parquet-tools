@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -12,10 +11,7 @@ import (
 
 func Test_ImportCmd_Run_error(t *testing.T) {
 	wOpt := pio.WriteOption{Compression: "SNAPPY"}
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 
 	testCases := map[string]struct {
 		cmd    ImportCmd
@@ -69,10 +65,7 @@ func Test_ImportCmd_Run_good(t *testing.T) {
 		"jsonl":         {ImportCmd{wOpt, "jsonl.source", "jsonl", "jsonl.schema", false, ""}, 7},
 	}
 
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "import-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {

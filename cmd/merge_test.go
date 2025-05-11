@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -13,10 +12,7 @@ import (
 func Test_MergeCmd_Run_error(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{Compression: "SNAPPY"}
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 
 	testCases := map[string]struct {
 		cmd    MergeCmd
@@ -54,10 +50,7 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 		"empty":     {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false}, 0},
 		"top-tag":   {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false}, 6},
 	}
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
@@ -79,11 +72,7 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 func Test_MergeCmd_Run_good_repeat(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{Compression: "SNAPPY"}
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "merge-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
-
+	tempDir := t.TempDir()
 	source := "../testdata/all-types.parquet"
 
 	cmd := MergeCmd{rOpt, wOpt, 10, []string{source, source}, "", false}

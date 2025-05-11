@@ -2,7 +2,6 @@ package io
 
 import (
 	"encoding/base64"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -11,10 +10,7 @@ import (
 )
 
 func Test_NewParquetFileWriter(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "unit-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	testCases := map[string]struct {
 		uri    string
@@ -57,10 +53,7 @@ func Test_NewParquetFileWriter(t *testing.T) {
 }
 
 func Test_NewCSVWriter(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "unit-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	wOpt := WriteOption{}
 	testCases := map[string]struct {
@@ -101,10 +94,7 @@ func Test_NewCSVWriter(t *testing.T) {
 }
 
 func Test_NewJSONWriter(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "split-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 
 	testCases := map[string]struct {
@@ -138,10 +128,7 @@ func Test_NewJSONWriter(t *testing.T) {
 }
 
 func Test_NewGenericWriter(t *testing.T) {
-	tempDir, _ := os.MkdirTemp(os.TempDir(), "unit-test")
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=INT64"}]}`
 
