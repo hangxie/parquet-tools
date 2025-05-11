@@ -34,10 +34,10 @@ func Test_NewParquetFileWriter(t *testing.T) {
 		"http-not-support":     {"https://domain.tld/path/to/file", "writing to https endpoint is not currently supported"},
 	}
 
-	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	_ = os.Unsetenv("AWS_PROFILE")
-	_ = os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
-	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
+	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	t.Setenv("AWS_PROFILE", "")
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			pw, err := NewParquetFileWriter(tc.uri)

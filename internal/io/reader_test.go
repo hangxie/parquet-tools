@@ -2,7 +2,6 @@ package io
 
 import (
 	"encoding/base64"
-	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -38,10 +37,10 @@ func Test_NewParquetFileReader(t *testing.T) {
 		"hdfs-failed":            {"hdfs://localhost:1/temp/good.parquet", rOpt, "connection refused"},
 	}
 
-	_ = os.Setenv("AWS_CONFIG_FILE", "/dev/null")
-	_ = os.Unsetenv("AWS_PROFILE")
-	_ = os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
-	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
+	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
+	t.Setenv("AWS_PROFILE", "")
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			_, err := NewParquetFileReader(tc.uri, tc.option)
