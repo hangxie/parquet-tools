@@ -23,7 +23,7 @@ type WriteOption struct {
 	Compression string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,LZ4_RAW,ZSTD" default:"SNAPPY"`
 }
 
-func newLocalWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
+func newLocalWriter(u *url.URL) (source.ParquetFile, error) {
 	fileWriter, err := local.NewLocalFileWriter(u.Path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local file [%s]: %w", u.Path, err)
@@ -31,7 +31,7 @@ func newLocalWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) 
 	return fileWriter, nil
 }
 
-func newAWSS3Writer(u *url.URL, option WriteOption) (source.ParquetFile, error) {
+func newAWSS3Writer(u *url.URL) (source.ParquetFile, error) {
 	s3Client, err := getS3Client(u.Host, false)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func newAWSS3Writer(u *url.URL, option WriteOption) (source.ParquetFile, error) 
 	return fileWriter, nil
 }
 
-func newGoogleCloudStorageWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
+func newGoogleCloudStorageWriter(u *url.URL) (source.ParquetFile, error) {
 	fileWriter, err := gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open GCS object [%s]: %w", u.String(), err)
@@ -52,7 +52,7 @@ func newGoogleCloudStorageWriter(u *url.URL, option WriteOption) (source.Parquet
 	return fileWriter, nil
 }
 
-func newAzureStorageBlobWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
+func newAzureStorageBlobWriter(u *url.URL) (source.ParquetFile, error) {
 	// write operation cannot be with anonymous access
 	azURL, cred, err := azureAccessDetail(*u, false)
 	if err != nil {
@@ -66,11 +66,11 @@ func newAzureStorageBlobWriter(u *url.URL, option WriteOption) (source.ParquetFi
 	return fileWriter, nil
 }
 
-func newHTTPWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
+func newHTTPWriter(u *url.URL) (source.ParquetFile, error) {
 	return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
 }
 
-func newHDFSWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
+func newHDFSWriter(u *url.URL) (source.ParquetFile, error) {
 	userName := u.User.Username()
 	if userName == "" {
 		osUser, err := user.Current()
@@ -85,8 +85,8 @@ func newHDFSWriter(u *url.URL, option WriteOption) (source.ParquetFile, error) {
 	return fileWriter, nil
 }
 
-func NewParquetFileWriter(uri string, option WriteOption) (source.ParquetFile, error) {
-	writerFuncTable := map[string]func(*url.URL, WriteOption) (source.ParquetFile, error){
+func NewParquetFileWriter(uri string) (source.ParquetFile, error) {
+	writerFuncTable := map[string]func(*url.URL) (source.ParquetFile, error){
 		schemeLocal:              newLocalWriter,
 		schemeAWSS3:              newAWSS3Writer,
 		schemeGoogleCloudStorage: newGoogleCloudStorageWriter,
@@ -101,13 +101,13 @@ func NewParquetFileWriter(uri string, option WriteOption) (source.ParquetFile, e
 		return nil, err
 	}
 	if writerFunc, found := writerFuncTable[u.Scheme]; found {
-		return writerFunc(u, option)
+		return writerFunc(u)
 	}
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
 func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVWriter, error) {
-	fileWriter, err := NewParquetFileWriter(uri, option)
+	fileWriter, err := NewParquetFileWriter(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVW
 }
 
 func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONWriter, error) {
-	fileWriter, err := NewParquetFileWriter(uri, option)
+	fileWriter, err := NewParquetFileWriter(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 }
 
 func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.ParquetWriter, error) {
-	fileWriter, err := NewParquetFileWriter(uri, option)
+	fileWriter, err := NewParquetFileWriter(uri)
 	if err != nil {
 		return nil, err
 	}

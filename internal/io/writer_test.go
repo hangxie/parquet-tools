@@ -40,7 +40,7 @@ func Test_NewParquetFileWriter(t *testing.T) {
 	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			pw, err := NewParquetFileWriter(tc.uri, WriteOption{})
+			pw, err := NewParquetFileWriter(tc.uri)
 			defer func() {
 				if pw != nil {
 					_ = pw.Close()
