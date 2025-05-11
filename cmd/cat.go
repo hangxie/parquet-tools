@@ -152,14 +152,14 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, []
 	return fieldList, reinterpretFields, nil
 }
 
-func (c CatCmd) outputSingleRow(rowStruct interface{}, fieldList []string) error {
+func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	switch c.Format {
 	case "json", "jsonl":
 		// remove pargo prefix
 		buf, _ := json.Marshal(rowStruct)
 		fmt.Print(string(buf))
 	case "csv", "tsv":
-		flatValues := rowStruct.(map[string]interface{})
+		flatValues := rowStruct.(map[string]any)
 		values := make([]string, len(flatValues))
 		for index, field := range fieldList {
 			switch val := flatValues[field].(type) {
@@ -236,7 +236,7 @@ func valuesToCSV(values []string, delimiter rune) (string, error) {
 	return buf.String(), nil
 }
 
-func rowToStruct(row interface{}, reinterpretFields []pschema.ReinterpretField) (interface{}, error) {
+func rowToStruct(row any, reinterpretFields []pschema.ReinterpretField) (any, error) {
 	rowValue := reflect.ValueOf(&row).Elem()
 	tmp := reflect.New(rowValue.Elem().Type()).Elem()
 	tmp.Set(rowValue.Elem())
@@ -258,7 +258,7 @@ func rowToStruct(row interface{}, reinterpretFields []pschema.ReinterpretField) 
 	}
 
 	// this should not fail as we just Marshal it
-	var iface interface{}
+	var iface any
 	_ = json.Unmarshal(buf, &iface)
 	for _, field := range reinterpretFields {
 		reinterpretNestedFields(&iface, strings.Split(field.ExPath, common.PAR_GO_PATH_DELIMITER), field)
@@ -310,7 +310,7 @@ func encodeNestedBinaryString(value reflect.Value, locator []string, attr pschem
 	}
 }
 
-func reinterpretNestedFields(iface *interface{}, locator []string, attr pschema.ReinterpretField) {
+func reinterpretNestedFields(iface *any, locator []string, attr pschema.ReinterpretField) {
 	if iface == nil || *iface == nil {
 		return
 	}
@@ -320,21 +320,21 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr pschema.
 		if len(locator) == 0 {
 			return
 		}
-		for i := range (*iface).([]interface{}) {
-			value := (*iface).([]interface{})[i]
+		for i := range (*iface).([]any) {
+			value := (*iface).([]any)[i]
 			reinterpretNestedFields(&value, locator[1:], attr)
-			(*iface).([]interface{})[i] = value
+			(*iface).([]any)[i] = value
 		}
 	case reflect.Map:
 		if len(locator) == 0 {
 			return
 		}
-		mapValue := (*iface).(map[string]interface{})
+		mapValue := (*iface).(map[string]any)
 		switch locator[0] {
 		case "key":
-			newMapValue := make(map[string]interface{})
+			newMapValue := make(map[string]any)
 			for k, v := range mapValue {
-				var newKey interface{} = k
+				var newKey any = k
 				reinterpretNestedFields(&newKey, locator[1:], attr)
 
 				// INT32/INT64 will be reinterpreted to float, while string DECIMAL and
@@ -367,7 +367,7 @@ func reinterpretNestedFields(iface *interface{}, locator []string, attr pschema.
 	}
 }
 
-func reinterpretScalar(iface *interface{}, attr pschema.ReinterpretField) {
+func reinterpretScalar(iface *any, attr pschema.ReinterpretField) {
 	switch attr.ParquetType {
 	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
 		switch v := (*iface).(type) {

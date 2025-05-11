@@ -34,7 +34,7 @@ func Test_retrieveValue_numeric(t *testing.T) {
 	testCases := map[string]struct {
 		pType  parquet.Type
 		value  []byte
-		expect interface{}
+		expect any
 	}{
 		"nil-boolean":       {parquet.Type_BOOLEAN, nil, nil},
 		"nil-int32":         {parquet.Type_INT32, nil, nil},
@@ -68,7 +68,7 @@ func Test_retrieveValue_byte_array(t *testing.T) {
 	testCases := map[string]struct {
 		pType  parquet.Type
 		value  []byte
-		expect interface{}
+		expect any
 	}{
 		"nil-byte-array":       {parquet.Type_BYTE_ARRAY, nil, nil},
 		"nil-fixed-byte-array": {parquet.Type_BYTE_ARRAY, nil, nil},

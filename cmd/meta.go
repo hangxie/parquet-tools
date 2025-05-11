@@ -32,11 +32,11 @@ type columnMeta struct {
 	CompressedSize   int64
 	UncompressedSize int64
 	NumValues        int64
-	NullCount        *int64      `json:",omitempty"`
-	DistinctCount    *int64      `json:",omitempty"`
-	MaxValue         interface{} `json:",omitempty"`
-	MinValue         interface{} `json:",omitempty"`
-	Index            *string     `json:",omitempty"`
+	NullCount        *int64  `json:",omitempty"`
+	DistinctCount    *int64  `json:",omitempty"`
+	MaxValue         any     `json:",omitempty"`
+	MinValue         any     `json:",omitempty"`
+	Index            *string `json:",omitempty"`
 	CompressionCodec string
 }
 
@@ -158,7 +158,7 @@ func (c MetaCmd) Run() error {
 	return nil
 }
 
-func (c MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Encode bool) interface{} {
+func (c MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Encode bool) any {
 	if value == nil {
 		return nil
 	}
