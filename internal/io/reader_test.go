@@ -49,7 +49,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 				require.Nil(t, err)
 				return
 			}
-			require.NotNil(t, err)
+			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
 	}

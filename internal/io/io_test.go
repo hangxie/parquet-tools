@@ -29,7 +29,7 @@ func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 		t.Run(path, func(t *testing.T) {
 			u.Path = path
 			uri, cred, err := azureAccessDetail(u, false)
-			require.NotNil(t, err)
+			require.Error(t, err)
 			require.Contains(t, err.Error(), "azure blob URI format:")
 			require.Equal(t, "", uri)
 			require.Nil(t, cred)
@@ -46,7 +46,7 @@ func Test_azureAccessDetail_bad_shared_cred(t *testing.T) {
 
 	_ = os.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
 	uri, cred, err := azureAccessDetail(u, false)
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to create Azure credential")
 	require.Equal(t, "", uri)
 	require.Nil(t, cred)
@@ -127,7 +127,7 @@ func Test_getBucketRegion(t *testing.T) {
 			if tc.errMsg == "" {
 				require.Nil(t, err)
 			} else {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			}
 		})
@@ -153,7 +153,7 @@ func Test_parseURI(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			u, err := parseURI(tc.uri)
 			if tc.errMsg != "" {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 				return
 			}

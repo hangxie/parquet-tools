@@ -20,7 +20,7 @@ func Test_SizeCmd_Run_error(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			err := tc.cmd.Run()
-			require.NotNil(t, err)
+			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
 	}
