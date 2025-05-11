@@ -328,7 +328,7 @@ func repetitionTyeStr(se parquet.SchemaElement) string {
 	return se.RepetitionType.String()
 }
 
-func DecimalToFloat(fieldAttr ReinterpretField, iface interface{}) (*float64, error) {
+func DecimalToFloat(fieldAttr ReinterpretField, iface any) (*float64, error) {
 	if iface == nil {
 		return nil, nil
 	}

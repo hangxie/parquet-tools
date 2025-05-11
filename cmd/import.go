@@ -126,7 +126,7 @@ func (c ImportCmd) importJSON() error {
 		return fmt.Errorf("failed to load source from %s: %w", c.Source, err)
 	}
 
-	var dummy map[string]interface{}
+	var dummy map[string]any
 	if err := json.Unmarshal(schemaData, &dummy); err != nil {
 		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
 	}
@@ -162,7 +162,7 @@ func (c ImportCmd) importJSONL() error {
 		return fmt.Errorf("import does not support INT96 type")
 	}
 
-	var dummy map[string]interface{}
+	var dummy map[string]any
 	if err := json.Unmarshal(schemaData, &dummy); err != nil {
 		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
 	}

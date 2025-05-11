@@ -190,7 +190,7 @@ func Test_DecimalToFloat_string(t *testing.T) {
 func Test_DecimalToFloat_invalid_type(t *testing.T) {
 	fieldAttr := ReinterpretField{}
 	testCases := []struct {
-		value  interface{}
+		value  any
 		errMsg string
 	}{
 		{0, "unknown type: int"},
