@@ -1,0 +1,7 @@
+type Parquet_go_root struct {
+List_of_struct []struct {
+Str string `parquet:"name=str, type=BYTE_ARRAY, convertedtype=UTF8"`
+Int int32 `parquet:"name=int, type=INT32"`
+} `parquet:"name=list_of_struct, type=LIST, valuetype=STRUCT, convertedtype=LIST"`
+List_of_string []string `parquet:"name=list_of_string, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8, convertedtype=LIST"`
+}
