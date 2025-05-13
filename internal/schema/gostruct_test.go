@@ -171,3 +171,29 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as list element in field [Parquet_go_root.Lol]")
 }
+
+func Test_GoStructNode_asList(t *testing.T) {
+	option := pio.ReadOption{}
+	uri := "../../testdata/gostruct-list.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	root, err := NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, root)
+
+	// remove interim layer from schema tree, ie
+	// from "ListName -> list -> element" to "ListName -> element"
+	root.Children[0].Children[0] = root.Children[0].Children[0].Children[0]
+	root.Children[1].Children[0] = root.Children[1].Children[0].Children[0]
+	typeStr, err := goStructNode{*root}.String()
+	require.NoError(t, err)
+
+	expected, _ := os.ReadFile("../../testdata/golden/schema-gostruct-list-go.txt")
+	// golden file has prefix of "type <root node name>"
+	prefix := fmt.Sprintf("type %s ", root.InNamePath[0])
+	require.Equal(t, string(expected), prefix+typeStr+"\n")
+}
