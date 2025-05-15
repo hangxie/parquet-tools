@@ -110,7 +110,7 @@ You can choose one of the installation methods from below, the functionality wil
 
 ### Install from Source
 
-Good for people who are familiar with [Go](https://go.dev/), you need 1.23 or newer version.
+Good for people who are familiar with [Go](https://go.dev/), you need 1.24 or newer version.
 
 ```bash
 $ go install github.com/hangxie/parquet-tools@latest
@@ -143,13 +143,6 @@ To upgrade to latest version:
 $ brew upgrade go-parquet-tools
 ```
 
-> [!NOTE]
-> If you used to install from `hangxie/tap`, make sure you untap first:
-
-```bash
-$ brew untap hangxie/tap
-```
-
 ### Container Image
 
 Container image supports amd64, arm64, and arm/v7, it is hosted in two registries:
@@ -161,9 +154,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.29.0
+v1.29.2
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.29.0
+v1.29.2
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -173,20 +166,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.29.0_amd64.deb
-Preparing to unpack parquet-tools_1.29.0_amd64.deb ...
-Unpacking parquet-tools (1.29.0) ...
-Setting up parquet-tools (1.29.0) ...
+$ sudo dpkg -i parquet-tools_1.29.2_amd64.deb
+Preparing to unpack parquet-tools_1.29.2_amd64.deb ...
+Unpacking parquet-tools (1.29.2) ...
+Setting up parquet-tools (1.29.2) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.29.0-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.29.2-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.29.0-1          ################################# [100%]
+   1:parquet-tools-1.29.2-1          ################################# [100%]
 ```
 
 ## Usage
@@ -363,12 +356,12 @@ Similar to cloud storage, `parquet-tools` downloads only necessary data from HDF
 
 `parquet-tools` supports URI with `http` or `https` scheme, the remote server needs to support [Range header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range), particularly with unit of `bytes`.
 
-HTTP endpoint does not support write operation so it cannot be used as destination of `import` command.
+HTTP endpoint does not support write operation so it cannot be used as destination of `import`, `merge`, or `split` command.
 
 These options can be used along with HTTP endpoints:
 * `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depends on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
-* `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to use them for authentication/authorization that is required by remote server.
-* `--http-ignore-tls-error` will ignore TLS errors.
+* `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to provide `Authorization` header or JWT token that is required by remote server.
+* `--http-ignore-tls-error` will ignore TLS errors, this is generally a bad idea.
 
 ```bash
 $ parquet-tools row-count https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
@@ -409,7 +402,7 @@ There are two parameters that you probably will never touch:
 * `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read https://github.com/xitongsys/parquet-go/issues/545 for more details.
 
 > [!NOTE]
-> Starting from v1.29.0, `cat` command output field names from parquet file, they were go struct field name till v1.28.3.
+> Starting from v1.29.2, `cat` command output field names from parquet file (this is why `--pargo-prefix` option was deprecated from multiple commands), they were go struct field name till v1.28.3.
 
 #### Full Data Set
 
@@ -585,7 +578,7 @@ $ parquet-tools row-count /tmp/json.parquet
 ```
 
 > [!TIP]
-> As most JSON processing utilities, the whole JSON file needs to be loaded to memory and is treated as single object, so memory footprint may be significant if you try to load a large JSON file. You should use JSONL format if you deal with large amount of data.
+> JSON format allows only a single record to be imported, if you want to import multiple records, use JSONL as source format.
 
 #### Import from JSONL
 
@@ -850,7 +843,7 @@ $ parquet-tools row-count 3.parquet
 
 ```bash
 $ parquet-tools version
-v1.29.0
+v1.29.2
 ```
 
 #### Print All Information
@@ -859,23 +852,23 @@ v1.29.0
 
 ```bash
 $ parquet-tools version -a
-v1.29.0
-2025-05-11T02:50:50+0000
-github
+v1.29.2
+2025-05-11T19:54:02Z
+Homebrew
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.29.0","BuildTime":"2025-05-11T02:50:50+0000"}
+{"Version":"v1.29.2","BuildTime":"2025-05-11T19:54:02Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.29.0"}
+{"Version":"v1.29.2"}
 ```
 
 ## Credit
