@@ -31,7 +31,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 		"gcs-good":               {gcsURL, ReadOption{Anonymous: true}, ""},
 		"azblob-no-permission":   {azblobURL, rOpt, "Server failed to authenticate the request"},
 		"azblob-good":            {azblobURL, ReadOption{Anonymous: true}, ""},
-		"http-bad-url":           {"https://no-such-host.tld/", rOpt, "no such host"},
+		"http-bad-url":           {"https://.../", rOpt, "no such host"},
 		"http-no-range-support":  {"https://www.google.com/", rOpt, "does not support range"},
 		"http-good":              {httpURL, rOpt, ""},
 		"hdfs-failed":            {"hdfs://localhost:1/temp/good.parquet", rOpt, "connection refused"},
