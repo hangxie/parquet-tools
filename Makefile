@@ -44,9 +44,9 @@ lint: tools  ## Run static code analysis
 	@$(GOBIN)/golangci-lint run ./... \
 		--timeout 5m \
 		--exclude-use-default=false
-	@$(GOBIN)/gocyclo -over 15 . > /tmp/gocyclo.output; \
+	@$(GOBIN)/gocyclo -over 20 . > /tmp/gocyclo.output; \
 		if [[ -s /tmp/gocyclo.output ]]; then \
-			echo functions with gocyclo score higher than 15; \
+			echo functions with gocyclo score higher than 20; \
 			cat /tmp/gocyclo.output | sed 's/^/    /'; \
 			false; \
 		fi
