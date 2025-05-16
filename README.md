@@ -95,6 +95,7 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
       - [Show Footer Size in JSON Format](#show-footer-size-in-json-format)
       - [Show All Sizes in JSON Format](#show-all-sizes-in-json-format)
     - [split Command](#split-command)
+      - [Name format](#name-format)
       - [Exact number of output files](#exact-number-of-output-files)
       - [Maximum records in a file](#maximum-records-in-a-file)
     - [version Command](#version-command)
@@ -804,6 +805,25 @@ Other useful parameters include:
 * `--fail-on-int96` to fail the command if source parquet file contains INT96 fields
 * `--compression` to specify compression codec for output files, default is `SNAPPY`
 * `--read-page-size` to tell how many rows will be read per batch from source
+
+#### Name format
+
+There is only one verb for integer is allowed, and it has to be variant of `%b`, `%d`, `%o`, `%x`, or `%X`.
+
+```bash
+$ parquet-tools split --name-format file-%0.2f.parquet --file-count 3 testdata/good.parquet
+parquet-tools: error: invalid name format [file-%0.2f.parquet]: [%0.2f] is not an allowed format verb
+$ parquet-tools split --name-format file.parquet --file-count 3 testdata/good.parquet
+parquet-tools: error: invalid name format [file.parquet]: lack of useable verb
+```
+
+You can use specify width and leading zeros:
+
+```bash
+$ parquet-tools split --name-format file-%04b.parquet --file-count 3 testdata/all-types.parquet
+$ ls file-*
+file-0000.parquet file-0001.parquet file-0010.parquet
+```
 
 #### Exact number of output files
 
