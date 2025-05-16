@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/writer"
@@ -96,6 +97,9 @@ func (c SplitCmd) Run() error {
 	if c.FileCount == 0 && c.RecordCount == 0 {
 		return fmt.Errorf("needs either --file-count or --record-count")
 	}
+	if err := checkNameFormat(c.NameFormat); err != nil {
+		return fmt.Errorf("invalid name format [%s]: %w", c.NameFormat, err)
+	}
 
 	parquetReader, err := c.openReader()
 	if err != nil {
@@ -136,5 +140,35 @@ func (c SplitCmd) Run() error {
 		}
 	}
 
+	return nil
+}
+
+func checkNameFormat(nameFormat string) error {
+	// this is to match all format verbs
+	allVerbs := regexp.MustCompile(`(%%|%[0-9\-\.]*[a-zA-Z])`)
+	allowedVerbs := regexp.MustCompile(`^%%|%[0-9]*[bdoxX]$`)
+
+	useableVerb := ""
+	for _, verb := range allVerbs.FindAllString(nameFormat, -1) {
+		if verb == "%%" {
+			// allow unlimited number of %%
+			continue
+		}
+
+		if allowedVerbs.MatchString(verb) {
+			if useableVerb == "" {
+				useableVerb = verb
+				continue
+			}
+			return fmt.Errorf("has more than one useable verb: [%s] and [%s]", useableVerb, verb)
+		}
+
+		// this verb is not allowed
+		return fmt.Errorf("[%s] is not an allowed format verb", verb)
+	}
+
+	if useableVerb == "" {
+		return fmt.Errorf("lack of useable verb")
+	}
 	return nil
 }
