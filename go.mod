@@ -14,7 +14,7 @@ require (
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.10.0
 	github.com/willabides/kongplete v0.4.0
-	google.golang.org/api v0.232.0
+	google.golang.org/api v0.233.0
 )
 
 require (
