@@ -103,6 +103,15 @@ test: deps tools  ## Run unit tests
 		cat go-test.output | $(GOBIN)/go-junit-report > junit.xml ; \
 		cat coverage.txt
 
+.PHONY: benchmark
+benchmark:  ## Run benchmark
+	@echo "==> Running benchmark"
+	@mkdir -p build
+	@test -f ./build/benchmark.parquet \
+	    || curl -sLo ./build/benchmark.parquet \
+	       https://huggingface.co/datasets/hangxie/parquet-tools/resolve/main/benchmark-10K.parquet?download=true
+	@go test -bench ^Benchmar -run=^$$ -count 1 -benchtime 1000000x -benchmem ./...
+
 .PHONY: release-build
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
