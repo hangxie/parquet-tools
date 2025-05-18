@@ -547,6 +547,19 @@ $ parquet-tools cat --format jsonl testdata/good.parquet
 
 You can read data line by line and parse every single line as a JSON object if you do not have a toolchain to process JSONL format.
 
+If you do not care about order of records, you can use `--concurrent` which will boost output speed, but does not maintain original order from the parquet file.
+
+```
+$ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
+$ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
+{"shoe_brand":"nike","shoe_name":"air_griffey"}
+{"shoe_brand":"fila","shoe_name":"grant_hill_2"}
+{"shoe_brand":"steph_curry","shoe_name":"curry7"}
+```
+
 ### import Command
 
 `import` command creates a parquet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.

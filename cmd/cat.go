@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
@@ -8,6 +9,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +18,7 @@ import (
 	"github.com/hangxie/parquet-go/parquet"
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/types"
+	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
 	pschema "github.com/hangxie/parquet-tools/internal/schema"
@@ -34,6 +37,7 @@ type CatCmd struct {
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool    `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
 	PargoPrefix  string  `help:"deprecated, will be removed from next release." default:""`
+	Concurrent   bool    `help:"enable concurrent output" default:"false"`
 }
 
 // here are performance numbers for different SkipPageSize:
@@ -182,6 +186,53 @@ func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	return nil
 }
 
+func (c CatCmd) outputProducer(ctx context.Context, rowChan, outputChan chan any, reinterpretFields []pschema.ReinterpretField) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			row, more := <-rowChan
+			if !more {
+				return nil
+			}
+			rowStruct, err := rowToStruct(row, reinterpretFields)
+			if err != nil {
+				return err
+			}
+			outputChan <- rowStruct
+		}
+	}
+}
+
+func (c CatCmd) outputConsumer(ctx context.Context, outputChan chan any, fieldList []string) error {
+	fmt.Print(delimiter[c.Format].begin)
+	isFirstRow := true
+Loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			row, more := <-outputChan
+			if !more {
+				break Loop
+			}
+
+			if isFirstRow {
+				isFirstRow = false
+			} else {
+				fmt.Print(delimiter[c.Format].lineDelimiter)
+			}
+			if err := c.outputSingleRow(row, fieldList); err != nil {
+				return err
+			}
+		}
+	}
+	fmt.Println(delimiter[c.Format].end)
+	return nil
+}
+
 func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	fieldList, reinterpretFields, err := c.retrieveFieldDef(fileReader)
 	if err != nil {
@@ -193,8 +244,29 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 		return err
 	}
 
+	// dedicated goroutine for output to ensure output integrity
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	outputGroup, _ := errgroup.WithContext(ctx)
+	outputChan := make(chan any)
+	outputGroup.Go(func() error {
+		return c.outputConsumer(ctx, outputChan, fieldList)
+	})
+
+	concurrency := 1
+	if c.Concurrent {
+		concurrency = runtime.NumCPU()
+	}
+	rowGroup, _ := errgroup.WithContext(ctx)
+	rowChan := make(chan any, concurrency)
+	// goroutines to reinterpret rows
+	for range concurrency {
+		rowGroup.Go(func() error {
+			return c.outputProducer(ctx, rowChan, outputChan, reinterpretFields)
+		})
+	}
+
 	// Output rows one by one to avoid running out of memory with a jumbo list
-	fmt.Print(delimiter[c.Format].begin)
 	for counter := uint64(0); counter < c.Limit; {
 		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
@@ -208,18 +280,21 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 			if rand.Float32() >= c.SampleRatio {
 				continue
 			}
-			if counter != 0 {
-				fmt.Print(delimiter[c.Format].lineDelimiter)
-			}
 			// there is no known error at this moment
-			rowStruct, _ := rowToStruct(rows[i], reinterpretFields)
-			if err := c.outputSingleRow(rowStruct, fieldList); err != nil {
-				return err
-			}
+			rowChan <- rows[i]
 			counter++
 		}
 	}
-	fmt.Println(delimiter[c.Format].end)
+	close(rowChan)
+	if err := rowGroup.Wait(); err != nil {
+		return err
+	}
+
+	close(outputChan)
+	if err := outputGroup.Wait(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
