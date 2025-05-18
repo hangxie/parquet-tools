@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -34,4 +35,24 @@ func Test_versionCmd(t *testing.T) {
 			require.Equal(t, "", stderr)
 		})
 	}
+}
+
+func Benchmark_VersionCmd_Run(b *testing.B) {
+	savedStdout, savedStderr := os.Stdout, os.Stderr
+	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
+	if err != nil {
+		panic(err)
+	}
+	os.Stdout = devNull
+	defer func() {
+		os.Stdout, os.Stderr = savedStdout, savedStderr
+		_ = devNull.Close()
+	}()
+
+	cmd := VersionCmd{
+		All: true,
+	}
+	b.Run("default", func(b *testing.B) {
+		require.NoError(b, cmd.Run())
+	})
 }
