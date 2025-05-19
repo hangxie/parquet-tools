@@ -2,7 +2,7 @@
 
 Benchmark uses parquet file that has the same schema with testdata/all-types.parquet but with more rows, I am using 10K rows.
 
-Here are benchmarks for all historical versions, unit is `ns/op`
+Here are benchmarks for all historical versions, unit is `ms/op`
 
 | Version |   cat |   meta | row-count | schema |   size |  version | Note                                                |
 | ------: | ----: | -----: | --------: | -----: | -----: | -------: | --------------------------------------------------- |

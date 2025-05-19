@@ -99,10 +99,14 @@ func Benchmark_CatCmd_Run(b *testing.B) {
 		URI:          "../build/benchmark.parquet",
 	}
 	b.Run("default", func(b *testing.B) {
-		require.NoError(b, cmd.Run())
+		for b.Loop() {
+			require.NoError(b, cmd.Run())
+		}
 	})
 	cmd.Concurrent = true
 	b.Run("concurent", func(b *testing.B) {
-		require.NoError(b, cmd.Run())
+		for b.Loop() {
+			require.NoError(b, cmd.Run())
+		}
 	})
 }
