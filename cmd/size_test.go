@@ -72,6 +72,8 @@ func Benchmark_SizeCmd_Run(b *testing.B) {
 		URI:        "../build/benchmark.parquet",
 	}
 	b.Run("default", func(b *testing.B) {
-		require.NoError(b, cmd.Run())
+		for b.Loop() {
+			require.NoError(b, cmd.Run())
+		}
 	})
 }

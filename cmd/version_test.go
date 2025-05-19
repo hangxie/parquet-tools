@@ -53,6 +53,8 @@ func Benchmark_VersionCmd_Run(b *testing.B) {
 		All: true,
 	}
 	b.Run("default", func(b *testing.B) {
-		require.NoError(b, cmd.Run())
+		for b.Loop() {
+			require.NoError(b, cmd.Run())
+		}
 	})
 }
