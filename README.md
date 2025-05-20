@@ -203,7 +203,7 @@ Flags:
       --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
       --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
       --http-extra-headers=         (HTTP URI only) extra HTTP headers.
-      --object-version=""           (S3 and Azure only) object version.
+      --object-version=""           (S3, GCS, and Azure only) object version.
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
   -b, --base64                      Encode min/max value.
       --fail-on-int96               fail command if INT96 data type presents.
@@ -303,6 +303,24 @@ $ parquet-tools row-count gs://cloud-samples-data/bigquery/us-states/us-states.p
 parquet-tools: error: failed to create GCS client: dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information
 $ parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet
 50
+```
+
+Optionally, you can specify object generation by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.), `parquet-tools` will access latest generation if this parameter is omitted.
+
+```
+$ parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet
+50
+$ parquet-tools row-count --anonymous --object-version=-1 gs://cloud-samples-data/bigquery/us-states/us-states.parquet
+50
+```
+
+`parquet-tools` reports error on invalid or non-existent generations:
+
+```
+$ parquet-tools row-count --anonymous --object-version=123 gs://cloud-samples-data/bigquery/us-states/us-states.parquet
+parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-states/us-states.parquet]: failed to create new reader: storage: object doesn't exist: googleapi: Error 404: No such object: cloud-samples-data/bigquery/us-states/us-states.parquet, notFound
+$ parquet-tools row-count --anonymous --object-version=foo-bar gs://cloud-samples-data/bigquery/us-states/us-states.parquet
+parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-states/us-states.parquet]: invalid GCS generation [foo-bar]: strconv.ParseInt: parsing "foo-bar": invalid syntax
 ```
 
 #### Azure Storage Container
