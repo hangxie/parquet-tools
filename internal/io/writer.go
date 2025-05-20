@@ -54,7 +54,7 @@ func newGoogleCloudStorageWriter(u *url.URL) (source.ParquetFile, error) {
 
 func newAzureStorageBlobWriter(u *url.URL) (source.ParquetFile, error) {
 	// write operation cannot be with anonymous access
-	azURL, cred, err := azureAccessDetail(*u, false)
+	azURL, cred, err := azureAccessDetail(*u, false, "")
 	if err != nil {
 		return nil, err
 	}

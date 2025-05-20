@@ -27,7 +27,7 @@ func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 	for _, path := range invalidPaths {
 		t.Run(path, func(t *testing.T) {
 			u.Path = path
-			uri, cred, err := azureAccessDetail(u, false)
+			uri, cred, err := azureAccessDetail(u, false, "")
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "azure blob URI format:")
 			require.Equal(t, "", uri)
@@ -44,7 +44,7 @@ func Test_azureAccessDetail_bad_shared_cred(t *testing.T) {
 	}
 
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "bad-access-key")
-	uri, cred, err := azureAccessDetail(u, false)
+	uri, cred, err := azureAccessDetail(u, false, "")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to create Azure credential")
 	require.Equal(t, "", uri)
@@ -59,13 +59,13 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 	}
 	// anonymous access by lack of environment variable
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
-	uri, cred, err := azureAccessDetail(u, false)
+	uri, cred, err := azureAccessDetail(u, false, "")
 	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
 
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
-	uri, cred, err = azureAccessDetail(u, false)
+	uri, cred, err = azureAccessDetail(u, false, "")
 	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Nil(t, cred)
@@ -77,9 +77,16 @@ func Test_azureAccessDetail_good_anonymous_cred(t *testing.T) {
 		t.Fatalf("failed to setup test: %s", err.Error())
 	}
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(randBytes))
-	uri, cred, err = azureAccessDetail(u, true)
+	uri, cred, err = azureAccessDetail(u, true, "")
 	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
+	require.Nil(t, cred)
+
+	// with version id
+	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
+	uri, cred, err = azureAccessDetail(u, false, "foo-bar")
+	require.NoError(t, err)
+	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object?versionid=foo-bar", uri)
 	require.Nil(t, cred)
 }
 
@@ -97,7 +104,7 @@ func Test_azureAccessDetail_good_shared_cred(t *testing.T) {
 	}
 	dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
-	uri, cred, err := azureAccessDetail(u, false)
+	uri, cred, err := azureAccessDetail(u, false, "")
 	require.NoError(t, err)
 	require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
 	require.Equal(t, "*exported.SharedKeyCredential", reflect.TypeOf(cred).String())

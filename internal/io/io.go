@@ -91,12 +91,15 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 	return s3.NewFromConfig(cfg), nil
 }
 
-func azureAccessDetail(azURL url.URL, anonymous bool) (string, *azblob.SharedKeyCredential, error) {
+func azureAccessDetail(azURL url.URL, anonymous bool, versionId string) (string, *azblob.SharedKeyCredential, error) {
 	container := azURL.User.Username()
 	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
 		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.core.windows.net/path/to/blob")
 	}
 	httpURL := fmt.Sprintf("https://%s/%s%s", azURL.Host, container, azURL.Path)
+	if versionId != "" {
+		httpURL = fmt.Sprintf("%s?versionid=%s", httpURL, versionId)
+	}
 
 	accessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
 	if anonymous || accessKey == "" {
