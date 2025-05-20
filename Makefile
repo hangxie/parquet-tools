@@ -110,7 +110,7 @@ benchmark:  ## Run benchmark
 	@test -f ./build/benchmark.parquet \
 	    || curl -sLo ./build/benchmark.parquet \
 	       https://huggingface.co/datasets/hangxie/parquet-tools/resolve/main/benchmark-10K.parquet?download=true
-	@go test -bench ^Benchmar -run=^$$ -count 1 -benchtime 3x -benchmem ./...
+	@go test -bench ^Benchmark -run=^$$ -count 1 -benchtime 3x -benchmem ./...
 
 .PHONY: release-build
 release-build: deps ## Build release binaries
