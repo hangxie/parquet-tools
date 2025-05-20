@@ -203,7 +203,7 @@ Flags:
       --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
       --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
       --http-extra-headers=         (HTTP URI only) extra HTTP headers.
-      --object-version=""           (S3 URI only) object version.
+      --object-version=""           (S3 and Azure only) object version.
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
   -b, --base64                      Encode min/max value.
       --fail-on-int96               fail command if INT96 data type presents.
@@ -269,7 +269,9 @@ $ parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_fe
 2405462
 ```
 
-Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) from S3, `parquet-tools` will access current version if this parameter is omitted, if version for the S3 object does not exist or bucket does not have version enabled, `parquet-tools` will report error:
+Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) for S3, `parquet-tools` will access current version if this parameter is omitted.
+
+If version for the S3 object does not exist or bucket does not have version enabled, `parquet-tools` will report error:
 
 ```bash
 $ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0 --object-version non-existent-version
@@ -335,6 +337,29 @@ $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://laborstatisticsconta
 6582726
 $ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 6582726
+```
+
+Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) for Azure blob, `parquet-tools` will access current version if this parameter is omitted.
+
+> [!NOTE]
+> Azure blob returns different errors for non-existent version and invalid version id:
+```
+$ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet --object-version foo-bar
+parquet-tools: error: unable to open file [wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet]: HEAD https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+                      --------------------------------------------------------------------------------
+                      RESPONSE 400: 400 Value for one of the query parameters specified in the request URI is invalid.
+                      ERROR CODE UNAVAILABLE
+                      --------------------------------------------------------------------------------
+                      Response contained no body
+                      --------------------------------------------------------------------------------
+$ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet --object-version 2025-05-20T01:27:08.0552942Z
+parquet-tools: error: unable to open file [wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet]: HEAD https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+                      --------------------------------------------------------------------------------
+                      RESPONSE 404: 404 The specified blob does not exist.
+                      ERROR CODE: BlobNotFound
+                      --------------------------------------------------------------------------------
+                      Response contained no body
+                      --------------------------------------------------------------------------------
 ```
 
 Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.

@@ -26,7 +26,7 @@ type ReadOption struct {
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
-	ObjectVersion          string            `help:"(S3 URI only) object version." default:""`
+	ObjectVersion          string            `help:"(S3 and Azure only) object version." default:""`
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
 }
 
@@ -48,7 +48,7 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 }
 
 func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
-	azURL, cred, err := azureAccessDetail(*u, option.Anonymous)
+	azURL, cred, err := azureAccessDetail(*u, option.Anonymous, option.ObjectVersion)
 	if err != nil {
 		return nil, err
 	}
