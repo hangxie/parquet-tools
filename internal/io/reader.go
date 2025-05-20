@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os/user"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -26,7 +27,7 @@ type ReadOption struct {
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
-	ObjectVersion          string            `help:"(S3 and Azure only) object version." default:""`
+	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
 }
 
@@ -57,6 +58,14 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFil
 }
 
 func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+	generation := int64(-1)
+	if option.ObjectVersion != "" {
+		var err error
+		generation, err = strconv.ParseInt(option.ObjectVersion, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid GCS generation [%s]: %w", option.ObjectVersion, err)
+		}
+	}
 	ctx := context.Background()
 
 	options := []googleoption.ClientOption{}
@@ -68,7 +77,7 @@ func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetF
 		return nil, fmt.Errorf("failed to create GCS client: %w", err)
 	}
 
-	return gcs.NewGcsFileReaderWithClient(ctx, client, "", u.Host, strings.TrimLeft(u.Path, "/"))
+	return gcs.NewGcsFileReaderWithClientAndGeneration(ctx, client, "", u.Host, strings.TrimLeft(u.Path, "/"), generation)
 }
 
 func newHTTPReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
