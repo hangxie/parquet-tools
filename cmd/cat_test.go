@@ -104,7 +104,7 @@ func Benchmark_CatCmd_Run(b *testing.B) {
 		}
 	})
 	cmd.Concurrent = true
-	b.Run("concurent", func(b *testing.B) {
+	b.Run("concurrent", func(b *testing.B) {
 		for b.Loop() {
 			require.NoError(b, cmd.Run())
 		}

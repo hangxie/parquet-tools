@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/hangxie/parquet-go/reader"
 	"github.com/hangxie/parquet-go/source"
-	pqtazblob "github.com/hangxie/parquet-go/source/azblob"
+	pqazblob "github.com/hangxie/parquet-go/source/azblob"
 	"github.com/hangxie/parquet-go/source/gcs"
 	"github.com/hangxie/parquet-go/source/hdfs"
 	pqhttp "github.com/hangxie/parquet-go/source/http"
@@ -54,7 +54,7 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFil
 		return nil, err
 	}
 
-	return pqtazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
+	return pqazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
 }
 
 func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {

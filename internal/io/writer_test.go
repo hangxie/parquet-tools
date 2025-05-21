@@ -138,7 +138,7 @@ func Test_NewGenericWriter(t *testing.T) {
 		schema string
 		errMsg string
 	}{
-		"invalud-uri":        {"://uri", WriteOption{}, "", "unable to parse file location"},
+		"invalid-uri":        {"://uri", WriteOption{}, "", "unable to parse file location"},
 		"schema-not-json":    {tempFile, WriteOption{}, "invalid schema", "error in unmarshalling json schema string:"},
 		"schema-invalid":     {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
 		"invalid-codec":      {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},

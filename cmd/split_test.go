@@ -23,8 +23,8 @@ func Test_SplitCmd_Run_error(t *testing.T) {
 		"page-size":   {SplitCmd{rOpt, wOpt, 0, "", 0, 0, false, "dummy", tw}, "invalid read page size"},
 		"no-count":    {SplitCmd{rOpt, wOpt, 1000, "", 0, 0, false, "dummy", tw}, "needs either --file-count or --record-count"},
 		"name-format": {SplitCmd{rOpt, wOpt, 1000, "", 0, 10, false, "ut-%%parquet", tw}, "lack of useable verb"},
-		"sorce-file":  {SplitCmd{rOpt, wOpt, 1000, "does/not/exist", 0, 10, false, "%d", tw}, "failed to open"},
-		"int96":       {SplitCmd{rOpt, wOpt, 1000, "../testdata/all-types.parquet", 0, 10, true, "%d", tw}, "has type INT96 which is not supporte"},
+		"source-file": {SplitCmd{rOpt, wOpt, 1000, "does/not/exist", 0, 10, false, "%d", tw}, "failed to open"},
+		"int96":       {SplitCmd{rOpt, wOpt, 1000, "../testdata/all-types.parquet", 0, 10, true, "%d", tw}, "has type INT96 which is not supported"},
 		"target-file": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 2, false, "dummy://%d.parquet", tw}, "unknown location scheme"},
 		"first-write": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 1, false, "s3://target/%d.parquet", tw}, "failed to close"},
 		"last-write":  {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 3, false, "s3://target/%d.parquet", tw}, "failed to close"},
@@ -46,15 +46,15 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 		cmd    SplitCmd
 		result map[string]int64
 	}{
-		"recordcount": {
+		"record-count": {
 			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 0, 3, false, "ut-%d.parquet", TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 3, "ut-2.parquet": 3, "ut-3.parquet": 1},
 		},
-		"fileount": {
+		"file-count": {
 			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 3, 0, false, "ut-%d.parquet", TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 4, "ut-1.parquet": 3, "ut-2.parquet": 3},
 		},
-		"one-result-recordcount": {
+		"one-result-record-count": {
 			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 0, 20, false, "ut-%d.parquet", TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 10},
 		},
@@ -62,11 +62,11 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 1, 0, false, "ut-%d.parquet", TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 10},
 		},
-		"empty-recordcount": {
+		"empty-record-count": {
 			SplitCmd{rOpt, wOpt, 1000, "empty.parquet", 0, 3, false, "ut-%d.parquet", TrunkWriter{}},
 			map[string]int64{},
 		},
-		"empty-filecount": {
+		"empty-file-count": {
 			SplitCmd{rOpt, wOpt, 1000, "empty.parquet", 3, 0, false, "ut-%d.parquet", TrunkWriter{}},
 			map[string]int64{},
 		},

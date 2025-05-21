@@ -13,13 +13,13 @@ import (
 
 func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 	u := url.URL{
-		Host: "storageacconut",
+		Host: "storageaccount",
 	}
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 
 	invalidPaths := []string{
 		"",
-		"missin/leading/slash",
+		"missing/leading/slash",
 		"/no-container",
 		"/empty-blob/",
 	}

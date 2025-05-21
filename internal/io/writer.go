@@ -10,7 +10,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/hangxie/parquet-go/source"
-	pqtazblob "github.com/hangxie/parquet-go/source/azblob"
+	"github.com/hangxie/parquet-go/source/azblob"
 	"github.com/hangxie/parquet-go/source/gcs"
 	"github.com/hangxie/parquet-go/source/hdfs"
 	"github.com/hangxie/parquet-go/source/local"
@@ -59,7 +59,7 @@ func newAzureStorageBlobWriter(u *url.URL) (source.ParquetFile, error) {
 		return nil, err
 	}
 
-	fileWriter, err := pqtazblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
+	fileWriter, err := azblob.NewAzBlobFileWriterWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %w", u.String(), err)
 	}
