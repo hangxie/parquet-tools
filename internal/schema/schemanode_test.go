@@ -25,7 +25,7 @@ func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 
 	_, err = NewSchemaTree(pr, SchemaOption{FailOnInt96: true})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "type INT96 which is not supporte")
+	require.Contains(t, err.Error(), "type INT96 which is not supported")
 }
 
 func Test_NewSchemaTree_good(t *testing.T) {

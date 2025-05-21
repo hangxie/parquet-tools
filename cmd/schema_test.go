@@ -46,8 +46,8 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 		"raw-map-value-list":  {SchemaCmd{rOpt, "raw", "map-composite-value.parquet", ""}, "schema-map-composite-value-raw.json"},
 		"json-map-value-list": {SchemaCmd{rOpt, "json", "map-composite-value.parquet", ""}, "schema-map-composite-value-json.json"},
 		"json-map-value-map":  {SchemaCmd{rOpt, "json", "map-value-map.parquet", ""}, "schema-map-value-map-json.json"},
-		"parqo-prefix-flat":   {SchemaCmd{rOpt, "go", "pargo-prefix-flat.parquet", ""}, "schema-pargo-prefix-flat-go.txt"},
-		"parqo-prefix-nested": {SchemaCmd{rOpt, "go", "pargo-prefix-nested.parquet", ""}, "schema-pargo-prefix-nested-go.txt"},
+		"pargo-prefix-flat":   {SchemaCmd{rOpt, "go", "pargo-prefix-flat.parquet", ""}, "schema-pargo-prefix-flat-go.txt"},
+		"pargo-prefix-nested": {SchemaCmd{rOpt, "go", "pargo-prefix-nested.parquet", ""}, "schema-pargo-prefix-nested-go.txt"},
 	}
 
 	for name, tc := range testCases {
@@ -64,7 +64,7 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 	}
 }
 
-func Benchmark_SchemCmd_Run(b *testing.B) {
+func Benchmark_SchemaCmd_Run(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
