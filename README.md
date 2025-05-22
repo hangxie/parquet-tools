@@ -207,7 +207,6 @@ Flags:
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
   -b, --base64                      Encode min/max value.
       --fail-on-int96               fail command if INT96 data type presents.
-      --pargo-prefix=""             deprecated, will be removed from next release.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
@@ -444,9 +443,6 @@ There are two parameters that you probably will never touch:
 
 * `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 * `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read https://github.com/xitongsys/parquet-go/issues/545 for more details.
-
-> [!NOTE]
-> Starting from v1.29.2, `cat` command output field names from parquet file (this is why `--pargo-prefix` option was deprecated from multiple commands), they were go struct field name till v1.28.3.
 
 #### Full Data Set
 

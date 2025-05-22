@@ -16,16 +16,16 @@ func Test_CatCmd_Run_error(t *testing.T) {
 		cmd    CatCmd
 		errMsg string
 	}{
-		"non-existent-file":      {CatCmd{rOpt, 0, 10, 10, 10, 1.0, "json", false, "file/does/not/exist", false, "", false}, "no such file or directory"},
-		"invalid-read-page-size": {CatCmd{rOpt, 0, 10, 10, 0, 0.5, "json", false, "does/not/matter", false, "", false}, "invalid read page size"},
-		"invalid-skip-size":      {CatCmd{rOpt, -10, 10, 10, 10, 0.5, "json", false, "does/not/matter", false, "", false}, "invalid skip -10"},
-		"invalid-skip-page-size": {CatCmd{rOpt, 10, 0, 10, 10, 0.5, "json", false, "does/not/matter", false, "", false}, "invalid skip page size"},
-		"sampling-too-high":      {CatCmd{rOpt, 10, 10, 10, 10, 2.0, "json", false, "does/not/matter", false, "", false}, "invalid sampling"},
-		"sampling-too-low":       {CatCmd{rOpt, 10, 10, 10, 10, -0.5, "json", false, "does/not/matter", false, "", false}, "invalid sampling"},
-		"invalid-format":         {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "foobar", false, "does/not/matter", false, "", false}, "unknown format: foobar"},
-		"fail-on-int96":          {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "json", true, fileName, true, "", false}, "type INT96 which is not supported"},
-		"nested-schema-csv":      {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "csv", true, fileName, false, "", false}, "cannot output in csv format"},
-		"nested-schema-tsv":      {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "tsv", true, fileName, false, "", false}, "cannot output in tsv format"},
+		"non-existent-file":      {CatCmd{rOpt, 0, 10, 10, 10, 1.0, "json", false, "file/does/not/exist", false, false}, "no such file or directory"},
+		"invalid-read-page-size": {CatCmd{rOpt, 0, 10, 10, 0, 0.5, "json", false, "does/not/matter", false, false}, "invalid read page size"},
+		"invalid-skip-size":      {CatCmd{rOpt, -10, 10, 10, 10, 0.5, "json", false, "does/not/matter", false, false}, "invalid skip -10"},
+		"invalid-skip-page-size": {CatCmd{rOpt, 10, 0, 10, 10, 0.5, "json", false, "does/not/matter", false, false}, "invalid skip page size"},
+		"sampling-too-high":      {CatCmd{rOpt, 10, 10, 10, 10, 2.0, "json", false, "does/not/matter", false, false}, "invalid sampling"},
+		"sampling-too-low":       {CatCmd{rOpt, 10, 10, 10, 10, -0.5, "json", false, "does/not/matter", false, false}, "invalid sampling"},
+		"invalid-format":         {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "foobar", false, "does/not/matter", false, false}, "unknown format: foobar"},
+		"fail-on-int96":          {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "json", true, fileName, true, false}, "type INT96 which is not supported"},
+		"nested-schema-csv":      {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "csv", true, fileName, false, false}, "cannot output in csv format"},
+		"nested-schema-tsv":      {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "tsv", true, fileName, false, false}, "cannot output in tsv format"},
 	}
 
 	for name, tc := range testCases {
@@ -47,24 +47,24 @@ func Test_CatCmd_Run_good(t *testing.T) {
 		cmd    CatCmd
 		golden string
 	}{
-		"default":       {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "json", false, "good.parquet", false, "", false}, "cat-good-json.json"},
-		"limit-0":       {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "json", false, "good.parquet", false, "", false}, "cat-good-json.json"},
-		"limit-2":       {CatCmd{rOpt, 0, 10, 2, 10, 1.0, "json", false, "good.parquet", false, "", false}, "cat-good-json-limit-2.json"},
-		"skip-2":        {CatCmd{rOpt, 2, 10, 0, 10, 1.0, "json", false, "good.parquet", false, "", false}, "cat-good-json-skip-2.json"},
-		"skip-all":      {CatCmd{rOpt, 20, 10, 0, 10, 1.0, "json", false, "good.parquet", false, "", false}, "empty-json.txt"},
-		"sampling-0":    {CatCmd{rOpt, 0, 10, 0, 10, 0.0, "json", false, "good.parquet", false, "", false}, "empty-json.txt"},
-		"empty":         {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "json", false, "empty.parquet", false, "", false}, "empty-json.txt"},
-		"RI-scalar":     {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-scalar.parquet", false, "", false}, "cat-reinterpret-scalar.jsonl"},
-		"RI-pointer":    {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-pointer.parquet", false, "", false}, "cat-reinterpret-pointer.jsonl"},
-		"RI-list":       {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-list.parquet", false, "", false}, "cat-reinterpret-list.jsonl"},
-		"RI-map-key":    {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-map-key.parquet", false, "", false}, "cat-reinterpret-map-key.jsonl"},
-		"RI-map-value":  {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-map-value.parquet", false, "", false}, "cat-reinterpret-map-value.jsonl"},
-		"RI-composite":  {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-composite.parquet", false, "", false}, "cat-reinterpret-composite.jsonl"},
-		"jsonl":         {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "good.parquet", false, "", false}, "cat-good-jsonl.jsonl"},
-		"csv":           {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "csv", false, "good.parquet", false, "", false}, "cat-good-csv.txt"},
-		"csv-no-header": {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "csv", true, "good.parquet", false, "", false}, "cat-good-csv-no-header.txt"},
-		"tsv":           {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "tsv", false, "good.parquet", false, "", false}, "cat-good-tsv.txt"},
-		"tsv-no-header": {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "tsv", true, "good.parquet", false, "", false}, "cat-good-tsv-no-header.txt"},
+		"default":       {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "json", false, "good.parquet", false, false}, "cat-good-json.json"},
+		"limit-0":       {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "json", false, "good.parquet", false, false}, "cat-good-json.json"},
+		"limit-2":       {CatCmd{rOpt, 0, 10, 2, 10, 1.0, "json", false, "good.parquet", false, false}, "cat-good-json-limit-2.json"},
+		"skip-2":        {CatCmd{rOpt, 2, 10, 0, 10, 1.0, "json", false, "good.parquet", false, false}, "cat-good-json-skip-2.json"},
+		"skip-all":      {CatCmd{rOpt, 20, 10, 0, 10, 1.0, "json", false, "good.parquet", false, false}, "empty-json.txt"},
+		"sampling-0":    {CatCmd{rOpt, 0, 10, 0, 10, 0.0, "json", false, "good.parquet", false, false}, "empty-json.txt"},
+		"empty":         {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "json", false, "empty.parquet", false, false}, "empty-json.txt"},
+		"RI-scalar":     {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-scalar.parquet", false, false}, "cat-reinterpret-scalar.jsonl"},
+		"RI-pointer":    {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-pointer.parquet", false, false}, "cat-reinterpret-pointer.jsonl"},
+		"RI-list":       {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-list.parquet", false, false}, "cat-reinterpret-list.jsonl"},
+		"RI-map-key":    {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-map-key.parquet", false, false}, "cat-reinterpret-map-key.jsonl"},
+		"RI-map-value":  {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-map-value.parquet", false, false}, "cat-reinterpret-map-value.jsonl"},
+		"RI-composite":  {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "reinterpret-composite.parquet", false, false}, "cat-reinterpret-composite.jsonl"},
+		"jsonl":         {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", false, "good.parquet", false, false}, "cat-good-jsonl.jsonl"},
+		"csv":           {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "csv", false, "good.parquet", false, false}, "cat-good-csv.txt"},
+		"csv-no-header": {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "csv", true, "good.parquet", false, false}, "cat-good-csv-no-header.txt"},
+		"tsv":           {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "tsv", false, "good.parquet", false, false}, "cat-good-tsv.txt"},
+		"tsv-no-header": {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "tsv", true, "good.parquet", false, false}, "cat-good-tsv-no-header.txt"},
 	}
 
 	for name, tc := range testCases {
