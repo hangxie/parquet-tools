@@ -36,7 +36,6 @@ type CatCmd struct {
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool    `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
-	PargoPrefix  string  `help:"deprecated, will be removed from next release." default:""`
 	Concurrent   bool    `help:"enable concurrent output" default:"false"`
 }
 
