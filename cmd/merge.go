@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hangxie/parquet-go/reader"
+	"github.com/hangxie/parquet-go/v2/reader"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
 	pschema "github.com/hangxie/parquet-tools/internal/schema"

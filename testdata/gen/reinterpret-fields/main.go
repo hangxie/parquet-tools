@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/hangxie/parquet-go/source/local"
-	"github.com/hangxie/parquet-go/types"
-	"github.com/hangxie/parquet-go/writer"
+	"github.com/hangxie/parquet-go/v2/source/local"
+	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v2/writer"
 )
 
 type Scalar struct {

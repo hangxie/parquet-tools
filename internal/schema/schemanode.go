@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hangxie/parquet-go/common"
-	"github.com/hangxie/parquet-go/parquet"
-	"github.com/hangxie/parquet-go/reader"
-	"github.com/hangxie/parquet-go/types"
+	"github.com/hangxie/parquet-go/v2/common"
+	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v2/types"
 )
 
 // this represents order of tags in JSON schema and go struct
