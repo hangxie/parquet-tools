@@ -11,14 +11,14 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
-	"github.com/hangxie/parquet-go/reader"
-	"github.com/hangxie/parquet-go/source"
-	pqazblob "github.com/hangxie/parquet-go/source/azblob"
-	"github.com/hangxie/parquet-go/source/gcs"
-	"github.com/hangxie/parquet-go/source/hdfs"
-	pqhttp "github.com/hangxie/parquet-go/source/http"
-	"github.com/hangxie/parquet-go/source/local"
-	"github.com/hangxie/parquet-go/source/s3v2"
+	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v2/source"
+	pqazblob "github.com/hangxie/parquet-go/v2/source/azblob"
+	"github.com/hangxie/parquet-go/v2/source/gcs"
+	"github.com/hangxie/parquet-go/v2/source/hdfs"
+	pqhttp "github.com/hangxie/parquet-go/v2/source/http"
+	"github.com/hangxie/parquet-go/v2/source/local"
+	"github.com/hangxie/parquet-go/v2/source/s3v2"
 	googleoption "google.golang.org/api/option"
 )
 
@@ -31,11 +31,11 @@ type ReadOption struct {
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
 }
 
-func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	return local.NewLocalFileReader(u.Path)
 }
 
-func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	s3Client, err := getS3Client(u.Host, option.Anonymous)
 	if err != nil {
 		return nil, err
@@ -45,19 +45,19 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 	if option.ObjectVersion != "" {
 		objVersion = &option.ObjectVersion
 	}
-	return s3v2.NewS3FileReaderWithClientVersioned(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
+	return s3v2.NewS3FileReaderWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
 }
 
-func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	azURL, cred, err := azureAccessDetail(*u, option.Anonymous, option.ObjectVersion)
 	if err != nil {
 		return nil, err
 	}
 
-	return pqazblob.NewAzBlobFileReaderWithSharedKey(context.Background(), azURL, cred, blockblob.ClientOptions{})
+	return pqazblob.NewAzBlobFileReader(context.Background(), azURL, cred, blockblob.ClientOptions{})
 }
 
-func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	generation := int64(-1)
 	if option.ObjectVersion != "" {
 		var err error
@@ -77,14 +77,14 @@ func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetF
 		return nil, fmt.Errorf("failed to create GCS client: %w", err)
 	}
 
-	return gcs.NewGcsFileReaderWithClientAndGeneration(ctx, client, "", u.Host, strings.TrimLeft(u.Path, "/"), generation)
+	return gcs.NewGcsFileReaderWithClient(ctx, client, "", u.Host, strings.TrimLeft(u.Path, "/"), generation)
 }
 
-func newHTTPReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+func newHTTPReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	return pqhttp.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 }
 
-func newHDFSReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
+func newHDFSReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	userName := u.User.Username()
 	if userName == "" {
 		osUser, err := user.Current()
@@ -97,7 +97,7 @@ func newHDFSReader(u *url.URL, option ReadOption) (source.ParquetFile, error) {
 }
 
 func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
-	readerFuncTable := map[string]func(*url.URL, ReadOption) (source.ParquetFile, error){
+	readerFuncTable := map[string]func(*url.URL, ReadOption) (source.ParquetFileReader, error){
 		schemeLocal:              newLocalReader,
 		schemeAWSS3:              newAWSS3Reader,
 		schemeGoogleCloudStorage: newGoogleCloudStorageReader,

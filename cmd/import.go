@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	parquetSource "github.com/hangxie/parquet-go/source"
+	parquetSource "github.com/hangxie/parquet-go/v2/source"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
 )
@@ -39,7 +39,7 @@ func (c ImportCmd) Run() error {
 	return fmt.Errorf("[%s] is not a recognized source format", c.Format)
 }
 
-func (c ImportCmd) closeWriter(pf parquetSource.ParquetFile) error {
+func (c ImportCmd) closeWriter(pf parquetSource.ParquetFileWriter) error {
 	// retry on particular errors according to https://github.com/colinmarc/hdfs/blob/v2.4.0/file_writer.go#L220-L226
 	var err error
 	for range 10 {

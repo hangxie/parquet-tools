@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/hangxie/parquet-go/parquet"
-	"github.com/hangxie/parquet-go/source/local"
-	"github.com/hangxie/parquet-go/writer"
+	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v2/source/local"
+	"github.com/hangxie/parquet-go/v2/writer"
 )
 
 type Student struct {
