@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v2/writer"
+	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
 	pschema "github.com/hangxie/parquet-tools/internal/schema"
@@ -17,6 +20,44 @@ type MergeCmd struct {
 	Source       []string `short:"s" help:"Files to be merged."`
 	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool     `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	Concurrent   bool     `help:"enable concurrent processing" default:"false"`
+}
+
+func (c MergeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			row, more := <-writerChan
+			if !more {
+				return nil
+			}
+			if err := fileWriter.Write(row); err != nil {
+				return fmt.Errorf("failed to write data from to [%s]: %w", c.URI, err)
+			}
+		}
+	}
+}
+
+func (c MergeCmd) reader(ctx context.Context, source string, fileReader *reader.ParquetReader, writerChan chan any) error {
+	for {
+		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
+		if err != nil {
+			return fmt.Errorf("failed to read from [%s]: %w", source, err)
+		}
+		if len(rows) == 0 {
+			return nil
+		}
+		for _, row := range rows {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				writerChan <- row
+			}
+		}
+	}
 }
 
 // Run does actual merge job
@@ -47,22 +88,43 @@ func (c MergeCmd) Run() error {
 		_ = fileWriter.PFile.Close()
 	}()
 
-	for i := range fileReaders {
-		for {
-			rows, err := fileReaders[i].ReadByNumber(c.ReadPageSize)
-			if err != nil {
-				return fmt.Errorf("failed to read from [%s]: %w", c.Source[i], err)
-			}
-			if len(rows) == 0 {
-				break
-			}
-			for _, row := range rows {
-				if err := fileWriter.Write(row); err != nil {
-					return fmt.Errorf("failed to write data from [%s] to [%s]: %w", c.Source[i], c.URI, err)
-				}
-			}
-		}
+	// dedicated goroutine for output to ensure output integrity
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	writerGroup, _ := errgroup.WithContext(ctx)
+	writerChan := make(chan any)
+	writerGroup.Go(func() error {
+		return c.writer(ctx, fileWriter, writerChan)
+	})
+
+	var concurrencyChan chan struct{}
+	if c.Concurrent {
+		concurrencyChan = make(chan struct{}, len(fileReaders))
+	} else {
+		concurrencyChan = make(chan struct{}, 1)
 	}
+
+	readerGroup, _ := errgroup.WithContext(ctx)
+	for i := range fileReaders {
+		i := i
+		concurrencyChan <- struct{}{}
+		readerGroup.Go(func() error {
+			defer func() {
+				<-concurrencyChan
+			}()
+			return c.reader(ctx, c.Source[i], fileReaders[i], writerChan)
+		})
+	}
+
+	if err := readerGroup.Wait(); err != nil {
+		return err
+	}
+	close(writerChan)
+
+	if err := writerGroup.Wait(); err != nil {
+		return err
+	}
+
 	if err := fileWriter.WriteStop(); err != nil {
 		return fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
 	}

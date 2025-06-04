@@ -104,6 +104,7 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
       - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
       - [Print Version in JSON Format](#print-version-in-json-format)
   - [Credit](#credit)
+  - [License](#license)
 
 ## Installation
 
@@ -666,9 +667,12 @@ $ parquet-tools row-count /tmp/merged.parquet
 6
 ```
 
-You can use `--read-page-size` to configure how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+
+When `--concurrent` option is specified, the merge command will read all input files in parallel, this can bring performance gain between 5% and 10%, trade-off is that the order of records in the result parquet file will not be strictly in the order of input files.
 
 You can set `--fail-on-int96` option to fail `merge` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
+
 
 ### meta Command
 
@@ -961,3 +965,7 @@ Some test cases are from:
 * https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 * https://pro.dp.la/developers/bulk-download
 * https://exchange.aboutamazon.com/data-initiative
+
+## License
+
+This project is licensed under the [BSD 3-Clause License](LiCENSE).
