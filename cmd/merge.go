@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"runtime"
 
 	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/hangxie/parquet-go/v2/writer"
@@ -99,7 +100,7 @@ func (c MergeCmd) Run() error {
 
 	var concurrencyChan chan struct{}
 	if c.Concurrent {
-		concurrencyChan = make(chan struct{}, len(fileReaders))
+		concurrencyChan = make(chan struct{}, runtime.NumCPU())
 	} else {
 		concurrencyChan = make(chan struct{}, 1)
 	}
