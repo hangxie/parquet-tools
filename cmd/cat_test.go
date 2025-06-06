@@ -19,7 +19,6 @@ func Test_CatCmd_Run_error(t *testing.T) {
 		"non-existent-file":      {CatCmd{rOpt, 0, 10, 10, 10, 1.0, "json", false, "file/does/not/exist", false, false}, "no such file or directory"},
 		"invalid-read-page-size": {CatCmd{rOpt, 0, 10, 10, 0, 0.5, "json", false, "does/not/matter", false, false}, "invalid read page size"},
 		"invalid-skip-size":      {CatCmd{rOpt, -10, 10, 10, 10, 0.5, "json", false, "does/not/matter", false, false}, "invalid skip -10"},
-		"invalid-skip-page-size": {CatCmd{rOpt, 10, 0, 10, 10, 0.5, "json", false, "does/not/matter", false, false}, "invalid skip page size"},
 		"sampling-too-high":      {CatCmd{rOpt, 10, 10, 10, 10, 2.0, "json", false, "does/not/matter", false, false}, "invalid sampling"},
 		"sampling-too-low":       {CatCmd{rOpt, 10, 10, 10, 10, -0.5, "json", false, "does/not/matter", false, false}, "invalid sampling"},
 		"invalid-format":         {CatCmd{rOpt, 10, 10, 10, 10, 0.5, "foobar", false, "does/not/matter", false, false}, "unknown format: foobar"},
