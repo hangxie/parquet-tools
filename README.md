@@ -443,7 +443,6 @@ $ GODEBUG=http2client=0 parquet-tools row-count https://...
 There are two parameters that you probably will never touch:
 
 * `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
-* `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read https://github.com/xitongsys/parquet-go/issues/545 for more details.
 
 #### Full Data Set
 
