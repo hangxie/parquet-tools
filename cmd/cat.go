@@ -185,7 +185,7 @@ func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	return nil
 }
 
-func (c CatCmd) outputProducer(ctx context.Context, rowChan, outputChan chan any, reinterpretFields []pschema.ReinterpretField) error {
+func (c CatCmd) encoder(ctx context.Context, rowChan, outputChan chan any, reinterpretFields []pschema.ReinterpretField) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -204,7 +204,7 @@ func (c CatCmd) outputProducer(ctx context.Context, rowChan, outputChan chan any
 	}
 }
 
-func (c CatCmd) outputConsumer(ctx context.Context, outputChan chan any, fieldList []string) error {
+func (c CatCmd) printer(ctx context.Context, outputChan chan any, fieldList []string) error {
 	fmt.Print(delimiter[c.Format].begin)
 	isFirstRow := true
 Loop:
@@ -249,7 +249,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	outputGroup, _ := errgroup.WithContext(ctx)
 	outputChan := make(chan any)
 	outputGroup.Go(func() error {
-		return c.outputConsumer(ctx, outputChan, fieldList)
+		return c.printer(ctx, outputChan, fieldList)
 	})
 
 	concurrency := 1
@@ -261,7 +261,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	// goroutines to reinterpret rows
 	for range concurrency {
 		rowGroup.Go(func() error {
-			return c.outputProducer(ctx, rowChan, outputChan, reinterpretFields)
+			return c.encoder(ctx, rowChan, outputChan, reinterpretFields)
 		})
 	}
 
