@@ -967,4 +967,4 @@ Some test cases are from:
 
 ## License
 
-This project is licensed under the [BSD 3-Clause License](LiCENSE).
+This project is licensed under the [BSD 3-Clause License](LICENSE).
