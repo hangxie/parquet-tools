@@ -147,8 +147,8 @@ github.com/gorilla/securecookie v1.1.1 h1:miw7JPhV+b/lAHSXz4qd/nN9jRiAFV5FwjeKyC
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v1.2.1 h1:DHd3rPN5lE3Ts3D8rKkQ8x/0kqfeNmBAaiSi+o7FsgI=
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
-github.com/hangxie/parquet-go/v2 v2.0.6 h1:6HkEOwh2Bdud2xX3z7LpPARMz5OO+DKVE8Ef+qLpg38=
-github.com/hangxie/parquet-go/v2 v2.0.6/go.mod h1:KWbLoT1calN7OY9a+NrtzFgFXj/Y6s0jb2jJvuqT0+U=
+github.com/hangxie/parquet-go/v2 v2.0.7 h1:bPKJtgVOHmsFD6cLh6d1rXEa6RCjnTU0ltnJM3dfD8A=
+github.com/hangxie/parquet-go/v2 v2.0.7/go.mod h1:KWbLoT1calN7OY9a+NrtzFgFXj/Y6s0jb2jJvuqT0+U=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
