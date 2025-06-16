@@ -136,3 +136,30 @@ func Benchmark_MergeCmd_Run(b *testing.B) {
 		}
 	})
 }
+
+func Test_MergeCmd_Run_optional_list(t *testing.T) {
+	tempDir := t.TempDir()
+	resultFile := filepath.Join(tempDir, "ut.parquet")
+	mergeCmd := MergeCmd{
+		ReadOption:   pio.ReadOption{},
+		WriteOption:  pio.WriteOption{Compression: "SNAPPY"},
+		ReadPageSize: 11000,
+		Source:       []string{"../testdata/optional-fields.parquet", "../testdata/optional-fields.parquet"},
+		URI:          resultFile,
+	}
+
+	err := mergeCmd.Run()
+	require.NoError(t, err)
+
+	catCmd := CatCmd{
+		ReadOption:   pio.ReadOption{},
+		ReadPageSize: 1000,
+		SampleRatio:  1.0,
+		Format:       "json",
+		URI:          resultFile,
+	}
+	stdout, _ := captureStdoutStderr(func() {
+		require.NoError(t, catCmd.Run())
+	})
+	require.Equal(t, loadExpected(t, "../testdata/golden/merge-optional-fields-json.json"), stdout)
+}

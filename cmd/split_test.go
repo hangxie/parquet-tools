@@ -96,6 +96,35 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 	}
 }
 
+func Test_SplitCmd_Run_optional_fields(t *testing.T) {
+	tempDir := t.TempDir()
+	splitCmd := SplitCmd{
+		ReadOption:   pio.ReadOption{},
+		WriteOption:  pio.WriteOption{Compression: "SNAPPY"},
+		ReadPageSize: 11000,
+		URI:          "../testdata/optional-fields.parquet",
+		FileCount:    1,
+		NameFormat:   filepath.Join(tempDir, "ut-%d.parquet"),
+	}
+
+	err := splitCmd.Run()
+	require.NoError(t, err)
+	files, _ := os.ReadDir(tempDir)
+	require.Equal(t, 1, len(files))
+
+	catCmd := CatCmd{
+		ReadOption:   pio.ReadOption{},
+		ReadPageSize: 1000,
+		SampleRatio:  1.0,
+		Format:       "json",
+		URI:          filepath.Join(tempDir, files[0].Name()),
+	}
+	stdout, _ := captureStdoutStderr(func() {
+		require.NoError(t, catCmd.Run())
+	})
+	require.Equal(t, loadExpected(t, "../testdata/golden/split-optional-fields-json.json"), stdout)
+}
+
 func Test_checkNameFormat(t *testing.T) {
 	testCases := map[string]error{
 		// good

@@ -1,0 +1,21 @@
+[
+  {
+    "field1": null,
+    "field2": null,
+    "field3": null,
+    "field4": null
+  },
+  {
+    "field1": [
+      "val1",
+      "val2"
+    ],
+    "field2": {
+      "val1": "val2"
+    },
+    "field3": {
+      "foo": "bar"
+    },
+    "field4": 1.23
+  }
+]
