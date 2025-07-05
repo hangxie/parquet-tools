@@ -16,11 +16,10 @@ VERSION		= $(shell git describe --tags --always)
 # go option
 CGO_ENABLED := 0
 GO			?= go
-GOBIN		= $(shell go env GOPATH)/bin
+GOBIN		= $(shell $(GO) env GOPATH)/bin
 GOFLAGS		:= -trimpath
 GOSOURCES	:= $(shell find . -type f -name '*.go')
-LDFLAGS		:= -w -s
-LDFLAGS		+= \
+LDFLAGS		:= -w -s \
 				-extldflags "-static" \
 				-X $(PKG_PREFIX)/cmd.version=$(VERSION) \
 				-X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) \
@@ -32,8 +31,8 @@ LDFLAGS		+= \
 all: deps tools format lint test build  ## Build all common targets
 
 .PHONY: format
-format: tools  ## Format all go code
-	@echo "==> Formatting all go code"
+format: tools  ## Format source codes
+	@echo "==> Formatting source codes"
 	@$(GOBIN)/gofumpt -w -extra $(GOSOURCES)
 	@$(GOBIN)/goimports -w -local $(PKG_PREFIX) $(GOSOURCES)
 
@@ -54,17 +53,16 @@ lint: tools  ## Run static code analysis
 .PHONY: deps
 deps:  ## Install prerequisite for build
 	@echo "==> Installing prerequisite for build"
-	@go mod tidy
+	@$(GO) mod tidy
 
 .PHONY: tools
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
 	@(cd /tmp; \
-		go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
-		go install github.com/jstemmer/go-junit-report/v2@latest; \
-		go install mvdan.cc/gofumpt@latest; \
-		go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \
-		go install golang.org/x/tools/cmd/goimports@latest; \
+		$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+		$(GO) install mvdan.cc/gofumpt@latest; \
+		$(GO) install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \
+		$(GO) install golang.org/x/tools/cmd/goimports@latest; \
 	)
 
 .PHONY: build
@@ -95,12 +93,9 @@ test: deps tools  ## Run unit tests
 	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail ; \
 		cd $(BUILD_DIR)/test; \
-		CGO_ENABLED=1 go test -v -race -count 1 -trimpath \
-			-coverprofile=coverage.out $(CURDIR)/... \
-			| tee go-test.output ; \
-		go tool cover -html=coverage.out -o coverage.html ; \
-		go tool cover -func=coverage.out -o coverage.txt ; \
-		cat go-test.output | $(GOBIN)/go-junit-report > junit.xml ; \
+		CGO_ENABLED=1 $(GO) test -race -count 1 -trimpath -coverprofile=coverage.out $(CURDIR)/... ; \
+		$(GO) tool cover -html=coverage.out -o coverage.html ; \
+		$(GO) tool cover -func=coverage.out -o coverage.txt ; \
 		cat coverage.txt
 
 .PHONY: benchmark
@@ -110,7 +105,7 @@ benchmark:  ## Run benchmark
 	@test -f ./build/benchmark.parquet \
 	    || curl -sLo ./build/benchmark.parquet \
 	       https://huggingface.co/datasets/hangxie/parquet-tools/resolve/main/benchmark-10K.parquet?download=true
-	@go test -bench ^Benchmark -run=^$$ -count 1 -benchtime 3x -benchmem ./...
+	@$(GO) test -bench ^Benchmark -run=^$$ -count 1 -benchtime 3x -benchmem ./...
 
 .PHONY: release-build
 release-build: deps ## Build release binaries
