@@ -25,7 +25,7 @@ function build() {
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-    docker run -di --rm --name ${DOCKER_NAME} rockylinux:9
+    docker run -di --rm --name ${DOCKER_NAME} rockylinux/rockylinux:10
 
     # CCI does not support volume mount, so use docker cp instead
     git -C ${SOURCE_DIR} archive --format=tar.gz --prefix=${PKG_NAME}-${RPM_VER}/ -o /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ${VERSION}
@@ -41,7 +41,7 @@ function build() {
         mkdir -p ~/rpmbuild/SOURCES;
         cp /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ~/rpmbuild/SOURCES/;
         rpmbuild -bb --target ${PKG_ARCH} /tmp/${PKG_NAME}.spec;
-        cp /root/rpmbuild/RPMS/${PKG_ARCH}/${PKG_NAME}-${RPM_VER}-1.el9.${PKG_ARCH}.rpm /tmp/${PKG_NAME}-${RPM_VER}-1.${PKG_ARCH}.rpm;
+        cp /root/rpmbuild/RPMS/${PKG_ARCH}/${PKG_NAME}-${RPM_VER}-1.el10.${PKG_ARCH}.rpm /tmp/${PKG_NAME}-${RPM_VER}-1.${PKG_ARCH}.rpm;
     "
     docker cp ${DOCKER_NAME}:/tmp/${PKG_NAME}-${RPM_VER}-1.${PKG_ARCH}.rpm ${SOURCE_DIR}/build/release/
 

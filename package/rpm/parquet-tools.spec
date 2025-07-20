@@ -2,7 +2,7 @@ Name:           parquet-tools
 Version:        CHANGEME
 Release:        1%{?dist}
 Summary:        Utility to deal with Parquet data
-License:        BSD
+License:        BSD-3-Clause
 Provides:       %{name} = %{version}
 Source0:        %{name}-%{version}.tar.gz
 
