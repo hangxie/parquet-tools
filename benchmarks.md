@@ -5,13 +5,15 @@
    * All parquet files have the same schema with testdata/all-types.parquet but with more rows.
    * 10K rows data set was used for all versions.
 2. Run on a 2024 Apple MacBook Air with M3/24GB (memory does not matter too much).
-3. Run `make benchmark` 3 times, then pick the fastest number and post here after convert ns/op to ms/op.
+3. Run `make benchmark` 10 times, then pick the fastest number and post here after convert ns/op to ms/op.
 4. Benchmark was added in v1.30.0, old versions need to tweak go benchmarking code to make things work.
 
 ## Benchmark Comparisons Between Versions
 
 |          |                                                                        cat |                                                                     merge |     meta |     row-count |     schema |     size |     version |
 | -------: | -------------------------------------------------------------------------: | ------------------------------------------------------------------------: | -------: | ------------: | ---------: | -------: | ----------: |
+| HEAD     |                                                                        383 |                                                                       796 |    0.769 |         0.678 |      0.776 |    0.644 |       0.002 |
+|  v1.32.6 |                                                                        383 |                                                                       786 |    0.823 |         0.664 |      0.797 |    0.678 |       0.004 |
 |  v1.32.5 |                                                                        399 |                                                                       814 |    0.802 |         0.708 |      0.771 |    0.713 |       0.004 |
 |  v1.32.4 |                                                                        385 |                                                                       785 |    0.787 |         0.694 |      0.769 |    0.734 |       0.008 |
 |  v1.32.3 |                                                                        390 |                                                                       800 |    0.826 |         0.705 |      0.761 |    0.734 |       0.004 |
