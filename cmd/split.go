@@ -29,7 +29,7 @@ type SplitCmd struct {
 	URI          string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FileCount    int64  `xor:"RecordCount" help:"Generate this number of result files with potential empty ones"`
 	RecordCount  int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
-	FailOnInt96  bool   `help:"Fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	FailOnInt96  bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	NameFormat   string `help:"Format to populate target file names" default:"result-%06d.parquet"`
 
 	current TrunkWriter
