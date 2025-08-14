@@ -35,7 +35,7 @@ type CatCmd struct {
 	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
-	FailOnInt96  bool    `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	Concurrent   bool    `help:"enable concurrent output" default:"false"`
 }
 
@@ -57,7 +57,7 @@ func (c CatCmd) Run() error {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
 	if c.Skip < 0 {
-		return fmt.Errorf("invalid skip %d, needs to greater or equal to 0", c.Skip)
+		return fmt.Errorf("invalid skip %d, needs to be greater than or equal to 0", c.Skip)
 	}
 	if c.Limit == 0 {
 		c.Limit = ^uint64(0)
@@ -114,7 +114,7 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, []
 		return nil, nil, err
 	}
 
-	// CSV snd TSV does not support nested schema
+	// CSV and TSV do not support nested schema
 	fieldList, err := c.outputHeader(schemaRoot)
 	if err != nil {
 		return nil, nil, err

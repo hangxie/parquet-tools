@@ -28,7 +28,7 @@ func main() {
 		&cli,
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
-		kong.Description("Utility inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md"),
+		kong.Description("A utility to inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md"),
 	)
 	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
 

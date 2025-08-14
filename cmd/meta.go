@@ -21,7 +21,7 @@ type MetaCmd struct {
 	pio.ReadOption
 	Base64      bool   `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
-	FailOnInt96 bool   `help:"fail command if INT96 data type presents." name:"fail-on-int96" default:"false"`
+	FailOnInt96 bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 }
 
 type columnMeta struct {

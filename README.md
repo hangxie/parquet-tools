@@ -5,23 +5,23 @@
 [![](https://github.com/hangxie/parquet-tools/wiki/coverage.svg)](https://github.com/hangxie/parquet-tools/wiki/Coverage-Report)
 
 # parquet-tools
-Utility to inspect Parquet files.
+A utility to inspect Parquet files.
 
 ## Quick Start
 
-Pre-built binary or package can be found from [release page](https://github.com/hangxie/parquet-tools/releases), on Mac you can install with brew:
+Pre-built binaries or packages can be found on the [release page](https://github.com/hangxie/parquet-tools/releases), on Mac you can install with brew:
 
 ```bash
 $ brew install go-parquet-tools
 ```
 
-Once it is installed
+Once it is installed:
 
 ```bash
 $ parquet-tools
 Usage: parquet-tools <command> [flags]
 
-Utility inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md
+A utility to inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md
 
 Flags:
   -h, --help    Show context-sensitive help.
@@ -118,14 +118,14 @@ Good for people who are familiar with [Go](https://go.dev/), you need 1.24 or ne
 $ go install github.com/hangxie/parquet-tools@latest
 ```
 
-Above command installs latest released version of `parquet-tools` to $GOPATH/bin, `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
+The above command installs the latest released version of `parquet-tools` to $GOPATH/bin, `parquet-tools` installed from source will not report proper version and build time, so if you run `parquet-tools version`, it will just give you an empty line, all other functions are not affected.
 
 > [!TIP]
 > If you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.
 
 ### Download Pre-built Binaries
 
-Good for people do not want to build and all other installation approaches do not work.
+Good for people who do not want to build and all other installation approaches do not work.
 
 Go to [release page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux, Mac, or FreeBSD, then run the program.
 
@@ -133,13 +133,13 @@ For Windows 10 on ARM (like Surface Pro X), use windows-arm64, if you are using 
 
 ### Brew Install
 
-Mac user can use [Homebrew](https://brew.sh/) to install:
+Mac users can use [Homebrew](https://brew.sh/) to install:
 
 ```bash
 $ brew install go-parquet-tools
 ```
 
-To upgrade to latest version:
+To upgrade to the latest version:
 
 ```bash
 $ brew upgrade go-parquet-tools
@@ -187,7 +187,7 @@ Updating / installing...
 ## Usage
 
 ### Obtain Help
-`parquet-tools` provides help information through `-h` flag, whenever you are not sure about parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:
+`parquet-tools` provides help information through `-h` flag, whenever you are not sure about a parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:
 
 ```bash
 $ parquet-tools meta -h
@@ -207,7 +207,7 @@ Flags:
       --object-version=""           (S3, GCS, and Azure only) object version.
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
   -b, --base64                      Encode min/max value.
-      --fail-on-int96               fail command if INT96 data type presents.
+      --fail-on-int96               fail command if INT96 data type is present.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
@@ -225,19 +225,19 @@ Most commands can output JSON format result which can be processed by utilities 
 * HTTP/HTTPS URL
 
 > [!IMPORTANT]
-> you need to have proper permission on the file you are going to process.
+> You need to have proper permission on the file you are going to process.
 
 #### File System
 
-For files from file system, you can specify `file://` scheme or just ignore it:
+For files from the file system, you can specify `file://` scheme or just ignore it:
 
 ```bash
 $ parquet-tools row-count testdata/good.parquet
-4
+3
 $ parquet-tools row-count file://testdata/good.parquet
-4
+3
 $ parquet-tools row-count file://./testdata/good.parquet
-4
+3
 ```
 
 #### S3 Bucket
@@ -285,7 +285,7 @@ Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `
 
 #### GCS Bucket
 
-Use full [gsutil](https://cloud.google.com/storage/docs/gsutil) URI to point to GCS object location, it starts with `gs://`. You need to make sure you have permission to read or write to the GSC object, either use application default or GOOGLE_APPLICATION_CREDENTIALS, you can refer to [Google Cloud document](https://cloud.google.com/docs/authentication/production#automatically) for more details.
+Use full [gsutil](https://cloud.google.com/storage/docs/gsutil) URI to point to GCS object location, it starts with `gs://`. You need to make sure you have permission to read or write to the GCS object, either use application default or GOOGLE_APPLICATION_CREDENTIALS, you can refer to [Google Cloud document](https://cloud.google.com/docs/authentication/production#automatically) for more details.
 
 ```bash
 $ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
@@ -298,7 +298,7 @@ Similar to S3, `parquet-tools` downloads only necessary data from GCS bucket.
 
 If the GCS object is publicly accessible, you can use `--anonymous` option to indicate that anonymous access is expected:
 
-```
+```bash
 $ parquet-tools row-count gs://cloud-samples-data/bigquery/us-states/us-states.parquet
 parquet-tools: error: failed to create GCS client: dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information
 $ parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet
@@ -307,7 +307,7 @@ $ parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states
 
 Optionally, you can specify object generation by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.), `parquet-tools` will access latest generation if this parameter is omitted.
 
-```
+```bash
 $ parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet
 50
 $ parquet-tools row-count --anonymous --object-version=-1 gs://cloud-samples-data/bigquery/us-states/us-states.parquet
@@ -316,7 +316,7 @@ $ parquet-tools row-count --anonymous --object-version=-1 gs://cloud-samples-dat
 
 `parquet-tools` reports error on invalid or non-existent generations:
 
-```
+```bash
 $ parquet-tools row-count --anonymous --object-version=123 gs://cloud-samples-data/bigquery/us-states/us-states.parquet
 parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-states/us-states.parquet]: failed to create new reader: storage: object doesn't exist: googleapi: Error 404: No such object: cloud-samples-data/bigquery/us-states/us-states.parquet, notFound
 $ parquet-tools row-count --anonymous --object-version=foo-bar gs://cloud-samples-data/bigquery/us-states/us-states.parquet
@@ -331,7 +331,7 @@ parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-s
 * storage account as host, followed by
 * blob name as path
 
-for example:
+For example:
 
 > wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 
@@ -340,7 +340,7 @@ means the parquet file is at:
 * container `laborstatisticscontainer`
 * blob `lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet`
 
-`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment variable to identity access:
+`parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment variable to identify access:
 
 ```bash
 $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools import -s testdata/csv.source -m testdata/csv.schema wasbs://REDACTED@REDACTED.blob.core.windows.net/test/csv.parquet
@@ -350,7 +350,7 @@ $ AZURE_STORAGE_ACCESS_KEY=REDACTED parquet-tools row-count wasbs://REDACTED@RED
 
 If the blob is publicly accessible, either unset `AZURE_STORAGE_ACCESS_KEY` or use `--anonymous` option to indicate that anonymous access is expected:
 
-```
+```bash
 $ AZURE_STORAGE_ACCESS_KEY= parquet-tools row-count wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 6582726
 $ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
@@ -361,7 +361,7 @@ Optionally, you can specify object version by using `--object-version` when you 
 
 > [!NOTE]
 > Azure blob returns different errors for non-existent version and invalid version id:
-```
+```bash
 $ parquet-tools row-count --anonymous wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet --object-version foo-bar
 parquet-tools: error: unable to open file [wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet]: HEAD https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
                       --------------------------------------------------------------------------------
@@ -403,7 +403,7 @@ Similar to cloud storage, `parquet-tools` downloads only necessary data from HDF
 HTTP endpoint does not support write operation so it cannot be used as destination of `import`, `merge`, or `split` command.
 
 These options can be used along with HTTP endpoints:
-* `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depends on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
+* `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depending on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
 * `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to provide `Authorization` header or JWT token that is required by remote server.
 * `--http-ignore-tls-error` will ignore TLS errors, this is generally a bad idea.
 
@@ -419,7 +419,7 @@ Similar to S3 and other remote endpoints, `parquet-tools` downloads only necessa
 > [!TIP]
 > `parquet-tools` will use HTTP/2 if remote server supports this, however you can disable this if things are not working well by setting environment variable `GODEBUG` to `http2client=0`:
 
-```
+```bash
 $ parquet-tools row-count https://...
 2022/09/05 09:54:52 protocol error: received DATA after END_STREAM
 2022/09/05 09:54:52 protocol error: received DATA after END_STREAM
@@ -438,11 +438,9 @@ $ GODEBUG=http2client=0 parquet-tools row-count https://...
 
 ### cat Command
 
-`cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Due to most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduces the output to a certain level, these flags can be used together.
+`cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Since most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduce the output to a certain level, these flags can be used together.
 
-There are two parameters that you probably will never touch:
-
-* `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
+There is a parameter that you probably will never touch: `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 
 #### Full Data Set
 
@@ -454,7 +452,7 @@ $ parquet-tools cat --format jsonl testdata/good.parquet
 ```
 
 > [!TIP]
-> You can set `--fail-on-int96` option to fail `cat` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
+> You can set `--fail-on-int96` option to fail `cat` command for parquet files that contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 
 ```bash
 $ parquet-tools cat --fail-on-int96 testdata/all-types.parquet
@@ -465,7 +463,7 @@ $ parquet-tools cat testdata/all-types.parquet
 
 #### Skip Rows
 
-`--skip` is similar to OFFSET in SQL, `parquet-tools` will skip this many rows from beginning of the parquet file before applying other logics.
+`--skip` is similar to OFFSET in SQL, `parquet-tools` will skip this many rows from the beginning of the parquet file before applying other logic.
 
 ```bash
 $ parquet-tools cat --skip 2 --format jsonl testdata/good.parquet
@@ -522,7 +520,7 @@ parquet-tools: error: field [Map] is not scalar type, cannot output in csv forma
 
 #### Limit Number of Rows
 
-`--limit` is similar to LIMIT in SQL, or `head` in Linux shell, `parquet-tools` will stop running after this many rows outputs.
+`--limit` is similar to LIMIT in SQL, or `head` in Linux shell, `parquet-tools` will stop running after outputting this many rows.
 
 ```bash
 $ parquet-tools cat --limit 2 testdata/good.parquet
@@ -531,7 +529,7 @@ $ parquet-tools cat --limit 2 testdata/good.parquet
 
 #### Sampling
 
-`--sample-ratio` enables sampling, the ration is a number between 0.0 and 1.0 inclusively. `1.0` means output everything in the parquet file, while `0.0` means nothing. If you want to have 1 rows out of every 10 rows, use `0.1`.
+`--sample-ratio` enables sampling, the ratio is a number between 0.0 and 1.0 inclusively. `1.0` means output everything in the parquet file, while `0.0` means nothing. If you want to have 1 row out of every 10 rows, use `0.1`.
 
 > [!CAUTION]
 > This feature picks rows in parquet file randomly, so only `0.0` and `1.0` will output deterministic result, all other ratio may generate data set less or more than you want.
@@ -544,7 +542,7 @@ $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
 [{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
-[{"Shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"}]
+[{"shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"}]
 $ parquet-tools cat --sample-ratio 0.34 testdata/good.parquet
 [{"shoe_brand":"fila","shoe_name":"grant_hill_2"}]
 $ parquet-tools cat --sample-ratio 1.0 testdata/good.parquet
@@ -572,7 +570,7 @@ $ parquet-tools cat testdata/good.parquet
 [{"shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"},{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 ```
 
-`cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows reader of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
+`cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows readers of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
 
 > [!TIP]
 > If you want to filter data, use JSONL format output and pipe to `jq`.
@@ -588,7 +586,7 @@ You can read data line by line and parse every single line as a JSON object if y
 
 If you do not care about order of records, you can use `--concurrent` which will launch multiple encoders (up to number of CPUs) to boost output speed, but does not maintain original order from the parquet file.
 
-```
+```bash
 $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 {"shoe_brand":"fila","shoe_name":"grant_hill_2"}
 {"shoe_brand":"nike","shoe_name":"air_griffey"}
@@ -601,15 +599,15 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 ### import Command
 
-`import` command creates a parquet file based from data in other format. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
+`import` command creates a parquet file based on data in other formats. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD), default is "SNAPPY". If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD), default is "SNAPPY". If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
 * CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/csv.schema).
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/json.schema).
-* JSONL: use same schema as JSON format.
+* JSONL: use the same schema as JSON format.
 
 > [!WARNING]
 > You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149.
@@ -645,7 +643,7 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 
 ### merge Command
 
-`merge` command merge multiple parquet files into one parquet file, source parquet files need to have same schema, except top level node can have different names. All source files and target file can be from and to different storage locations.
+`merge` command merges multiple parquet files into one parquet file, source parquet files need to have the same schema, except top level node can have different names. All source files and target file can be from and to different storage locations.
 
 ```bash
 $ parquet-tools merge -s testdata/good.parquet,testdata/good.parquet /tmp/doubled.parquet
@@ -670,7 +668,7 @@ $ parquet-tools row-count /tmp/merged.parquet
 
 When `--concurrent` option is specified, the merge command will read input files in parallel (up to number of CPUs), this can bring performance gain between 5% and 10%, trade-off is that the order of records in the result parquet file will not be strictly in the order of input files.
 
-You can set `--fail-on-int96` option to fail `merge` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
+You can set `--fail-on-int96` option to fail `merge` command for parquet files that contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 
 
 ### meta Command
@@ -697,7 +695,7 @@ $ parquet-tools meta --base64 testdata/good.parquet
 > [!NOTE]
 > MinValue, MaxValue and NullCount are optional, if they do not show up in output then it means parquet file does not have that section.
 
-You can set `--fail-on-int96` option to fail `meta` command for parquet files contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
+You can set `--fail-on-int96` option to fail `meta` command for parquet files that contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 
 ```bash
 $ parquet-tools meta testdata/int96-nil-min-max.parquet
@@ -714,7 +712,7 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 
 ```bash
 $ parquet-tools row-count testdata/good.parquet
-4
+3
 ```
 
 ### schema Command
@@ -730,7 +728,7 @@ $ parquet-tools schema testdata/good.parquet
 {"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
 ```
 
-Default setting will be ignored to make output shorter, eg
+Default settings will be ignored to make output shorter, e.g.,
 * convertedtype=LIST
 * convertedtype=MAP
 * repetitiontype=REQUIRED
@@ -747,7 +745,7 @@ $ parquet-tools schema --format raw testdata/good.parquet
 
 #### Go Struct Format
 
-go struct format generate go struct definition snippet that can be used in go:
+go struct format generates go struct definition snippet that can be used in go:
 
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet | gofmt
@@ -799,7 +797,7 @@ parquet-tools: error: CSV supports flat schema only
 
 #### Install Shell Completions
 
-To install shell completions. run:
+To install shell completions, run:
 
 ```bash
 $ parquet-tools shell-completions
@@ -863,16 +861,16 @@ Other useful parameters include:
 
 #### Name format
 
-There is only one verb for integer is allowed, and it has to be variant of `%b`, `%d`, `%o`, `%x`, or `%X`.
+Only one verb for integers is allowed, and it has to be variant of `%b`, `%d`, `%o`, `%x`, or `%X`.
 
 ```bash
 $ parquet-tools split --name-format file-%0.2f.parquet --file-count 3 testdata/good.parquet
 parquet-tools: error: invalid name format [file-%0.2f.parquet]: [%0.2f] is not an allowed format verb
 $ parquet-tools split --name-format file.parquet --file-count 3 testdata/good.parquet
-parquet-tools: error: invalid name format [file.parquet]: lack of useable verb
+parquet-tools: error: invalid name format [file.parquet]: lack of usable verb
 ```
 
-You can use specify width and leading zeros:
+You can specify width and leading zeros:
 
 ```bash
 $ parquet-tools split --name-format file-%04b.parquet --file-count 3 testdata/all-types.parquet
