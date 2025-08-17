@@ -1,4 +1,4 @@
-FROM debian:12-slim
+FROM debian:13-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 COPY ./build/release/*-linux*.gz /tmp/
