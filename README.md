@@ -19,9 +19,10 @@ Once it is installed:
 
 ```bash
 $ parquet-tools
-Usage: parquet-tools <command> [flags]
+Usage: parquet-tools <command>
 
-A utility to inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md
+A utility to inspect Parquet files, for full usage see
+https://github.com/hangxie/parquet-tools/blob/main/README.md
 
 Flags:
   -h, --help    Show context-sensitive help.
