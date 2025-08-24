@@ -26,7 +26,7 @@
       "Tag": "name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"
     },
     {
-      "Tag": "name=Uuid, type=BYTE_ARRAY"
+      "Tag": "name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16"
     },
     {
       "Tag": "name=Json, type=BYTE_ARRAY, convertedtype=JSON"

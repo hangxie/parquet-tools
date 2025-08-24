@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"strings"
 	"time"
@@ -28,7 +30,7 @@ type AllTypes struct {
 	Double            float64             `parquet:"name=Double, type=DOUBLE"`
 	ByteArray         string              `parquet:"name=ByteArray, type=BYTE_ARRAY"`
 	Enum              string              `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"`
-	Uuid              string              `parquet:"name=Uuid, type=BYTE_ARRAY, convertedtype=UUID"`
+	Uuid              string              `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID"`
 	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
@@ -83,9 +85,11 @@ func main() {
 	pw.PageSize = 8 * 1024
 	pw.CompressionType = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
+	interval := make([]byte, 4)
 	for i := range 10 {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
 		strI := fmt.Sprintf("%d", i)
+		binary.LittleEndian.PutUint32(interval, uint32(i))
 		value := AllTypes{
 			Bool:              i%2 == 0,
 			Int32:             int32(i),
@@ -119,7 +123,7 @@ func main() {
 			TimestampMicros:   int64(i) + 1_640_995_200_000_000,
 			TimestampMicros2:  int64(i) + 1_640_995_200_000_000,
 			TimestampNanos2:   int64(i) + 1_640_995_200_000_000_000,
-			Interval:          types.StrIntToBinary(strings.Repeat(strI, 5), "LittleEndian", 12, false),
+			Interval:          string(bytes.Repeat(interval, 3)),
 			Decimal1:          decimals[i],
 			Decimal2:          int64(decimals[i]),
 			Decimal3:          types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[i]/100.0)), "BigEndian", 12, true),

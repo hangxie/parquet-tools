@@ -7,7 +7,7 @@ Float float32 `parquet:"name=Float, type=FLOAT"`
 Double float64 `parquet:"name=Double, type=DOUBLE"`
 ByteArray string `parquet:"name=ByteArray, type=BYTE_ARRAY"`
 Enum string `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"`
-Uuid string `parquet:"name=Uuid, type=BYTE_ARRAY"`
+Uuid string `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16"`
 Json string `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
 FixedLenByteArray string `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
 Utf8 string `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8"`

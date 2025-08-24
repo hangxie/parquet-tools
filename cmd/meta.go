@@ -127,16 +127,27 @@ func (c MetaCmd) Run() error {
 				continue
 			}
 
-			// reformat decimal values
+			// reformat decimal and interval values
 			var err error
 			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-			if columns[colIndex].MaxValue, err = pschema.DecimalToFloat(field, maxValue); err != nil {
-				return err
-			}
-
 			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-			if columns[colIndex].MinValue, err = pschema.DecimalToFloat(field, minValue); err != nil {
-				return err
+
+			if field.ConvertedType == parquet.ConvertedType_INTERVAL {
+				// Handle interval fields - convert to Go duration string
+				if maxValue != nil {
+					columns[colIndex].MaxValue = types.IntervalToString([]byte(maxValue.(string)))
+				}
+				if minValue != nil {
+					columns[colIndex].MinValue = types.IntervalToString([]byte(minValue.(string)))
+				}
+			} else {
+				// Handle decimal fields
+				if columns[colIndex].MaxValue, err = pschema.DecimalToFloat(field, maxValue); err != nil {
+					return err
+				}
+				if columns[colIndex].MinValue, err = pschema.DecimalToFloat(field, minValue); err != nil {
+					return err
+				}
 			}
 		}
 
