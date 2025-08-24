@@ -80,13 +80,16 @@
       }
     },
     {
-      "type": "BYTE_ARRAY",
-      "type_length": 0,
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "type_length": 16,
       "repetition_type": "REQUIRED",
       "name": "Uuid",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "logicalType": {
+        "UUID": {}
+      }
     },
     {
       "type": "BYTE_ARRAY",

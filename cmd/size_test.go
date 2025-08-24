@@ -33,14 +33,14 @@ func Test_SizeCmd_Run_good(t *testing.T) {
 		cmd    SizeCmd
 		stdout string
 	}{
-		"raw":               {SizeCmd{rOpt, "raw", false, "../testdata/all-types.parquet"}, "18482\n"},
-		"raw-json":          {SizeCmd{rOpt, "raw", true, "../testdata/all-types.parquet"}, `{"Raw":18482}` + "\n"},
-		"uncompressed":      {SizeCmd{rOpt, "uncompressed", false, "../testdata/all-types.parquet"}, "27158\n"},
-		"uncompressed-json": {SizeCmd{rOpt, "uncompressed", true, "../testdata/all-types.parquet"}, `{"Uncompressed":27158}` + "\n"},
-		"footer":            {SizeCmd{rOpt, "footer", false, "../testdata/all-types.parquet"}, "6674\n"},
-		"footer-json":       {SizeCmd{rOpt, "footer", true, "../testdata/all-types.parquet"}, `{"Footer":6674}` + "\n"},
-		"all":               {SizeCmd{rOpt, "all", false, "../testdata/all-types.parquet"}, "18482 27158 6674\n"},
-		"all-json":          {SizeCmd{rOpt, "all", true, "../testdata/all-types.parquet"}, `{"Raw":18482,"Uncompressed":27158,"Footer":6674}` + "\n"},
+		"raw":               {SizeCmd{rOpt, "raw", false, "../testdata/all-types.parquet"}, "18376\n"},
+		"raw-json":          {SizeCmd{rOpt, "raw", true, "../testdata/all-types.parquet"}, `{"Raw":18376}` + "\n"},
+		"uncompressed":      {SizeCmd{rOpt, "uncompressed", false, "../testdata/all-types.parquet"}, "27130\n"},
+		"uncompressed-json": {SizeCmd{rOpt, "uncompressed", true, "../testdata/all-types.parquet"}, `{"Uncompressed":27130}` + "\n"},
+		"footer":            {SizeCmd{rOpt, "footer", false, "../testdata/all-types.parquet"}, "6678\n"},
+		"footer-json":       {SizeCmd{rOpt, "footer", true, "../testdata/all-types.parquet"}, `{"Footer":6678}` + "\n"},
+		"all":               {SizeCmd{rOpt, "all", false, "../testdata/all-types.parquet"}, "18376 27130 6678\n"},
+		"all-json":          {SizeCmd{rOpt, "all", true, "../testdata/all-types.parquet"}, `{"Raw":18376,"Uncompressed":27130,"Footer":6678}` + "\n"},
 	}
 
 	for name, tc := range testCases {

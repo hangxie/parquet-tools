@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 1,
-      "TotalByteSize": 2129,
+      "TotalByteSize": 2135,
       "Columns": [
         {
           "PathInSchema": [
@@ -42,8 +42,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 243,
-          "UncompressedSize": 558,
+          "CompressedSize": 210,
+          "UncompressedSize": 560,
           "NumValues": 71,
           "NullCount": 1,
           "MaxValue": 40.04,
@@ -67,8 +67,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 176,
-          "UncompressedSize": 438,
+          "CompressedSize": 162,
+          "UncompressedSize": 440,
           "NumValues": 71,
           "NullCount": 1,
           "MaxValue": 0.04,
@@ -92,8 +92,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 786,
-          "UncompressedSize": 1030,
+          "CompressedSize": 780,
+          "UncompressedSize": 1032,
           "NumValues": 71,
           "NullCount": 1,
           "MaxValue": "2022-01-03T23:11:10.07007Z",

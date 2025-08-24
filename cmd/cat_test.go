@@ -64,6 +64,7 @@ func Test_CatCmd_Run_good(t *testing.T) {
 		"csv-no-header": {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "csv", true, "good.parquet", false, false}, "cat-good-csv-no-header.txt"},
 		"tsv":           {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "tsv", false, "good.parquet", false, false}, "cat-good-tsv.txt"},
 		"tsv-no-header": {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "tsv", true, "good.parquet", false, false}, "cat-good-tsv-no-header.txt"},
+		"all-types":     {CatCmd{rOpt, 0, 10, 0, 10, 1.0, "jsonl", true, "all-types.parquet", false, false}, "cat-all-types.jsonl"},
 	}
 
 	for name, tc := range testCases {

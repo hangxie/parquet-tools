@@ -2,22 +2,16 @@ package cmd
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"math"
 	"math/rand"
-	"reflect"
 	"runtime"
-	"strconv"
 	"strings"
-	"time"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v2/marshal"
 	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v2/schema"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
@@ -108,21 +102,19 @@ func (c CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	return fieldList, nil
 }
 
-func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, []pschema.ReinterpretField, error) {
+func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
 	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// CSV and TSV do not support nested schema
 	fieldList, err := c.outputHeader(schemaRoot)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	// retrieve schema for better formatting
-	reinterpretFields := schemaRoot.GetReinterpretFields(true)
-	return fieldList, reinterpretFields, nil
+	return fieldList, nil
 }
 
 func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
@@ -155,7 +147,7 @@ func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	return nil
 }
 
-func (c CatCmd) encoder(ctx context.Context, rowChan, outputChan chan any, reinterpretFields []pschema.ReinterpretField) error {
+func (c CatCmd) encoder(ctx context.Context, rowChan, outputChan chan any, schemaHandler *schema.SchemaHandler) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -165,7 +157,7 @@ func (c CatCmd) encoder(ctx context.Context, rowChan, outputChan chan any, reint
 			if !more {
 				return nil
 			}
-			rowStruct, err := rowToStruct(row, reinterpretFields)
+			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler)
 			if err != nil {
 				return err
 			}
@@ -203,7 +195,7 @@ Loop:
 }
 
 func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
-	fieldList, reinterpretFields, err := c.retrieveFieldDef(fileReader)
+	fieldList, err := c.retrieveFieldDef(fileReader)
 	if err != nil {
 		return err
 	}
@@ -228,10 +220,10 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	}
 	rowGroup, _ := errgroup.WithContext(ctx)
 	rowChan := make(chan any, concurrency)
-	// goroutines to reinterpret rows
+	// goroutines to encode rows
 	for range concurrency {
 		rowGroup.Go(func() error {
-			return c.encoder(ctx, rowChan, outputChan, reinterpretFields)
+			return c.encoder(ctx, rowChan, outputChan, fileReader.SchemaHandler)
 		})
 	}
 
@@ -278,170 +270,4 @@ func valuesToCSV(values []string, delimiter rune) (string, error) {
 	}
 	csvWriter.Flush()
 	return buf.String(), nil
-}
-
-func rowToStruct(row any, reinterpretFields []pschema.ReinterpretField) (any, error) {
-	rowValue := reflect.ValueOf(&row).Elem()
-	tmp := reflect.New(rowValue.Elem().Type()).Elem()
-	tmp.Set(rowValue.Elem())
-	for _, field := range reinterpretFields {
-		// There are data types that are represented as string, but they are actually not UTF8, they
-		// need to be re-interpreted so we will base64 encode them here to avoid losing data. For
-		// more details: https://github.com/xitongsys/parquet-go/issues/434
-		if field.ParquetType == parquet.Type_BYTE_ARRAY || field.ParquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || field.ParquetType == parquet.Type_INT96 {
-			encodeNestedBinaryString(tmp, strings.Split(field.InPath, common.PAR_GO_PATH_DELIMITER), field)
-		}
-	}
-	rowValue.Set(tmp)
-
-	// convert to struct type to map of interface so we can change the value for formatting,
-	// fail back to original data for any kind of errors
-	buf, err := json.Marshal(row)
-	if err != nil {
-		return "", err
-	}
-
-	// this should not fail as we just Marshal it
-	var iface any
-	_ = json.Unmarshal(buf, &iface)
-	for _, field := range reinterpretFields {
-		reinterpretNestedFields(&iface, strings.Split(field.ExPath, common.PAR_GO_PATH_DELIMITER), field)
-	}
-	return iface, nil
-}
-
-func encodeNestedBinaryString(value reflect.Value, locator []string, attr pschema.ReinterpretField) {
-	// dereference pointer
-	if value.Kind() == reflect.Ptr {
-		if !value.IsNil() {
-			encodeNestedBinaryString(value.Elem(), locator, attr)
-		}
-		return
-	}
-
-	switch value.Kind() {
-	case reflect.Array, reflect.Slice:
-		for elementIndex := range value.Len() {
-			encodeNestedBinaryString(value.Index(elementIndex), locator[1:], attr)
-		}
-	case reflect.Map:
-		for _, key := range value.MapKeys() {
-			switch locator[0] {
-			case "Key":
-				v := value.MapIndex(key)
-				newKey := reflect.New(key.Type()).Elem()
-				newKey.Set(key)
-				encodeNestedBinaryString(newKey, locator[1:], attr)
-				value.SetMapIndex(newKey, v)
-				value.SetMapIndex(key, reflect.Value{})
-			case "Value":
-				v := value.MapIndex(key)
-				newValue := reflect.New(v.Type()).Elem()
-				newValue.Set(v)
-				encodeNestedBinaryString(newValue, locator[1:], attr)
-				value.SetMapIndex(key, newValue)
-			default:
-				// do nothing
-			}
-		}
-	case reflect.Struct:
-		encodeNestedBinaryString(value.FieldByName(locator[0]), locator[1:], attr)
-	case reflect.String:
-		buf := pschema.StringToBytes(attr, value.String())
-		value.SetString(base64.StdEncoding.EncodeToString(buf))
-	default:
-		// do nothing
-	}
-}
-
-func reinterpretNestedFields(iface *any, locator []string, attr pschema.ReinterpretField) {
-	if iface == nil || *iface == nil {
-		return
-	}
-	v := reflect.ValueOf(*iface)
-	switch v.Kind() {
-	case reflect.Array, reflect.Slice:
-		if len(locator) == 0 {
-			return
-		}
-		for i := range (*iface).([]any) {
-			value := (*iface).([]any)[i]
-			reinterpretNestedFields(&value, locator[1:], attr)
-			(*iface).([]any)[i] = value
-		}
-	case reflect.Map:
-		if len(locator) == 0 {
-			return
-		}
-		mapValue := (*iface).(map[string]any)
-		switch locator[0] {
-		case "key":
-			newMapValue := make(map[string]any)
-			for k, v := range mapValue {
-				var newKey any = k
-				reinterpretNestedFields(&newKey, locator[1:], attr)
-
-				// INT32/INT64 will be reinterpreted to float, while string DECIMAL and
-				// INTERVAL type will be reinterpreted to string
-				switch val := newKey.(type) {
-				case string:
-					newMapValue[val] = v
-				case float64:
-					format := fmt.Sprintf("%%0.%df", attr.Scale)
-					newMapValue[fmt.Sprintf(format, val)] = v
-				default:
-					// do nothing
-				}
-			}
-			mapValue = newMapValue
-		case "value":
-			for k, v := range mapValue {
-				reinterpretNestedFields(&v, locator[1:], attr)
-				mapValue[k] = v
-			}
-		default:
-			// this is a map serialized from struct, so keep dig into sub-fields
-			scalarValue := mapValue[locator[0]]
-			reinterpretNestedFields(&scalarValue, locator[1:], attr)
-			mapValue[locator[0]] = scalarValue
-		}
-		*iface = mapValue
-	default:
-		reinterpretScalar(iface, attr)
-	}
-}
-
-func reinterpretScalar(iface *any, attr pschema.ReinterpretField) {
-	switch attr.ParquetType {
-	case parquet.Type_BYTE_ARRAY, parquet.Type_FIXED_LEN_BYTE_ARRAY:
-		switch v := (*iface).(type) {
-		case string:
-			if encoded, err := base64.StdEncoding.DecodeString(v); err == nil {
-				if f64, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(encoded, attr.Precision, attr.Scale), 64); err == nil {
-					*iface = f64
-				}
-			}
-		default:
-			// do nothing
-		}
-	case parquet.Type_INT32, parquet.Type_INT64:
-		switch v := (*iface).(type) {
-		case float64:
-			*iface = v / math.Pow10(attr.Scale)
-		case string:
-			if f64, err := strconv.ParseFloat(v, 64); err == nil {
-				*iface = f64 / math.Pow10(attr.Scale)
-			}
-		default:
-			// do nothing
-		}
-	case parquet.Type_INT96:
-		if _, ok := (*iface).(string); ok {
-			if encoded, err := base64.StdEncoding.DecodeString((*iface).(string)); err == nil {
-				*iface = types.INT96ToTime(string(encoded)).Format(time.RFC3339Nano)
-			}
-		}
-	default:
-		// do nothing
-	}
 }

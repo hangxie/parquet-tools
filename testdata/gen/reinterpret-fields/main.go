@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"time"
@@ -8,6 +10,7 @@ import (
 	"github.com/hangxie/parquet-go/v2/source/local"
 	"github.com/hangxie/parquet-go/v2/types"
 	"github.com/hangxie/parquet-go/v2/writer"
+	"golang.org/x/exp/constraints"
 )
 
 type Scalar struct {
@@ -86,16 +89,18 @@ func genScalar() {
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
+	interval := make([]byte, 4)
 	for i := -125; i <= 125; i += 25 {
 		strValue := fmt.Sprintf("%04d", i)
 		timeValue = timeValue.Add(timeStep)
+		binary.LittleEndian.PutUint32(interval, uint32(abs(i)))
 
 		value := Scalar{
 			V1: int32(i),
 			V2: int64(i),
 			V3: types.StrIntToBinary(strValue, "BigEndian", 12, true),
 			V4: types.StrIntToBinary(strValue, "BigEndian", 0, true),
-			V5: types.StrIntToBinary(strValue, "LittleEndian", 12, false),
+			V5: string(bytes.Repeat(interval, 3)),
 			V6: types.TimeToINT96(timeValue),
 		}
 		if err = pw.Write(value); err != nil {
@@ -121,9 +126,11 @@ func genPointer() {
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
+	interval := make([]byte, 4)
 	for i := -125; i <= 125; i += 25 {
 		strValue := fmt.Sprintf("%04d", i)
 		timeValue = timeValue.Add(timeStep)
+		binary.LittleEndian.PutUint32(interval, uint32(abs(i)))
 
 		value := Pointer{
 			V1: new(int32),
@@ -137,7 +144,7 @@ func genPointer() {
 		*value.V2 = int64(i)
 		*value.V3 = types.StrIntToBinary(strValue, "BigEndian", 12, true)
 		*value.V4 = types.StrIntToBinary(strValue, "BigEndian", 0, true)
-		*value.V5 = types.StrIntToBinary(strValue, "LittleEndian", 12, false)
+		*value.V5 = string(bytes.Repeat(interval, 3))
 		*value.V6 = types.TimeToINT96(timeValue)
 		if err = pw.Write(value); err != nil {
 			fmt.Println("Write error", err)
@@ -165,9 +172,11 @@ func genList() {
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
+	interval := make([]byte, 4)
 	for i := -125; i <= 125; i += 25 {
 		strValue := fmt.Sprintf("%04d", i)
 		timeValue = timeValue.Add(timeStep)
+		binary.LittleEndian.PutUint32(interval, uint32(abs(i)))
 		length := i / 25
 		if length < 0 {
 			length = -length
@@ -186,7 +195,7 @@ func genList() {
 			value.V2[j] = int64(i)
 			value.V3[j] = types.StrIntToBinary(strValue, "BigEndian", 12, true)
 			value.V4[j] = types.StrIntToBinary(strValue, "BigEndian", 0, true)
-			value.V5[j] = types.StrIntToBinary(strValue, "LittleEndian", 12, false)
+			value.V5[j] = string(bytes.Repeat(interval, 3))
 			value.V6[j] = types.TimeToINT96(timeValue)
 		}
 		if err = pw.Write(value); err != nil {
@@ -212,6 +221,7 @@ func genMapKey() {
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
+	interval := make([]byte, 4)
 	value := MapKey{
 		V1: make(map[int32]string),
 		V2: make(map[int64]string),
@@ -223,12 +233,13 @@ func genMapKey() {
 	for i := -125; i <= 125; i += 25 {
 		strValue := fmt.Sprintf("%04d", i)
 		timeValue = timeValue.Add(timeStep)
+		binary.LittleEndian.PutUint32(interval, uint32(abs(i)))
 
 		value.V1[int32(i)] = fmt.Sprintf("INT32-[%0.2f]", float64(i)/100)
 		value.V2[int64(i)] = fmt.Sprintf("INT64-[%0.2f]", float64(i)/100)
 		value.V3[types.StrIntToBinary(strValue, "BigEndian", 12, true)] = fmt.Sprintf("FIXED_LEN_BYTE_ARRAY-[%0.2f]", float64(i)/100)
 		value.V4[types.StrIntToBinary(strValue, "BigEndian", 0, true)] = fmt.Sprintf("BYTE_ARRAY-[%0.2f]", float64(i)/100)
-		value.V5[types.StrIntToBinary(strValue, "LittleEndian", 12, false)] = fmt.Sprintf("INTERVAL-[%d]", i)
+		value.V5[string(bytes.Repeat(interval, 3))] = fmt.Sprintf("INTERVAL-[%d]", i)
 		value.V6[types.TimeToINT96(timeValue)] = fmt.Sprintf("INT96-[%s]", timeValue.Format(time.RFC3339Nano))
 	}
 	if err = pw.Write(value); err != nil {
@@ -253,6 +264,7 @@ func genMapValue() {
 	}
 	timeValue, _ := time.Parse("2006-01-02", "2022-01-01")
 	timeStep, _ := time.ParseDuration("1h1m1s1ms1us")
+	interval := make([]byte, 4)
 	value := MapValue{
 		V1: make(map[string]int32),
 		V2: make(map[string]int64),
@@ -264,13 +276,14 @@ func genMapValue() {
 	for i := -125; i <= 125; i += 25 {
 		strValue := fmt.Sprintf("%04d", i)
 		timeValue = timeValue.Add(timeStep)
+		binary.LittleEndian.PutUint32(interval, uint32(abs(i)))
 		key := fmt.Sprintf("value-%d", (i+125)/25)
 
 		value.V1[key] = int32(i)
 		value.V2[key] = int64(i)
 		value.V3[key] = types.StrIntToBinary(strValue, "BigEndian", 12, true)
 		value.V4[key] = types.StrIntToBinary(strValue, "BigEndian", 0, true)
-		value.V5[key] = types.StrIntToBinary(strValue, "LittleEndian", 12, false)
+		value.V5[key] = string(bytes.Repeat(interval, 3))
 		value.V6[key] = types.TimeToINT96(timeValue)
 	}
 	if err = pw.Write(value); err != nil {
@@ -329,4 +342,11 @@ func genComposite() {
 		fmt.Println("WriteStop error", err)
 	}
 	_ = fw.Close()
+}
+
+func abs[T constraints.Integer | constraints.Float](val T) T {
+	if val < 0 {
+		return -val
+	}
+	return val
 }

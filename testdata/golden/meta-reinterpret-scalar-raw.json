@@ -33,7 +33,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 331,
+          "CompressedSize": 340,
           "UncompressedSize": 332,
           "NumValues": 11,
           "NullCount": 0,
@@ -51,7 +51,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 399,
+          "CompressedSize": 395,
           "UncompressedSize": 440,
           "NumValues": 11,
           "NullCount": 0,
@@ -87,12 +87,12 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 399,
+          "CompressedSize": 381,
           "UncompressedSize": 440,
           "NumValues": 11,
           "NullCount": 0,
-          "MaxValue": 125,
-          "MinValue": 0,
+          "MaxValue": "125 mon 125 day 0.125 sec",
+          "MinValue": "0.000 sec",
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -105,7 +105,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 439,
+          "CompressedSize": 448,
           "UncompressedSize": 440,
           "NumValues": 11,
           "NullCount": 0,
