@@ -79,7 +79,6 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
     - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
-      - [Show Meta Data with Base64-encoded Values](#show-meta-data-with-base64-encoded-values)
     - [row-count Command](#row-count-command)
       - [Show Number of Rows](#show-number-of-rows)
     - [schema Command](#schema-command)
@@ -207,7 +206,7 @@ Flags:
       --http-extra-headers=         (HTTP URI only) extra HTTP headers.
       --object-version=""           (S3, GCS, and Azure only) object version.
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
-  -b, --base64                      Encode min/max value.
+  -b, --base64                      deprecated, will be removed in future version
       --fail-on-int96               fail command if INT96 data type is present.
 ```
 
@@ -684,13 +683,6 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 ```bash
 $ parquet-tools meta testdata/good.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
-```
-
-#### Show Meta Data with Base64-encoded Values
-
-```bash
-$ parquet-tools meta --base64 testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"c3RlcGhfY3Vycnk=","MinValue":"ZmlsYQ==","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"Z3JhbnRfaGlsbF8y","MinValue":"YWlyX2dyaWZmZXk=","CompressionCodec":"GZIP"}]}]}
 ```
 
 > [!NOTE]
