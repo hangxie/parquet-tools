@@ -3,7 +3,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 COPY ./build/release/*-linux*.gz /tmp/
 
-RUN adduser --home /app --disabled-password --system app \
+RUN useradd --home-dir /app --create-home --system app \
  && apt-get update -qq \
  && apt-get -y -qq install ca-certificates \
  && case $(uname -m) in \
