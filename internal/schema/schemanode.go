@@ -4,16 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
-	"math"
-	"slices"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/types"
 )
 
 // this represents order of tags in JSON schema and go struct
@@ -49,15 +44,6 @@ type SchemaNode struct {
 
 type SchemaOption struct {
 	FailOnInt96 bool
-}
-
-type ReinterpretField struct {
-	ParquetType   parquet.Type
-	ConvertedType parquet.ConvertedType
-	Precision     int
-	Scale         int
-	InPath        string
-	ExPath        string
 }
 
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
@@ -236,12 +222,12 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 		} else if s.LogicalType.IsSetTIME() {
 			tagMap["logicaltype"] = "TIME"
 			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
-			tagMap["logicaltype.unit"] = TimeUnitToTag(s.LogicalType.TIME.Unit)
+			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
 			delete(tagMap, "convertedtype")
 		} else if s.LogicalType.IsSetTIMESTAMP() {
 			tagMap["logicaltype"] = "TIMESTAMP"
 			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
-			tagMap["logicaltype.unit"] = TimeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
+			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
 			delete(tagMap, "convertedtype")
 		}
 	}
@@ -256,70 +242,6 @@ func (s *SchemaNode) GetPathMap() map[string]*SchemaNode {
 		retVal[strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)] = node
 	}
 	return retVal
-}
-
-func (s *SchemaNode) GetReinterpretFields(skipInterimLayer bool) []ReinterpretField {
-	interimPath := [][]string{}
-	result := []ReinterpretField{}
-
-	queue := []*SchemaNode{s}
-	for len(queue) > 0 {
-		node := queue[0]
-		queue = append(queue[1:], node.Children...)
-
-		if node.Type != nil && *node.Type == parquet.Type_INT96 {
-			result = append(result, ReinterpretField{
-				ParquetType:   parquet.Type_INT96,
-				ConvertedType: parquet.ConvertedType_TIMESTAMP_MICROS,
-				Precision:     0,
-				Scale:         0,
-				InPath:        strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER),
-				ExPath:        strings.Join(node.ExNamePath[1:], common.PAR_GO_PATH_DELIMITER),
-			})
-			continue
-		}
-
-		if node.ConvertedType == nil {
-			continue
-		}
-
-		switch *node.ConvertedType {
-		case parquet.ConvertedType_DECIMAL, parquet.ConvertedType_INTERVAL:
-			result = append(result, ReinterpretField{
-				ParquetType:   *node.Type,
-				ConvertedType: *node.ConvertedType,
-				Precision:     int(*node.Precision),
-				Scale:         int(*node.Scale),
-				InPath:        strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER),
-				ExPath:        strings.Join(node.ExNamePath[1:], common.PAR_GO_PATH_DELIMITER),
-			})
-		case parquet.ConvertedType_MAP, parquet.ConvertedType_LIST:
-			interimPath = append(interimPath, node.Children[0].InNamePath[1:])
-		}
-	}
-
-	if skipInterimLayer {
-		// trip the longest path first
-		sort.Slice(interimPath, func(i, j int) bool {
-			return len(interimPath[i]) > len(interimPath[j])
-		})
-
-		// assuming the interim layer is root->level1->level2->interim, the goal is to remove "interim" from all paths, eg
-		// from "root->level1->level2->interim->field1" to "root->level1->level2->field1"
-		for _, path := range interimPath {
-			length := len(path)
-			for i := range result {
-				inPath := strings.Split(result[i].InPath, common.PAR_GO_PATH_DELIMITER)
-				exPath := strings.Split(result[i].ExPath, common.PAR_GO_PATH_DELIMITER)
-				if len(inPath) > length && slices.Equal(path, inPath[:length]) {
-					result[i].InPath = strings.Join(slices.Delete(inPath, length-1, length), common.PAR_GO_PATH_DELIMITER)
-					result[i].ExPath = strings.Join(slices.Delete(exPath, length-1, length), common.PAR_GO_PATH_DELIMITER)
-				}
-			}
-		}
-	}
-
-	return result
 }
 
 func typeStr(se parquet.SchemaElement) string {
@@ -339,42 +261,7 @@ func repetitionTyeStr(se parquet.SchemaElement) string {
 	return se.RepetitionType.String()
 }
 
-func DecimalToFloat(fieldAttr ReinterpretField, iface any) (*float64, error) {
-	if iface == nil {
-		return nil, nil
-	}
-
-	switch value := iface.(type) {
-	case int64:
-		f64 := float64(value) / math.Pow10(fieldAttr.Scale)
-		return &f64, nil
-	case int32:
-		f64 := float64(value) / math.Pow10(fieldAttr.Scale)
-		return &f64, nil
-	case string:
-		buf := StringToBytes(fieldAttr, value)
-		f64, err := strconv.ParseFloat(types.DECIMAL_BYTE_ARRAY_ToString(buf, fieldAttr.Precision, fieldAttr.Scale), 64)
-		if err != nil {
-			return nil, err
-		}
-		return &f64, nil
-	}
-	return nil, fmt.Errorf("unknown type: %T", iface)
-}
-
-func StringToBytes(fieldAttr ReinterpretField, value string) []byte {
-	// INTERVAL uses LittleEndian, DECIMAL uses BigEndian
-	// make sure all decimal-like value are all BigEndian
-	buf := []byte(value)
-	if fieldAttr.ConvertedType == parquet.ConvertedType_INTERVAL {
-		for i, j := 0, len(buf)-1; i < j; i, j = i+1, j-1 {
-			buf[i], buf[j] = buf[j], buf[i]
-		}
-	}
-	return buf
-}
-
-func TimeUnitToTag(timeUnit *parquet.TimeUnit) string {
+func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
 	if timeUnit == nil {
 		return ""
 	}

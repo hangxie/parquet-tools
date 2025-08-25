@@ -241,13 +241,10 @@ func encodingToString(encodings []parquet.Encoding) []string {
 func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {
 	for _, indexCol := range sortingColumns {
 		if indexCol.ColumnIdx == int32(columnIndex) {
-			var ret string
 			if indexCol.Descending {
-				ret = "DESC"
-			} else {
-				ret = "ASC"
+				return common.ToPtr("DESC")
 			}
-			return &ret
+			return common.ToPtr("ASC")
 		}
 	}
 	return nil
