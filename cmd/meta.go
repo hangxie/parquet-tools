@@ -19,7 +19,7 @@ import (
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
 	pio.ReadOption
-	Base64      bool   `name:"base64" short:"b" help:"Encode min/max value." default:"false"`
+	Base64      bool   `name:"base64" short:"b" help:"deprecated, will be removed in future version" default:"false"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96 bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 }
@@ -71,10 +71,7 @@ func (c MetaCmd) Run() error {
 		inExNameMap[inPath] = node.ExNamePath[1:]
 	}
 
-	riFieldMap := map[string]pschema.ReinterpretField{}
-	for _, field := range schemaRoot.GetReinterpretFields(false) {
-		riFieldMap[field.InPath] = field
-	}
+	pathMap := schemaRoot.GetPathMap()
 
 	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
 	for rgIndex, rg := range reader.Footer.RowGroups {
@@ -100,6 +97,7 @@ func (c MetaCmd) Run() error {
 				// should always reach here unless the schema or meta is corrupted
 				columns[colIndex].PathInSchema = exPath
 			}
+			schemaNode := pathMap[pathKey]
 
 			if col.MetaData.Statistics == nil {
 				// no statistics info
@@ -109,45 +107,13 @@ func (c MetaCmd) Run() error {
 			columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
 			columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
 
-			if col.MetaData.Type == parquet.Type_INT96 {
-				// INT96 (deprecated) is used for timestamp only
-				if maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false); maxValue != nil {
-					columns[colIndex].MaxValue = types.INT96ToTime(maxValue.(string))
-				}
-				if minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false); minValue != nil {
-					columns[colIndex].MinValue = types.INT96ToTime(minValue.(string))
-				}
-				continue
+			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, *schemaNode.Type)
+			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, *schemaNode.Type)
+			if maxValue != nil {
+				columns[colIndex].MaxValue = decodeMinMaxValue(maxValue, schemaNode)
 			}
-
-			field, found := riFieldMap[pathKey]
-			if !found {
-				columns[colIndex].MaxValue = c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, c.Base64)
-				columns[colIndex].MinValue = c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, c.Base64)
-				continue
-			}
-
-			// reformat decimal and interval values
-			var err error
-			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, col.MetaData.Type, false)
-			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, col.MetaData.Type, false)
-
-			if field.ConvertedType == parquet.ConvertedType_INTERVAL {
-				// Handle interval fields - convert to Go duration string
-				if maxValue != nil {
-					columns[colIndex].MaxValue = types.IntervalToString([]byte(maxValue.(string)))
-				}
-				if minValue != nil {
-					columns[colIndex].MinValue = types.IntervalToString([]byte(minValue.(string)))
-				}
-			} else {
-				// Handle decimal fields
-				if columns[colIndex].MaxValue, err = pschema.DecimalToFloat(field, maxValue); err != nil {
-					return err
-				}
-				if columns[colIndex].MinValue, err = pschema.DecimalToFloat(field, minValue); err != nil {
-					return err
-				}
+			if minValue != nil {
+				columns[colIndex].MinValue = decodeMinMaxValue(minValue, schemaNode)
 			}
 		}
 
@@ -168,13 +134,67 @@ func (c MetaCmd) Run() error {
 	return nil
 }
 
-func (c MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Encode bool) any {
+func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
+	if schemaNode.Type != nil && *schemaNode.Type == parquet.Type_INT96 {
+		// INT96 (deprecated) is used for timestamp only
+		return types.INT96ToTime(value.(string))
+	}
+
+	if schemaNode.ConvertedType != nil && *schemaNode.ConvertedType == parquet.ConvertedType_INTERVAL {
+		// INTERVAL
+		return types.IntervalToString([]byte(value.(string)))
+	}
+
+	// backward compatibility
+	if schemaNode.ConvertedType != nil {
+		switch *schemaNode.ConvertedType {
+		case parquet.ConvertedType_DECIMAL:
+			// all sorts of DECIMAL values: INT32, INT64, BYTE_ARRAY
+			return types.ConvertDecimalValue(value, schemaNode.Type, int(*schemaNode.Precision), int(*schemaNode.Scale))
+		case parquet.ConvertedType_TIME_MICROS, parquet.ConvertedType_TIME_MILLIS:
+			// TIME
+			return types.ConvertTimeLogicalValue(value, schemaNode.LogicalType.GetTIME())
+		case parquet.ConvertedType_TIMESTAMP_MICROS, parquet.ConvertedType_TIMESTAMP_MILLIS:
+			// TIMESTAMP
+			return types.ConvertTimestampValue(value, *schemaNode.ConvertedType)
+		}
+	}
+
+	if schemaNode.LogicalType != nil {
+		switch {
+		case schemaNode.LogicalType.IsSetDECIMAL():
+			// DECIMAL
+			return types.ConvertDecimalValue(value, schemaNode.Type, int(*schemaNode.Precision), int(*schemaNode.Scale))
+		case schemaNode.LogicalType.TIME != nil:
+			// TIME
+			return types.ConvertTimeLogicalValue(value, schemaNode.LogicalType.GetTIME())
+		case schemaNode.LogicalType.TIMESTAMP != nil:
+			// TIMESTAMP
+			if schemaNode.LogicalType.TIMESTAMP.Unit.IsSetMILLIS() {
+				return types.TIMESTAMP_MILLISToISO8601(value.(int64), false)
+			}
+			if schemaNode.LogicalType.TIMESTAMP.Unit.IsSetMICROS() {
+				return types.TIMESTAMP_MICROSToISO8601(value.(int64), false)
+			}
+			return types.TIMESTAMP_NANOSToISO8601(value.(int64), false)
+		}
+	}
+
+	if schemaNode.ConvertedType == nil && schemaNode.LogicalType == nil && schemaNode.Type != nil &&
+		(*schemaNode.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY || *schemaNode.Type == parquet.Type_BYTE_ARRAY) {
+		// BYTE_ARRAY and FIXED_LENGTH_BYTE_ARRAY without logical or converted type
+		return base64.StdEncoding.EncodeToString([]byte(value.(string)))
+	}
+
+	return value
+}
+
+func (c MetaCmd) retrieveValue(value []byte, parquetType parquet.Type) any {
 	if value == nil {
 		return nil
 	}
 
 	buf := bytes.NewReader(value)
-	var ret string
 	switch parquetType {
 	case parquet.Type_BOOLEAN:
 		var b bool
@@ -207,12 +227,7 @@ func (c MetaCmd) retrieveValue(value []byte, parquetType parquet.Type, base64Enc
 		}
 		return f64
 	}
-	if !base64Encode {
-		ret = string(value)
-	} else {
-		ret = base64.StdEncoding.EncodeToString(value)
-	}
-	return ret
+	return string(value)
 }
 
 func encodingToString(encodings []parquet.Encoding) []string {

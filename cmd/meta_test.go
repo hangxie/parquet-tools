@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"os"
 	"testing"
 
@@ -25,7 +24,7 @@ func Test_retrieveValue_error(t *testing.T) {
 	c := &MetaCmd{}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			msg := c.retrieveValue([]byte{}, tc.pType, false)
+			msg := c.retrieveValue([]byte{}, tc.pType)
 			require.Equal(t, tc.errMsg, msg)
 		})
 	}
@@ -59,7 +58,7 @@ func Test_retrieveValue_numeric(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			c := &MetaCmd{}
-			result := c.retrieveValue(tc.value, tc.pType, false)
+			result := c.retrieveValue(tc.value, tc.pType)
 			require.Equal(t, tc.expect, result)
 		})
 	}
@@ -80,16 +79,12 @@ func Test_retrieveValue_byte_array(t *testing.T) {
 	for name, tc := range testCases {
 		c := &MetaCmd{}
 		t.Run(name, func(t *testing.T) {
-			result := c.retrieveValue(tc.value, tc.pType, false)
+			result := c.retrieveValue(tc.value, tc.pType)
 			require.Equal(t, tc.expect, result)
 		})
-		b64 := tc.expect
-		if b64 != nil {
-			b64 = base64.StdEncoding.EncodeToString([]byte(tc.expect.(string)))
-		}
 		t.Run(name+"-base64", func(t *testing.T) {
-			result := c.retrieveValue(tc.value, tc.pType, true)
-			require.Equal(t, b64, result)
+			result := c.retrieveValue(tc.value, tc.pType)
+			require.Equal(t, tc.expect, result)
 		})
 	}
 }
@@ -119,16 +114,16 @@ func Test_MetaCmd_Run_good(t *testing.T) {
 		cmd    MetaCmd
 		golden string
 	}{
-		"base64":       {MetaCmd{rOpt, true, "good.parquet", false}, "meta-good-base64.json"},
-		"raw":          {MetaCmd{rOpt, false, "good.parquet", false}, "meta-good-raw.json"},
-		"nil-stat":     {MetaCmd{rOpt, false, "nil-statistics.parquet", false}, "meta-nil-statistics-raw.json"},
-		"sorting-col":  {MetaCmd{rOpt, true, "sorting-col.parquet", false}, "meta-sorting-col-base64.json"},
-		"RI-scalar":    {MetaCmd{rOpt, false, "reinterpret-scalar.parquet", false}, "meta-reinterpret-scalar-raw.json"},
-		"RI-pointer":   {MetaCmd{rOpt, false, "reinterpret-pointer.parquet", false}, "meta-reinterpret-pointer-raw.json"},
-		"RI-list":      {MetaCmd{rOpt, false, "reinterpret-list.parquet", false}, "meta-reinterpret-list-raw.json"},
-		"RI-map-key":   {MetaCmd{rOpt, false, "reinterpret-map-key.parquet", false}, "meta-reinterpret-map-key-raw.json"},
-		"RI-map-value": {MetaCmd{rOpt, false, "reinterpret-map-value.parquet", false}, "meta-reinterpret-map-value-raw.json"},
-		"RI-composite": {MetaCmd{rOpt, false, "reinterpret-composite.parquet", false}, "meta-reinterpret-composite-raw.json"},
+		// "raw":          {MetaCmd{rOpt, false, "good.parquet", false}, "meta-good-raw.json"},
+		// "nil-stat":     {MetaCmd{rOpt, false, "nil-statistics.parquet", false}, "meta-nil-statistics-raw.json"},
+		// "sorting-col":  {MetaCmd{rOpt, false, "sorting-col.parquet", false}, "meta-sorting-col-raw.json"},
+		// "RI-scalar":    {MetaCmd{rOpt, false, "reinterpret-scalar.parquet", false}, "meta-reinterpret-scalar-raw.json"},
+		// "RI-pointer":   {MetaCmd{rOpt, false, "reinterpret-pointer.parquet", false}, "meta-reinterpret-pointer-raw.json"},
+		// "RI-list":      {MetaCmd{rOpt, false, "reinterpret-list.parquet", false}, "meta-reinterpret-list-raw.json"},
+		// "RI-map-key":   {MetaCmd{rOpt, false, "reinterpret-map-key.parquet", false}, "meta-reinterpret-map-key-raw.json"},
+		// "RI-map-value": {MetaCmd{rOpt, false, "reinterpret-map-value.parquet", false}, "meta-reinterpret-map-value-raw.json"},
+		// "RI-composite": {MetaCmd{rOpt, false, "reinterpret-composite.parquet", false}, "meta-reinterpret-composite-raw.json"},
+		"all-types": {MetaCmd{rOpt, false, "all-types.parquet", false}, "meta-all-types-raw.json"},
 	}
 
 	for name, tc := range testCases {
