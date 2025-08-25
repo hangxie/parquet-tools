@@ -1,0 +1,951 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 10,
+      "TotalByteSize": 27130,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Bool"
+          ],
+          "Type": "BOOLEAN",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 144,
+          "UncompressedSize": 136,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": true,
+          "MinValue": false,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int32"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int64"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int96"
+          ],
+          "Type": "INT96",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 429,
+          "UncompressedSize": 428,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T09:09:09.009009Z",
+          "MinValue": "2022-01-01T00:00:00Z",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Float"
+          ],
+          "Type": "FLOAT",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 4.5,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Double"
+          ],
+          "Type": "DOUBLE",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 4.5,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "ByteArray"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 390,
+          "UncompressedSize": 442,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "Qnl0ZUFycmF5LTk=",
+          "MinValue": "Qnl0ZUFycmF5LTA=",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Enum"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 320,
+          "UncompressedSize": 312,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "Enum-9",
+          "MinValue": "Enum-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Uuid"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 895,
+          "UncompressedSize": 1055,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "12345678-ABCD-4444-9999-567890ABCDEF",
+          "MinValue": "12345678-ABCD-4444-0000-567890ABCDEF",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Json"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 325,
+          "UncompressedSize": 338,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "{\"9\":9}",
+          "MinValue": "{\"0\":0}",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "FixedLenByteArray"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 384,
+          "UncompressedSize": 376,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "Rml4ZWQtMDAwOQ==",
+          "MinValue": "Rml4ZWQtMDAwMA==",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Utf8"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN",
+            "PLAIN_DICTIONARY",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 336,
+          "UncompressedSize": 380,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "UTF8-9",
+          "MinValue": "UTF8-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int_8"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int_16"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int_32"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Int_64"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Uint_8"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Uint_16"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Uint_32"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Uint_64"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Date"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 1640995209,
+          "MinValue": 1640995200,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Date2"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 1640995209,
+          "MinValue": 1640995200,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimeMillis"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "00:00:09.009",
+          "MinValue": "00:00:00.000",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimeMillis2"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "00:00:09.009",
+          "MinValue": "00:00:00.000",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimeMicros"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "00:00:09.000009",
+          "MinValue": "00:00:00.000000",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimeMicros2"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "00:00:09.000009",
+          "MinValue": "00:00:00.000000",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimeNanos2"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "00:00:09.000000009",
+          "MinValue": "00:00:00.000000000",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimestampMillis"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T00:00:00.009Z",
+          "MinValue": "2022-01-01T00:00:00.000Z",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimestampMillis2"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T00:00:00.009Z",
+          "MinValue": "2022-01-01T00:00:00.000Z",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimestampMicros"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T00:00:00.000009Z",
+          "MinValue": "2022-01-01T00:00:00.000000Z",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimestampMicros2"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T00:00:00.000009Z",
+          "MinValue": "2022-01-01T00:00:00.000000Z",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "TimestampNanos2"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "2022-01-01T00:00:00.000000009Z",
+          "MinValue": "2022-01-01T00:00:00.000000000Z",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Interval"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 367,
+          "UncompressedSize": 428,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "9 mon 9 day 0.009 sec",
+          "MinValue": "0.000 sec",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Decimal1"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 44.44,
+          "MinValue": -44.44,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Decimal2"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 332,
+          "UncompressedSize": 324,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 44.44,
+          "MinValue": -44.44,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Decimal3"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 362,
+          "UncompressedSize": 428,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 0.44,
+          "MinValue": -0.44,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Decimal4"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 190,
+          "UncompressedSize": 182,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 0.44,
+          "MinValue": -0.44,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "decimal5"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 228,
+          "UncompressedSize": 220,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": 44.44,
+          "MinValue": -44.44,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "DecimalPointer"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 400,
+          "UncompressedSize": 404,
+          "NumValues": 10,
+          "NullCount": 5,
+          "MaxValue": 0.03,
+          "MinValue": -0.44,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Map",
+            "key_value",
+            "key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 572,
+          "UncompressedSize": 1047,
+          "NumValues": 46,
+          "NullCount": 1,
+          "MaxValue": "Composite-8",
+          "MinValue": "Composite-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Map",
+            "key_value",
+            "value"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 369,
+          "UncompressedSize": 436,
+          "NumValues": 46,
+          "NullCount": 1,
+          "MaxValue": 8,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "List",
+            "list",
+            "element"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 560,
+          "UncompressedSize": 1047,
+          "NumValues": 46,
+          "NullCount": 1,
+          "MaxValue": "Composite-8",
+          "MinValue": "Composite-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Repeated"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 366,
+          "UncompressedSize": 436,
+          "NumValues": 46,
+          "NullCount": 1,
+          "MaxValue": 8,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedMap",
+            "key_value",
+            "key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 578,
+          "UncompressedSize": 1047,
+          "NumValues": 46,
+          "NullCount": 1,
+          "MaxValue": "Composite-8",
+          "MinValue": "Composite-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedMap",
+            "key_value",
+            "value",
+            "Map",
+            "key_value",
+            "key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 788,
+          "UncompressedSize": 2163,
+          "NumValues": 130,
+          "NullCount": 10,
+          "MaxValue": "Embedded-7",
+          "MinValue": "Embedded-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedMap",
+            "key_value",
+            "value",
+            "Map",
+            "key_value",
+            "value"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 529,
+          "UncompressedSize": 867,
+          "NumValues": 130,
+          "NullCount": 10,
+          "MaxValue": 7,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedMap",
+            "key_value",
+            "value",
+            "List",
+            "list",
+            "element"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 669,
+          "UncompressedSize": 2435,
+          "NumValues": 130,
+          "NullCount": 10,
+          "MaxValue": 0.44,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedList",
+            "list",
+            "element",
+            "Map",
+            "key_value",
+            "key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 754,
+          "UncompressedSize": 2159,
+          "NumValues": 130,
+          "NullCount": 10,
+          "MaxValue": "Embedded-7",
+          "MinValue": "Embedded-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedList",
+            "list",
+            "element",
+            "Map",
+            "key_value",
+            "value"
+          ],
+          "Type": "INT32",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 500,
+          "UncompressedSize": 862,
+          "NumValues": 130,
+          "NullCount": 10,
+          "MaxValue": 7,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "NestedList",
+            "list",
+            "element",
+            "List",
+            "list",
+            "element"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 641,
+          "UncompressedSize": 2430,
+          "NumValues": 130,
+          "NullCount": 10,
+          "MaxValue": 0.44,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY"
+        }
+      ]
+    }
+  ]
+}

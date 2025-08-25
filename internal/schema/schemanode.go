@@ -247,6 +247,17 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 	}
 }
 
+func (s *SchemaNode) GetPathMap() map[string]*SchemaNode {
+	retVal := map[string]*SchemaNode{}
+	queue := []*SchemaNode{s}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = append(queue[1:], node.Children...)
+		retVal[strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)] = node
+	}
+	return retVal
+}
+
 func (s *SchemaNode) GetReinterpretFields(skipInterimLayer bool) []ReinterpretField {
 	interimPath := [][]string{}
 	result := []ReinterpretField{}

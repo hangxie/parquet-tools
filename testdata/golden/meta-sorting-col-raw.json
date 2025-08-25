@@ -21,8 +21,8 @@
           "UncompressedSize": 639,
           "NumValues": 20,
           "NullCount": 0,
-          "MaxValue": "U3R1ZGVudCBOYW1lXzk=",
-          "MinValue": "U3R1ZGVudCBOYW1l",
+          "MaxValue": "Student Name_9",
+          "MinValue": "Student Name",
           "Index": "DESC",
           "CompressionCodec": "SNAPPY"
         },
