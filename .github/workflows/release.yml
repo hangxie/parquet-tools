@@ -87,6 +87,7 @@ jobs:
             docker buildx build --progress plain \
                 -f package/container/Dockerfile --push \
                 --platform ${{ env.PLATFORM }} \
+                --provenance=false --sbom=false \
                 -t hangxie/parquet-tools:${{ env.REL_TAG }} \
                 -t hangxie/parquet-tools:latest \
                 -t ghcr.io/hangxie/parquet-tools:${{ env.REL_TAG }} \
