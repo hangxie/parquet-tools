@@ -8,7 +8,6 @@ import (
 
 	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/types"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
@@ -46,7 +45,7 @@ func Test_NewSchemaTree_good(t *testing.T) {
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
 }
 
-func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
+func Test_SchemaNode_GetPathMap(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
@@ -59,34 +58,77 @@ func Test_SchemaNode_GetReinterpretFields(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	expected := []string{
-		strings.Join([]string{"Decimal1"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"Decimal2"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"Decimal3"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"Decimal4"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"DecimalPointer"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"Int96"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"Interval"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"NestedList", "element", "List", "element"}, common.PAR_GO_PATH_DELIMITER),
-		strings.Join([]string{"NestedMap", "value", "List", "element"}, common.PAR_GO_PATH_DELIMITER),
+	pathMap := schemaRoot.GetPathMap()
+	require.NotNil(t, pathMap)
+
+	// Test that root node is included with empty path
+	rootNode, found := pathMap[""]
+	require.True(t, found)
+	require.Equal(t, schemaRoot, rootNode)
+
+	// Test some expected paths exist (based on actual schema)
+	expectedPaths := []string{
+		"Bool",
+		"Int32",
+		"Int64",
+		"Float",
+		"Double",
+		"ByteArray",
+		"FixedLenByteArray",
+		"Decimal1",
+		"Decimal2",
+		"Decimal3",
+		"Decimal4",
+		"DecimalPointer",
+		"Int96",
+		"Interval",
+		"NestedList",
+		"NestedMap",
+		"List",
+		"Map",
 	}
 
-	fieldMap := map[string]ReinterpretField{}
-	for _, field := range schemaRoot.GetReinterpretFields(true) {
-		fieldMap[field.ExPath] = field
+	for _, path := range expectedPaths {
+		node, found := pathMap[path]
+		require.True(t, found, "Path %s should be found in path map", path)
+		require.NotNil(t, node, "Node for path %s should not be nil", path)
+		require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER), "Path should match node's InNamePath")
 	}
 
-	require.Equal(t, len(expected), len(fieldMap))
-	for _, field := range expected {
-		_, found := fieldMap[field]
-		require.True(t, found)
+	// Test some known nested paths from the debug output
+	knownNestedPaths := []string{
+		"ListListElement",
+		"MapKey_value",
+		"MapKey_valueKey",
+		"MapKey_valueValue",
+		"NestedListList",
+		"NestedListListElement",
+		"NestedMapKey_value",
+		"NestedMapKey_valueKey",
+		"NestedMapKey_valueValue",
 	}
-}
 
-func Test_DecimalToFloat_nil(t *testing.T) {
-	f64, err := DecimalToFloat(ReinterpretField{}, nil)
-	require.NoError(t, err)
-	require.Nil(t, f64)
+	for _, path := range knownNestedPaths {
+		node, found := pathMap[path]
+		if found { // Only test if it exists (some may not exist in this particular test file)
+			require.NotNil(t, node, "Node for nested path %s should not be nil", path)
+			require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER), "Nested path should match node's InNamePath")
+		}
+	}
+
+	// Test that we have a reasonable number of paths (schema should be complex)
+	require.Greater(t, len(pathMap), 20, "Should have many paths in a complex schema")
+
+	// Test that all nodes in the map have valid InNamePath
+	for path, node := range pathMap {
+		require.NotNil(t, node, "Node should not be nil for path %s", path)
+		expectedPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+		require.Equal(t, path, expectedPath, "Path key should match node's InNamePath for %s", path)
+
+		// Ensure InNamePath is properly set
+		require.NotEmpty(t, node.InNamePath, "InNamePath should not be empty for path %s", path)
+		require.NotNil(t, node.InNamePath, "InNamePath should not be nil for path %s", path)
+	}
 }
 
 func Test_typeStr(t *testing.T) {
@@ -125,99 +167,8 @@ func Test_repetitionTyeStr(t *testing.T) {
 	}
 }
 
-func Test_DecimalToFloat_int32(t *testing.T) {
-	fieldAttr := ReinterpretField{
-		Scale: 2,
-	}
-
-	testCases := map[string]struct {
-		intValue     int
-		decimalValue float64
-	}{
-		"zero":                   {0, 0.0},
-		"fraction-only":          {11, 0.11},
-		"decimal":                {222, 2.22},
-		"whole-only":             {300, 3.00},
-		"negative-fraction-only": {-11, -0.11},
-		"negative-decimal":       {-222, -2.22},
-		"negative-whole-only":    {-300, -3.00},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			f64, err := DecimalToFloat(fieldAttr, int32(tc.intValue))
-			require.NoError(t, err)
-			require.NotNil(t, f64)
-			require.Equal(t, tc.decimalValue, *f64)
-
-			f64, err = DecimalToFloat(fieldAttr, int64(tc.intValue))
-			require.NoError(t, err)
-			require.NotNil(t, f64)
-			require.Equal(t, tc.decimalValue, *f64)
-		})
-	}
-}
-
-func Test_DecimalToFloat_string(t *testing.T) {
-	fieldAttr := ReinterpretField{
-		Scale:     2,
-		Precision: 10,
-	}
-
-	testCases := map[string]struct {
-		strValue     string
-		decimalValue float64
-	}{
-		"zero":                   {"000", 0.0},
-		"fraction-only":          {"011", 0.11},
-		"decimal":                {"222", 2.22},
-		"whole-only":             {"300", 3.00},
-		"negative-fraction-only": {"-011", -0.11},
-		"negative-decimal":       {"-222", -2.22},
-		"negative-whole-only":    {"-300", -3.00},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			f64, err := DecimalToFloat(fieldAttr, types.StrIntToBinary(tc.strValue, "BigEndian", 0, true))
-			require.NoError(t, err)
-			require.NotNil(t, f64)
-			require.Equal(t, tc.decimalValue, *f64)
-		})
-	}
-}
-
-func Test_DecimalToFloat_invalid_type(t *testing.T) {
-	fieldAttr := ReinterpretField{}
-	testCases := []struct {
-		value  any
-		errMsg string
-	}{
-		{0, "unknown type: int"},
-		{float32(0.0), "unknown type: float32"},
-		{0.0, "unknown type: float64"},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.errMsg, func(t *testing.T) {
-			f64, err := DecimalToFloat(fieldAttr, tc.value)
-			require.Error(t, err)
-			require.Equal(t, tc.errMsg, err.Error())
-			require.Nil(t, f64)
-		})
-	}
-}
-
-func Test_StringToBytes(t *testing.T) {
-	var fieldAttr ReinterpretField
-	require.Equal(t, []byte("123"), StringToBytes(fieldAttr, "123"))
-
-	fieldAttr.ConvertedType = parquet.ConvertedType_INTERVAL
-	require.Equal(t, []byte("321"), StringToBytes(fieldAttr, "123"))
-}
-
-func Test_TimeUnitToTag(t *testing.T) {
-	require.Equal(t, "", TimeUnitToTag(nil))
+func Test_timeUnitToTag(t *testing.T) {
+	require.Equal(t, "", timeUnitToTag(nil))
 
 	testCases := map[string]struct {
 		unit    parquet.TimeUnit
@@ -231,7 +182,7 @@ func Test_TimeUnitToTag(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			require.Equal(t, tc.unitTag, TimeUnitToTag(&tc.unit))
+			require.Equal(t, tc.unitTag, timeUnitToTag(&tc.unit))
 		})
 	}
 }

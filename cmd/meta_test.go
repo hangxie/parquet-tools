@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 
@@ -85,6 +86,78 @@ func Test_retrieveValue_byte_array(t *testing.T) {
 		t.Run(name+"-base64", func(t *testing.T) {
 			result := c.retrieveValue(tc.value, tc.pType)
 			require.Equal(t, tc.expect, result)
+		})
+	}
+}
+
+func Test_sortingToString(t *testing.T) {
+	testCases := map[string]struct {
+		sortingColumns []*parquet.SortingColumn
+		columnIndex    int
+		expected       *string
+	}{
+		"nil-sorting-columns": {
+			sortingColumns: nil,
+			columnIndex:    0,
+			expected:       nil,
+		},
+		"empty-sorting-columns": {
+			sortingColumns: []*parquet.SortingColumn{},
+			columnIndex:    0,
+			expected:       nil,
+		},
+		"column-not-found": {
+			sortingColumns: []*parquet.SortingColumn{
+				{ColumnIdx: 1, Descending: false},
+				{ColumnIdx: 2, Descending: true},
+			},
+			columnIndex: 0,
+			expected:    nil,
+		},
+		"ascending-column-found": {
+			sortingColumns: []*parquet.SortingColumn{
+				{ColumnIdx: 0, Descending: false},
+				{ColumnIdx: 1, Descending: true},
+			},
+			columnIndex: 0,
+			expected:    common.ToPtr("ASC"),
+		},
+		"descending-column-found": {
+			sortingColumns: []*parquet.SortingColumn{
+				{ColumnIdx: 0, Descending: false},
+				{ColumnIdx: 1, Descending: true},
+			},
+			columnIndex: 1,
+			expected:    common.ToPtr("DESC"),
+		},
+		"multiple-columns-first-match": {
+			sortingColumns: []*parquet.SortingColumn{
+				{ColumnIdx: 2, Descending: true},
+				{ColumnIdx: 1, Descending: false},
+				{ColumnIdx: 2, Descending: false}, // Should not be reached due to first match
+			},
+			columnIndex: 2,
+			expected:    common.ToPtr("DESC"),
+		},
+		"column-index-conversion": {
+			sortingColumns: []*parquet.SortingColumn{
+				{ColumnIdx: 42, Descending: false},
+			},
+			columnIndex: 42,
+			expected:    common.ToPtr("ASC"),
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := sortingToString(tc.sortingColumns, tc.columnIndex)
+
+			if tc.expected == nil {
+				require.Nil(t, result, "Expected nil result for %s", name)
+			} else {
+				require.NotNil(t, result, "Expected non-nil result for %s", name)
+				require.Equal(t, *tc.expected, *result, "Expected %s but got %s", *tc.expected, *result)
+			}
 		})
 	}
 }
