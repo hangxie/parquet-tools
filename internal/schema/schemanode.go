@@ -218,7 +218,7 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 			tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
 			tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
 		} else if s.LogicalType.IsSetDATE() {
-			// Do not populate localtype fields for DATE type
+			tagMap["logicaltype"] = "DATE"
 		} else if s.LogicalType.IsSetTIME() {
 			tagMap["logicaltype"] = "TIME"
 			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
