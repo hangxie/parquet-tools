@@ -65,7 +65,7 @@
       "Tag": "name=Date, type=INT32, convertedtype=DATE"
     },
     {
-      "Tag": "name=Date2, type=INT32, convertedtype=DATE"
+      "Tag": "name=Date2, type=INT32"
     },
     {
       "Tag": "name=TimeMillis, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"

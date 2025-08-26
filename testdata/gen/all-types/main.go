@@ -43,7 +43,7 @@ type AllTypes struct {
 	ConvertedUint32   int32               `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32"`
 	ConvertedUint64   int64               `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64"`
 	Date              int32               `parquet:"name=Date, type=INT32, convertedtype=DATE"`
-	Date2             int32               `parquet:"name=Date2, type=INT32, convertedtype=DATE, logicaltype=DATE"`
+	Date2             int32               `parquet:"name=Date2, type=INT32, logicaltype=DATE"`
 	TimeMillis        int32               `parquet:"name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS"`
 	TimeMillis2       int32               `parquet:"name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
 	TimeMicros        int64               `parquet:"name=TimeMicros, type=INT64, convertedtype=TIME_MICROS"`
@@ -111,8 +111,8 @@ func main() {
 			ConvertedUint16:   int32(i),
 			ConvertedUint32:   int32(i),
 			ConvertedUint64:   int64(i),
-			Date:              int32(1640995200 + i),
-			Date2:             int32(1640995200 + i),
+			Date:              int32(i * -1000),
+			Date2:             int32(i * 1000),
 			TimeMillis:        int32(i) * 1_001,
 			TimeMillis2:       int32(i) * 1_001,
 			TimeMicros:        int64(i) * 1_000_001,

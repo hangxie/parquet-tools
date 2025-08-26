@@ -20,7 +20,7 @@ Uint_16 int32 `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16"`
 Uint_32 int32 `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32"`
 Uint_64 int64 `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64"`
 Date int32 `parquet:"name=Date, type=INT32, convertedtype=DATE"`
-Date2 int32 `parquet:"name=Date2, type=INT32, convertedtype=DATE"`
+Date2 int32 `parquet:"name=Date2, type=INT32"`
 TimeMillis int32 `parquet:"name=TimeMillis, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"`
 TimeMillis2 int32 `parquet:"name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`
 TimeMicros int64 `parquet:"name=TimeMicros, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`

@@ -272,7 +272,6 @@
       "type_length": 0,
       "repetition_type": "REQUIRED",
       "name": "Date2",
-      "converted_type": "DATE",
       "scale": 0,
       "precision": 0,
       "field_id": 0,
