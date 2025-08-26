@@ -135,27 +135,32 @@ func (c MetaCmd) Run() error {
 }
 
 func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
-	if schemaNode.Type != nil && *schemaNode.Type == parquet.Type_INT96 {
-		// INT96 (deprecated) is used for timestamp only
-		return types.INT96ToTime(value.(string))
-	}
-
-	if schemaNode.ConvertedType != nil && *schemaNode.ConvertedType == parquet.ConvertedType_INTERVAL {
-		// INTERVAL
-		return types.IntervalToString([]byte(value.(string)))
+	if schemaNode.Type != nil {
+		switch *schemaNode.Type {
+		case parquet.Type_INT96:
+			// INT96 (deprecated) is used for timestamp only
+			return types.INT96ToTime(value.(string))
+		case parquet.Type_FIXED_LEN_BYTE_ARRAY, parquet.Type_BYTE_ARRAY:
+			if schemaNode.ConvertedType == nil && schemaNode.LogicalType == nil {
+				// BYTE_ARRAY and FIXED_LENGTH_BYTE_ARRAY without logical or converted type
+				return base64.StdEncoding.EncodeToString([]byte(value.(string)))
+			}
+		}
 	}
 
 	// backward compatibility
 	if schemaNode.ConvertedType != nil {
 		switch *schemaNode.ConvertedType {
+		case parquet.ConvertedType_INTERVAL:
+			return types.IntervalToString([]byte(value.(string)))
 		case parquet.ConvertedType_DECIMAL:
 			// all sorts of DECIMAL values: INT32, INT64, BYTE_ARRAY
 			return types.ConvertDecimalValue(value, schemaNode.Type, int(*schemaNode.Precision), int(*schemaNode.Scale))
+		case parquet.ConvertedType_DATE:
+			return types.ConvertDateLogicalValue(value)
 		case parquet.ConvertedType_TIME_MICROS, parquet.ConvertedType_TIME_MILLIS:
-			// TIME
 			return types.ConvertTimeLogicalValue(value, schemaNode.LogicalType.GetTIME())
 		case parquet.ConvertedType_TIMESTAMP_MICROS, parquet.ConvertedType_TIMESTAMP_MILLIS:
-			// TIMESTAMP
 			return types.ConvertTimestampValue(value, *schemaNode.ConvertedType)
 		}
 	}
@@ -163,13 +168,13 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 	if schemaNode.LogicalType != nil {
 		switch {
 		case schemaNode.LogicalType.IsSetDECIMAL():
-			// DECIMAL
+			// all sorts of DECIMAL values: INT32, INT64, BYTE_ARRAY
 			return types.ConvertDecimalValue(value, schemaNode.Type, int(*schemaNode.Precision), int(*schemaNode.Scale))
-		case schemaNode.LogicalType.TIME != nil:
-			// TIME
+		case schemaNode.LogicalType.IsSetDATE():
+			return types.ConvertDateLogicalValue(value)
+		case schemaNode.LogicalType.IsSetTIME():
 			return types.ConvertTimeLogicalValue(value, schemaNode.LogicalType.GetTIME())
-		case schemaNode.LogicalType.TIMESTAMP != nil:
-			// TIMESTAMP
+		case schemaNode.LogicalType.IsSetTIMESTAMP():
 			if schemaNode.LogicalType.TIMESTAMP.Unit.IsSetMILLIS() {
 				return types.TIMESTAMP_MILLISToISO8601(value.(int64), false)
 			}
@@ -178,12 +183,6 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 			}
 			return types.TIMESTAMP_NANOSToISO8601(value.(int64), false)
 		}
-	}
-
-	if schemaNode.ConvertedType == nil && schemaNode.LogicalType == nil && schemaNode.Type != nil &&
-		(*schemaNode.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY || *schemaNode.Type == parquet.Type_BYTE_ARRAY) {
-		// BYTE_ARRAY and FIXED_LENGTH_BYTE_ARRAY without logical or converted type
-		return base64.StdEncoding.EncodeToString([]byte(value.(string)))
 	}
 
 	return value
