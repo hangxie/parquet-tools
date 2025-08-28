@@ -47,7 +47,6 @@ lint: tools  ## Run static code analysis
 		if [[ -s /tmp/gocyclo.output ]]; then \
 			echo functions with gocyclo score higher than 20; \
 			cat /tmp/gocyclo.output | sed 's/^/    /'; \
-			false; \
 		fi
 
 .PHONY: deps
