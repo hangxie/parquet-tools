@@ -27,6 +27,8 @@ type MetaCmd struct {
 type columnMeta struct {
 	PathInSchema     []string
 	Type             string
+	ConvertedType    *string `json:",omitempty"`
+	LogicalType      *string `json:",omitempty"`
 	Encodings        []string
 	CompressedSize   int64
 	UncompressedSize int64
@@ -74,12 +76,15 @@ func (c MetaCmd) Run() error {
 	pathMap := schemaRoot.GetPathMap()
 
 	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
+	orderedTags := pschema.OrderedTags()
 	for rgIndex, rg := range reader.Footer.RowGroups {
 		columns := make([]columnMeta, len(rg.Columns))
 		for colIndex, col := range rg.Columns {
 			columns[colIndex] = columnMeta{
 				PathInSchema:     col.MetaData.PathInSchema,
 				Type:             col.MetaData.Type.String(),
+				ConvertedType:    nil,
+				LogicalType:      nil,
 				Encodings:        encodingToString(col.MetaData.Encodings),
 				CompressedSize:   col.MetaData.TotalCompressedSize,
 				UncompressedSize: col.MetaData.TotalUncompressedSize,
@@ -98,6 +103,39 @@ func (c MetaCmd) Run() error {
 				columns[colIndex].PathInSchema = exPath
 			}
 			schemaNode := pathMap[pathKey]
+
+			// Get tag map to extract converted and logical type information in schema format
+			if schemaNode != nil {
+				tagMap := schemaNode.GetTagMap()
+
+				// Add converted type information if present - iterate through ordered tags
+				var convertedTypeParts []string
+				for _, tag := range orderedTags {
+					if tag == "convertedtype" || tag == "scale" || tag == "precision" || tag == "length" {
+						if value, found := tagMap[tag]; found {
+							convertedTypeParts = append(convertedTypeParts, tag+"="+value)
+						}
+					}
+				}
+
+				if len(convertedTypeParts) > 0 {
+					columns[colIndex].ConvertedType = common.ToPtr(strings.Join(convertedTypeParts, ", "))
+				}
+
+				// Add logical type information if present - iterate through ordered tags
+				var logicalTypeParts []string
+				for _, tag := range orderedTags {
+					if strings.HasPrefix(tag, "logicaltype") {
+						if value, found := tagMap[tag]; found {
+							logicalTypeParts = append(logicalTypeParts, tag+"="+value)
+						}
+					}
+				}
+
+				if len(logicalTypeParts) > 0 {
+					columns[colIndex].LogicalType = common.ToPtr(strings.Join(logicalTypeParts, ", "))
+				}
+			}
 
 			if col.MetaData.Statistics == nil {
 				// no statistics info

@@ -136,6 +136,7 @@
             "Enum"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=ENUM",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -154,6 +155,7 @@
             "Uuid"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "length=16",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -172,6 +174,7 @@
             "Json"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=JSON",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -190,6 +193,7 @@
             "FixedLenByteArray"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "length=10",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -208,6 +212,7 @@
             "Utf8"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -228,6 +233,7 @@
             "Int_8"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=INT_8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -246,6 +252,7 @@
             "Int_16"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=INT_16",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -264,6 +271,7 @@
             "Int_32"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=INT_32",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -282,6 +290,7 @@
             "Int_64"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=INT_64",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -300,6 +309,7 @@
             "Uint_8"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=UINT_8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -318,6 +328,7 @@
             "Uint_16"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=UINT_16",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -336,6 +347,7 @@
             "Uint_32"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=UINT_32",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -354,6 +366,7 @@
             "Uint_64"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=UINT_64",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -372,6 +385,8 @@
             "Date"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DATE",
+          "LogicalType": "logicaltype=DATE",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -390,6 +405,7 @@
             "Date2"
           ],
           "Type": "INT32",
+          "LogicalType": "logicaltype=DATE",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -408,6 +424,8 @@
             "TimeMillis"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=TIME_MILLIS",
+          "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -426,6 +444,7 @@
             "TimeMillis2"
           ],
           "Type": "INT32",
+          "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -444,6 +463,8 @@
             "TimeMicros"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=TIME_MICROS",
+          "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -462,6 +483,7 @@
             "TimeMicros2"
           ],
           "Type": "INT64",
+          "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -480,6 +502,7 @@
             "TimeNanos2"
           ],
           "Type": "INT64",
+          "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -498,6 +521,8 @@
             "TimestampMillis"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=TIMESTAMP_MILLIS",
+          "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -516,6 +541,7 @@
             "TimestampMillis2"
           ],
           "Type": "INT64",
+          "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -534,6 +560,8 @@
             "TimestampMicros"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=TIMESTAMP_MICROS",
+          "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -552,6 +580,7 @@
             "TimestampMicros2"
           ],
           "Type": "INT64",
+          "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -570,6 +599,7 @@
             "TimestampNanos2"
           ],
           "Type": "INT64",
+          "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -588,6 +618,7 @@
             "Interval"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "convertedtype=INTERVAL, length=12",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -606,6 +637,8 @@
             "Decimal1"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -624,6 +657,8 @@
             "Decimal2"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=18",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -642,6 +677,8 @@
             "Decimal3"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -660,6 +697,8 @@
             "Decimal4"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=20",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -678,6 +717,7 @@
             "decimal5"
           ],
           "Type": "INT32",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -696,6 +736,8 @@
             "DecimalPointer"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -716,6 +758,7 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -756,6 +799,7 @@
             "element"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -794,6 +838,7 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -817,6 +862,7 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -863,6 +909,8 @@
             "element"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -886,6 +934,7 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -932,6 +981,8 @@
             "element"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",

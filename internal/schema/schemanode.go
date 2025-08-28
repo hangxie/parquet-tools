@@ -35,6 +35,13 @@ var orderedTags = []string{
 	"repetitiontype",
 }
 
+// OrderedTags returns a copy of the ordered tags list for external use
+func OrderedTags() []string {
+	result := make([]string, len(orderedTags))
+	copy(result, orderedTags)
+	return result
+}
+
 type SchemaNode struct {
 	parquet.SchemaElement
 	Children   []*SchemaNode `json:"children,omitempty"`
@@ -95,7 +102,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 	return root, nil
 }
 
-func (s *SchemaNode) getTagMap() map[string]string {
+func (s *SchemaNode) GetTagMap() map[string]string {
 	tagMap := map[string]string{
 		"repetitiontype": repetitionTyeStr(s.SchemaElement),
 		"type":           typeStr(s.SchemaElement),
@@ -122,7 +129,7 @@ func (s *SchemaNode) getTagMap() map[string]string {
 }
 
 func (s *SchemaNode) getTagMapWithPrefix(prefix string) map[string]string {
-	tagMap := s.getTagMap()
+	tagMap := s.GetTagMap()
 	ret := map[string]string{}
 	for _, tag := range orderedTags {
 		if tag == "name" || strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
