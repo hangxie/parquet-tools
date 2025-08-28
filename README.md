@@ -682,7 +682,7 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 
 ```bash
 $ parquet-tools meta testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
 ```
 
 > [!NOTE]
@@ -692,7 +692,7 @@ You can set `--fail-on-int96` option to fail `meta` command for parquet files th
 
 ```bash
 $ parquet-tools meta testdata/int96-nil-min-max.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","Encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","Encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
 $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
@@ -721,7 +721,7 @@ $ parquet-tools schema testdata/good.parquet
 {"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
 ```
 
-Default settings will be ignored to make output shorter, e.g.,
+Schema will output converted type and logical type when they are present in the parquet file, however, default settings will be ignored to make output shorter, e.g.,
 * convertedtype=LIST
 * convertedtype=MAP
 * repetitiontype=REQUIRED
