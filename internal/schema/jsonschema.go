@@ -24,7 +24,7 @@ func (s jsonSchemaNode) Schema() JSONSchema {
 		{"convertedtype", "LIST"}:      {},
 		{"convertedtype", "MAP"}:       {},
 	}
-	tagMap := s.SchemaNode.getTagMap()
+	tagMap := s.SchemaNode.GetTagMap()
 
 	var annotations []string
 	for _, tag := range orderedTags {

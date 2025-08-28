@@ -146,7 +146,7 @@ func (n goStructNode) stringWithName() (string, error) {
 }
 
 func (n goStructNode) getStructTags() string {
-	tagMap := n.SchemaNode.getTagMap()
+	tagMap := n.SchemaNode.GetTagMap()
 	if _, found := tagMap["valuetype"]; !found &&
 		n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
 		// make sure LISt always has "valuetype"
