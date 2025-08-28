@@ -68,13 +68,13 @@
       "Tag": "name=Date2, type=INT32, logicaltype=DATE"
     },
     {
-      "Tag": "name=TimeMillis, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"
+      "Tag": "name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"
     },
     {
       "Tag": "name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"
     },
     {
-      "Tag": "name=TimeMicros, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
+      "Tag": "name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
     },
     {
       "Tag": "name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
@@ -83,13 +83,13 @@
       "Tag": "name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS"
     },
     {
-      "Tag": "name=TimestampMillis, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"
+      "Tag": "name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"
     },
     {
       "Tag": "name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"
     },
     {
-      "Tag": "name=TimestampMicros, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
+      "Tag": "name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
     },
     {
       "Tag": "name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
@@ -101,22 +101,22 @@
       "Tag": "name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12"
     },
     {
-      "Tag": "name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9"
+      "Tag": "name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"
     },
     {
-      "Tag": "name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18"
+      "Tag": "name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2"
     },
     {
-      "Tag": "name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12"
+      "Tag": "name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"
     },
     {
-      "Tag": "name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20"
+      "Tag": "name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2"
     },
     {
       "Tag": "name=decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"
     },
     {
-      "Tag": "name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL"
+      "Tag": "name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=Map, type=MAP",
@@ -164,7 +164,7 @@
               "Tag": "name=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10"
+                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"
                 }
               ]
             }
@@ -193,7 +193,7 @@
               "Tag": "name=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10"
+                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"
                 }
               ]
             }

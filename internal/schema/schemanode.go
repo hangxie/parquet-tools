@@ -212,8 +212,7 @@ func (s *SchemaNode) updateTagFromConvertedType(tagMap map[string]string) {
 
 func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 	if s.LogicalType != nil {
-		if s.LogicalType.IsSetDECIMAL() && tagMap["convertedtype"] != "DECIMAL" {
-			// Do not populate localtype fields for DECIMAL type
+		if s.LogicalType.IsSetDECIMAL() {
 			tagMap["logicaltype"] = "DECIMAL"
 			tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
 			tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
@@ -223,12 +222,10 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 			tagMap["logicaltype"] = "TIME"
 			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
 			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
-			delete(tagMap, "convertedtype")
 		} else if s.LogicalType.IsSetTIMESTAMP() {
 			tagMap["logicaltype"] = "TIMESTAMP"
 			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
 			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
-			delete(tagMap, "convertedtype")
 		}
 	}
 }
