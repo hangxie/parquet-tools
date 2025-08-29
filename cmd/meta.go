@@ -64,103 +64,9 @@ func (c MetaCmd) Run() error {
 		return err
 	}
 
-	inExNameMap := map[string][]string{}
-	queue := []*pschema.SchemaNode{schemaRoot}
-	for len(queue) > 0 {
-		node := queue[0]
-		queue = append(queue[1:], node.Children...)
-		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
-		inExNameMap[inPath] = node.ExNamePath[1:]
-	}
+	inExNameMap, pathMap := c.buildSchemaMaps(schemaRoot)
 
-	pathMap := schemaRoot.GetPathMap()
-
-	rowGroups := make([]rowGroupMeta, len(reader.Footer.RowGroups))
-	orderedTags := pschema.OrderedTags()
-	for rgIndex, rg := range reader.Footer.RowGroups {
-		columns := make([]columnMeta, len(rg.Columns))
-		for colIndex, col := range rg.Columns {
-			columns[colIndex] = columnMeta{
-				PathInSchema:     col.MetaData.PathInSchema,
-				Type:             col.MetaData.Type.String(),
-				ConvertedType:    nil,
-				LogicalType:      nil,
-				Encodings:        encodingToString(col.MetaData.Encodings),
-				CompressedSize:   col.MetaData.TotalCompressedSize,
-				UncompressedSize: col.MetaData.TotalUncompressedSize,
-				NumValues:        col.MetaData.NumValues,
-				MaxValue:         nil,
-				MinValue:         nil,
-				NullCount:        nil,
-				DistinctCount:    nil,
-				Index:            sortingToString(rg.SortingColumns, colIndex),
-				CompressionCodec: col.MetaData.Codec.String(),
-			}
-
-			pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
-			if exPath, found := inExNameMap[pathKey]; found {
-				// should always reach here unless the schema or meta is corrupted
-				columns[colIndex].PathInSchema = exPath
-			}
-			schemaNode := pathMap[pathKey]
-
-			// Get tag map to extract converted and logical type information in schema format
-			if schemaNode != nil {
-				tagMap := schemaNode.GetTagMap()
-
-				// Add converted type information if present - iterate through ordered tags
-				var convertedTypeParts []string
-				for _, tag := range orderedTags {
-					if tag == "convertedtype" || tag == "scale" || tag == "precision" || tag == "length" {
-						if value, found := tagMap[tag]; found {
-							convertedTypeParts = append(convertedTypeParts, tag+"="+value)
-						}
-					}
-				}
-
-				if len(convertedTypeParts) > 0 {
-					columns[colIndex].ConvertedType = common.ToPtr(strings.Join(convertedTypeParts, ", "))
-				}
-
-				// Add logical type information if present - iterate through ordered tags
-				var logicalTypeParts []string
-				for _, tag := range orderedTags {
-					if strings.HasPrefix(tag, "logicaltype") {
-						if value, found := tagMap[tag]; found {
-							logicalTypeParts = append(logicalTypeParts, tag+"="+value)
-						}
-					}
-				}
-
-				if len(logicalTypeParts) > 0 {
-					columns[colIndex].LogicalType = common.ToPtr(strings.Join(logicalTypeParts, ", "))
-				}
-			}
-
-			if col.MetaData.Statistics == nil {
-				// no statistics info
-				continue
-			}
-
-			columns[colIndex].NullCount = col.MetaData.Statistics.NullCount
-			columns[colIndex].DistinctCount = col.MetaData.Statistics.DistinctCount
-
-			maxValue := c.retrieveValue(col.MetaData.Statistics.MaxValue, *schemaNode.Type)
-			minValue := c.retrieveValue(col.MetaData.Statistics.MinValue, *schemaNode.Type)
-			if maxValue != nil {
-				columns[colIndex].MaxValue = decodeMinMaxValue(maxValue, schemaNode)
-			}
-			if minValue != nil {
-				columns[colIndex].MinValue = decodeMinMaxValue(minValue, schemaNode)
-			}
-		}
-
-		rowGroups[rgIndex] = rowGroupMeta{
-			NumRows:       rg.NumRows,
-			TotalByteSize: rg.TotalByteSize,
-			Columns:       columns,
-		}
-	}
+	rowGroups := c.buildRowGroups(reader.Footer.RowGroups, inExNameMap, pathMap)
 
 	meta := parquetMeta{
 		NumRowGroups: len(rowGroups),
@@ -170,6 +76,120 @@ func (c MetaCmd) Run() error {
 	fmt.Println(string(buf))
 
 	return nil
+}
+
+func (c MetaCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
+	inExNameMap := map[string][]string{}
+	queue := []*pschema.SchemaNode{schemaRoot}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = append(queue[1:], node.Children...)
+		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+		inExNameMap[inPath] = node.ExNamePath[1:]
+	}
+	pathMap := schemaRoot.GetPathMap()
+	return inExNameMap, pathMap
+}
+
+func (c MetaCmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) []rowGroupMeta {
+	result := make([]rowGroupMeta, len(rowGroups))
+	for i, rg := range rowGroups {
+		columns := c.buildColumns(rg, inExNameMap, pathMap)
+		result[i] = rowGroupMeta{
+			NumRows:       rg.NumRows,
+			TotalByteSize: rg.TotalByteSize,
+			Columns:       columns,
+		}
+	}
+	return result
+}
+
+func (c MetaCmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) []columnMeta {
+	columns := make([]columnMeta, len(rg.Columns))
+	for i, col := range rg.Columns {
+		columns[i] = c.buildColumnMeta(col, rg.SortingColumns, i, inExNameMap, pathMap)
+	}
+	return columns
+}
+
+func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) columnMeta {
+	column := columnMeta{
+		PathInSchema:     col.MetaData.PathInSchema,
+		Type:             col.MetaData.Type.String(),
+		ConvertedType:    nil,
+		LogicalType:      nil,
+		Encodings:        encodingToString(col.MetaData.Encodings),
+		CompressedSize:   col.MetaData.TotalCompressedSize,
+		UncompressedSize: col.MetaData.TotalUncompressedSize,
+		NumValues:        col.MetaData.NumValues,
+		MaxValue:         nil,
+		MinValue:         nil,
+		NullCount:        nil,
+		DistinctCount:    nil,
+		Index:            sortingToString(sortingColumns, colIndex),
+		CompressionCodec: col.MetaData.Codec.String(),
+	}
+
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	if exPath, found := inExNameMap[pathKey]; found {
+		column.PathInSchema = exPath
+	}
+
+	schemaNode := pathMap[pathKey]
+	if schemaNode != nil {
+		c.addTypeInformation(&column, schemaNode)
+	}
+
+	if col.MetaData.Statistics != nil {
+		c.addStatistics(&column, col.MetaData.Statistics, schemaNode)
+	}
+
+	return column
+}
+
+func (c MetaCmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNode) {
+	tagMap := schemaNode.GetTagMap()
+	orderedTags := pschema.OrderedTags()
+
+	var convertedTypeParts []string
+	for _, tag := range orderedTags {
+		if tag == "convertedtype" || tag == "scale" || tag == "precision" || tag == "length" {
+			if value, found := tagMap[tag]; found {
+				convertedTypeParts = append(convertedTypeParts, tag+"="+value)
+			}
+		}
+	}
+
+	if len(convertedTypeParts) > 0 {
+		column.ConvertedType = common.ToPtr(strings.Join(convertedTypeParts, ", "))
+	}
+
+	var logicalTypeParts []string
+	for _, tag := range orderedTags {
+		if strings.HasPrefix(tag, "logicaltype") {
+			if value, found := tagMap[tag]; found {
+				logicalTypeParts = append(logicalTypeParts, tag+"="+value)
+			}
+		}
+	}
+
+	if len(logicalTypeParts) > 0 {
+		column.LogicalType = common.ToPtr(strings.Join(logicalTypeParts, ", "))
+	}
+}
+
+func (c MetaCmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
+	column.NullCount = statistics.NullCount
+	column.DistinctCount = statistics.DistinctCount
+
+	maxValue := c.retrieveValue(statistics.MaxValue, *schemaNode.Type)
+	minValue := c.retrieveValue(statistics.MinValue, *schemaNode.Type)
+	if maxValue != nil {
+		column.MaxValue = decodeMinMaxValue(maxValue, schemaNode)
+	}
+	if minValue != nil {
+		column.MinValue = decodeMinMaxValue(minValue, schemaNode)
+	}
 }
 
 func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
