@@ -42,12 +42,8 @@ lint: tools  ## Run static code analysis
 	@$(GOBIN)/golangci-lint cache clean
 	@$(GOBIN)/golangci-lint run ./... \
 		--timeout 5m \
-		--exclude-use-default=false
-	@$(GOBIN)/gocyclo -over 20 . > /tmp/gocyclo.output; \
-		if [[ -s /tmp/gocyclo.output ]]; then \
-			echo functions with gocyclo score higher than 20; \
-			cat /tmp/gocyclo.output | sed 's/^/    /'; \
-		fi
+		--exclude-use-default=false \
+		--enable gocognit
 
 .PHONY: deps
 deps:  ## Install prerequisite for build
@@ -60,7 +56,6 @@ tools:  ## Install build tools
 	@(cd /tmp; \
 		$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
 		$(GO) install mvdan.cc/gofumpt@latest; \
-		$(GO) install github.com/fzipp/gocyclo/cmd/gocyclo@latest; \
 		$(GO) install golang.org/x/tools/cmd/goimports@latest; \
 	)
 
