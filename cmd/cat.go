@@ -120,7 +120,6 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, er
 func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	switch c.Format {
 	case "json", "jsonl":
-		// remove pargo prefix
 		buf, _ := json.Marshal(rowStruct)
 		fmt.Print(string(buf))
 	case "csv", "tsv":
@@ -129,7 +128,7 @@ func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 		for index, field := range fieldList {
 			switch val := flatValues[field].(type) {
 			case nil:
-				// nil is just empty
+				// nil is just empty in CSV/TSV
 			default:
 				values[index] = fmt.Sprint(val)
 			}
@@ -168,8 +167,11 @@ func (c CatCmd) encoder(ctx context.Context, rowChan, outputChan chan any, schem
 
 func (c CatCmd) printer(ctx context.Context, outputChan chan any, fieldList []string) error {
 	fmt.Print(delimiter[c.Format].begin)
+	defer func() {
+		fmt.Println(delimiter[c.Format].end)
+	}()
+
 	isFirstRow := true
-Loop:
 	for {
 		select {
 		case <-ctx.Done():
@@ -177,7 +179,7 @@ Loop:
 		default:
 			row, more := <-outputChan
 			if !more {
-				break Loop
+				return nil
 			}
 
 			if isFirstRow {
@@ -190,8 +192,6 @@ Loop:
 			}
 		}
 	}
-	fmt.Println(delimiter[c.Format].end)
-	return nil
 }
 
 func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
@@ -205,19 +205,20 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 		return err
 	}
 
-	// dedicated goroutine for output to ensure output integrity
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	outputGroup, _ := errgroup.WithContext(ctx)
-	outputChan := make(chan any)
-	outputGroup.Go(func() error {
-		return c.printer(ctx, outputChan, fieldList)
-	})
-
 	concurrency := 1
 	if c.Concurrent {
 		concurrency = runtime.NumCPU()
 	}
+
+	// dedicated goroutine for output to ensure output integrity
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	outputGroup, _ := errgroup.WithContext(ctx)
+	outputChan := make(chan any, concurrency)
+	outputGroup.Go(func() error {
+		return c.printer(ctx, outputChan, fieldList)
+	})
+
 	rowGroup, _ := errgroup.WithContext(ctx)
 	rowChan := make(chan any, concurrency)
 	// goroutines to encode rows
