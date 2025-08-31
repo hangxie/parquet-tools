@@ -156,9 +156,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.32.2
+v1.34.0
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.32.2
+v1.34.0
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -168,20 +168,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.32.2_amd64.deb
-Preparing to unpack parquet-tools_1.32.2_amd64.deb ...
-Unpacking parquet-tools (1.32.2) ...
-Setting up parquet-tools (1.32.2) ...
+$ sudo dpkg -i parquet-tools_1.34.0_amd64.deb
+Preparing to unpack parquet-tools_1.34.0_amd64.deb ...
+Unpacking parquet-tools (1.34.0) ...
+Setting up parquet-tools (1.34.0) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.32.2-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.34.0-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.32.2-1          ################################# [100%]
+   1:parquet-tools-1.34.0-1          ################################# [100%]
 ```
 
 ## Usage
@@ -909,7 +909,7 @@ $ parquet-tools row-count 3.parquet
 
 ```bash
 $ parquet-tools version
-v1.32.2
+v1.34.0
 ```
 
 #### Print All Information
@@ -918,23 +918,23 @@ v1.32.2
 
 ```bash
 $ parquet-tools version -a
-v1.32.2
-2025-06-07T21:31:01-0700
-Makefile
+v1.34.0
+2025-08-29T14:22:39Z
+Homebrew
 ```
 
 #### Print Version and Build Time in JSON Format
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.32.2","BuildTime":"2025-06-07T21:31:01-0700"}
+{"Version":"v1.34.0","BuildTime":"2025-08-29T14:22:39Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.32.2"}
+{"Version":"v1.34.0"}
 ```
 
 ## Credit
