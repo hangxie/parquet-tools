@@ -117,13 +117,17 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 		return tagMap
 	}
 
-	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY && s.ConvertedType == nil {
+	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
 		tagMap["length"] = fmt.Sprint(*s.TypeLength)
-		return tagMap
 	}
 
-	s.updateTagFromConvertedType(tagMap)
-	s.updateTagFromLogicalType(tagMap)
+	if s.LogicalType != nil {
+		s.updateTagFromLogicalType(tagMap)
+	}
+
+	if s.ConvertedType != nil {
+		s.updateTagFromConvertedType(tagMap)
+	}
 
 	return tagMap
 }
@@ -233,6 +237,8 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 			tagMap["logicaltype"] = "TIMESTAMP"
 			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
 			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
+		} else if s.LogicalType.IsSetUUID() {
+			tagMap["logicaltype"] = "UUID"
 		}
 	}
 }

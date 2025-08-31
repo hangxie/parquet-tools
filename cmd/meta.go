@@ -240,6 +240,8 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 				return types.TIMESTAMP_MICROSToISO8601(value.(int64), false)
 			}
 			return types.TIMESTAMP_NANOSToISO8601(value.(int64), false)
+		case schemaNode.LogicalType.IsSetUUID():
+			return types.ConvertUUIDValue(value)
 		}
 	}
 
