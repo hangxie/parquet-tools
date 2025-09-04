@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/hangxie/parquet-go/v2/schema"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
@@ -109,4 +112,62 @@ func Benchmark_CatCmd_Run(b *testing.B) {
 			require.NoError(b, cmd.Run())
 		}
 	})
+}
+
+func Test_CatCmd_encoder_context_cancel(t *testing.T) {
+	cmd := CatCmd{Format: "json"}
+
+	// Create a context that will be canceled
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Create channels - don't buffer them to ensure blocking behavior
+	rowChan := make(chan any)
+	outputChan := make(chan any)
+
+	// Create a minimal schema handler
+	schemaHandler := &schema.SchemaHandler{}
+
+	// Start encoder in a goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- cmd.encoder(ctx, rowChan, outputChan, schemaHandler)
+	}()
+
+	// Cancel the context immediately - encoder should be blocked on reading from rowChan
+	cancel()
+
+	// Wait for the encoder to return with context.Canceled error
+	select {
+	case err := <-errChan:
+		require.Equal(t, context.Canceled, err)
+	case <-time.After(1 * time.Second):
+		t.Fatal("encoder did not return within expected time")
+	}
+}
+
+func Test_CatCmd_printer_context_cancel(t *testing.T) {
+	cmd := CatCmd{Format: "json"}
+
+	// Create a context that will be canceled
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Create unbuffered output channel so printer blocks on reading
+	outputChan := make(chan any)
+
+	// Start printer in a goroutine, capture its output
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- cmd.printer(ctx, outputChan, nil)
+	}()
+
+	// Cancel the context immediately - printer should be blocked on reading from outputChan
+	cancel()
+
+	// Wait for the printer to return with context.Canceled error
+	select {
+	case err := <-errChan:
+		require.Equal(t, context.Canceled, err)
+	case <-time.After(1 * time.Second):
+		t.Fatal("printer did not return within expected time")
+	}
 }
