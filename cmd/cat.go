@@ -31,6 +31,10 @@ type CatCmd struct {
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	Concurrent   bool    `help:"enable concurrent output" default:"false"`
+
+	// reusable CSV writer components
+	csvBuf    *strings.Builder
+	csvWriter *csv.Writer
 }
 
 var delimiter = map[string]struct {
@@ -76,7 +80,7 @@ func (c CatCmd) Run() error {
 	return c.outputRows(fileReader)
 }
 
-func (c CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
+func (c *CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	if c.Format != "csv" && c.Format != "tsv" {
 		// only CSV and TSV need header
 		return nil, nil
@@ -91,7 +95,7 @@ func (c CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	}
 	headerList := make([]string, len(schemaRoot.Children))
 	_ = copy(headerList, fieldList)
-	line, err := valuesToCSV(headerList, delimiter[c.Format].fieldDelimiter)
+	line, err := c.valuesToCSV(headerList)
 	if err != nil {
 		return nil, err
 	}
@@ -102,10 +106,17 @@ func (c CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	return fieldList, nil
 }
 
-func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
+func (c *CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
 	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, err
+	}
+
+	// Initialize CSV writer for reuse if needed
+	if c.Format == "csv" || c.Format == "tsv" {
+		c.csvBuf = new(strings.Builder)
+		c.csvWriter = csv.NewWriter(c.csvBuf)
+		c.csvWriter.Comma = delimiter[c.Format].fieldDelimiter
 	}
 
 	// CSV and TSV do not support nested schema
@@ -117,7 +128,7 @@ func (c CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, er
 	return fieldList, nil
 }
 
-func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
+func (c *CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	switch c.Format {
 	case "json", "jsonl":
 		buf, _ := json.Marshal(rowStruct)
@@ -134,7 +145,7 @@ func (c CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 			}
 		}
 
-		line, err := valuesToCSV(values, delimiter[c.Format].fieldDelimiter)
+		line, err := c.valuesToCSV(values)
 		if err != nil {
 			return err
 		}
@@ -260,15 +271,13 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	return nil
 }
 
-func valuesToCSV(values []string, delimiter rune) (string, error) {
+func (c *CatCmd) valuesToCSV(values []string) (string, error) {
 	// there is no standard for CSV, use go's CSV module to maintain minimum compatibility
-	buf := new(strings.Builder)
-	csvWriter := csv.NewWriter(buf)
-	csvWriter.Comma = delimiter
-	if err := csvWriter.Write(values); err != nil {
+	c.csvBuf.Reset()
+	if err := c.csvWriter.Write(values); err != nil {
 		// this should never happen
 		return "", err
 	}
-	csvWriter.Flush()
-	return buf.String(), nil
+	c.csvWriter.Flush()
+	return c.csvBuf.String(), nil
 }
