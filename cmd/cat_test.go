@@ -106,8 +106,17 @@ func Benchmark_CatCmd_Run(b *testing.B) {
 			require.NoError(b, cmd.Run())
 		}
 	})
+
 	cmd.Concurrent = true
 	b.Run("concurrent", func(b *testing.B) {
+		for b.Loop() {
+			require.NoError(b, cmd.Run())
+		}
+	})
+
+	cmd.Format = "csv"
+	cmd.URI = "../build/flat.parquet"
+	b.Run("csv", func(b *testing.B) {
 		for b.Loop() {
 			require.NoError(b, cmd.Run())
 		}
