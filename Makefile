@@ -87,7 +87,7 @@ test: deps tools  ## Run unit tests
 	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail ; \
 		cd $(BUILD_DIR)/test; \
-		CGO_ENABLED=1 $(GO) test -race -count 1 -trimpath -coverprofile=coverage.out $(CURDIR)/... ; \
+		CGO_ENABLED=1 $(GO) test -parallel 4 -race -count 1 -trimpath -coverprofile=coverage.out $(CURDIR)/... ; \
 		$(GO) tool cover -html=coverage.out -o coverage.html ; \
 		$(GO) tool cover -func=coverage.out -o coverage.txt ; \
 		cat coverage.txt

@@ -12,9 +12,6 @@ import (
 )
 
 func Test_azureAccessDetail_invalid_uri(t *testing.T) {
-	u := url.URL{
-		Host: "storageaccount",
-	}
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
 
 	invalidPaths := []string{
@@ -26,7 +23,12 @@ func Test_azureAccessDetail_invalid_uri(t *testing.T) {
 
 	for _, path := range invalidPaths {
 		t.Run(path, func(t *testing.T) {
-			u.Path = path
+			// Cannot use t.Parallel() with t.Setenv() from parent test
+			// Create separate URL instance to avoid race conditions
+			u := url.URL{
+				Host: "storageaccount",
+				Path: path,
+			}
 			uri, cred, err := azureAccessDetail(u, false, "")
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "azure blob URI format:")
@@ -157,6 +159,7 @@ func Test_parseURI(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			u, err := parseURI(tc.uri)
 			if tc.errMsg != "" {
 				require.Error(t, err)

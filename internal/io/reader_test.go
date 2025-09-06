@@ -46,6 +46,7 @@ func Test_NewParquetFileReader(t *testing.T) {
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			_, err := NewParquetFileReader(tc.uri, tc.option)
 			if tc.errMsg == "" {
 				require.NoError(t, err)
