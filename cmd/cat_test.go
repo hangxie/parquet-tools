@@ -72,9 +72,12 @@ func Test_CatCmd_Run_good(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			tc.cmd.URI = "file://../testdata/" + tc.cmd.URI
+			t.Parallel()
+			// Create a separate CatCmd instance for each parallel test to avoid race conditions
+			cmd := tc.cmd
+			cmd.URI = "file://../testdata/" + tc.cmd.URI
 			stdout, stderr := captureStdoutStderr(func() {
-				require.Nil(t, tc.cmd.Run())
+				require.Nil(t, cmd.Run())
 			})
 			require.Equal(t, loadExpected(t, "../testdata/golden/"+tc.golden), stdout)
 			require.Equal(t, "", stderr)

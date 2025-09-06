@@ -6,11 +6,17 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 )
 
-// this for unit test only
+var stdCaptureMutex sync.Mutex
+
+// this for unit test only - thread-safe version using mutex
 func captureStdoutStderr(f func()) (string, string) {
+	stdCaptureMutex.Lock()
+	defer stdCaptureMutex.Unlock()
+
 	savedStdout := os.Stdout
 	savedStderr := os.Stderr
 

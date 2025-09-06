@@ -52,6 +52,7 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			tc.cmd.URI = "../testdata/" + tc.cmd.URI
 			tc.golden = "../testdata/golden/" + tc.golden
 			stdout, stderr := captureStdoutStderr(func() {

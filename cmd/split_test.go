@@ -32,6 +32,7 @@ func Test_SplitCmd_Run_error(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			err := tc.cmd.Run()
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)

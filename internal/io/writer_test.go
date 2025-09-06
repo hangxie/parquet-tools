@@ -36,6 +36,7 @@ func Test_NewParquetFileWriter(t *testing.T) {
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			pw, err := NewParquetFileWriter(tc.uri)
 			defer func() {
 				if pw != nil {
@@ -76,6 +77,7 @@ func Test_NewCSVWriter(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			pw, err := NewCSVWriter(tc.uri, tc.option, tc.schema)
 			defer func() {
 				if pw != nil {
@@ -110,6 +112,7 @@ func Test_NewJSONWriter(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			pw, err := NewJSONWriter(tc.uri, WriteOption{Compression: "SNAPPY"}, tc.schema)
 			defer func() {
 				if pw != nil {
@@ -149,6 +152,7 @@ func Test_NewGenericWriter(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			pw, err := NewGenericWriter(tc.uri, tc.option, tc.schema)
 			defer func() {
 				if pw != nil {

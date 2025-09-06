@@ -28,6 +28,7 @@ func Test_versionCmd(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			stdout, stderr := captureStdoutStderr(func() {
 				require.Nil(t, tc.cmd.Run())
 			})
