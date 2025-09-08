@@ -10,6 +10,8 @@
             "shoe_brand"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -28,6 +30,8 @@
             "shoe_name"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",

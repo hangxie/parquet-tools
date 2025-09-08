@@ -32,10 +32,22 @@
       "Tag": "name=Json, type=BYTE_ARRAY, convertedtype=JSON"
     },
     {
+      "Tag": "name=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON"
+    },
+    {
+      "Tag": "name=Json2, type=BYTE_ARRAY"
+    },
+    {
+      "Tag": "name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"
+    },
+    {
       "Tag": "name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"
     },
     {
-      "Tag": "name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8"
+      "Tag": "name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+    },
+    {
+      "Tag": "name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING"
     },
     {
       "Tag": "name=Int_8, type=INT32, convertedtype=INT_8"
@@ -122,7 +134,7 @@
       "Tag": "name=Map, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         },
         {
           "Tag": "name=value, type=INT32"
@@ -133,7 +145,7 @@
       "Tag": "name=List, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         }
       ]
     },
@@ -144,7 +156,7 @@
       "Tag": "name=NestedMap, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         },
         {
           "Tag": "name=value",
@@ -153,7 +165,7 @@
               "Tag": "name=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
+                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
                 },
                 {
                   "Tag": "name=value, type=INT32"
@@ -182,7 +194,7 @@
               "Tag": "name=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
+                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
                 },
                 {
                   "Tag": "name=value, type=INT32"

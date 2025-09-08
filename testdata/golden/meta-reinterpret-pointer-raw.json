@@ -10,6 +10,8 @@
             "v1"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -28,6 +30,8 @@
             "v2"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -46,6 +50,8 @@
             "v3"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -64,6 +70,8 @@
             "v4"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -82,6 +90,7 @@
             "v5"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "convertedtype=INTERVAL, length=12",
           "Encodings": [
             "RLE",
             "BIT_PACKED",

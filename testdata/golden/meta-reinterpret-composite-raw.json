@@ -12,6 +12,8 @@
             "key"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -37,6 +39,8 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -62,6 +66,8 @@
             "value"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
+          "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "RLE",
             "BIT_PACKED",

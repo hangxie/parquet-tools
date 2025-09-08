@@ -2,7 +2,7 @@
   "Tag": "name=parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
+      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
     },
     {
       "Tag": "name=age, type=INT32"
@@ -20,7 +20,7 @@
       "Tag": "name=classes, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         }
       ]
     },
@@ -28,7 +28,7 @@
       "Tag": "name=scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         },
         {
           "Tag": "name=value, type=LIST",
@@ -47,7 +47,7 @@
           "Tag": "name=element",
           "Fields": [
             {
-              "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
+              "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
             },
             {
               "Tag": "name=id, type=INT64"
@@ -60,7 +60,7 @@
       "Tag": "name=teachers, repetitiontype=REPEATED",
       "Fields": [
         {
-          "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         },
         {
           "Tag": "name=id, type=INT64"

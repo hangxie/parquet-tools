@@ -2,7 +2,7 @@
   "Tag": "name=list-variants",
   "Fields": [
     {
-      "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=OrgList, type=LIST, repetitiontype=OPTIONAL",
@@ -11,19 +11,19 @@
           "Tag": "name=Element",
           "Fields": [
             {
-              "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             },
             {
-              "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             },
             {
-              "Tag": "name=Region, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=Region, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             },
             {
               "Tag": "name=Status, type=INT32, repetitiontype=OPTIONAL"
             },
             {
-              "Tag": "name=CreatedTime, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=CreatedTime, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             },
             {
               "Tag": "name=ContactList, type=LIST, repetitiontype=OPTIONAL",
@@ -32,28 +32,28 @@
                   "Tag": "name=Element",
                   "Fields": [
                     {
-                      "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=Email, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=Email, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=FirstName, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=FirstName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=LastName, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=LastName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=JobName, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=JobName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=CountryName, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=CountryName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=TelephoneNum, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=TelephoneNum, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     },
                     {
-                      "Tag": "name=MobileNum, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                      "Tag": "name=MobileNum, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                     }
                   ]
                 }
@@ -63,22 +63,22 @@
               "Tag": "name=ContractReport, repetitiontype=OPTIONAL",
               "Fields": [
                 {
-                  "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 },
                 {
-                  "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 },
                 {
-                  "Tag": "name=CityName, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=CityName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 },
                 {
-                  "Tag": "name=State, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=State, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 },
                 {
-                  "Tag": "name=Country, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=Country, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 },
                 {
-                  "Tag": "name=PostalCd, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=PostalCd, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 }
               ]
             }
@@ -90,25 +90,25 @@
       "Tag": "name=ContractReport, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=OrgId, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=OrgId, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=CityName, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=CityName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=State, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=State, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=Country, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=Country, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=PostalCd, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=PostalCd, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         }
       ]
     },
@@ -125,55 +125,55 @@
               "Tag": "name=Element",
               "Fields": [
                 {
-                  "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 },
                 {
-                  "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+                  "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
                 }
               ]
             }
           ]
         },
         {
-          "Tag": "name=LastUpdatedBy, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=LastUpdatedBy, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         },
         {
-          "Tag": "name=LastUpdatedTimestamp, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+          "Tag": "name=LastUpdatedTimestamp, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
         }
       ]
     },
     {
-      "Tag": "name=Status, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=Status, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=VerifyContracts, type=BOOLEAN"
     },
     {
-      "Tag": "name=DefaultAssetGroupId, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=DefaultAssetGroupId, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=CustomerProvisionStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=CustomerProvisionStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=EligibilityInfoStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=EligibilityInfoStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=CollectionTriggerStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=CollectionTriggerStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=SuperAdminStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=SuperAdminStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=AccessPolicyStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=AccessPolicyStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=DefaultUserGroupStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=DefaultUserGroupStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=EmailNotificationStatus, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=EmailNotificationStatus, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=CreatedTime, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=CreatedTime, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=Orgs, type=LIST, repetitiontype=OPTIONAL",
@@ -182,35 +182,35 @@
           "Tag": "name=Element",
           "Fields": [
             {
-              "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=Id, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             },
             {
-              "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             },
             {
-              "Tag": "name=Region, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+              "Tag": "name=Region, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
             }
           ]
         }
       ]
     },
     {
-      "Tag": "name=ApiKeyUpdationTime, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=ApiKeyUpdationTime, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=SecretId, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=SecretId, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=ApiKeyUpdatedBy, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=ApiKeyUpdatedBy, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=LastUpdatedUnixTimestamp, type=INT64, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=LastUpdatedHrTimestamp, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=LastUpdatedHrTimestamp, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
-      "Tag": "name=Env, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=Env, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=EnableInventoryDataCollection, type=BOOLEAN"
@@ -219,21 +219,21 @@
       "Tag": "name=ContractNumbers, type=LIST, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         }
       ]
     },
     {
-      "Tag": "name=ContractLastUpdatedAt, type=BYTE_ARRAY, convertedtype=UTF8, repetitiontype=OPTIONAL"
+      "Tag": "name=ContractLastUpdatedAt, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL"
     },
     {
       "Tag": "name=CollectionStatus, type=MAP, repetitiontype=OPTIONAL",
       "Fields": [
         {
-          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         },
         {
-          "Tag": "name=Value, type=BYTE_ARRAY, convertedtype=UTF8"
+          "Tag": "name=Value, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
         }
       ]
     }

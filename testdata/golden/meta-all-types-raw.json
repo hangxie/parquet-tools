@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 26583,
+      "TotalByteSize": 28020,
       "Columns": [
         {
           "PathInSchema": [
@@ -191,6 +191,63 @@
         },
         {
           "PathInSchema": [
+            "Bson"
+          ],
+          "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=BSON",
+          "LogicalType": "logicaltype=BSON",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 425,
+          "UncompressedSize": 468,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "DAAAABA5AAkAAAAA",
+          "MinValue": "DAAAABAwAAAAAAAA",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Json2"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 325,
+          "UncompressedSize": 338,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "{\"9\":9}",
+          "MinValue": "{\"0\":0}",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Bson2"
+          ],
+          "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=BSON",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 425,
+          "UncompressedSize": 468,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "DAAAABA5AAkAAAAA",
+          "MinValue": "DAAAABAwAAAAAAAA",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
             "FixedLenByteArray"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
@@ -214,6 +271,7 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -227,6 +285,25 @@
           "NullCount": 0,
           "MaxValue": "UTF8-9",
           "MinValue": "UTF8-0",
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Utf8_2"
+          ],
+          "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=STRING",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 164,
+          "UncompressedSize": 156,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": "",
+          "MinValue": "",
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -760,12 +837,13 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 566,
+          "CompressedSize": 582,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -785,7 +863,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 369,
+          "CompressedSize": 374,
           "UncompressedSize": 436,
           "NumValues": 46,
           "NullCount": 1,
@@ -801,6 +879,7 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
@@ -840,12 +919,13 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 571,
+          "CompressedSize": 576,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -864,13 +944,14 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 752,
-          "UncompressedSize": 2155,
+          "CompressedSize": 741,
+          "UncompressedSize": 2157,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -892,8 +973,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 506,
-          "UncompressedSize": 859,
+          "CompressedSize": 516,
+          "UncompressedSize": 861,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
@@ -917,8 +998,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 651,
-          "UncompressedSize": 2427,
+          "CompressedSize": 672,
+          "UncompressedSize": 2429,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
@@ -936,12 +1017,13 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 715,
+          "CompressedSize": 745,
           "UncompressedSize": 2159,
           "NumValues": 130,
           "NullCount": 10,
@@ -964,8 +1046,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 483,
-          "UncompressedSize": 862,
+          "CompressedSize": 490,
+          "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
