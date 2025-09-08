@@ -220,6 +220,8 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 			return types.ConvertTimeLogicalValue(value, schemaNode.LogicalType.GetTIME())
 		case parquet.ConvertedType_TIMESTAMP_MICROS, parquet.ConvertedType_TIMESTAMP_MILLIS:
 			return types.ConvertTimestampValue(value, *schemaNode.ConvertedType)
+		case parquet.ConvertedType_BSON:
+			return types.ConvertBSONLogicalValue(value)
 		}
 	}
 
@@ -242,6 +244,8 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 			return types.TIMESTAMP_NANOSToISO8601(value.(int64), false)
 		case schemaNode.LogicalType.IsSetUUID():
 			return types.ConvertUUIDValue(value)
+		case schemaNode.LogicalType.IsSetBSON():
+			return types.ConvertBSONLogicalValue(value)
 		}
 	}
 

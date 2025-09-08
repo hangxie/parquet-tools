@@ -1,7 +1,7 @@
 {
   "repetition_type": "REQUIRED",
   "name": "parquet_go_root",
-  "num_children": 44,
+  "num_children": 48,
   "children": [
     {
       "type": "BOOLEAN",
@@ -105,6 +105,43 @@
       }
     },
     {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Bson",
+      "converted_type": "BSON",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "BSON": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Json2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "JSON": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Bson2",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "BSON": {}
+      }
+    },
+    {
       "type": "FIXED_LEN_BYTE_ARRAY",
       "type_length": 10,
       "repetition_type": "REQUIRED",
@@ -119,6 +156,18 @@
       "repetition_type": "REQUIRED",
       "name": "Utf8",
       "converted_type": "UTF8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "STRING": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Utf8_2",
       "scale": 0,
       "precision": 0,
       "field_id": 0,

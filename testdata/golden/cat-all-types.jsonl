@@ -1,5 +1,7 @@
 {
   "Bool": true,
+  "Bson": "DAAAABAwAAAAAAAA",
+  "Bson2": "DAAAABAwAAAAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTA=",
   "Date": "1970-01-01",
   "Date2": "1970-01-01",
@@ -21,6 +23,7 @@
   "Int_8": 0,
   "Interval": "0.000 sec",
   "Json": "{\"0\":0}",
+  "Json2": "{\"0\":0}",
   "List": [],
   "Map": {},
   "NestedList": [],
@@ -41,11 +44,14 @@
   "Uint_64": 0,
   "Uint_8": 0,
   "Utf8": "UTF8-0",
+  "Utf8_2": "",
   "Uuid": "00000000-0000-0000-0000-000000000000",
   "decimal5": 0
 }
 {
   "Bool": false,
+  "Bson": "DAAAABAxAAEAAAAA",
+  "Bson2": "DAAAABAxAAEAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTE=",
   "Date": "1967-04-07",
   "Date2": "1972-09-27",
@@ -67,6 +73,7 @@
   "Int_8": 1,
   "Interval": "1 mon 1 day 0.001 sec",
   "Json": "{\"1\":1}",
+  "Json2": "{\"1\":1}",
   "List": [
     "Composite-0"
   ],
@@ -103,11 +110,14 @@
   "Uint_64": 1,
   "Uint_8": 1,
   "Utf8": "UTF8-1",
+  "Utf8_2": "",
   "Uuid": "01010101-0101-0101-0101-010101010101",
   "decimal5": 0.01
 }
 {
   "Bool": true,
+  "Bson": "DAAAABAyAAIAAAAA",
+  "Bson2": "DAAAABAyAAIAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTI=",
   "Date": "1964-07-11",
   "Date2": "1975-06-24",
@@ -129,6 +139,7 @@
   "Int_8": 2,
   "Interval": "2 mon 2 day 0.002 sec",
   "Json": "{\"2\":2}",
+  "Json2": "{\"2\":2}",
   "List": [
     "Composite-0",
     "Composite-1"
@@ -184,11 +195,14 @@
   "Uint_64": 2,
   "Uint_8": 2,
   "Utf8": "UTF8-2",
+  "Utf8_2": "",
   "Uuid": "02020202-0202-0202-0202-020202020202",
   "decimal5": 0.22
 }
 {
   "Bool": false,
+  "Bson": "DAAAABAzAAMAAAAA",
+  "Bson2": "DAAAABAzAAMAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTM=",
   "Date": "1961-10-15",
   "Date2": "1978-03-20",
@@ -210,6 +224,7 @@
   "Int_8": 3,
   "Interval": "3 mon 3 day 0.003 sec",
   "Json": "{\"3\":3}",
+  "Json2": "{\"3\":3}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -288,11 +303,14 @@
   "Uint_64": 3,
   "Uint_8": 3,
   "Utf8": "UTF8-3",
+  "Utf8_2": "",
   "Uuid": "03030303-0303-0303-0303-030303030303",
   "decimal5": 3.33
 }
 {
   "Bool": true,
+  "Bson": "DAAAABA0AAQAAAAA",
+  "Bson2": "DAAAABA0AAQAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTQ=",
   "Date": "1959-01-19",
   "Date2": "1980-12-14",
@@ -314,6 +332,7 @@
   "Int_8": 4,
   "Interval": "4 mon 4 day 0.004 sec",
   "Json": "{\"4\":4}",
+  "Json2": "{\"4\":4}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -419,11 +438,14 @@
   "Uint_64": 4,
   "Uint_8": 4,
   "Utf8": "UTF8-4",
+  "Utf8_2": "",
   "Uuid": "04040404-0404-0404-0404-040404040404",
   "decimal5": 44.44
 }
 {
   "Bool": false,
+  "Bson": "DAAAABA1AAUAAAAA",
+  "Bson2": "DAAAABA1AAUAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTU=",
   "Date": "1956-04-24",
   "Date2": "1983-09-10",
@@ -445,6 +467,7 @@
   "Int_8": 5,
   "Interval": "5 mon 5 day 0.005 sec",
   "Json": "{\"5\":5}",
+  "Json2": "{\"5\":5}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -581,11 +604,14 @@
   "Uint_64": 5,
   "Uint_8": 5,
   "Utf8": "UTF8-5",
+  "Utf8_2": "",
   "Uuid": "05050505-0505-0505-0505-050505050505",
   "decimal5": 0
 }
 {
   "Bool": true,
+  "Bson": "DAAAABA2AAYAAAAA",
+  "Bson2": "DAAAABA2AAYAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTY=",
   "Date": "1953-07-29",
   "Date2": "1986-06-06",
@@ -607,6 +633,7 @@
   "Int_8": 6,
   "Interval": "6 mon 6 day 0.006 sec",
   "Json": "{\"6\":6}",
+  "Json2": "{\"6\":6}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -778,11 +805,14 @@
   "Uint_64": 6,
   "Uint_8": 6,
   "Utf8": "UTF8-6",
+  "Utf8_2": "",
   "Uuid": "06060606-0606-0606-0606-060606060606",
   "decimal5": -0.01
 }
 {
   "Bool": false,
+  "Bson": "DAAAABA3AAcAAAAA",
+  "Bson2": "DAAAABA3AAcAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTc=",
   "Date": "1950-11-02",
   "Date2": "1989-03-02",
@@ -804,6 +834,7 @@
   "Int_8": 7,
   "Interval": "7 mon 7 day 0.007 sec",
   "Json": "{\"7\":7}",
+  "Json2": "{\"7\":7}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -1014,11 +1045,14 @@
   "Uint_64": 7,
   "Uint_8": 7,
   "Utf8": "UTF8-7",
+  "Utf8_2": "",
   "Uuid": "07070707-0707-0707-0707-070707070707",
   "decimal5": -0.22
 }
 {
   "Bool": true,
+  "Bson": "DAAAABA4AAgAAAAA",
+  "Bson2": "DAAAABA4AAgAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTg=",
   "Date": "1948-02-06",
   "Date2": "1991-11-27",
@@ -1040,6 +1074,7 @@
   "Int_8": 8,
   "Interval": "8 mon 8 day 0.008 sec",
   "Json": "{\"8\":8}",
+  "Json2": "{\"8\":8}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -1293,11 +1328,14 @@
   "Uint_64": 8,
   "Uint_8": 8,
   "Utf8": "UTF8-8",
+  "Utf8_2": "",
   "Uuid": "08080808-0808-0808-0808-080808080808",
   "decimal5": -3.33
 }
 {
   "Bool": false,
+  "Bson": "DAAAABA5AAkAAAAA",
+  "Bson2": "DAAAABA5AAkAAAAA",
   "ByteArray": "Qnl0ZUFycmF5LTk=",
   "Date": "1945-05-12",
   "Date2": "1994-08-23",
@@ -1319,6 +1357,7 @@
   "Int_8": 9,
   "Interval": "9 mon 9 day 0.009 sec",
   "Json": "{\"9\":9}",
+  "Json2": "{\"9\":9}",
   "List": [
     "Composite-0",
     "Composite-1",
@@ -1619,6 +1658,7 @@
   "Uint_64": 9,
   "Uint_8": 9,
   "Utf8": "UTF8-9",
+  "Utf8_2": "",
   "Uuid": "09090909-0909-0909-0909-090909090909",
   "decimal5": -44.44
 }

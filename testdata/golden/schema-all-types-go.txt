@@ -9,8 +9,12 @@ ByteArray string `parquet:"name=ByteArray, type=BYTE_ARRAY"`
 Enum string `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"`
 Uuid string `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID"`
 Json string `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
+Bson string `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON"`
+Json2 string `parquet:"name=Json2, type=BYTE_ARRAY"`
+Bson2 string `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"`
 FixedLenByteArray string `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
-Utf8 string `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8"`
+Utf8 string `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+Utf8_2 string `parquet:"name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING"`
 Int_8 int32 `parquet:"name=Int_8, type=INT32, convertedtype=INT_8"`
 Int_16 int32 `parquet:"name=Int_16, type=INT32, convertedtype=INT_16"`
 Int_32 int32 `parquet:"name=Int_32, type=INT32, convertedtype=INT_32"`

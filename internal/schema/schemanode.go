@@ -239,6 +239,10 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
 		} else if s.LogicalType.IsSetUUID() {
 			tagMap["logicaltype"] = "UUID"
+		} else if s.LogicalType.IsSetBSON() {
+			tagMap["logicaltype"] = "BSON"
+		} else if s.LogicalType.IsSetSTRING() {
+			tagMap["logicaltype"] = "STRING"
 		}
 	}
 }

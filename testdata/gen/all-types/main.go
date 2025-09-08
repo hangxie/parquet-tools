@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/hangxie/parquet-go/v2/source/local"
 	"github.com/hangxie/parquet-go/v2/types"
 	"github.com/hangxie/parquet-go/v2/writer"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type InnerMap struct {
@@ -31,8 +33,12 @@ type AllTypes struct {
 	Enum              string              `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"`
 	Uuid              string              `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID"`
 	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
+	Bson              string              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON"`
+	Json2             string              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON"`
+	Bson2             string              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
+	Utf82             string              `parquet:"name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING"`
 	ConvertedInt8     int32               `parquet:"name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8"`
 	ConvertedInt16    int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16"`
 	ConvertedInt32    int32               `parquet:"name=Int_32, type=INT32, convertedtype=INT_32"`
@@ -89,6 +95,11 @@ func main() {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
 		strI := fmt.Sprintf("%d", i)
 		binary.LittleEndian.PutUint32(interval, uint32(i))
+		jsonObj := map[string]int{
+			strI: i,
+		}
+		jsonStr, _ := json.Marshal(jsonObj)
+		bsonStr, _ := bson.Marshal(jsonObj)
 		value := AllTypes{
 			Bool:              i%2 == 0,
 			Int32:             int32(i),
@@ -99,7 +110,10 @@ func main() {
 			ByteArray:         fmt.Sprintf("ByteArray-%d", i),
 			Enum:              fmt.Sprintf("Enum-%d", i),
 			Uuid:              string(bytes.Repeat([]byte{byte(i)}, 16)),
-			Json:              `{"` + strI + `":` + strI + `}`,
+			Json:              string(jsonStr),
+			Bson:              string(bsonStr),
+			Json2:             string(jsonStr),
+			Bson2:             string(bsonStr),
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
 			ConvertedInt8:     int32(i),
