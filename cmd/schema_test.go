@@ -15,13 +15,13 @@ func Test_SchemaCmd_Run_error(t *testing.T) {
 		cmd    SchemaCmd
 		errMsg string
 	}{
-		"invalid-uri":    {SchemaCmd{rOpt, "foobar", "dummy://location"}, "unknown location scheme"},
-		"invalid-format": {SchemaCmd{rOpt, "foobar", "../testdata/good.parquet"}, "unknown schema format"},
-		"go-map-value":   {SchemaCmd{rOpt, "go", "../testdata/map-composite-value.parquet"}, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]"},
-		"go-list-item":   {SchemaCmd{rOpt, "go", "../testdata/list-of-list.parquet"}, "go struct does not support composite type as list element in field [Parquet_go_root.Lol]"},
-		"csv-nested":     {SchemaCmd{rOpt, "csv", "../testdata/csv-nested.parquet"}, "CSV supports flat schema only"},
-		"csv-optional":   {SchemaCmd{rOpt, "csv", "../testdata/csv-optional.parquet"}, "CSV does not support optional column"},
-		"csv-repeated":   {SchemaCmd{rOpt, "csv", "../testdata/csv-repeated.parquet"}, "CSV does not support column in LIST type"},
+		"invalid-uri":    {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, "unknown location scheme"},
+		"invalid-format": {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "../testdata/good.parquet"}, "unknown schema format"},
+		"go-map-value":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/map-composite-value.parquet"}, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]"},
+		"go-list-item":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/list-of-list.parquet"}, "go struct does not support composite type as list element in field [Parquet_go_root.Lol]"},
+		"csv-nested":     {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-nested.parquet"}, "CSV supports flat schema only"},
+		"csv-optional":   {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-optional.parquet"}, "CSV does not support optional column"},
+		"csv-repeated":   {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-repeated.parquet"}, "CSV does not support column in LIST type"},
 	}
 
 	for name, tc := range testCases {
@@ -39,15 +39,15 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 		cmd    SchemaCmd
 		golden string
 	}{
-		"raw":                 {SchemaCmd{rOpt, "raw", "all-types.parquet"}, "schema-all-types-raw.json"},
-		"json":                {SchemaCmd{rOpt, "json", "all-types.parquet"}, "schema-all-types-json.json"},
-		"go":                  {SchemaCmd{rOpt, "go", "all-types.parquet"}, "schema-all-types-go.txt"},
-		"csv":                 {SchemaCmd{rOpt, "csv", "csv-good.parquet"}, "schema-csv-good.txt"},
-		"raw-map-value-list":  {SchemaCmd{rOpt, "raw", "map-composite-value.parquet"}, "schema-map-composite-value-raw.json"},
-		"json-map-value-list": {SchemaCmd{rOpt, "json", "map-composite-value.parquet"}, "schema-map-composite-value-json.json"},
-		"json-map-value-map":  {SchemaCmd{rOpt, "json", "map-value-map.parquet"}, "schema-map-value-map-json.json"},
-		"pargo-prefix-flat":   {SchemaCmd{rOpt, "go", "pargo-prefix-flat.parquet"}, "schema-pargo-prefix-flat-go.txt"},
-		"pargo-prefix-nested": {SchemaCmd{rOpt, "go", "pargo-prefix-nested.parquet"}, "schema-pargo-prefix-nested-go.txt"},
+		"raw":                 {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, "schema-all-types-raw.json"},
+		"json":                {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"}, "schema-all-types-json.json"},
+		"go":                  {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "all-types.parquet"}, "schema-all-types-go.txt"},
+		"csv":                 {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "csv-good.parquet"}, "schema-csv-good.txt"},
+		"raw-map-value-list":  {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "map-composite-value.parquet"}, "schema-map-composite-value-raw.json"},
+		"json-map-value-list": {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-composite-value.parquet"}, "schema-map-composite-value-json.json"},
+		"json-map-value-map":  {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-value-map.parquet"}, "schema-map-value-map-json.json"},
+		"pargo-prefix-flat":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-flat.parquet"}, "schema-pargo-prefix-flat-go.txt"},
+		"pargo-prefix-nested": {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-nested.parquet"}, "schema-pargo-prefix-nested-go.txt"},
 	}
 
 	for name, tc := range testCases {

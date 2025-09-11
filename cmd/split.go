@@ -23,14 +23,14 @@ type TrunkWriter struct {
 
 // SplitCmd is a kong command for split
 type SplitCmd struct {
+	FailOnInt96  bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
+	FileCount    int64  `xor:"RecordCount" help:"Generate this number of result files with potential empty ones"`
+	NameFormat   string `help:"Format to populate target file names" default:"result-%06d.parquet"`
+	ReadPageSize int    `help:"Page size to read from Parquet." default:"1000"`
+	RecordCount  int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
+	URI          string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
-	ReadPageSize int    `help:"Page size to read from Parquet." default:"1000"`
-	URI          string `arg:"" predictor:"file" help:"URI of Parquet file."`
-	FileCount    int64  `xor:"RecordCount" help:"Generate this number of result files with potential empty ones"`
-	RecordCount  int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
-	FailOnInt96  bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	NameFormat   string `help:"Format to populate target file names" default:"result-%06d.parquet"`
 
 	current TrunkWriter
 }

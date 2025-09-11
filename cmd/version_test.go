@@ -12,14 +12,14 @@ func Test_versionCmd(t *testing.T) {
 		cmd    VersionCmd
 		stdout string
 	}{
-		"plain":             {cmd: VersionCmd{false, false, false, false}, stdout: "v1.2.3\n"},
-		"plain-with-build":  {cmd: VersionCmd{false, false, true, false}, stdout: "v1.2.3\ntoday\n"},
-		"plain-with-source": {cmd: VersionCmd{false, false, false, true}, stdout: "v1.2.3\nUT\n"},
-		"plain-with-all":    {cmd: VersionCmd{false, true, false, false}, stdout: "v1.2.3\ntoday\nUT\n"},
-		"json":              {cmd: VersionCmd{true, false, false, false}, stdout: `{"Version":"v1.2.3"}` + "\n"},
-		"json-with-build":   {cmd: VersionCmd{true, false, true, false}, stdout: `{"Version":"v1.2.3","BuildTime":"today"}` + "\n"},
-		"json-with-source":  {cmd: VersionCmd{true, false, false, true}, stdout: `{"Version":"v1.2.3","Source":"UT"}` + "\n"},
-		"json-with-all":     {cmd: VersionCmd{true, true, false, false}, stdout: `{"Version":"v1.2.3","BuildTime":"today","Source":"UT"}` + "\n"},
+		"plain":             {cmd: VersionCmd{JSON: false, All: false, BuildTime: false, Source: false}, stdout: "v1.2.3\n"},
+		"plain-with-build":  {cmd: VersionCmd{JSON: false, All: false, BuildTime: true, Source: false}, stdout: "v1.2.3\ntoday\n"},
+		"plain-with-source": {cmd: VersionCmd{JSON: false, All: false, BuildTime: false, Source: true}, stdout: "v1.2.3\nUT\n"},
+		"plain-with-all":    {cmd: VersionCmd{JSON: false, All: true, BuildTime: false, Source: false}, stdout: "v1.2.3\ntoday\nUT\n"},
+		"json":              {cmd: VersionCmd{JSON: true, All: false, BuildTime: false, Source: false}, stdout: `{"Version":"v1.2.3"}` + "\n"},
+		"json-with-build":   {cmd: VersionCmd{JSON: true, All: false, BuildTime: true, Source: false}, stdout: `{"Version":"v1.2.3","BuildTime":"today"}` + "\n"},
+		"json-with-source":  {cmd: VersionCmd{JSON: true, All: false, BuildTime: false, Source: true}, stdout: `{"Version":"v1.2.3","Source":"UT"}` + "\n"},
+		"json-with-all":     {cmd: VersionCmd{JSON: true, All: true, BuildTime: false, Source: false}, stdout: `{"Version":"v1.2.3","BuildTime":"today","Source":"UT"}` + "\n"},
 	}
 
 	version = "v1.2.3"

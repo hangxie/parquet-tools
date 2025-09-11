@@ -20,17 +20,17 @@ import (
 
 // CatCmd is a kong command for cat
 type CatCmd struct {
-	pio.ReadOption
-	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
-	SkipPageSize int64   `help:"deprecated, will be removed in future release." default:"100000"`
+	Concurrent   bool    `help:"enable concurrent output" default:"false"`
+	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
+	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
 	Limit        uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
+	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	ReadPageSize int     `help:"Page size to read from Parquet." default:"1000"`
 	SampleRatio  float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
-	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
-	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
+	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
+	SkipPageSize int64   `help:"deprecated, will be removed in future release." default:"100000"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
-	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	Concurrent   bool    `help:"enable concurrent output" default:"false"`
+	pio.ReadOption
 
 	// reusable CSV writer components
 	csvBuf    *strings.Builder

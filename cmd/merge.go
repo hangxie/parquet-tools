@@ -15,13 +15,13 @@ import (
 
 // MergeCmd is a kong command for merge
 type MergeCmd struct {
-	pio.ReadOption
-	pio.WriteOption
+	Concurrent   bool     `help:"enable concurrent processing" default:"false"`
+	FailOnInt96  bool     `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	ReadPageSize int      `help:"Page size to read from Parquet." default:"1000"`
 	Source       []string `short:"s" help:"Files to be merged."`
 	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
-	FailOnInt96  bool     `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	Concurrent   bool     `help:"enable concurrent processing" default:"false"`
+	pio.ReadOption
+	pio.WriteOption
 }
 
 func (c MergeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
