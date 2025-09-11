@@ -24,11 +24,11 @@ import (
 
 // ReadOption includes options for read operation
 type ReadOption struct {
-	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
-	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
-	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
-	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
+	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
+	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
+	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
+	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
 }
 
 func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {

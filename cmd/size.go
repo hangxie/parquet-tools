@@ -16,10 +16,10 @@ var (
 
 // SizeCmd is a kong command for size
 type SizeCmd struct {
-	pio.ReadOption
 	Query string `short:"q" help:"Size to query (raw/uncompressed/footer/all)." enum:"raw,uncompressed,footer,all" default:"raw"`
 	JSON  bool   `short:"j" help:"Output in JSON format." default:"false"`
 	URI   string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	pio.ReadOption
 }
 
 // Run does actual size job

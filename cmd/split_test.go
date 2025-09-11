@@ -20,14 +20,14 @@ func Test_SplitCmd_Run_error(t *testing.T) {
 		cmd    SplitCmd
 		errMsg string
 	}{
-		"page-size":   {SplitCmd{rOpt, wOpt, 0, "", 0, 0, false, "dummy", tw}, "invalid read page size"},
-		"no-count":    {SplitCmd{rOpt, wOpt, 1000, "", 0, 0, false, "dummy", tw}, "needs either --file-count or --record-count"},
-		"name-format": {SplitCmd{rOpt, wOpt, 1000, "", 0, 10, false, "ut-%%parquet", tw}, "lack of useable verb"},
-		"source-file": {SplitCmd{rOpt, wOpt, 1000, "does/not/exist", 0, 10, false, "%d", tw}, "failed to open"},
-		"int96":       {SplitCmd{rOpt, wOpt, 1000, "../testdata/all-types.parquet", 0, 10, true, "%d", tw}, "has type INT96 which is not supported"},
-		"target-file": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 2, false, "dummy://%d.parquet", tw}, "unknown location scheme"},
-		"first-write": {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 1, false, "s3://target/%d.parquet", tw}, "failed to close"},
-		"last-write":  {SplitCmd{rOpt, wOpt, 1000, "../testdata/good.parquet", 0, 3, false, "s3://target/%d.parquet", tw}, "failed to close"},
+		"page-size":   {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 0, RecordCount: 0, URI: "dummy", current: tw}, "invalid read page size"},
+		"no-count":    {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 1000, RecordCount: 0, URI: "dummy", current: tw}, "needs either --file-count or --record-count"},
+		"name-format": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%%parquet", ReadPageSize: 1000, RecordCount: 10, URI: "", current: tw}, "lack of useable verb"},
+		"source-file": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "%d", ReadPageSize: 1000, RecordCount: 10, URI: "does/not/exist", current: tw}, "failed to open"},
+		"int96":       {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: true, FileCount: 0, NameFormat: "%d", ReadPageSize: 1000, RecordCount: 10, URI: "../testdata/all-types.parquet", current: tw}, "has type INT96 which is not supported"},
+		"target-file": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "dummy://%d.parquet", ReadPageSize: 1000, RecordCount: 2, URI: "../testdata/good.parquet", current: tw}, "unknown location scheme"},
+		"first-write": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 1, URI: "../testdata/good.parquet", current: tw}, "failed to close"},
+		"last-write":  {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "../testdata/good.parquet", current: tw}, "failed to close"},
 	}
 
 	for name, tc := range testCases {
@@ -48,27 +48,27 @@ func Test_SplitCmd_Run_good(t *testing.T) {
 		result map[string]int64
 	}{
 		"record-count": {
-			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 0, 3, false, "ut-%d.parquet", TrunkWriter{}},
+			SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "all-types.parquet", current: TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 3, "ut-2.parquet": 3, "ut-3.parquet": 1},
 		},
 		"file-count": {
-			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 3, 0, false, "ut-%d.parquet", TrunkWriter{}},
+			SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 4, "ut-1.parquet": 3, "ut-2.parquet": 3},
 		},
 		"one-result-record-count": {
-			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 0, 20, false, "ut-%d.parquet", TrunkWriter{}},
+			SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 20, URI: "all-types.parquet", current: TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 10},
 		},
 		"one-result-filecount": {
-			SplitCmd{rOpt, wOpt, 1000, "all-types.parquet", 1, 0, false, "ut-%d.parquet", TrunkWriter{}},
+			SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 1, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
 			map[string]int64{"ut-0.parquet": 10},
 		},
 		"empty-record-count": {
-			SplitCmd{rOpt, wOpt, 1000, "empty.parquet", 0, 3, false, "ut-%d.parquet", TrunkWriter{}},
+			SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "empty.parquet", current: TrunkWriter{}},
 			map[string]int64{},
 		},
 		"empty-file-count": {
-			SplitCmd{rOpt, wOpt, 1000, "empty.parquet", 3, 0, false, "ut-%d.parquet", TrunkWriter{}},
+			SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "empty.parquet", current: TrunkWriter{}},
 			map[string]int64{},
 		},
 	}

@@ -21,8 +21,7 @@ Once it is installed:
 $ parquet-tools
 Usage: parquet-tools <command>
 
-A utility to inspect Parquet files, for full usage see
-https://github.com/hangxie/parquet-tools/blob/main/README.md
+A utility to inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md
 
 Flags:
   -h, --help    Show context-sensitive help.
@@ -201,13 +200,13 @@ Arguments:
 Flags:
   -h, --help                        Show context-sensitive help.
 
-      --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
-      --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
-      --http-extra-headers=         (HTTP URI only) extra HTTP headers.
-      --object-version=""           (S3, GCS, and Azure only) object version.
-      --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
   -b, --base64                      deprecated, will be removed in future version
       --fail-on-int96               fail command if INT96 data type is present.
+      --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
+      --http-extra-headers=         (HTTP URI only) extra HTTP headers.
+      --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
+      --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
+      --object-version=""           (S3, GCS, and Azure only) object version.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).

@@ -17,9 +17,9 @@ var (
 
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
-	pio.ReadOption
 	Format string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
 	URI    string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	pio.ReadOption
 }
 
 // Run does actual schema job

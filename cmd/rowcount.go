@@ -8,8 +8,8 @@ import (
 
 // RowCountCmd is a kong command for rowcount
 type RowCountCmd struct {
-	pio.ReadOption
 	URI string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	pio.ReadOption
 }
 
 // Run does actual rowcount job

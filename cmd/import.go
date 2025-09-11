@@ -18,12 +18,12 @@ import (
 
 // ImportCmd is a kong command for import
 type ImportCmd struct {
-	pio.WriteOption
-	Source     string `required:"" short:"s" predictor:"file" help:"Source file name."`
 	Format     string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
 	Schema     string `required:"" short:"m" predictor:"file" help:"Schema file name."`
 	SkipHeader bool   `help:"Skip first line of CSV files" default:"false"`
+	Source     string `required:"" short:"s" predictor:"file" help:"Source file name."`
 	URI        string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	pio.WriteOption
 }
 
 // Run does actual import job

@@ -20,15 +20,15 @@ func Test_MergeCmd_Run_error(t *testing.T) {
 		cmd    MergeCmd
 		errMsg string
 	}{
-		"pagesize-too-small":  {MergeCmd{rOpt, wOpt, 0, []string{"src"}, "dummy", false, true}, "invalid read page size"},
-		"source-need-more":    {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet"}, "dummy", false, false}, "needs at least 2 source files"},
-		"source-non-existent": {MergeCmd{rOpt, wOpt, 10, []string{"does/not/exist1", "does/not/exist2"}, "dummy", false, true}, "no such file or directory"},
-		"source-not-parquet":  {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/not-a-parquet-file", "../testdata/not-a-parquet-file"}, "dummy", false, false}, "failed to read from"},
-		"source-diff-schema":  {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/empty.parquet"}, "dummy", false, true}, "does not have same schema"},
-		"target-file":         {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, "://uri", false, false}, "unable to parse file location"},
-		"target-compression":  {MergeCmd{rOpt, pio.WriteOption{}, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, filepath.Join(tempDir, "dummy"), false, true}, "not a valid CompressionCode"},
-		"target-write":        {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/good.parquet", "../testdata/good.parquet"}, "s3://target", false, false}, "failed to close"},
-		"int96":               {MergeCmd{rOpt, wOpt, 10, []string{"../testdata/all-types.parquet", "../testdata/all-types.parquet"}, "dummy", true, true}, "type INT96 which is not supported"},
+		"pagesize-too-small":  {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 0, Source: []string{"src"}, URI: "dummy"}, "invalid read page size"},
+		"source-need-more":    {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/good.parquet"}, URI: "dummy"}, "needs at least 2 source files"},
+		"source-non-existent": {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"does/not/exist1", "does/not/exist2"}, URI: "dummy"}, "no such file or directory"},
+		"source-not-parquet":  {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/not-a-parquet-file", "../testdata/not-a-parquet-file"}, URI: "dummy"}, "failed to read from"},
+		"source-diff-schema":  {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/empty.parquet"}, URI: "dummy"}, "does not have same schema"},
+		"target-file":         {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: "://uri"}, "unable to parse file location"},
+		"target-compression":  {MergeCmd{ReadOption: rOpt, WriteOption: pio.WriteOption{}, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
+		"target-write":        {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: "s3://target"}, "failed to close"},
+		"int96":               {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/all-types.parquet", "../testdata/all-types.parquet"}, URI: "dummy"}, "type INT96 which is not supported"},
 	}
 
 	for name, tc := range testCases {
@@ -47,10 +47,10 @@ func Test_MergeCmd_Run_good(t *testing.T) {
 		cmd      MergeCmd
 		rowCount int64
 	}{
-		"good":      {MergeCmd{rOpt, wOpt, 10, []string{"good.parquet", "good.parquet"}, "", false, true}, 6},
-		"all-types": {MergeCmd{rOpt, wOpt, 10, []string{"all-types.parquet", "all-types.parquet"}, "", false, false}, 20},
-		"empty":     {MergeCmd{rOpt, wOpt, 10, []string{"empty.parquet", "empty.parquet"}, "", false, true}, 0},
-		"top-tag":   {MergeCmd{rOpt, wOpt, 10, []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, "", false, false}, 6},
+		"good":      {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"good.parquet", "good.parquet"}, URI: ""}, 6},
+		"all-types": {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"all-types.parquet", "all-types.parquet"}, URI: ""}, 20},
+		"empty":     {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"empty.parquet", "empty.parquet"}, URI: ""}, 0},
+		"top-tag":   {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, URI: ""}, 6},
 	}
 	tempDir := t.TempDir()
 
@@ -77,7 +77,7 @@ func Test_MergeCmd_Run_good_repeat(t *testing.T) {
 	tempDir := t.TempDir()
 	source := "../testdata/all-types.parquet"
 
-	cmd := MergeCmd{rOpt, wOpt, 10, []string{source, source}, "", false, true}
+	cmd := MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{source, source}, URI: ""}
 	cmd.URI = filepath.Join(tempDir, "1.parquet")
 	require.Nil(t, cmd.Run())
 
