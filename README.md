@@ -102,6 +102,9 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
       - [Print All Information](#print-all-information)
       - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
       - [Print Version in JSON Format](#print-version-in-json-format)
+    - [Geo Data Type Support](#geo-data-type-support)
+      - [GEOGRAPHY/GEOMETRY vs GeoParquet](#geographygeometry-vs-geoparquet)
+      - [Geospatial Format](#geospatial-format)
   - [Credit](#credit)
   - [License](#license)
 
@@ -202,6 +205,7 @@ Flags:
 
   -b, --base64                      deprecated, will be removed in future version
       --fail-on-int96               fail command if INT96 data type is present.
+      --geo-format="geojson"        experimental, output format (geojson/hex/base64) for geospatial fields
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
       --http-extra-headers=         (HTTP URI only) extra HTTP headers.
       --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
@@ -934,6 +938,47 @@ $ parquet-tools version --build-time --json
 ```bash
 $ parquet-tools version -j
 {"Version":"v1.34.0"}
+```
+
+### Geo Data Type Support
+
+> [!WARNING]
+> This is an experimental feature that still under development, functionalities may be changed in the future.
+
+`parquet-tools` recognize `GEOGRAPHY` and `GEOMETRY` logical types:
+
+```bash
+$ parquet-tools schema --format go testdata/geospatial.parquet
+type Parquet_go_root struct {
+Geometry string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
+Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY"`
+}
+```
+
+#### GEOGRAPHY/GEOMETRY vs GeoParquet
+`parquet-tool` support `GEOGRAPHY` and `GEOMETRY` logical types, these types were introduced in [Apache Parquet Format 2.11.0](https://github.com/apache/parquet-format/releases/tag/apache-parquet-format-2.11.0). However, `parquet-tools` does not support [GeoParquet format](https://geoparquet.org/) as it does not provide schema information in parquet file itself, those fields in GeoParquet format file are just `BYTE_ARRAY`.
+
+#### Geospatial Format
+
+`parquet-tools` support different output formats for `GEOGRAPHY` and `GEOMETRY` types:
+* `geojson`: output in [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) format
+* `hex`: output raw data in hex format, plus crs/algorithm
+* `base64`: output raw data in base64 format, plus crs/algorithm
+
+You can use `--geo-format` option to change format in `cat` and `meta` commands, default is `geojson`.
+
+```bash
+$ parquet-tools cat --limit 1 testdata/geospatial.parquet
+[{"Geography":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"algorithm":"SPHERICAL","crs":"OGC:CRS84"},"type":"Feature"},"Geometry":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"crs":"OGC:CRS84"},"type":"Feature"}}]
+
+$ parquet-tools cat --limit 1 --geo-format geojson testdata/geospatial.parquet
+[{"Geography":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"algorithm":"SPHERICAL","crs":"OGC:CRS84"},"type":"Feature"},"Geometry":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"crs":"OGC:CRS84"},"type":"Feature"}}]
+
+$ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
+[{"Geography":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"},"Geometry":{"crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"}}]
+
+$ parquet-tools meta --geo-format base64 testdata/geospatial.parquet
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":4590,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1920,"UncompressedSize":2472,"NumValues":10,"NullCount":0,"MaxValue":{"crs":"OGC:CRS84","wkb_b64":"AQcAAAADAAAAAQEAAAAAAAAAAAAYQAAAAAAAABjAAQIAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhAAAAAAAAAGEABAwAAAAEAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhAAAAAAAAAAAAAAAAAAAAYQAAAAAAAABhAAAAAAAAAAAAAAAAAAAAYQAAAAAAAAAAAAAAAAAAAAAA="},"MinValue":{"crs":"OGC:CRS84","wkb_b64":"AQEAAAAAAAAAAAAAAAAAAAAAAAAA"},"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1711,"UncompressedSize":2118,"NumValues":10,"NullCount":0,"MaxValue":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_b64":"AQcAAAACAAAAAQEAAAAAAAAAAAAIQAAAAAAAACJAAQIAAAACAAAAAAAAAAAA4D8AAAAAAAD4PwAAAAAAABpAAAAAAAAAHkA="},"MinValue":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_b64":"AQEAAAAAAAAAAAAAAAAAAAAAAAAA"},"CompressionCodec":"SNAPPY"}]}]}
 ```
 
 ## Credit

@@ -1,0 +1,595 @@
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        0,
+        0
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        0,
+        0
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          0.5,
+          1.5
+        ],
+        [
+          1.5,
+          2.5
+        ]
+      ],
+      "type": "LineString"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "type": "LineString"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            0.5,
+            0.5
+          ],
+          [
+            2.5,
+            0.5
+          ],
+          [
+            2.5,
+            2.5
+          ],
+          [
+            0.5,
+            2.5
+          ],
+          [
+            0.5,
+            0.5
+          ]
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          3.5,
+          4.5
+        ],
+        [
+          4.5,
+          3.5
+        ]
+      ],
+      "type": "MultiPoint"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          3,
+          -3
+        ],
+        [
+          -3,
+          3
+        ]
+      ],
+      "type": "MultiPoint"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            0.5,
+            1.5
+          ],
+          [
+            4.5,
+            5.5
+          ]
+        ]
+      ],
+      "type": "MultiLineString"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            4,
+            0
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      ],
+      "type": "MultiLineString"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              5.5,
+              0.5
+            ],
+            [
+              5.5,
+              5.5
+            ],
+            [
+              0.5,
+              5.5
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              5.5,
+              0.5
+            ],
+            [
+              10.5,
+              0.5
+            ],
+            [
+              10.5,
+              5.5
+            ],
+            [
+              5.5,
+              5.5
+            ],
+            [
+              5.5,
+              0.5
+            ]
+          ]
+        ]
+      ],
+      "type": "MultiPolygon"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              0,
+              5
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              6,
+              6
+            ],
+            [
+              11,
+              6
+            ],
+            [
+              11,
+              11
+            ],
+            [
+              6,
+              11
+            ],
+            [
+              6,
+              6
+            ]
+          ]
+        ]
+      ],
+      "type": "MultiPolygon"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "geometries": [
+        {
+          "coordinates": [
+            3,
+            9
+          ],
+          "type": "Point"
+        },
+        {
+          "coordinates": [
+            [
+              0.5,
+              1.5
+            ],
+            [
+              6.5,
+              7.5
+            ]
+          ],
+          "type": "LineString"
+        }
+      ],
+      "type": "GeometryCollection"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "geometries": [
+        {
+          "coordinates": [
+            6,
+            -6
+          ],
+          "type": "Point"
+        },
+        {
+          "coordinates": [
+            [
+              0,
+              0
+            ],
+            [
+              6,
+              6
+            ]
+          ],
+          "type": "LineString"
+        },
+        {
+          "coordinates": [
+            [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                0
+              ],
+              [
+                6,
+                6
+              ],
+              [
+                0,
+                6
+              ],
+              [
+                0,
+                0
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      ],
+      "type": "GeometryCollection"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        3.5,
+        10.5
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        7,
+        -7
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          0.5,
+          1.5
+        ],
+        [
+          8.5,
+          9.5
+        ]
+      ],
+      "type": "LineString"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          16,
+          -8
+        ]
+      ],
+      "type": "LineString"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}
+{
+  "Geography": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            0.5,
+            0.5
+          ],
+          [
+            9.5,
+            0.5
+          ],
+          [
+            9.5,
+            9.5
+          ],
+          [
+            0.5,
+            9.5
+          ],
+          [
+            0.5,
+            0.5
+          ]
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {
+      "algorithm": "SPHERICAL",
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  },
+  "Geometry": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            9,
+            9
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {
+      "crs": "OGC:CRS84"
+    },
+    "type": "Feature"
+  }
+}

@@ -222,28 +222,35 @@ func (s *SchemaNode) updateTagFromConvertedType(tagMap map[string]string) {
 }
 
 func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
-	if s.LogicalType != nil {
-		if s.LogicalType.IsSetDECIMAL() {
-			tagMap["logicaltype"] = "DECIMAL"
-			tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
-			tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
-		} else if s.LogicalType.IsSetDATE() {
-			tagMap["logicaltype"] = "DATE"
-		} else if s.LogicalType.IsSetTIME() {
-			tagMap["logicaltype"] = "TIME"
-			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
-			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
-		} else if s.LogicalType.IsSetTIMESTAMP() {
-			tagMap["logicaltype"] = "TIMESTAMP"
-			tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
-			tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
-		} else if s.LogicalType.IsSetUUID() {
-			tagMap["logicaltype"] = "UUID"
-		} else if s.LogicalType.IsSetBSON() {
-			tagMap["logicaltype"] = "BSON"
-		} else if s.LogicalType.IsSetSTRING() {
-			tagMap["logicaltype"] = "STRING"
-		}
+	if s.LogicalType == nil {
+		return
+	}
+
+	switch {
+	case s.LogicalType.IsSetBSON():
+		tagMap["logicaltype"] = "BSON"
+	case s.LogicalType.IsSetDATE():
+		tagMap["logicaltype"] = "DATE"
+	case s.LogicalType.IsSetDECIMAL():
+		tagMap["logicaltype"] = "DECIMAL"
+		tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
+		tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
+	case s.LogicalType.IsSetGEOGRAPHY():
+		tagMap["logicaltype"] = "GEOGRAPHY"
+	case s.LogicalType.IsSetGEOMETRY():
+		tagMap["logicaltype"] = "GEOMETRY"
+	case s.LogicalType.IsSetSTRING():
+		tagMap["logicaltype"] = "STRING"
+	case s.LogicalType.IsSetTIME():
+		tagMap["logicaltype"] = "TIME"
+		tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIME.IsAdjustedToUTC)
+		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIME.Unit)
+	case s.LogicalType.IsSetTIMESTAMP():
+		tagMap["logicaltype"] = "TIMESTAMP"
+		tagMap["logicaltype.isadjustedtoutc"] = fmt.Sprint(s.LogicalType.TIMESTAMP.IsAdjustedToUTC)
+		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
+	case s.LogicalType.IsSetUUID():
+		tagMap["logicaltype"] = "UUID"
 	}
 }
 

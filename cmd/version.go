@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+
+	pio "github.com/hangxie/parquet-tools/internal/io"
 )
 
 var (
@@ -23,6 +25,7 @@ type VersionCmd struct {
 	All       bool `short:"a" help:"Output all version details." default:"false"`
 	BuildTime bool `short:"b" help:"Output build time." default:"false"`
 	Source    bool `short:"s" help:"Source of the executable." default:"false"`
+	pio.ReadOption
 }
 
 // Run does actual version job
