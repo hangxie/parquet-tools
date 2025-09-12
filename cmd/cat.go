@@ -12,6 +12,7 @@ import (
 	"github.com/hangxie/parquet-go/v2/marshal"
 	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/hangxie/parquet-go/v2/schema"
+	"github.com/hangxie/parquet-go/v2/types"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/internal/io"
@@ -23,6 +24,7 @@ type CatCmd struct {
 	Concurrent   bool    `help:"enable concurrent output" default:"false"`
 	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
+	GeoFormat    string  `help:"experimental, output format (geojson/hex/base64) for geospatial fields" enum:"geojson,hex,base64" default:"geojson"`
 	Limit        uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	ReadPageSize int     `help:"Page size to read from Parquet." default:"1000"`
@@ -51,6 +53,20 @@ var delimiter = map[string]struct {
 
 // Run does actual cat job
 func (c CatCmd) Run() error {
+	switch c.GeoFormat {
+	case "hex":
+		types.SetGeometryJSONMode(types.GeospatialModeHex)
+		types.SetGeographyJSONMode(types.GeospatialModeHex)
+	case "base64":
+		types.SetGeometryJSONMode(types.GeospatialModeBase64)
+		types.SetGeographyJSONMode(types.GeospatialModeBase64)
+	case "geojson", "":
+		types.SetGeometryJSONMode(types.GeospatialModeGeoJSON)
+		types.SetGeographyJSONMode(types.GeospatialModeGeoJSON)
+	default:
+		return fmt.Errorf("unknown geo format: %s", c.GeoFormat)
+	}
+
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -89,6 +105,9 @@ func (c *CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) 
 	fieldList := make([]string, len(schemaRoot.Children))
 	for index, child := range schemaRoot.Children {
 		if len(child.Children) != 0 {
+			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
+		}
+		if child.LogicalType != nil && (child.LogicalType.IsSetGEOGRAPHY() || child.LogicalType.IsSetGEOMETRY()) {
 			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
 		fieldList[index] = child.ExNamePath[len(child.ExNamePath)-1]

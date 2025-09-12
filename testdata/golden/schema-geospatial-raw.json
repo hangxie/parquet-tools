@@ -1,0 +1,31 @@
+{
+  "repetition_type": "REQUIRED",
+  "name": "parquet_go_root",
+  "num_children": 2,
+  "children": [
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Geometry",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "GEOMETRY": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Geography",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "GEOGRAPHY": {}
+      }
+    }
+  ]
+}

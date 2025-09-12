@@ -1,0 +1,162 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 10,
+      "TotalByteSize": 4590,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Geometry"
+          ],
+          "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=GEOMETRY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 1920,
+          "UncompressedSize": 2472,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": {
+            "geometry": {
+              "geometries": [
+                {
+                  "coordinates": [
+                    6,
+                    -6
+                  ],
+                  "type": "Point"
+                },
+                {
+                  "coordinates": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      6,
+                      6
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                {
+                  "coordinates": [
+                    [
+                      [
+                        0,
+                        0
+                      ],
+                      [
+                        6,
+                        0
+                      ],
+                      [
+                        6,
+                        6
+                      ],
+                      [
+                        0,
+                        6
+                      ],
+                      [
+                        0,
+                        0
+                      ]
+                    ]
+                  ],
+                  "type": "Polygon"
+                }
+              ],
+              "type": "GeometryCollection"
+            },
+            "properties": {
+              "crs": "OGC:CRS84"
+            },
+            "type": "Feature"
+          },
+          "MinValue": {
+            "geometry": {
+              "coordinates": [
+                0,
+                0
+              ],
+              "type": "Point"
+            },
+            "properties": {
+              "crs": "OGC:CRS84"
+            },
+            "type": "Feature"
+          },
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Geography"
+          ],
+          "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=GEOGRAPHY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 1711,
+          "UncompressedSize": 2118,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": {
+            "geometry": {
+              "geometries": [
+                {
+                  "coordinates": [
+                    3,
+                    9
+                  ],
+                  "type": "Point"
+                },
+                {
+                  "coordinates": [
+                    [
+                      0.5,
+                      1.5
+                    ],
+                    [
+                      6.5,
+                      7.5
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              ],
+              "type": "GeometryCollection"
+            },
+            "properties": {
+              "algorithm": "SPHERICAL",
+              "crs": "OGC:CRS84"
+            },
+            "type": "Feature"
+          },
+          "MinValue": {
+            "geometry": {
+              "coordinates": [
+                0,
+                0
+              ],
+              "type": "Point"
+            },
+            "properties": {
+              "algorithm": "SPHERICAL",
+              "crs": "OGC:CRS84"
+            },
+            "type": "Feature"
+          },
+          "CompressionCodec": "SNAPPY"
+        }
+      ]
+    }
+  ]
+}

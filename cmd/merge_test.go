@@ -156,6 +156,7 @@ func Test_MergeCmd_Run_optional_list(t *testing.T) {
 		ReadPageSize: 1000,
 		SampleRatio:  1.0,
 		Format:       "json",
+		GeoFormat:    "geojson",
 		URI:          resultFile,
 	}
 	stdout, _ := captureStdoutStderr(func() {

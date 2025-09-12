@@ -48,6 +48,9 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 		"json-map-value-map":  {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-value-map.parquet"}, "schema-map-value-map-json.json"},
 		"pargo-prefix-flat":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-flat.parquet"}, "schema-pargo-prefix-flat-go.txt"},
 		"pargo-prefix-nested": {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-nested.parquet"}, "schema-pargo-prefix-nested-go.txt"},
+		"geospatial-go":       {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "geospatial.parquet"}, "schema-geospatial-go.txt"},
+		"geospatial-json":     {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "geospatial.parquet"}, "schema-geospatial-json.json"},
+		"geospatial-raw":      {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"}, "schema-geospatial-raw.json"},
 	}
 
 	for name, tc := range testCases {
