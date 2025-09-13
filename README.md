@@ -729,6 +729,8 @@ Schema will output converted type and logical type when they are present in the 
 * repetitiontype=REQUIRED
 * type=STRUCT
 
+Schema does not output `omitstat` tag as there is no reliable way to determine it.
+
 #### Raw Format
 
 Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format.
