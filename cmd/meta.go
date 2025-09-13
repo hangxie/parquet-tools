@@ -20,7 +20,6 @@ import (
 type MetaCmd struct {
 	Base64      bool   `name:"base64" short:"b" help:"deprecated, will be removed in future version" default:"false"`
 	FailOnInt96 bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	GeoFormat   string `help:"experimental, output format (geojson/hex/base64) for geospatial fields" enum:"geojson,hex,base64" default:"geojson"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }
@@ -55,20 +54,6 @@ type parquetMeta struct {
 
 // Run does actual meta job
 func (c MetaCmd) Run() error {
-	switch c.GeoFormat {
-	case "hex":
-		types.SetGeometryJSONMode(types.GeospatialModeHex)
-		types.SetGeographyJSONMode(types.GeospatialModeHex)
-	case "base64":
-		types.SetGeometryJSONMode(types.GeospatialModeBase64)
-		types.SetGeographyJSONMode(types.GeospatialModeBase64)
-	case "geojson", "":
-		types.SetGeometryJSONMode(types.GeospatialModeGeoJSON)
-		types.SetGeographyJSONMode(types.GeospatialModeGeoJSON)
-	default:
-		return fmt.Errorf("unknown geo format: %s", c.GeoFormat)
-	}
-
 	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
@@ -157,6 +142,20 @@ func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*par
 
 	if col.MetaData.Statistics != nil {
 		c.addStatistics(&column, col.MetaData.Statistics, schemaNode)
+	}
+
+	// use bounding box for geospatial data if geospatial statistics exists
+	if schemaNode.LogicalType != nil &&
+		(schemaNode.LogicalType.IsSetGEOMETRY() || schemaNode.LogicalType.IsSetGEOGRAPHY()) &&
+		col.MetaData.GeospatialStatistics != nil {
+		column.MinValue = []float64{
+			col.MetaData.GeospatialStatistics.Bbox.Xmin,
+			col.MetaData.GeospatialStatistics.Bbox.Ymin,
+		}
+		column.MaxValue = []float64{
+			col.MetaData.GeospatialStatistics.Bbox.Xmax,
+			col.MetaData.GeospatialStatistics.Bbox.Ymax,
+		}
 	}
 
 	return column
@@ -261,10 +260,6 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 			return types.ConvertUUIDValue(value)
 		case schemaNode.LogicalType.IsSetBSON():
 			return types.ConvertBSONLogicalValue(value)
-		case schemaNode.LogicalType.IsSetGEOMETRY():
-			return types.ConvertGeometryLogicalValue(value, schemaNode.LogicalType.GetGEOMETRY())
-		case schemaNode.LogicalType.IsSetGEOGRAPHY():
-			return types.ConvertGeographyLogicalValue(value, schemaNode.LogicalType.GetGEOGRAPHY())
 		}
 	}
 

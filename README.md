@@ -205,7 +205,6 @@ Flags:
 
   -b, --base64                      deprecated, will be removed in future version
       --fail-on-int96               fail command if INT96 data type is present.
-      --geo-format="geojson"        experimental, output format (geojson/hex/base64) for geospatial fields
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
       --http-extra-headers=         (HTTP URI only) extra HTTP headers.
       --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
@@ -965,7 +964,7 @@ Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPH
 * `hex`: output raw data in hex format, plus crs/algorithm
 * `base64`: output raw data in base64 format, plus crs/algorithm
 
-You can use `--geo-format` option to change format in `cat` and `meta` commands, default is `geojson`.
+You can use `--geo-format` option to change format of `cat` command output, default is `geojson`.
 
 ```bash
 $ parquet-tools cat --limit 1 testdata/geospatial.parquet
@@ -976,9 +975,13 @@ $ parquet-tools cat --limit 1 --geo-format geojson testdata/geospatial.parquet
 
 $ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
 [{"Geography":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"},"Geometry":{"crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"}}]
+```
 
-$ parquet-tools meta --geo-format base64 testdata/geospatial.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":4590,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1920,"UncompressedSize":2472,"NumValues":10,"NullCount":0,"MaxValue":{"crs":"OGC:CRS84","wkb_b64":"AQcAAAADAAAAAQEAAAAAAAAAAAAYQAAAAAAAABjAAQIAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhAAAAAAAAAGEABAwAAAAEAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhAAAAAAAAAAAAAAAAAAAAYQAAAAAAAABhAAAAAAAAAAAAAAAAAAAAYQAAAAAAAAAAAAAAAAAAAAAA="},"MinValue":{"crs":"OGC:CRS84","wkb_b64":"AQEAAAAAAAAAAAAAAAAAAAAAAAAA"},"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1711,"UncompressedSize":2118,"NumValues":10,"NullCount":0,"MaxValue":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_b64":"AQcAAAACAAAAAQEAAAAAAAAAAAAIQAAAAAAAACJAAQIAAAACAAAAAAAAAAAA4D8AAAAAAAD4PwAAAAAAABpAAAAAAAAAHkA="},"MinValue":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_b64":"AQEAAAAAAAAAAAAAAAAAAAAAAAAA"},"CompressionCodec":"SNAPPY"}]}]}
+`MinValue` and `MaxValue` of geospatial columns will be bounding box value if Geospatial Statistics presents, note that `MinValue` and `MaxValue` of underlying `BYTE_ARRAY` value do not make any sense to these columns.
+
+```bash
+$ parquet-tools meta testdata/geospatial.parquet
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":4590,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1920,"UncompressedSize":2472,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1711,"UncompressedSize":2118,"NumValues":10,"NullCount":0,"MaxValue":[10.5,10.5],"MinValue":[0,0],"CompressionCodec":"SNAPPY"}]}]}
 ```
 
 ## Credit
