@@ -13,7 +13,7 @@ import (
 
 type Geospatial struct {
 	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
-	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY"`
+	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, omitstats=true"`
 }
 
 func main() {

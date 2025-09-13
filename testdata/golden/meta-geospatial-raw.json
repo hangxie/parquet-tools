@@ -1,0 +1,52 @@
+{
+  "NumRowGroups": 1,
+  "RowGroups": [
+    {
+      "NumRows": 10,
+      "TotalByteSize": 3272,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "Geometry"
+          ],
+          "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=GEOMETRY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 1920,
+          "UncompressedSize": 2472,
+          "NumValues": 10,
+          "NullCount": 0,
+          "MaxValue": [
+            16,
+            11
+          ],
+          "MinValue": [
+            -3,
+            -8
+          ],
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "Geography"
+          ],
+          "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=GEOGRAPHY",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 393,
+          "UncompressedSize": 800,
+          "NumValues": 10,
+          "CompressionCodec": "SNAPPY"
+        }
+      ]
+    }
+  ]
+}
