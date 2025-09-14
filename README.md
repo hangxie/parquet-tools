@@ -729,7 +729,7 @@ Schema will output converted type and logical type when they are present in the 
 * repetitiontype=REQUIRED
 * type=STRUCT
 
-Schema does not output `omitstat` tag as there is no reliable way to determine it.
+Schema does not output `omitstats` tag as there is no reliable way to determine it.
 
 #### Raw Format
 
