@@ -147,7 +147,7 @@ func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*par
 	// use bounding box for geospatial data if geospatial statistics exists
 	if schemaNode.LogicalType != nil &&
 		(schemaNode.LogicalType.IsSetGEOMETRY() || schemaNode.LogicalType.IsSetGEOGRAPHY()) &&
-		col.MetaData.GeospatialStatistics != nil {
+		col.MetaData.GeospatialStatistics != nil && col.MetaData.GeospatialStatistics.Bbox != nil {
 		column.MinValue = []float64{
 			col.MetaData.GeospatialStatistics.Bbox.Xmin,
 			col.MetaData.GeospatialStatistics.Bbox.Ymin,
