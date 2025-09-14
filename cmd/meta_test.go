@@ -168,8 +168,9 @@ func Test_MetaCmd_Run_error(t *testing.T) {
 		cmd    MetaCmd
 		errMsg string
 	}{
-		"non-existent": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "file/does/not/exist"}, "no such file or directory"},
-		"no-int96":     {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: true, URI: "../testdata/all-types.parquet"}, "type INT96 which is not supported"},
+		"non-existent":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "file/does/not/exist"}, "no such file or directory"},
+		"no-int96":       {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: true, URI: "../testdata/all-types.parquet"}, "type INT96 which is not supported"},
+		"nan-json-error": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "../testdata/nan.parquet"}, "json: unsupported value: NaN"},
 	}
 
 	for name, tc := range testCases {
