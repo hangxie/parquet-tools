@@ -17,6 +17,9 @@
       "Tag": "name=Float, type=FLOAT"
     },
     {
+      "Tag": "name=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2"
+    },
+    {
       "Tag": "name=Double, type=DOUBLE"
     },
     {

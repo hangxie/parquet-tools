@@ -4,6 +4,7 @@ Int32 int32 `parquet:"name=Int32, type=INT32"`
 Int64 int64 `parquet:"name=Int64, type=INT64"`
 Int96 string `parquet:"name=Int96, type=INT96"`
 Float float32 `parquet:"name=Float, type=FLOAT"`
+Float16Val string `parquet:"name=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2"`
 Double float64 `parquet:"name=Double, type=DOUBLE"`
 ByteArray string `parquet:"name=ByteArray, type=BYTE_ARRAY"`
 Enum string `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"`

@@ -260,6 +260,8 @@ func decodeMinMaxValue(value any, schemaNode *pschema.SchemaNode) any {
 			return types.ConvertUUIDValue(value)
 		case schemaNode.LogicalType.IsSetBSON():
 			return types.ConvertBSONLogicalValue(value)
+		case schemaNode.LogicalType.IsSetFLOAT16():
+			return types.ConvertFloat16LogicalValue(value)
 		}
 	}
 

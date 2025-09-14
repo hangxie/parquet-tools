@@ -1,7 +1,7 @@
 {
   "repetition_type": "REQUIRED",
   "name": "parquet_go_root",
-  "num_children": 48,
+  "num_children": 49,
   "children": [
     {
       "type": "BOOLEAN",
@@ -47,6 +47,18 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0
+    },
+    {
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "type_length": 2,
+      "repetition_type": "REQUIRED",
+      "name": "Float16Val",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "FLOAT16": {}
+      }
     },
     {
       "type": "DOUBLE",
