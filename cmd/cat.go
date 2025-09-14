@@ -150,7 +150,10 @@ func (c *CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, e
 func (c *CatCmd) outputSingleRow(rowStruct any, fieldList []string) error {
 	switch c.Format {
 	case "json", "jsonl":
-		buf, _ := json.Marshal(rowStruct)
+		buf, err := json.Marshal(rowStruct)
+		if err != nil {
+			return err
+		}
 		fmt.Print(string(buf))
 	case "csv", "tsv":
 		flatValues := rowStruct.(map[string]any)
