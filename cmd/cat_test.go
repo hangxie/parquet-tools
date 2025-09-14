@@ -93,15 +93,15 @@ func Test_CatCmd_Run_good(t *testing.T) {
 }
 
 func Benchmark_CatCmd_Run(b *testing.B) {
-	savedStdout, savedStderr := os.Stdout, os.Stderr
+	// savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
 		panic(err)
 	}
 	os.Stdout = devNull
 	defer func() {
-		os.Stdout, os.Stderr = savedStdout, savedStderr
-		_ = devNull.Close()
+		// os.Stdout, os.Stderr = savedStdout, savedStderr
+		// _ = devNull.Close()
 	}()
 
 	cmd := CatCmd{
@@ -126,6 +126,7 @@ func Benchmark_CatCmd_Run(b *testing.B) {
 
 	cmd.Format = "csv"
 	cmd.URI = "../build/flat.parquet"
+	cmd.Concurrent = true
 	b.Run("csv", func(b *testing.B) {
 		for b.Loop() {
 			require.NoError(b, cmd.Run())
@@ -141,15 +142,16 @@ func Test_CatCmd_encoder_context_cancel(t *testing.T) {
 
 	// Create channels - don't buffer them to ensure blocking behavior
 	rowChan := make(chan any)
-	outputChan := make(chan any)
+	outputChan := make(chan string)
 
 	// Create a minimal schema handler
 	schemaHandler := &schema.SchemaHandler{}
+	fieldList := []string{"field1", "field2"}
 
 	// Start encoder in a goroutine
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- cmd.encoder(ctx, rowChan, outputChan, schemaHandler)
+		errChan <- cmd.encoder(ctx, rowChan, outputChan, schemaHandler, fieldList)
 	}()
 
 	// Cancel the context immediately - encoder should be blocked on reading from rowChan
@@ -171,12 +173,12 @@ func Test_CatCmd_printer_context_cancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create unbuffered output channel so printer blocks on reading
-	outputChan := make(chan any)
+	outputChan := make(chan string)
 
 	// Start printer in a goroutine, capture its output
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- cmd.printer(ctx, outputChan, nil)
+		errChan <- cmd.printer(ctx, outputChan)
 	}()
 
 	// Cancel the context immediately - printer should be blocked on reading from outputChan
