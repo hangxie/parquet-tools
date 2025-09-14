@@ -15,7 +15,7 @@ func Test_SizeCmd_Run_error(t *testing.T) {
 		errMsg string
 	}{
 		"non-existent-file": {SizeCmd{URI: "file/does/not/exist"}, "no such file or directory"},
-		"invalid-query":     {SizeCmd{Query: "invalid", URI: "../testdata/all-types.parquet"}, "unknown query type"},
+		"invalid-query":     {SizeCmd{Query: "invalid", URI: "../testdata/good.parquet"}, "unknown query type"},
 	}
 
 	for name, tc := range testCases {
@@ -33,14 +33,14 @@ func Test_SizeCmd_Run_good(t *testing.T) {
 		cmd    SizeCmd
 		stdout string
 	}{
-		"raw":               {SizeCmd{ReadOption: rOpt, Query: "raw", JSON: false, URI: "../testdata/all-types.parquet"}, "19195\n"},
-		"raw-json":          {SizeCmd{ReadOption: rOpt, Query: "raw", JSON: true, URI: "../testdata/all-types.parquet"}, `{"Raw":19195}` + "\n"},
-		"uncompressed":      {SizeCmd{ReadOption: rOpt, Query: "uncompressed", JSON: false, URI: "../testdata/all-types.parquet"}, "28020\n"},
-		"uncompressed-json": {SizeCmd{ReadOption: rOpt, Query: "uncompressed", JSON: true, URI: "../testdata/all-types.parquet"}, `{"Uncompressed":28020}` + "\n"},
-		"footer":            {SizeCmd{ReadOption: rOpt, Query: "footer", JSON: false, URI: "../testdata/all-types.parquet"}, "7057\n"},
-		"footer-json":       {SizeCmd{ReadOption: rOpt, Query: "footer", JSON: true, URI: "../testdata/all-types.parquet"}, `{"Footer":7057}` + "\n"},
-		"all":               {SizeCmd{ReadOption: rOpt, Query: "all", JSON: false, URI: "../testdata/all-types.parquet"}, "19195 28020 7057\n"},
-		"all-json":          {SizeCmd{ReadOption: rOpt, Query: "all", JSON: true, URI: "../testdata/all-types.parquet"}, `{"Raw":19195,"Uncompressed":28020,"Footer":7057}` + "\n"},
+		"raw":               {SizeCmd{ReadOption: rOpt, Query: "raw", JSON: false, URI: "../testdata/good.parquet"}, "588\n"},
+		"raw-json":          {SizeCmd{ReadOption: rOpt, Query: "raw", JSON: true, URI: "../testdata/good.parquet"}, `{"Raw":588}` + "\n"},
+		"uncompressed":      {SizeCmd{ReadOption: rOpt, Query: "uncompressed", JSON: false, URI: "../testdata/good.parquet"}, "438\n"},
+		"uncompressed-json": {SizeCmd{ReadOption: rOpt, Query: "uncompressed", JSON: true, URI: "../testdata/good.parquet"}, `{"Uncompressed":438}` + "\n"},
+		"footer":            {SizeCmd{ReadOption: rOpt, Query: "footer", JSON: false, URI: "../testdata/good.parquet"}, "323\n"},
+		"footer-json":       {SizeCmd{ReadOption: rOpt, Query: "footer", JSON: true, URI: "../testdata/good.parquet"}, `{"Footer":323}` + "\n"},
+		"all":               {SizeCmd{ReadOption: rOpt, Query: "all", JSON: false, URI: "../testdata/good.parquet"}, "588 438 323\n"},
+		"all-json":          {SizeCmd{ReadOption: rOpt, Query: "all", JSON: true, URI: "../testdata/good.parquet"}, `{"Raw":588,"Uncompressed":438,"Footer":323}` + "\n"},
 	}
 
 	for name, tc := range testCases {
