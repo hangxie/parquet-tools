@@ -72,7 +72,10 @@ func (c MetaCmd) Run() error {
 		NumRowGroups: len(rowGroups),
 		RowGroups:    rowGroups,
 	}
-	buf, _ := json.Marshal(meta)
+	buf, err := json.Marshal(meta)
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(buf))
 
 	return nil
