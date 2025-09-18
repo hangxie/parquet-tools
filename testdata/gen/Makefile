@@ -10,10 +10,13 @@ gen:  ## Generate all test parquet files
 		echo === $${SRC} ===; \
 		(cd $$(dirname $${SRC}) && go run .); \
 	done
+	@# gen in Java
+	@(cd old-style-list; ./run-build.sh)
 
 clean:  ## Clean up generated parquet files
 	@echo "==> Cleaning up build dirs"
 	@find . -name \*.parquet | xargs rm -f
+	@(cd old-style-list; ./run-clean.sh)
 
 help:  ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
