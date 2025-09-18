@@ -199,6 +199,18 @@ func (c MetaCmd) addStatistics(column *columnMeta, statistics *parquet.Statistic
 	column.NullCount = statistics.NullCount
 	column.DistinctCount = statistics.DistinctCount
 
+	isGeospatial := schemaNode.LogicalType != nil && (schemaNode.LogicalType.IsSetGEOMETRY() || schemaNode.LogicalType.IsSetGEOGRAPHY())
+	isInterval := schemaNode.ConvertedType != nil && *schemaNode.ConvertedType == parquet.ConvertedType_INTERVAL
+	if isGeospatial || isInterval {
+		// Min/Max values do not apply to GEOMETRY, GEOGRAPHY, and INTERVAL types
+		// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#interval
+		// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#geometry
+		// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#geography
+		statistics.MaxValue = nil
+		statistics.MinValue = nil
+		return
+	}
+
 	maxValue := c.retrieveValue(statistics.MaxValue, *schemaNode.Type)
 	minValue := c.retrieveValue(statistics.MinValue, *schemaNode.Type)
 	if maxValue != nil {
