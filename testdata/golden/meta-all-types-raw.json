@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 28200,
+      "TotalByteSize": 27970,
       "Columns": [
         {
           "PathInSchema": [
@@ -721,12 +721,10 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 367,
-          "UncompressedSize": 428,
+          "CompressedSize": 143,
+          "UncompressedSize": 204,
           "NumValues": 10,
           "NullCount": 0,
-          "MaxValue": "9 mon 9 day 0.009 sec",
-          "MinValue": "0.000 sec",
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -862,7 +860,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 586,
+          "CompressedSize": 575,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -882,7 +880,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 380,
+          "CompressedSize": 368,
           "UncompressedSize": 436,
           "NumValues": 46,
           "NullCount": 1,
@@ -944,7 +942,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 579,
+          "CompressedSize": 571,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -969,8 +967,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 777,
-          "UncompressedSize": 2161,
+          "CompressedSize": 779,
+          "UncompressedSize": 2159,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -992,8 +990,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 525,
-          "UncompressedSize": 865,
+          "CompressedSize": 526,
+          "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
@@ -1017,8 +1015,8 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 667,
-          "UncompressedSize": 2433,
+          "CompressedSize": 660,
+          "UncompressedSize": 2431,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
@@ -1042,7 +1040,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 726,
+          "CompressedSize": 752,
           "UncompressedSize": 2159,
           "NumValues": 130,
           "NullCount": 10,
@@ -1065,7 +1063,7 @@
             "BIT_PACKED",
             "PLAIN"
           ],
-          "CompressedSize": 488,
+          "CompressedSize": 504,
           "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,

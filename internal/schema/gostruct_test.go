@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 
@@ -94,7 +95,7 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/reinterpret-list.parquet"
+	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -106,8 +107,8 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
-	// 2nd field is "V1", whose 1st field is "List", whose 1st field is "Element"
-	schemaRoot.Children[0].Children[0].Children[0].Type = &invalidType
+	// 45th field is "List", whose 1st field is "List", whose 1st field is "Element"
+	schemaRoot.Children[45].Children[0].Children[0].Type = &invalidType
 	_, err = goStructNode{*schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
@@ -115,7 +116,7 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/reinterpret-map-key.parquet"
+	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -127,8 +128,8 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
-	// 2nd field is "V1", whose 1st field is "Key_value", whose 1st field is map's key
-	schemaRoot.Children[1].Children[0].Children[0].Type = &invalidType
+	// 44th field is "Map", whose 1st field is "Key_value", whose 1st field is map's key
+	schemaRoot.Children[44].Children[0].Children[0].Type = &invalidType
 	_, err = goStructNode{*schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
@@ -136,7 +137,7 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/reinterpret-map-key.parquet"
+	uri := "../../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -147,8 +148,9 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	// 2nd field is "V1", whose 1st field is "Key_value", whose 3rd field is map's value
-	schemaRoot.Children[1].Children[0].Children[1].Type = nil
+	// 44th field is "Map", whose 1st field is "Key_value", whose 3rd field is map's value
+	schemaRoot.Children[44].Children[0].Children[1].Type = nil
+	schemaRoot.Children[44].Children[0].Children[1].ConvertedType = common.ToPtr(parquet.ConvertedType_BSON)
 	_, err = goStructNode{*schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "type not set")

@@ -188,17 +188,11 @@ func Test_MetaCmd_Run_good(t *testing.T) {
 		cmd    MetaCmd
 		golden string
 	}{
-		"raw":          {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "good.parquet"}, "meta-good-raw.json"},
-		"nil-stat":     {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "nil-statistics.parquet"}, "meta-nil-statistics-raw.json"},
-		"sorting-col":  {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "sorting-col.parquet"}, "meta-sorting-col-raw.json"},
-		"RI-scalar":    {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "reinterpret-scalar.parquet"}, "meta-reinterpret-scalar-raw.json"},
-		"RI-pointer":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "reinterpret-pointer.parquet"}, "meta-reinterpret-pointer-raw.json"},
-		"RI-list":      {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "reinterpret-list.parquet"}, "meta-reinterpret-list-raw.json"},
-		"RI-map-key":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "reinterpret-map-key.parquet"}, "meta-reinterpret-map-key-raw.json"},
-		"RI-map-value": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "reinterpret-map-value.parquet"}, "meta-reinterpret-map-value-raw.json"},
-		"RI-composite": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "reinterpret-composite.parquet"}, "meta-reinterpret-composite-raw.json"},
-		"all-types":    {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "all-types.parquet"}, "meta-all-types-raw.json"},
-		"geospatial":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "geospatial.parquet"}, "meta-geospatial-raw.json"},
+		"raw":         {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "good.parquet"}, "meta-good-raw.json"},
+		"nil-stat":    {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "nil-statistics.parquet"}, "meta-nil-statistics-raw.json"},
+		"sorting-col": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "sorting-col.parquet"}, "meta-sorting-col-raw.json"},
+		"all-types":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "all-types.parquet"}, "meta-all-types-raw.json"},
+		"geospatial":  {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "geospatial.parquet"}, "meta-geospatial-raw.json"},
 	}
 
 	for name, tc := range testCases {
