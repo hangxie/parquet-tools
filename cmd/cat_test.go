@@ -72,6 +72,7 @@ func Test_CatCmd_Run_good(t *testing.T) {
 		"geospatial-hex":     {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "hex", NoHeader: true, URI: "geospatial.parquet", FailOnInt96: false, Concurrent: false}, "cat-geospatial-hex.jsonl"},
 		"geospatial-base64":  {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "base64", NoHeader: true, URI: "geospatial.parquet", FailOnInt96: false, Concurrent: false}, "cat-geospatial-base64.jsonl"},
 		"geospatial-geojson": {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "geospatial.parquet", FailOnInt96: false, Concurrent: false}, "cat-geospatial-geojson.jsonl"},
+		"old-style-list":     {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet", FailOnInt96: false, Concurrent: false}, "cat-old-style-list.jsonl"},
 	}
 
 	for name, tc := range testCases {
