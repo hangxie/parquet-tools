@@ -1,0 +1,4 @@
+type Parquet_go_root struct {
+ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+ShoeName string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+}

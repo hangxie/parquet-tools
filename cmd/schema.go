@@ -17,8 +17,9 @@ var (
 
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
-	Format string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
-	URI    string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	CamelCase bool   `help:"enforce go struct field name to be CamelCase" default:"false"`
+	Format    string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
+	URI       string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }
 
@@ -44,7 +45,7 @@ func (c SchemaCmd) Run() error {
 	case formatJSON:
 		fmt.Println(schemaRoot.JSONSchema())
 	case formatGo:
-		goStruct, err := schemaRoot.GoStruct()
+		goStruct, err := schemaRoot.GoStruct(c.CamelCase)
 		if err != nil {
 			return err
 		}

@@ -51,6 +51,7 @@ func Test_SchemaCmd_Run_good(t *testing.T) {
 		"geospatial-go":       {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "geospatial.parquet"}, "schema-geospatial-go.txt"},
 		"geospatial-json":     {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "geospatial.parquet"}, "schema-geospatial-json.json"},
 		"geospatial-raw":      {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"}, "schema-geospatial-raw.json"},
+		"camel-case":          {SchemaCmd{ReadOption: rOpt, Format: "go", CamelCase: true, URI: "good.parquet"}, "schema-good-go-camel-case.txt"},
 	}
 
 	for name, tc := range testCases {
