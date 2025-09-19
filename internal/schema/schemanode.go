@@ -298,8 +298,11 @@ func timeUnitToTag(timeUnit *parquet.TimeUnit) string {
 	return "UNKNOWN_UNIT"
 }
 
-func (s SchemaNode) GoStruct() (string, error) {
-	goStruct, err := goStructNode{s}.String()
+func (s SchemaNode) GoStruct(forceCamelCase bool) (string, error) {
+	goStruct, err := goStructNode{
+		SchemaNode:     s,
+		ForceCamelCase: forceCamelCase,
+	}.String()
 	if err != nil {
 		return "", err
 	}

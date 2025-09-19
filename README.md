@@ -752,7 +752,15 @@ type Parquet_go_root struct {
 }
 ```
 
-Based on your use case, type `Parquet_go_root` may need to be renamed.
+You can turn on `--camel-case` to convert field names from snake_case_name to CamelCaseName:
+
+```bash
+$ parquet-tools schema --format go --camel-case testdata/good.parquet | gofmt
+type Parquet_go_root struct {
+	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+}
+```
 
 > [!IMPORTANT]
 > parquet-go does not support composite type as map key or value in go struct tag as for now so `parquet-tools` will report error if there is such a field, you can still output in raw or JSON format:

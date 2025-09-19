@@ -25,7 +25,7 @@ func Test_GoStructNode_String_good(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	typeStr, err := goStructNode{*schemaRoot}.String()
+	typeStr, err := goStructNode{SchemaNode: *schemaRoot}.String()
 	require.NoError(t, err)
 
 	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
@@ -50,7 +50,7 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	mapType := parquet.ConvertedType_MAP
 	// 2nd field is "Scores", whose 1st field is "Key_value", whose 1st field is map's key
 	schemaRoot.Children[1].Children[0].Children[0].ConvertedType = &mapType
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as map key")
 }
@@ -68,7 +68,7 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as map value")
 }
@@ -88,7 +88,7 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 
 	// 1st field is "Shoe_brand"
 	schemaRoot.Children[0].Type = nil
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "type not set")
 }
@@ -109,7 +109,7 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	invalidType := parquet.Type(999)
 	// 45th field is "List", whose 1st field is "List", whose 1st field is "Element"
 	schemaRoot.Children[45].Children[0].Children[0].Type = &invalidType
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
 }
@@ -130,7 +130,7 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	invalidType := parquet.Type(999)
 	// 44th field is "Map", whose 1st field is "Key_value", whose 1st field is map's key
 	schemaRoot.Children[44].Children[0].Children[0].Type = &invalidType
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
 }
@@ -151,7 +151,7 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	// 44th field is "Map", whose 1st field is "Key_value", whose 3rd field is map's value
 	schemaRoot.Children[44].Children[0].Children[1].Type = nil
 	schemaRoot.Children[44].Children[0].Children[1].ConvertedType = common.ToPtr(parquet.ConvertedType_BSON)
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "type not set")
 }
@@ -169,7 +169,7 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	_, err = goStructNode{*schemaRoot}.String()
+	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "go struct does not support composite type as list element in field [Parquet_go_root.Lol]")
 }
@@ -191,7 +191,7 @@ func Test_GoStructNode_asList(t *testing.T) {
 	// from "ListName -> list -> element" to "ListName -> element"
 	root.Children[0].Children[0] = root.Children[0].Children[0].Children[0]
 	root.Children[1].Children[0] = root.Children[1].Children[0].Children[0]
-	typeStr, err := goStructNode{*root}.String()
+	typeStr, err := goStructNode{SchemaNode: *root}.String()
 	require.NoError(t, err)
 
 	expected, _ := os.ReadFile("../../testdata/golden/schema-gostruct-list-go.txt")

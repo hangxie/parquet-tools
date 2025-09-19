@@ -3,12 +3,14 @@ package schema
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/hangxie/parquet-go/v2/parquet"
 )
 
 type goStructNode struct {
 	SchemaNode
+	ForceCamelCase bool
 }
 
 var goTypeStrMap = map[parquet.Type]string{
@@ -35,7 +37,10 @@ func (n goStructNode) asScalar() (string, error) {
 func (n goStructNode) asStruct() (string, error) {
 	typeStr := "struct {\n"
 	for _, child := range n.Children {
-		structStr, err := goStructNode{*child}.stringWithName()
+		structStr, err := goStructNode{
+			SchemaNode:     *child,
+			ForceCamelCase: n.ForceCamelCase,
+		}.stringWithName()
 		if err != nil {
 			return "", err
 		}
@@ -52,14 +57,20 @@ func (n goStructNode) asList() (string, error) {
 		// LIST => Element (of scalar type)
 		n.Children[0].Name = "Element"
 		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
-		typeStr, err = goStructNode{*n.Children[0]}.String()
+		typeStr, err = goStructNode{
+			SchemaNode:     *n.Children[0],
+			ForceCamelCase: n.ForceCamelCase,
+		}.String()
 	} else if len(n.Children[0].Children) > 1 {
 		// LIST => Element (of STRUCT)
 		n.Children[0].Name = "Element"
 		n.Children[0].Type = nil
 		n.Children[0].ConvertedType = nil
 		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
-		typeStr, err = goStructNode{*n.Children[0]}.String()
+		typeStr, err = goStructNode{
+			SchemaNode:     *n.Children[0],
+			ForceCamelCase: n.ForceCamelCase,
+		}.String()
 	} else if len(n.Children[0].Children) == 1 {
 		// LIST => List => Element
 		// go struct will be []<actual element type>
@@ -71,7 +82,10 @@ func (n goStructNode) asList() (string, error) {
 				"go struct does not support composite type as list element in field [%s]",
 				strings.Join(n.InNamePath, "."))
 		}
-		typeStr, err = goStructNode{*elementNode}.String()
+		typeStr, err = goStructNode{
+			SchemaNode:     *elementNode,
+			ForceCamelCase: n.ForceCamelCase,
+		}.String()
 	}
 	if err != nil {
 		return "", err
@@ -98,11 +112,17 @@ func (n goStructNode) asMap() (string, error) {
 	}
 	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
 	// go struct will be map[<key type>]<value type>
-	keyStr, err := goStructNode{*n.Children[0].Children[0]}.asScalar()
+	keyStr, err := goStructNode{
+		SchemaNode:     *n.Children[0].Children[0],
+		ForceCamelCase: n.ForceCamelCase,
+	}.asScalar()
 	if err != nil {
 		return "", err
 	}
-	valueStr, err := goStructNode{*n.Children[0].Children[1]}.String()
+	valueStr, err := goStructNode{
+		SchemaNode:     *n.Children[0].Children[1],
+		ForceCamelCase: n.ForceCamelCase,
+	}.String()
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +148,10 @@ func (n goStructNode) String() (string, error) {
 	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_MAP:
 		typeStr, err = n.asMap()
 	default:
-		typeStr, err = goStructNode{n.SchemaNode}.asScalar()
+		typeStr, err = goStructNode{
+			SchemaNode:     n.SchemaNode,
+			ForceCamelCase: n.ForceCamelCase,
+		}.asScalar()
 	}
 	if err != nil {
 		return "", err
@@ -141,7 +164,11 @@ func (n goStructNode) stringWithName() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	typeStr = n.InNamePath[len(n.InNamePath)-1] + " " + typeStr + " " + n.getStructTags()
+	if n.ForceCamelCase {
+		typeStr = snakeToCamel(n.InNamePath[len(n.InNamePath)-1]) + " " + typeStr + " " + n.getStructTags()
+	} else {
+		typeStr = n.InNamePath[len(n.InNamePath)-1] + " " + typeStr + " " + n.getStructTags()
+	}
 	return typeStr, nil
 }
 
@@ -163,4 +190,24 @@ func (n goStructNode) getStructTags() string {
 	}
 
 	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", "))
+}
+
+// snakeToCamel converts snake_case strings to CamelCase
+func snakeToCamel(s string) string {
+	if s == "" {
+		return s
+	}
+
+	parts := strings.Split(s, "_")
+	var result strings.Builder
+
+	for _, part := range parts {
+		if len(part) > 0 {
+			runes := []rune(part)
+			runes[0] = unicode.ToUpper(runes[0])
+			result.WriteString(string(runes))
+		}
+	}
+
+	return result.String()
 }

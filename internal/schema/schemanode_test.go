@@ -218,9 +218,28 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	actual, err := schemaRoot.GoStruct()
+	actual, err := schemaRoot.GoStruct(false)
 	require.NoError(t, err)
 	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
+	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
+}
+
+func Test_Json_schema_go_struct_good_camel_case(t *testing.T) {
+	option := pio.ReadOption{}
+	uri := "../../testdata/good.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	actual, err := schemaRoot.GoStruct(true)
+	require.NoError(t, err)
+	expected, _ := os.ReadFile("../../testdata/golden/schema-good-go-camel-case.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
