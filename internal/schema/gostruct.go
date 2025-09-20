@@ -75,13 +75,6 @@ func (n goStructNode) asList() (string, error) {
 		// LIST => List => Element
 		// go struct will be []<actual element type>
 		elementNode := n.Children[0].Children[0]
-		if elementNode.ConvertedType != nil &&
-			(*elementNode.ConvertedType == parquet.ConvertedType_MAP ||
-				*elementNode.ConvertedType == parquet.ConvertedType_LIST) {
-			return "", fmt.Errorf(
-				"go struct does not support composite type as list element in field [%s]",
-				strings.Join(n.InNamePath, "."))
-		}
 		typeStr, err = goStructNode{
 			SchemaNode:     *elementNode,
 			ForceCamelCase: n.ForceCamelCase,
@@ -94,22 +87,6 @@ func (n goStructNode) asList() (string, error) {
 }
 
 func (n goStructNode) asMap() (string, error) {
-	// go struct tag does not support LIST or MAP as type of key/value
-	if n.Children[0].Children[0].ConvertedType != nil {
-		keyConvertedType := *n.Children[0].Children[0].ConvertedType
-		if keyConvertedType == parquet.ConvertedType_MAP ||
-			keyConvertedType == parquet.ConvertedType_LIST {
-			return "", fmt.Errorf("go struct does not support composite type as map key in field [%s]", strings.Join(n.InNamePath, "."))
-		}
-	}
-
-	if n.Children[0].Children[1].ConvertedType != nil {
-		valueConvertedType := *n.Children[0].Children[1].ConvertedType
-		if valueConvertedType == parquet.ConvertedType_MAP ||
-			valueConvertedType == parquet.ConvertedType_LIST {
-			return "", fmt.Errorf("go struct does not support composite type as map value in field [%s]", strings.Join(n.InNamePath, "."))
-		}
-	}
 	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
 	// go struct will be map[<key type>]<value type>
 	keyStr, err := goStructNode{
@@ -164,20 +141,37 @@ func (n goStructNode) stringWithName() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	structTags, err := n.getStructTags()
+	if err != nil {
+		return "", err
+	}
 	if n.ForceCamelCase {
-		typeStr = snakeToCamel(n.InNamePath[len(n.InNamePath)-1]) + " " + typeStr + " " + n.getStructTags()
+		typeStr = snakeToCamel(n.InNamePath[len(n.InNamePath)-1]) + " " + typeStr + " " + structTags
 	} else {
-		typeStr = n.InNamePath[len(n.InNamePath)-1] + " " + typeStr + " " + n.getStructTags()
+		typeStr = n.InNamePath[len(n.InNamePath)-1] + " " + typeStr + " " + structTags
 	}
 	return typeStr, nil
 }
 
-func (n goStructNode) getStructTags() string {
+func (n goStructNode) getStructTags() (string, error) {
 	tagMap := n.SchemaNode.GetTagMap()
 	if _, found := tagMap["valuetype"]; !found &&
 		n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
 		// make sure LISt always has "valuetype"
 		tagMap["valuetype"] = "STRUCT"
+	}
+
+	if tag, found := tagMap["type"]; found && tag == "LIST" {
+		if tag, found = tagMap["valuetype"]; found && (tag == "LIST" || tag == "MAP") {
+			return "", fmt.Errorf("go struct does not support LIST of %s in %s", tag, strings.Join(n.InNamePath, "."))
+		}
+	} else if found && tag == "MAP" {
+		if tag, found = tagMap["keytype"]; found && (tag == "LIST" || tag == "MAP") {
+			return "", fmt.Errorf("go struct does not support %s as MAP key in %s", tag, strings.Join(n.InNamePath, "."))
+		}
+		if tag, found = tagMap["valuetype"]; found && (tag == "LIST" || tag == "MAP") {
+			return "", fmt.Errorf("go struct does not support %s as MAP value in %s", tag, strings.Join(n.InNamePath, "."))
+		}
 	}
 
 	annotations := make([]string, 0, len(orderedTags))
@@ -189,7 +183,7 @@ func (n goStructNode) getStructTags() string {
 		}
 	}
 
-	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", "))
+	return fmt.Sprintf("`parquet:\"%s\"`", strings.Join(annotations, ", ")), nil
 }
 
 // snakeToCamel converts snake_case strings to CamelCase

@@ -15,13 +15,14 @@ func Test_SchemaCmd_Run_error(t *testing.T) {
 		cmd    SchemaCmd
 		errMsg string
 	}{
-		"invalid-uri":    {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, "unknown location scheme"},
-		"invalid-format": {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "../testdata/good.parquet"}, "unknown schema format"},
-		"go-map-value":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/map-composite-value.parquet"}, "go struct does not support composite type as map value in field [Parquet_go_root.Scores]"},
-		"go-list-item":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/list-of-list.parquet"}, "go struct does not support composite type as list element in field [Parquet_go_root.Lol]"},
-		"csv-nested":     {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-nested.parquet"}, "CSV supports flat schema only"},
-		"csv-optional":   {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-optional.parquet"}, "CSV does not support optional column"},
-		"csv-repeated":   {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-repeated.parquet"}, "CSV does not support column in LIST type"},
+		"invalid-uri":       {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, "unknown location scheme"},
+		"invalid-format":    {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "../testdata/good.parquet"}, "unknown schema format"},
+		"go-map-value":      {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/map-composite-value.parquet"}, "go struct does not support LIST as MAP value in Parquet_go_root.Scores"},
+		"go-list-value":     {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/list-of-list.parquet"}, "go struct does not support LIST of LIST in Parquet_go_root.Lol"},
+		"go-old-style-list": {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/old-style-list.parquet"}, "go struct does not support LIST of LIST in My_record.First.Second.A"},
+		"csv-nested":        {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-nested.parquet"}, "CSV supports flat schema only"},
+		"csv-optional":      {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-optional.parquet"}, "CSV does not support optional column"},
+		"csv-repeated":      {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-repeated.parquet"}, "CSV does not support column in LIST type"},
 	}
 
 	for name, tc := range testCases {
