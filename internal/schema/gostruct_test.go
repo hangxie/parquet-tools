@@ -52,7 +52,7 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	schemaRoot.Children[1].Children[0].Children[0].ConvertedType = &mapType
 	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "go struct does not support composite type as map key")
+	require.Contains(t, err.Error(), "go struct does not support MAP as MAP value in Parquet_go_root.Scores")
 }
 
 func Test_GoStructNode_String_composite_map_value(t *testing.T) {
@@ -70,7 +70,7 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 
 	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "go struct does not support composite type as map value")
+	require.Contains(t, err.Error(), "go struct does not support LIST as MAP value in Parquet_go_root.Scores")
 }
 
 func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
@@ -171,7 +171,7 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 
 	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "go struct does not support composite type as list element in field [Parquet_go_root.Lol]")
+	require.Contains(t, err.Error(), "go struct does not support LIST of LIST in Parquet_go_root.Lol")
 }
 
 func Test_GoStructNode_asList(t *testing.T) {
