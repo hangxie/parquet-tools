@@ -109,9 +109,11 @@ func (c *CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) 
 		}
 		fieldList[index] = child.ExNamePath[len(child.ExNamePath)-1]
 	}
-	headerList := make([]string, len(schemaRoot.Children))
-	_ = copy(headerList, fieldList)
-	line, err := c.valuesToCSV(headerList)
+
+	strBuilder := new(strings.Builder)
+	csvWriter := csv.NewWriter(strBuilder)
+	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
+	line, err := c.valuesToCSV(fieldList, strBuilder, csvWriter)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +139,23 @@ func (c *CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, e
 	return fieldList, nil
 }
 
+func mapToStrList(flatValues map[string]any, fieldList []string) []string {
+	values := make([]string, len(flatValues))
+	for index, field := range fieldList {
+		switch val := flatValues[field].(type) {
+		case nil:
+			// nil is just empty in CSV/TSV
+		default:
+			values[index] = fmt.Sprint(val)
+		}
+	}
+	return values
+}
+
 func (c CatCmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string) error {
+	strBuilder := new(strings.Builder)
+	csvWriter := csv.NewWriter(strBuilder)
+	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
 	for {
 		select {
 		case <-ctx.Done():
@@ -152,9 +170,23 @@ func (c CatCmd) encoder(ctx context.Context, rowChan chan any, outputChan chan s
 			}
 
 			// Format the row as a string based on the format
-			formattedRow, err := c.formatRowAsString(rowStruct, fieldList)
-			if err != nil {
-				return err
+			var formattedRow string
+			switch c.Format {
+			case "json", "jsonl":
+				buf, err := json.Marshal(rowStruct)
+				if err != nil {
+					return err
+				}
+				formattedRow = string(buf)
+			case "csv", "tsv":
+				values := mapToStrList(rowStruct.(map[string]any), fieldList)
+				line, err := c.valuesToCSV(values, strBuilder, csvWriter)
+				if err != nil {
+					return err
+				}
+				formattedRow = strings.TrimRight(line, "\n")
+			default:
+				return fmt.Errorf("unsupported format: %s", c.Format)
 			}
 
 			select {
@@ -189,37 +221,6 @@ func (c CatCmd) printer(ctx context.Context, outputChan chan string) error {
 			}
 			fmt.Print(formattedRow)
 		}
-	}
-}
-
-// formatRowAsString formats a row as a string based on the output format
-func (c *CatCmd) formatRowAsString(rowStruct any, fieldList []string) (string, error) {
-	switch c.Format {
-	case "json", "jsonl":
-		buf, err := json.Marshal(rowStruct)
-		if err != nil {
-			return "", err
-		}
-		return string(buf), nil
-	case "csv", "tsv":
-		flatValues := rowStruct.(map[string]any)
-		values := make([]string, len(flatValues))
-		for index, field := range fieldList {
-			switch val := flatValues[field].(type) {
-			case nil:
-				// nil is just empty in CSV/TSV
-			default:
-				values[index] = fmt.Sprint(val)
-			}
-		}
-
-		line, err := c.valuesToCSV(values)
-		if err != nil {
-			return "", err
-		}
-		return strings.TrimRight(line, "\n"), nil
-	default:
-		return "", fmt.Errorf("unsupported format: %s", c.Format)
 	}
 }
 
@@ -310,15 +311,13 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	return g.Wait()
 }
 
-func (c *CatCmd) valuesToCSV(values []string) (string, error) {
+func (c *CatCmd) valuesToCSV(values []string, strBuilder *strings.Builder, csvWriter *csv.Writer) (string, error) {
 	// there is no standard for CSV, use go's CSV module to maintain minimum compatibility
-	csvBuf := new(strings.Builder)
-	csvWriter := csv.NewWriter(csvBuf)
-	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
+	strBuilder.Reset()
 	if err := csvWriter.Write(values); err != nil {
 		// this should never happen
 		return "", err
 	}
 	csvWriter.Flush()
-	return csvBuf.String(), nil
+	return strBuilder.String(), nil
 }

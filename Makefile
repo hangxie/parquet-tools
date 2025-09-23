@@ -104,6 +104,23 @@ benchmark:  ## Run benchmark
 	       https://huggingface.co/datasets/hangxie/parquet-tools/resolve/main/flat-100K.parquet?download=true
 	@$(GO) test -bench ^Benchmark -run=^$$ -count 1 -benchtime 10x -benchmem ./...
 
+.PHONY: profile
+profile:  ## Run benchmark with profile
+	@mkdir -p build/pprof
+	@test -f ./build/benchmark.parquet \
+	    || curl -sLo ./build/benchmark.parquet \
+	       https://huggingface.co/datasets/hangxie/parquet-tools/resolve/main/benchmark-10K.parquet?download=true
+	@test -f ./build/flat.parquet \
+	    || curl -sLo ./build/flat.parquet \
+	       https://huggingface.co/datasets/hangxie/parquet-tools/resolve/main/flat-100K.parquet?download=true
+	@for CMD in Cat Merge RowCount Schema Size Version; do \
+		$(GO) test -bench ^Benchmark_$${CMD}Cmd_Run/ -run=^$$ \
+			-count 1 -benchtime 10x -benchmem \
+			-cpuprofile build/pprof/cpu-$${CMD}.out \
+			-memprofile build/pprof/mem-$${CMD}.out \
+			-o build/cmd.pprof ./cmd/; \
+	done
+
 .PHONY: release-build
 release-build: deps ## Build release binaries
 	@echo "==> Building release binaries"
