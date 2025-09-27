@@ -44,6 +44,9 @@
       "Tag": "name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"
     },
     {
+      "Tag": "name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT"
+    },
+    {
       "Tag": "name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"
     },
     {

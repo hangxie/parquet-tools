@@ -128,8 +128,8 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	invalidType := parquet.Type(999)
-	// 44th field is "Map", whose 1st field is "Key_value", whose 1st field is map's key
-	schemaRoot.Children[44].Children[0].Children[0].Type = &invalidType
+	// 45th field is "Map", whose 1st field is "Key_value", whose 1st field is map's key
+	schemaRoot.Children[45].Children[0].Children[0].Type = &invalidType
 	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown type: 999")
@@ -148,9 +148,9 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	// 44th field is "Map", whose 1st field is "Key_value", whose 3rd field is map's value
-	schemaRoot.Children[44].Children[0].Children[1].Type = nil
-	schemaRoot.Children[44].Children[0].Children[1].ConvertedType = common.ToPtr(parquet.ConvertedType_BSON)
+	// 45th field is "Map", whose 1st field is "Key_value", whose 3rd field is map's value
+	schemaRoot.Children[45].Children[0].Children[1].Type = nil
+	schemaRoot.Children[45].Children[0].Children[1].ConvertedType = common.ToPtr(parquet.ConvertedType_BSON)
 	_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "type not set")
