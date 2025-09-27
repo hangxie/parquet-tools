@@ -239,6 +239,9 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 		tagMap["logicaltype"] = "GEOGRAPHY"
 	case s.LogicalType.IsSetGEOMETRY():
 		tagMap["logicaltype"] = "GEOMETRY"
+	case s.LogicalType.IsSetVARIANT():
+		// VARIANT is a semi-structured logical type introduced in newer parquet-format
+		tagMap["logicaltype"] = "VARIANT"
 	case s.LogicalType.IsSetSTRING():
 		tagMap["logicaltype"] = "STRING"
 	case s.LogicalType.IsSetTIME():

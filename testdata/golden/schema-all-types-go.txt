@@ -13,6 +13,7 @@ Json string `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON"`
 Bson string `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON"`
 Json2 string `parquet:"name=Json2, type=BYTE_ARRAY"`
 Bson2 string `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"`
+Variant string `parquet:"name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT"`
 FixedLenByteArray string `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
 Utf8 string `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
 Utf8_2 string `parquet:"name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING"`

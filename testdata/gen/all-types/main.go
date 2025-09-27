@@ -38,6 +38,7 @@ type AllTypes struct {
 	Bson              string              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON"`
 	Json2             string              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON"`
 	Bson2             string              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"`
+	Variant           string              `parquet:"name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`
 	Utf82             string              `parquet:"name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING"`
@@ -117,6 +118,7 @@ func main() {
 			Bson:              string(bsonStr),
 			Json2:             string(jsonStr),
 			Bson2:             string(bsonStr),
+			Variant:           string(jsonStr),
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
 			ConvertedInt8:     int32(i),

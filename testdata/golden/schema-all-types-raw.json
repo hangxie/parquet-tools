@@ -1,7 +1,7 @@
 {
   "repetition_type": "REQUIRED",
   "name": "parquet_go_root",
-  "num_children": 49,
+  "num_children": 50,
   "children": [
     {
       "type": "BOOLEAN",
@@ -151,6 +151,18 @@
       "field_id": 0,
       "logicalType": {
         "BSON": {}
+      }
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Variant",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "VARIANT": {}
       }
     },
     {
