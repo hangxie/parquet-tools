@@ -31,6 +31,7 @@ func Test_CatCmd_Run_error(t *testing.T) {
 		"geospatial-tsv":         {CatCmd{ReadOption: rOpt, Skip: 10, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../testdata/geospatial.parquet", FailOnInt96: false, Concurrent: false}, "field [Geometry] is not scalar type"},
 		"invalid-geo-format":     {CatCmd{ReadOption: rOpt, Skip: 10, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", GeoFormat: "foobar", NoHeader: true, URI: fileName, FailOnInt96: false, Concurrent: false}, "unknown geo format:"},
 		"nan-json-error":         {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../testdata/nan.parquet", FailOnInt96: false, Concurrent: false}, "json: unsupported value: NaN"},
+		"arrow-gh-41321":         {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../testdata/ARROW-GH-41321.parquet", FailOnInt96: false, Concurrent: false}, "invalid count"},
 	}
 
 	for name, tc := range testCases {
