@@ -1012,6 +1012,7 @@ Some test cases are from:
 * https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 * https://pro.dp.la/developers/bulk-download
 * https://exchange.aboutamazon.com/data-initiative
+* https://github.com/apache/parquet-testing/
 
 ## License
 
