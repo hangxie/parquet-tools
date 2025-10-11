@@ -171,6 +171,7 @@ func Test_MetaCmd_Run_error(t *testing.T) {
 		"non-existent":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "file/does/not/exist"}, "no such file or directory"},
 		"no-int96":       {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: true, URI: "../testdata/all-types.parquet"}, "type INT96 which is not supported"},
 		"nan-json-error": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "../testdata/nan.parquet"}, "json: unsupported value: NaN"},
+		"arrow-gh-41317": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "../testdata/ARROW-GH-41317.parquet"}, "schema node not found for column path"},
 	}
 
 	for name, tc := range testCases {
