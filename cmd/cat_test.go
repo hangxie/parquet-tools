@@ -17,6 +17,8 @@ func Test_CatCmd_Run_error(t *testing.T) {
 		errMsg string
 	}{
 		"non-existent-file":      {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", FailOnInt96: false, Concurrent: false}, "no such file or directory"},
+		"parquet-1481":           {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../testdata/PARQUET-1481.parquet", FailOnInt96: false, Concurrent: false}, "unknown parquet type: <UNSET>"},
+		"arrow-rs-gh-6229":       {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../testdata/ARROW-RS-GH-6229-LEVELS.parquet", FailOnInt96: false, Concurrent: false}, "expected 21 values but got 1 from RLE/bit-packed hybrid decoder"},
 		"invalid-read-page-size": {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", FailOnInt96: false, Concurrent: true}, "invalid read page size"},
 		"invalid-skip-size":      {CatCmd{ReadOption: rOpt, Skip: -10, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", FailOnInt96: false, Concurrent: false}, "invalid skip -10"},
 		"sampling-too-high":      {CatCmd{ReadOption: rOpt, Skip: 10, SkipPageSize: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 2.0, Format: "json", NoHeader: false, URI: "does/not/matter", FailOnInt96: false, Concurrent: true}, "invalid sampling"},
