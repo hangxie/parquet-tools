@@ -66,7 +66,10 @@ func (c MetaCmd) Run() error {
 
 	inExNameMap, pathMap := c.buildSchemaMaps(schemaRoot)
 
-	rowGroups := c.buildRowGroups(reader.Footer.RowGroups, inExNameMap, pathMap)
+	rowGroups, err := c.buildRowGroups(reader.Footer.RowGroups, inExNameMap, pathMap)
+	if err != nil {
+		return err
+	}
 
 	meta := parquetMeta{
 		NumRowGroups: len(rowGroups),
@@ -94,28 +97,35 @@ func (c MetaCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]s
 	return inExNameMap, pathMap
 }
 
-func (c MetaCmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) []rowGroupMeta {
+func (c MetaCmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]rowGroupMeta, error) {
 	result := make([]rowGroupMeta, len(rowGroups))
 	for i, rg := range rowGroups {
-		columns := c.buildColumns(rg, inExNameMap, pathMap)
+		columns, err := c.buildColumns(rg, inExNameMap, pathMap)
+		if err != nil {
+			return nil, err
+		}
 		result[i] = rowGroupMeta{
 			NumRows:       rg.NumRows,
 			TotalByteSize: rg.TotalByteSize,
 			Columns:       columns,
 		}
 	}
-	return result
+	return result, nil
 }
 
-func (c MetaCmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) []columnMeta {
+func (c MetaCmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]columnMeta, error) {
 	columns := make([]columnMeta, len(rg.Columns))
 	for i, col := range rg.Columns {
-		columns[i] = c.buildColumnMeta(col, rg.SortingColumns, i, inExNameMap, pathMap)
+		column, err := c.buildColumnMeta(col, rg.SortingColumns, i, inExNameMap, pathMap)
+		if err != nil {
+			return nil, err
+		}
+		columns[i] = column
 	}
-	return columns
+	return columns, nil
 }
 
-func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) columnMeta {
+func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) (columnMeta, error) {
 	column := columnMeta{
 		PathInSchema:     col.MetaData.PathInSchema,
 		Type:             col.MetaData.Type.String(),
@@ -139,9 +149,11 @@ func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*par
 	}
 
 	schemaNode := pathMap[pathKey]
-	if schemaNode != nil {
-		c.addTypeInformation(&column, schemaNode)
+	if schemaNode == nil {
+		return columnMeta{}, fmt.Errorf("schema node not found for column path: %s", pathKey)
 	}
+
+	c.addTypeInformation(&column, schemaNode)
 
 	if col.MetaData.Statistics != nil {
 		c.addStatistics(&column, col.MetaData.Statistics, schemaNode)
@@ -161,7 +173,7 @@ func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*par
 		}
 	}
 
-	return column
+	return column, nil
 }
 
 func (c MetaCmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNode) {
