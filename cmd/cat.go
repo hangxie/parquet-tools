@@ -16,8 +16,8 @@ import (
 	"github.com/hangxie/parquet-go/v2/types"
 	"golang.org/x/sync/errgroup"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
-	pschema "github.com/hangxie/parquet-tools/internal/schema"
+	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 // CatCmd is a kong command for cat

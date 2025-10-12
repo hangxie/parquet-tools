@@ -12,8 +12,8 @@ import (
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/types"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
-	pschema "github.com/hangxie/parquet-tools/internal/schema"
+	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 // MetaCmd is a kong command for meta

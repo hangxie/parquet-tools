@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 func Test_RowCountCmd_Run_non_existent(t *testing.T) {

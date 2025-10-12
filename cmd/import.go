@@ -13,7 +13,7 @@ import (
 
 	parquetSource "github.com/hangxie/parquet-go/v2/source"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 // ImportCmd is a kong command for import

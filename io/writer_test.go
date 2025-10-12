@@ -19,7 +19,7 @@ func Test_NewParquetFileWriter(t *testing.T) {
 		"invalid-uri":          {"://uri", "unable to parse file location"},
 		"invalid-scheme":       {"invalid-scheme://something", "unknown location scheme"},
 		"local-file-not-found": {"file://path/to/file", "no such file or directory"},
-		"local-not-file":       {"../../testdata/", "is a directory"},
+		"local-not-file":       {"../testdata/", "is a directory"},
 		"local-file-good":      {tempFile, ""},
 		"s3-bucket-not-found":  {"s3://bucket-does-not-exist" + uuid.NewString(), "not found"},
 		"s3-good":              {"s3://daylight-openstreetmap/will-not-create-till-close", ""},

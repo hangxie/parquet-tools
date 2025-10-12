@@ -10,12 +10,12 @@ import (
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -29,7 +29,7 @@ func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
 
 func Test_NewSchemaTree_good(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -41,13 +41,13 @@ func Test_NewSchemaTree_good(t *testing.T) {
 	require.NotNil(t, schemaRoot)
 
 	actual, _ := json.MarshalIndent(schemaRoot, "", "  ")
-	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-raw.json")
+	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-raw.json")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
 }
 
 func Test_SchemaNode_GetPathMap(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -188,7 +188,7 @@ func Test_timeUnitToTag(t *testing.T) {
 }
 
 func Test_JSON_schema_list_variant(t *testing.T) {
-	buf, err := os.ReadFile("../../testdata/golden/schema-list-variants-raw.json")
+	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
 	require.NoError(t, err)
 
 	se := SchemaNode{}
@@ -199,7 +199,7 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
-	expected, err := os.ReadFile("../../testdata/golden/schema-list-variants-json.json")
+	expected, err := os.ReadFile("../testdata/golden/schema-list-variants-json.json")
 	require.NoError(t, err)
 
 	require.Equal(t, string(expected), string(actual)+"\n")
@@ -207,7 +207,7 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 
 func Test_Json_schema_go_struct_good(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -220,13 +220,13 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 
 	actual, err := schemaRoot.GoStruct(false)
 	require.NoError(t, err)
-	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
+	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
 func Test_Json_schema_go_struct_good_camel_case(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/good.parquet"
+	uri := "../testdata/good.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -239,13 +239,13 @@ func Test_Json_schema_go_struct_good_camel_case(t *testing.T) {
 
 	actual, err := schemaRoot.GoStruct(true)
 	require.NoError(t, err)
-	expected, _ := os.ReadFile("../../testdata/golden/schema-good-go-camel-case.txt")
+	expected, _ := os.ReadFile("../testdata/golden/schema-good-go-camel-case.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
 func Test_Json_schema_json_schema_good(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -258,7 +258,7 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 
 	actual := schemaRoot.JSONSchema()
 
-	raw, _ := os.ReadFile("../../testdata/golden/schema-all-types-json.json")
+	raw, _ := os.ReadFile("../testdata/golden/schema-all-types-json.json")
 	temp := JSONSchema{}
 	_ = json.Unmarshal(raw, &temp)
 	expected, _ := json.Marshal(temp)
@@ -267,7 +267,7 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 
 func Test_Json_schema_csv_schema_good(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/csv-good.parquet"
+	uri := "../testdata/csv-good.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -280,13 +280,13 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 
 	actual, err := schemaRoot.CSVSchema()
 	require.NoError(t, err)
-	expected, _ := os.ReadFile("../../testdata/golden/schema-csv-good.txt")
+	expected, _ := os.ReadFile("../testdata/golden/schema-csv-good.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
 func Test_Json_schema_csv_schema_nested(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/csv-nested.parquet"
+	uri := "../testdata/csv-nested.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -304,7 +304,7 @@ func Test_Json_schema_csv_schema_nested(t *testing.T) {
 
 func Test_Json_schema_csv_schema_optional(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/csv-optional.parquet"
+	uri := "../testdata/csv-optional.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -322,7 +322,7 @@ func Test_Json_schema_csv_schema_optional(t *testing.T) {
 
 func Test_Json_schema_csv_schema_repeated(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/csv-repeated.parquet"
+	uri := "../testdata/csv-repeated.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
