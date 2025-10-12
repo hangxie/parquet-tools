@@ -9,12 +9,12 @@ import (
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 func Test_GoStructNode_String_good(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -28,7 +28,7 @@ func Test_GoStructNode_String_good(t *testing.T) {
 	typeStr, err := goStructNode{SchemaNode: *schemaRoot}.String()
 	require.NoError(t, err)
 
-	expected, _ := os.ReadFile("../../testdata/golden/schema-all-types-go.txt")
+	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
 	// golden file has prefix of "type <root node name>"
 	prefix := fmt.Sprintf("type %s ", schemaRoot.InNamePath[0])
 	require.Equal(t, string(expected), prefix+typeStr+"\n")
@@ -36,7 +36,7 @@ func Test_GoStructNode_String_good(t *testing.T) {
 
 func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/map-value-map.parquet"
+	uri := "../testdata/map-value-map.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -57,7 +57,7 @@ func Test_GoStructNode_String_composite_map_key(t *testing.T) {
 
 func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/map-composite-value.parquet"
+	uri := "../testdata/map-composite-value.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -75,7 +75,7 @@ func Test_GoStructNode_String_composite_map_value(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/good.parquet"
+	uri := "../testdata/good.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -95,7 +95,7 @@ func Test_GoStructNode_String_invalid_scalar(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_list(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -116,7 +116,7 @@ func Test_GoStructNode_String_invalid_list(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -137,7 +137,7 @@ func Test_GoStructNode_String_invalid_map_key(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/all-types.parquet"
+	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -158,7 +158,7 @@ func Test_GoStructNode_String_invalid_map_value(t *testing.T) {
 
 func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/list-of-list.parquet"
+	uri := "../testdata/list-of-list.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -176,7 +176,7 @@ func Test_GoStructNode_String_invalid_list_element(t *testing.T) {
 
 func Test_GoStructNode_asList(t *testing.T) {
 	option := pio.ReadOption{}
-	uri := "../../testdata/gostruct-list.parquet"
+	uri := "../testdata/gostruct-list.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
 	defer func() {
@@ -194,7 +194,7 @@ func Test_GoStructNode_asList(t *testing.T) {
 	typeStr, err := goStructNode{SchemaNode: *root}.String()
 	require.NoError(t, err)
 
-	expected, _ := os.ReadFile("../../testdata/golden/schema-gostruct-list-go.txt")
+	expected, _ := os.ReadFile("../testdata/golden/schema-gostruct-list-go.txt")
 	// golden file has prefix of "type <root node name>"
 	prefix := fmt.Sprintf("type %s ", root.InNamePath[0])
 	require.Equal(t, string(expected), prefix+typeStr+"\n")

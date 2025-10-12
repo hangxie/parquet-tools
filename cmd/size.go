@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 var (

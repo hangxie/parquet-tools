@@ -7,8 +7,8 @@ import (
 	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/hangxie/parquet-go/v2/writer"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
-	pschema "github.com/hangxie/parquet-tools/internal/schema"
+	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 // current writer state

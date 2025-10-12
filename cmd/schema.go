@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	pio "github.com/hangxie/parquet-tools/internal/io"
-	pschema "github.com/hangxie/parquet-tools/internal/schema"
+	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 var (
