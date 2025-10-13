@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"go/format"
 
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
@@ -49,7 +50,12 @@ func (c SchemaCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(goStruct)
+		formatted, err := format.Source([]byte(goStruct))
+		if err != nil {
+			// If formatting fails, return the original unformatted code
+			return err
+		}
+		fmt.Println(string(formatted))
 	case formatCSV:
 		schema, err := schemaRoot.CSVSchema()
 		if err != nil {

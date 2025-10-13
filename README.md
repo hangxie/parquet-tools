@@ -745,7 +745,7 @@ $ parquet-tools schema --format raw testdata/good.parquet
 go struct format generates go struct definition snippet that can be used in go:
 
 ```bash
-$ parquet-tools schema --format go testdata/good.parquet | gofmt
+$ parquet-tools schema --format go testdata/good.parquet
 type Parquet_go_root struct {
 	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
 	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
@@ -755,7 +755,7 @@ type Parquet_go_root struct {
 You can turn on `--camel-case` to convert field names from snake_case_name to CamelCaseName:
 
 ```bash
-$ parquet-tools schema --format go --camel-case testdata/good.parquet | gofmt
+$ parquet-tools schema --format go --camel-case testdata/good.parquet
 type Parquet_go_root struct {
 	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
 	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
