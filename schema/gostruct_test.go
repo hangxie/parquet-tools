@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"go/format"
 	"os"
 	"testing"
 
@@ -27,6 +28,9 @@ func Test_GoStructNode_String_good(t *testing.T) {
 
 	typeStr, err := goStructNode{SchemaNode: *schemaRoot}.String()
 	require.NoError(t, err)
+	formatted, err := format.Source([]byte(typeStr))
+	require.NoError(t, err)
+	typeStr = string(formatted)
 
 	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
 	// golden file has prefix of "type <root node name>"
@@ -193,6 +197,9 @@ func Test_GoStructNode_asList(t *testing.T) {
 	root.Children[1].Children[0] = root.Children[1].Children[0].Children[0]
 	typeStr, err := goStructNode{SchemaNode: *root}.String()
 	require.NoError(t, err)
+	formatted, err := format.Source([]byte(typeStr))
+	require.NoError(t, err)
+	typeStr = string(formatted)
 
 	expected, _ := os.ReadFile("../testdata/golden/schema-gostruct-list-go.txt")
 	// golden file has prefix of "type <root node name>"

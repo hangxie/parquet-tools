@@ -2,6 +2,7 @@ package schema
 
 import (
 	"encoding/json"
+	"go/format"
 	"os"
 	"strings"
 	"testing"
@@ -220,6 +221,10 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 
 	actual, err := schemaRoot.GoStruct(false)
 	require.NoError(t, err)
+	formatted, err := format.Source([]byte(actual))
+	require.NoError(t, err)
+	actual = string(formatted)
+
 	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
@@ -239,6 +244,10 @@ func Test_Json_schema_go_struct_good_camel_case(t *testing.T) {
 
 	actual, err := schemaRoot.GoStruct(true)
 	require.NoError(t, err)
+	formatted, err := format.Source([]byte(actual))
+	require.NoError(t, err)
+	actual = string(formatted)
+
 	expected, _ := os.ReadFile("../testdata/golden/schema-good-go-camel-case.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
@@ -280,6 +289,7 @@ func Test_Json_schema_csv_schema_good(t *testing.T) {
 
 	actual, err := schemaRoot.CSVSchema()
 	require.NoError(t, err)
+
 	expected, _ := os.ReadFile("../testdata/golden/schema-csv-good.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
