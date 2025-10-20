@@ -224,8 +224,12 @@
           "UncompressedSize": 468,
           "NumValues": 10,
           "NullCount": 0,
-          "MaxValue": "DAAAABA5AAkAAAAA",
-          "MinValue": "DAAAABAwAAAAAAAA",
+          "MaxValue": {
+            "9": 9
+          },
+          "MinValue": {
+            "0": 0
+          },
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -261,8 +265,12 @@
           "UncompressedSize": 468,
           "NumValues": 10,
           "NullCount": 0,
-          "MaxValue": "DAAAABA5AAkAAAAA",
-          "MinValue": "DAAAABAwAAAAAAAA",
+          "MaxValue": {
+            "9": 9
+          },
+          "MinValue": {
+            "0": 0
+          },
           "CompressionCodec": "SNAPPY"
         },
         {

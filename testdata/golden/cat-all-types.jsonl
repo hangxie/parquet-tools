@@ -1,7 +1,11 @@
 {
   "Bool": true,
-  "Bson": "DAAAABAwAAAAAAAA",
-  "Bson2": "DAAAABAwAAAAAAAA",
+  "Bson": {
+    "0": 0
+  },
+  "Bson2": {
+    "0": 0
+  },
   "ByteArray": "Qnl0ZUFycmF5LTA=",
   "Date": "1970-01-01",
   "Date2": "1970-01-01",
@@ -52,8 +56,12 @@
 }
 {
   "Bool": false,
-  "Bson": "DAAAABAxAAEAAAAA",
-  "Bson2": "DAAAABAxAAEAAAAA",
+  "Bson": {
+    "1": 1
+  },
+  "Bson2": {
+    "1": 1
+  },
   "ByteArray": "Qnl0ZUFycmF5LTE=",
   "Date": "1967-04-07",
   "Date2": "1972-09-27",
@@ -120,8 +128,12 @@
 }
 {
   "Bool": true,
-  "Bson": "DAAAABAyAAIAAAAA",
-  "Bson2": "DAAAABAyAAIAAAAA",
+  "Bson": {
+    "2": 2
+  },
+  "Bson2": {
+    "2": 2
+  },
   "ByteArray": "Qnl0ZUFycmF5LTI=",
   "Date": "1964-07-11",
   "Date2": "1975-06-24",
@@ -207,8 +219,12 @@
 }
 {
   "Bool": false,
-  "Bson": "DAAAABAzAAMAAAAA",
-  "Bson2": "DAAAABAzAAMAAAAA",
+  "Bson": {
+    "3": 3
+  },
+  "Bson2": {
+    "3": 3
+  },
   "ByteArray": "Qnl0ZUFycmF5LTM=",
   "Date": "1961-10-15",
   "Date2": "1978-03-20",
@@ -317,8 +333,12 @@
 }
 {
   "Bool": true,
-  "Bson": "DAAAABA0AAQAAAAA",
-  "Bson2": "DAAAABA0AAQAAAAA",
+  "Bson": {
+    "4": 4
+  },
+  "Bson2": {
+    "4": 4
+  },
   "ByteArray": "Qnl0ZUFycmF5LTQ=",
   "Date": "1959-01-19",
   "Date2": "1980-12-14",
@@ -454,8 +474,12 @@
 }
 {
   "Bool": false,
-  "Bson": "DAAAABA1AAUAAAAA",
-  "Bson2": "DAAAABA1AAUAAAAA",
+  "Bson": {
+    "5": 5
+  },
+  "Bson2": {
+    "5": 5
+  },
   "ByteArray": "Qnl0ZUFycmF5LTU=",
   "Date": "1956-04-24",
   "Date2": "1983-09-10",
@@ -622,8 +646,12 @@
 }
 {
   "Bool": true,
-  "Bson": "DAAAABA2AAYAAAAA",
-  "Bson2": "DAAAABA2AAYAAAAA",
+  "Bson": {
+    "6": 6
+  },
+  "Bson2": {
+    "6": 6
+  },
   "ByteArray": "Qnl0ZUFycmF5LTY=",
   "Date": "1953-07-29",
   "Date2": "1986-06-06",
@@ -825,8 +853,12 @@
 }
 {
   "Bool": false,
-  "Bson": "DAAAABA3AAcAAAAA",
-  "Bson2": "DAAAABA3AAcAAAAA",
+  "Bson": {
+    "7": 7
+  },
+  "Bson2": {
+    "7": 7
+  },
   "ByteArray": "Qnl0ZUFycmF5LTc=",
   "Date": "1950-11-02",
   "Date2": "1989-03-02",
@@ -1067,8 +1099,12 @@
 }
 {
   "Bool": true,
-  "Bson": "DAAAABA4AAgAAAAA",
-  "Bson2": "DAAAABA4AAgAAAAA",
+  "Bson": {
+    "8": 8
+  },
+  "Bson2": {
+    "8": 8
+  },
   "ByteArray": "Qnl0ZUFycmF5LTg=",
   "Date": "1948-02-06",
   "Date2": "1991-11-27",
@@ -1352,8 +1388,12 @@
 }
 {
   "Bool": false,
-  "Bson": "DAAAABA5AAkAAAAA",
-  "Bson2": "DAAAABA5AAkAAAAA",
+  "Bson": {
+    "9": 9
+  },
+  "Bson2": {
+    "9": 9
+  },
   "ByteArray": "Qnl0ZUFycmF5LTk=",
   "Date": "1945-05-12",
   "Date2": "1994-08-23",
