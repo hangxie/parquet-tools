@@ -121,6 +121,7 @@ func main() {
 			Variant:           string(jsonStr),
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
+			Utf82:             fmt.Sprintf("UTF8_2-%d", i),
 			ConvertedInt8:     int32(i),
 			ConvertedInt16:    int32(i),
 			ConvertedInt32:    int32(i),
