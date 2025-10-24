@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.57.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.3
 	github.com/alecthomas/kong v1.12.1
-	github.com/aws/aws-sdk-go-v2 v1.39.3
+	github.com/aws/aws-sdk-go-v2 v1.39.4
 	github.com/aws/aws-sdk-go-v2/config v1.31.13
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.88.5
 	github.com/google/uuid v1.6.0
