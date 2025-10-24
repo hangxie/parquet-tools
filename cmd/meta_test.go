@@ -194,6 +194,7 @@ func Test_MetaCmd_Run_good(t *testing.T) {
 		"sorting-col": {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "sorting-col.parquet"}, "meta-sorting-col-raw.json"},
 		"all-types":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "all-types.parquet"}, "meta-all-types-raw.json"},
 		"geospatial":  {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "geospatial.parquet"}, "meta-geospatial-raw.json"},
+		"row-group":   {MetaCmd{ReadOption: rOpt, Base64: false, FailOnInt96: false, URI: "row-group.parquet"}, "meta-row-group-raw.json"},
 	}
 
 	for name, tc := range testCases {

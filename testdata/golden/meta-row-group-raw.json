@@ -1,0 +1,97 @@
+{
+  "NumRowGroups": 2,
+  "RowGroups": [
+    {
+      "NumRows": 17,
+      "TotalByteSize": 1986,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "brand"
+          ],
+          "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 1263,
+          "UncompressedSize": 1063,
+          "NumValues": 17,
+          "NullCount": 0,
+          "MaxValue": "the brand is: 9",
+          "MinValue": "the brand is: 0",
+          "CompressionCodec": "GZIP"
+        },
+        {
+          "PathInSchema": [
+            "name"
+          ],
+          "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 1098,
+          "UncompressedSize": 923,
+          "NumValues": 17,
+          "NullCount": 0,
+          "MaxValue": "the name is: 9",
+          "MinValue": "the name is: 0",
+          "CompressionCodec": "GZIP"
+        }
+      ]
+    },
+    {
+      "NumRows": 3,
+      "TotalByteSize": 663,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "brand"
+          ],
+          "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 414,
+          "UncompressedSize": 339,
+          "NumValues": 3,
+          "NullCount": 0,
+          "MaxValue": "the brand is: 19",
+          "MinValue": "the brand is: 17",
+          "CompressionCodec": "GZIP"
+        },
+        {
+          "PathInSchema": [
+            "name"
+          ],
+          "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
+          "Encodings": [
+            "RLE",
+            "BIT_PACKED",
+            "PLAIN"
+          ],
+          "CompressedSize": 399,
+          "UncompressedSize": 324,
+          "NumValues": 3,
+          "NullCount": 0,
+          "MaxValue": "the name is: 19",
+          "MinValue": "the name is: 17",
+          "CompressionCodec": "GZIP"
+        }
+      ]
+    }
+  ]
+}
