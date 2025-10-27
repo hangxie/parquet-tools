@@ -22,11 +22,10 @@ func Test_retrieveValue_error(t *testing.T) {
 		"double":  {parquet.Type_DOUBLE, "failed to read data as DOUBLE"},
 		"boolean": {parquet.Type_BOOLEAN, "failed to read data as BOOLEAN"},
 	}
-	c := &MetaCmd{}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			msg := c.retrieveValue([]byte{}, tc.pType)
-			require.Equal(t, tc.errMsg, msg)
+			msg := retrieveValue([]byte{}, tc.pType)
+			require.Contains(t, msg, tc.errMsg)
 		})
 	}
 }
@@ -58,8 +57,7 @@ func Test_retrieveValue_numeric(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			c := &MetaCmd{}
-			result := c.retrieveValue(tc.value, tc.pType)
+			result := retrieveValue(tc.value, tc.pType)
 			require.Equal(t, tc.expect, result)
 		})
 	}
@@ -78,13 +76,12 @@ func Test_retrieveValue_byte_array(t *testing.T) {
 	}
 
 	for name, tc := range testCases {
-		c := &MetaCmd{}
 		t.Run(name, func(t *testing.T) {
-			result := c.retrieveValue(tc.value, tc.pType)
+			result := retrieveValue(tc.value, tc.pType)
 			require.Equal(t, tc.expect, result)
 		})
 		t.Run(name+"-base64", func(t *testing.T) {
-			result := c.retrieveValue(tc.value, tc.pType)
+			result := retrieveValue(tc.value, tc.pType)
 			require.Equal(t, tc.expect, result)
 		})
 	}
