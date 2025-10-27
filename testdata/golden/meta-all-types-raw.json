@@ -73,8 +73,8 @@
           "UncompressedSize": 428,
           "NumValues": 10,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T09:09:09.009009Z",
-          "MinValue": "2022-01-01T00:00:00Z",
+          "MaxValue": "2022-01-01T09:09:09.009009000Z",
+          "MinValue": "2022-01-01T00:00:00.000000000Z",
           "CompressionCodec": "SNAPPY"
         },
         {
