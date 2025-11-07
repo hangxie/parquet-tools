@@ -71,6 +71,7 @@ func Test_CatCmd_Run_good(t *testing.T) {
 		"geospatial-geojson": {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "geospatial.parquet", FailOnInt96: false, Concurrent: false}, "cat-geospatial-geojson.jsonl"},
 		"old-style-list":     {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet", FailOnInt96: false, Concurrent: false}, "cat-old-style-list.jsonl"},
 		"multi-row-groups":   {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet", FailOnInt96: false, Concurrent: false}, "cat-row-group.jsonl"},
+		"dict-page":          {CatCmd{ReadOption: rOpt, Skip: 0, SkipPageSize: 10, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "dict-page.parquet", FailOnInt96: false, Concurrent: false}, "cat-dict-page.jsonl"},
 	}
 
 	for name, tc := range testCases {
