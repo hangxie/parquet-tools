@@ -29,6 +29,7 @@ Flags:
 Commands:
   cat                  Prints the content of a Parquet file, data only.
   import               Create Parquet file from other source data.
+  inspect              Inspect Parquet file structure in detail.
   merge                Merge multiple parquet files into one.
   meta                 Prints the metadata.
   row-count            Prints the count of rows.
@@ -40,7 +41,7 @@ Commands:
 
 Run "parquet-tools <command> --help" for more information on a command.
 
-parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-count", ...
+parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta", "row-count", ...
 ```
 
 ## Table of Contents
@@ -75,6 +76,11 @@ parquet-tools: error: expected one of "cat", "import", "merge", "meta", "row-cou
       - [Import from CSV](#import-from-csv)
       - [Import from JSON](#import-from-json)
       - [Import from JSONL](#import-from-jsonl)
+    - [inspect Command](#inspect-command)
+      - [Inspect File Level](#inspect-file-level)
+      - [Inspect Row Group Level](#inspect-row-group-level)
+      - [Inspect Column Chunk Level](#inspect-column-chunk-level)
+      - [Inspect Page Level](#inspect-page-level)
     - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
@@ -642,6 +648,78 @@ $ parquet-tools import -f jsonl -s testdata/jsonl.source -m testdata/jsonl.schem
 $ parquet-tools row-count /tmp/jsonl.parquet
 7
 ```
+
+### inspect Command
+
+`inspect` command provides detailed internal structure inspection of Parquet files at four different levels: file, row group, column chunk, and page. This is useful for debugging, understanding file organization, and analyzing storage efficiency. All output is in JSON format for easy parsing.
+
+The inspect command has hierarchical levels:
+1. **File Level** - Overview of the entire file (default)
+2. **Row Group Level** - Details of a specific row group (use `--row-group`)
+3. **Column Chunk Level** - Details of a column within a row group (use `--row-group` and `--column-chunk`)
+4. **Page Level** - Details and actual values from a specific page (use `--row-group`, `--column-chunk`, and `--page`)
+
+#### Inspect File Level
+
+File level inspection shows basic metadata about the parquet file including version, number of row groups, total rows, and compression information:
+
+```bash
+$ parquet-tools inspect testdata/good.parquet
+{"file_info":{"version":1,"num_row_groups":1,"total_rows":3,"compressed_size":588,"uncompressed_size":438,"created_by":"parquet-go version 1.12.0"},"row_groups":[{"index":0,"num_rows":3,"total_byte_size":438,"num_columns":2}]}
+```
+
+#### Inspect Row Group Level
+
+Row group level inspection shows details of all column chunks within a specific row group, including encodings, compression ratios, and statistics:
+
+```bash
+$ parquet-tools inspect testdata/good.parquet --row-group 0
+{"row_group":{"index":0,"num_rows":3,"total_byte_size":438,"num_columns":2},"column_chunks":[{"index":0,"path_in_schema":["shoe_brand"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN"],"compression_codec":"GZIP","num_values":3,"compressed_size":269,"uncompressed_size":194,"statistics":{"null_count":0,"min_value":"fila","max_value":"steph_curry"}},{"index":1,"path_in_schema":["shoe_name"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN"],"compression_codec":"GZIP","num_values":3,"compressed_size":319,"uncompressed_size":244,"statistics":{"null_count":0,"min_value":"air_griffey","max_value":"grant_hill_2"}}]}
+```
+
+#### Inspect Column Chunk Level
+
+Column chunk level inspection shows all pages within a column chunk, including page types, sizes, and encodings:
+
+```bash
+$ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0
+{"column_chunk":{"row_group_index":0,"column_chunk_index":0,"path_in_schema":["shoe_brand"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN"],"compression_codec":"GZIP","num_values":3,"compressed_size":269,"uncompressed_size":194,"data_page_offset":4,"statistics":{"null_count":0,"min_value":"fila","max_value":"steph_curry"}},"pages":[{"index":0,"offset":4,"type":"DATA_PAGE","compressed_size":269,"uncompressed_size":194,"num_values":3,"encoding":"PLAIN","definition_level_encoding":"RLE","repetition_level_encoding":"BIT_PACKED"}]}
+```
+
+For column chunks with dictionary encoding, you'll also see dictionary page information:
+
+```bash
+$ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0
+{"column_chunk":{"row_group_index":0,"column_chunk_index":0,"path_in_schema":["brand"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"compression_codec":"SNAPPY","num_values":3,"compressed_size":85,"uncompressed_size":85,"dictionary_page_offset":4,"data_page_offset":70,"statistics":{"null_count":0,"min_value":"adidas","max_value":"reebok"}},"pages":[{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressed_size":53,"uncompressed_size":28,"num_values":3,"encoding":"PLAIN"},{"index":1,"offset":70,"type":"DATA_PAGE","compressed_size":85,"uncompressed_size":85,"num_values":3,"encoding":"PLAIN_DICTIONARY","definition_level_encoding":"RLE","repetition_level_encoding":"BIT_PACKED","statistics":{"null_count":0}}]}
+```
+
+#### Inspect Page Level
+
+Page level inspection shows the actual decoded values from a specific page. This is the most detailed level and is useful for debugging data issues:
+
+```bash
+$ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0 --page 0
+{"page":{"index":0,"offset":4,"type":"DATA_PAGE","compressed_size":269,"uncompressed_size":194,"num_values":3,"encoding":"PLAIN","definition_level_encoding":"RLE","repetition_level_encoding":"BIT_PACKED"},"values":["nike","fila","steph_curry"]}
+```
+
+For dictionary pages, the values show the dictionary entries:
+
+```bash
+$ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0 --page 0
+{"page":{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressed_size":53,"uncompressed_size":28,"num_values":3,"encoding":"PLAIN"},"values":["nike","adidas","reebok"]}
+```
+
+> [!TIP]
+> Use `inspect` to:
+> - Debug why a file is larger than expected
+> - Understand compression efficiency
+> - Verify dictionary encoding is being used
+> - Examine statistics for query optimization
+> - Debug data type issues
+> - Analyze page sizes and organization
+
+> [!NOTE]
+> The `inspect` command is read-only and downloads only the necessary data from remote locations (S3, GCS, etc.), similar to other read commands.
 
 ### merge Command
 
