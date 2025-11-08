@@ -1,0 +1,24 @@
+{
+  "page": {
+    "compressed_size": 33,
+    "definition_levels_byte_length": 0,
+    "encoding": "PLAIN",
+    "index": 0,
+    "is_compressed": true,
+    "num_nulls": 0,
+    "num_rows": 0,
+    "num_values": 1,
+    "offset": 4,
+    "repetition_levels_byte_length": 0,
+    "statistics": {
+      "max_value": "nike",
+      "min_value": "nike",
+      "null_count": 0
+    },
+    "type": "DATA_PAGE_V2",
+    "uncompressed_size": 8
+  },
+  "values": [
+    "nike"
+  ]
+}

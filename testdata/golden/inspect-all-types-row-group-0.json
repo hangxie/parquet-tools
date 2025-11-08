@@ -1,0 +1,1296 @@
+{
+  "column_chunks": [
+    {
+      "compressed_size": 144,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 0,
+      "num_values": 10,
+      "path_in_schema": [
+        "Bool"
+      ],
+      "statistics": {
+        "max_value": true,
+        "min_value": false,
+        "null_count": 0
+      },
+      "type": "BOOLEAN",
+      "uncompressed_size": 136
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 1,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int32"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 2,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int64"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 429,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 3,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int96"
+      ],
+      "statistics": {
+        "max_value": "2022-01-01T09:09:09.009009000Z",
+        "min_value": "2022-01-01T00:00:00.000000000Z",
+        "null_count": 0
+      },
+      "type": "INT96",
+      "uncompressed_size": 428
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 4,
+      "num_values": 10,
+      "path_in_schema": [
+        "Float"
+      ],
+      "statistics": {
+        "max_value": 4.5,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "FLOAT",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 176,
+      "compression_codec": "SNAPPY",
+      "converted_type": "length=2",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 5,
+      "num_values": 10,
+      "path_in_schema": [
+        "Float16Val"
+      ],
+      "statistics": {
+        "max_value": 9.5,
+        "min_value": 0.5,
+        "null_count": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressed_size": 168
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 6,
+      "num_values": 10,
+      "path_in_schema": [
+        "Double"
+      ],
+      "statistics": {
+        "max_value": 4.5,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "DOUBLE",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 390,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 7,
+      "num_values": 10,
+      "path_in_schema": [
+        "ByteArray"
+      ],
+      "statistics": {
+        "max_value": "Qnl0ZUFycmF5LTk=",
+        "min_value": "Qnl0ZUFycmF5LTA=",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 442
+    },
+    {
+      "compressed_size": 320,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=ENUM",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 8,
+      "num_values": 10,
+      "path_in_schema": [
+        "Enum"
+      ],
+      "statistics": {
+        "max_value": "Enum-9",
+        "min_value": "Enum-0",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 312
+    },
+    {
+      "compressed_size": 438,
+      "compression_codec": "SNAPPY",
+      "converted_type": "length=16",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 9,
+      "logical_type": "logicaltype=UUID",
+      "num_values": 10,
+      "path_in_schema": [
+        "Uuid"
+      ],
+      "statistics": {
+        "max_value": "09090909-0909-0909-0909-090909090909",
+        "min_value": "00000000-0000-0000-0000-000000000000",
+        "null_count": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressed_size": 532
+    },
+    {
+      "compressed_size": 325,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=JSON",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 10,
+      "num_values": 10,
+      "path_in_schema": [
+        "Json"
+      ],
+      "statistics": {
+        "max_value": "{\"9\":9}",
+        "min_value": "{\"0\":0}",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 338
+    },
+    {
+      "compressed_size": 425,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=BSON",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 11,
+      "logical_type": "logicaltype=BSON",
+      "num_values": 10,
+      "path_in_schema": [
+        "Bson"
+      ],
+      "statistics": {
+        "max_value": {
+          "9": 9
+        },
+        "min_value": {
+          "0": 0
+        },
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 468
+    },
+    {
+      "compressed_size": 325,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 12,
+      "num_values": 10,
+      "path_in_schema": [
+        "Json2"
+      ],
+      "statistics": {
+        "max_value": "{\"9\":9}",
+        "min_value": "{\"0\":0}",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 338
+    },
+    {
+      "compressed_size": 425,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 13,
+      "logical_type": "logicaltype=BSON",
+      "num_values": 10,
+      "path_in_schema": [
+        "Bson2"
+      ],
+      "statistics": {
+        "max_value": {
+          "9": 9
+        },
+        "min_value": {
+          "0": 0
+        },
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 468
+    },
+    {
+      "compressed_size": 325,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 14,
+      "logical_type": "logicaltype=VARIANT",
+      "num_values": 10,
+      "path_in_schema": [
+        "Variant"
+      ],
+      "statistics": {
+        "max_value": "{\"9\":9}",
+        "min_value": "{\"0\":0}",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 338
+    },
+    {
+      "compressed_size": 384,
+      "compression_codec": "SNAPPY",
+      "converted_type": "length=10",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 15,
+      "num_values": 10,
+      "path_in_schema": [
+        "FixedLenByteArray"
+      ],
+      "statistics": {
+        "max_value": "Rml4ZWQtMDAwOQ==",
+        "min_value": "Rml4ZWQtMDAwMA==",
+        "null_count": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressed_size": 376
+    },
+    {
+      "compressed_size": 336,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN",
+        "PLAIN_DICTIONARY",
+        "RLE_DICTIONARY"
+      ],
+      "index": 16,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 10,
+      "path_in_schema": [
+        "Utf8"
+      ],
+      "statistics": {
+        "max_value": "UTF8-9",
+        "min_value": "UTF8-0",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 380
+    },
+    {
+      "compressed_size": 324,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 17,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 10,
+      "path_in_schema": [
+        "Utf8_2"
+      ],
+      "statistics": {
+        "max_value": "UTF8_2-9",
+        "min_value": "UTF8_2-0",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 364
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=INT_8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 18,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int_8"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=INT_16",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 19,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int_16"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=INT_32",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 20,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int_32"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=INT_64",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 21,
+      "num_values": 10,
+      "path_in_schema": [
+        "Int_64"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UINT_8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 22,
+      "num_values": 10,
+      "path_in_schema": [
+        "Uint_8"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UINT_16",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 23,
+      "num_values": 10,
+      "path_in_schema": [
+        "Uint_16"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UINT_32",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 24,
+      "num_values": 10,
+      "path_in_schema": [
+        "Uint_32"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UINT_64",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 25,
+      "num_values": 10,
+      "path_in_schema": [
+        "Uint_64"
+      ],
+      "statistics": {
+        "max_value": 9,
+        "min_value": 0,
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DATE",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 26,
+      "logical_type": "logicaltype=DATE",
+      "num_values": 10,
+      "path_in_schema": [
+        "Date"
+      ],
+      "statistics": {
+        "max_value": "1970-01-01",
+        "min_value": "1945-05-12",
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 27,
+      "logical_type": "logicaltype=DATE",
+      "num_values": 10,
+      "path_in_schema": [
+        "Date2"
+      ],
+      "statistics": {
+        "max_value": "1994-08-23",
+        "min_value": "1970-01-01",
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=TIME_MILLIS",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 28,
+      "logical_type": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimeMillis"
+      ],
+      "statistics": {
+        "max_value": "00:00:09.009",
+        "min_value": "00:00:00.000",
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 29,
+      "logical_type": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimeMillis2"
+      ],
+      "statistics": {
+        "max_value": "00:00:09.009",
+        "min_value": "00:00:00.000",
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=TIME_MICROS",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 30,
+      "logical_type": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimeMicros"
+      ],
+      "statistics": {
+        "max_value": "00:00:09.000009",
+        "min_value": "00:00:00.000000",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 31,
+      "logical_type": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimeMicros2"
+      ],
+      "statistics": {
+        "max_value": "00:00:09.000009",
+        "min_value": "00:00:00.000000",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 32,
+      "logical_type": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimeNanos2"
+      ],
+      "statistics": {
+        "max_value": "00:00:09.000000009",
+        "min_value": "00:00:00.000000000",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=TIMESTAMP_MILLIS",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 33,
+      "logical_type": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimestampMillis"
+      ],
+      "statistics": {
+        "max_value": "2022-01-01T00:00:00.009Z",
+        "min_value": "2022-01-01T00:00:00.000Z",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 34,
+      "logical_type": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimestampMillis2"
+      ],
+      "statistics": {
+        "max_value": "2022-01-01T00:00:00.009Z",
+        "min_value": "2022-01-01T00:00:00.000Z",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=TIMESTAMP_MICROS",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 35,
+      "logical_type": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimestampMicros"
+      ],
+      "statistics": {
+        "max_value": "2022-01-01T00:00:00.000009Z",
+        "min_value": "2022-01-01T00:00:00.000000Z",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 36,
+      "logical_type": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimestampMicros2"
+      ],
+      "statistics": {
+        "max_value": "2022-01-01T00:00:00.000009Z",
+        "min_value": "2022-01-01T00:00:00.000000Z",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 37,
+      "logical_type": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
+      "num_values": 10,
+      "path_in_schema": [
+        "TimestampNanos2"
+      ],
+      "statistics": {
+        "max_value": "2022-01-01T00:00:00.000000009Z",
+        "min_value": "2022-01-01T00:00:00.000000000Z",
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 143,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=INTERVAL, length=12",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 38,
+      "num_values": 10,
+      "path_in_schema": [
+        "Interval"
+      ],
+      "statistics": {
+        "null_count": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressed_size": 204
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=9",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 39,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
+      "num_values": 10,
+      "path_in_schema": [
+        "Decimal1"
+      ],
+      "statistics": {
+        "max_value": 44.44,
+        "min_value": -44.44,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 332,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=18",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 40,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2",
+      "num_values": 10,
+      "path_in_schema": [
+        "Decimal2"
+      ],
+      "statistics": {
+        "max_value": 44.44,
+        "min_value": -44.44,
+        "null_count": 0
+      },
+      "type": "INT64",
+      "uncompressed_size": 324
+    },
+    {
+      "compressed_size": 362,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 41,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+      "num_values": 10,
+      "path_in_schema": [
+        "Decimal3"
+      ],
+      "statistics": {
+        "max_value": 0.44,
+        "min_value": -0.44,
+        "null_count": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressed_size": 428
+    },
+    {
+      "compressed_size": 190,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=20",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 42,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2",
+      "num_values": 10,
+      "path_in_schema": [
+        "Decimal4"
+      ],
+      "statistics": {
+        "max_value": 0.44,
+        "min_value": -0.44,
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 182
+    },
+    {
+      "compressed_size": 228,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 43,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
+      "num_values": 10,
+      "path_in_schema": [
+        "decimal5"
+      ],
+      "statistics": {
+        "max_value": 44.44,
+        "min_value": -44.44,
+        "null_count": 0
+      },
+      "type": "INT32",
+      "uncompressed_size": 220
+    },
+    {
+      "compressed_size": 400,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 44,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+      "num_values": 10,
+      "path_in_schema": [
+        "DecimalPointer"
+      ],
+      "statistics": {
+        "max_value": 0.03,
+        "min_value": -0.44,
+        "null_count": 5
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressed_size": 404
+    },
+    {
+      "compressed_size": 569,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 45,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 46,
+      "path_in_schema": [
+        "Map",
+        "key_value",
+        "key"
+      ],
+      "statistics": {
+        "max_value": "Composite-8",
+        "min_value": "Composite-0",
+        "null_count": 1
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 1047
+    },
+    {
+      "compressed_size": 377,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 46,
+      "num_values": 46,
+      "path_in_schema": [
+        "Map",
+        "key_value",
+        "value"
+      ],
+      "statistics": {
+        "max_value": 8,
+        "min_value": 0,
+        "null_count": 1
+      },
+      "type": "INT32",
+      "uncompressed_size": 437
+    },
+    {
+      "compressed_size": 560,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 47,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 46,
+      "path_in_schema": [
+        "List",
+        "list",
+        "element"
+      ],
+      "statistics": {
+        "max_value": "Composite-8",
+        "min_value": "Composite-0",
+        "null_count": 1
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 1047
+    },
+    {
+      "compressed_size": 366,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 48,
+      "num_values": 46,
+      "path_in_schema": [
+        "Repeated"
+      ],
+      "statistics": {
+        "max_value": 8,
+        "min_value": 0,
+        "null_count": 1
+      },
+      "type": "INT32",
+      "uncompressed_size": 436
+    },
+    {
+      "compressed_size": 575,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 49,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 46,
+      "path_in_schema": [
+        "NestedMap",
+        "key_value",
+        "key"
+      ],
+      "statistics": {
+        "max_value": "Composite-8",
+        "min_value": "Composite-0",
+        "null_count": 1
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 1047
+    },
+    {
+      "compressed_size": 755,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 50,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 130,
+      "path_in_schema": [
+        "NestedMap",
+        "key_value",
+        "value",
+        "Map",
+        "key_value",
+        "key"
+      ],
+      "statistics": {
+        "max_value": "Embedded-7",
+        "min_value": "Embedded-0",
+        "null_count": 10
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 2153
+    },
+    {
+      "compressed_size": 520,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 51,
+      "num_values": 130,
+      "path_in_schema": [
+        "NestedMap",
+        "key_value",
+        "value",
+        "Map",
+        "key_value",
+        "value"
+      ],
+      "statistics": {
+        "max_value": 7,
+        "min_value": 0,
+        "null_count": 10
+      },
+      "type": "INT32",
+      "uncompressed_size": 857
+    },
+    {
+      "compressed_size": 656,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=10",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 52,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+      "num_values": 130,
+      "path_in_schema": [
+        "NestedMap",
+        "key_value",
+        "value",
+        "List",
+        "list",
+        "element"
+      ],
+      "statistics": {
+        "max_value": 0.44,
+        "min_value": 0,
+        "null_count": 10
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 2425
+    },
+    {
+      "compressed_size": 740,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 53,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 130,
+      "path_in_schema": [
+        "NestedList",
+        "list",
+        "element",
+        "Map",
+        "key_value",
+        "key"
+      ],
+      "statistics": {
+        "max_value": "Embedded-7",
+        "min_value": "Embedded-0",
+        "null_count": 10
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 2159
+    },
+    {
+      "compressed_size": 491,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 54,
+      "num_values": 130,
+      "path_in_schema": [
+        "NestedList",
+        "list",
+        "element",
+        "Map",
+        "key_value",
+        "value"
+      ],
+      "statistics": {
+        "max_value": 7,
+        "min_value": 0,
+        "null_count": 10
+      },
+      "type": "INT32",
+      "uncompressed_size": 863
+    },
+    {
+      "compressed_size": 641,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=DECIMAL, scale=2, precision=10",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 55,
+      "logical_type": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+      "num_values": 130,
+      "path_in_schema": [
+        "NestedList",
+        "list",
+        "element",
+        "List",
+        "list",
+        "element"
+      ],
+      "statistics": {
+        "max_value": 0.44,
+        "min_value": 0,
+        "null_count": 10
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 2430
+    }
+  ],
+  "row_group": {
+    "index": 0,
+    "num_columns": 56,
+    "num_rows": 10,
+    "total_byte_size": 28499
+  }
+}

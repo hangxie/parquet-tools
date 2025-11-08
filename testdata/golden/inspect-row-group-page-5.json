@@ -1,0 +1,22 @@
+{
+  "page": {
+    "compressed_size": 65,
+    "definition_level_encoding": "RLE",
+    "encoding": "PLAIN",
+    "index": 5,
+    "num_values": 2,
+    "offset": 811,
+    "repetition_level_encoding": "RLE",
+    "statistics": {
+      "max_value": "the brand is: 13",
+      "min_value": "the brand is: 12",
+      "null_count": 0
+    },
+    "type": "DATA_PAGE",
+    "uncompressed_size": 40
+  },
+  "values": [
+    "the brand is: 12",
+    "the brand is: 13"
+  ]
+}
