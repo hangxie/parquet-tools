@@ -1,0 +1,47 @@
+{
+  "column_chunks": [
+    {
+      "compressed_size": 422,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 0,
+      "logical_type": "logicaltype=GEOMETRY",
+      "num_values": 10,
+      "path_in_schema": [
+        "Geometry"
+      ],
+      "statistics": {
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 974
+    },
+    {
+      "compressed_size": 393,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 1,
+      "logical_type": "logicaltype=GEOGRAPHY",
+      "num_values": 10,
+      "path_in_schema": [
+        "Geography"
+      ],
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 800
+    }
+  ],
+  "row_group": {
+    "index": 0,
+    "num_columns": 2,
+    "num_rows": 10,
+    "total_byte_size": 1774
+  }
+}

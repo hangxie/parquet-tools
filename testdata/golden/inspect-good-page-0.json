@@ -1,0 +1,21 @@
+{
+  "page": {
+    "compressed_size": 33,
+    "definition_level_encoding": "RLE",
+    "encoding": "PLAIN",
+    "index": 0,
+    "num_values": 1,
+    "offset": 4,
+    "repetition_level_encoding": "RLE",
+    "statistics": {
+      "max_value": "nike",
+      "min_value": "nike",
+      "null_count": 0
+    },
+    "type": "DATA_PAGE",
+    "uncompressed_size": 8
+  },
+  "values": [
+    "nike"
+  ]
+}

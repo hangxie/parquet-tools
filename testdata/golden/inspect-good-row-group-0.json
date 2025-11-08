@@ -1,0 +1,56 @@
+{
+  "column_chunks": [
+    {
+      "compressed_size": 269,
+      "compression_codec": "GZIP",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 0,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 3,
+      "path_in_schema": [
+        "shoe_brand"
+      ],
+      "statistics": {
+        "max_value": "steph_curry",
+        "min_value": "fila",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 194
+    },
+    {
+      "compressed_size": 319,
+      "compression_codec": "GZIP",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 1,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 3,
+      "path_in_schema": [
+        "shoe_name"
+      ],
+      "statistics": {
+        "max_value": "grant_hill_2",
+        "min_value": "air_griffey",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 244
+    }
+  ],
+  "row_group": {
+    "index": 0,
+    "num_columns": 2,
+    "num_rows": 3,
+    "total_byte_size": 438
+  }
+}
