@@ -343,7 +343,7 @@ func (c InspectCmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
 }
 
 func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) any {
-	if value == nil {
+	if len(value) == 0 {
 		return nil
 	}
 
@@ -354,59 +354,27 @@ func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) a
 		return nil
 	}
 
-	// For BYTE_ARRAY and FIXED_LEN_BYTE_ARRAY, check if they need special handling
+	var val any
+	// For BYTE_ARRAY and FIXED_LEN_BYTE_ARRAY, statistics bytes don't include the length prefix
 	if *schemaNode.Type == parquet.Type_BYTE_ARRAY || *schemaNode.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-		// Check for special logical types that need decoding
-		needsDecoding := false
-
-		// UUID, BSON, JSON, and DECIMAL types need special handling
-		if schemaNode.LogicalType != nil {
-			if schemaNode.LogicalType.IsSetUUID() ||
-				schemaNode.LogicalType.IsSetJSON() ||
-				schemaNode.LogicalType.IsSetBSON() ||
-				schemaNode.LogicalType.IsSetDECIMAL() {
-				needsDecoding = true
-			}
+		val = string(value)
+	} else {
+		// For other types, use parquet-go's encoding functions to decode the raw bytes
+		buf := bytes.NewReader(value)
+		vals, err := encoding.ReadPlain(buf, *schemaNode.Type, 1, 0)
+		if err != nil {
+			return fmt.Sprintf("failed to read data as %s: %v", schemaNode.Type.String(), err)
 		}
-
-		// Also check converted type for DECIMAL
-		if schemaNode.ConvertedType != nil {
-			if *schemaNode.ConvertedType == parquet.ConvertedType_DECIMAL ||
-				*schemaNode.ConvertedType == parquet.ConvertedType_JSON ||
-				*schemaNode.ConvertedType == parquet.ConvertedType_BSON {
-				needsDecoding = true
-			}
+		if len(vals) == 0 {
+			return nil
 		}
-
-		// If it's a plain string (UTF8), return as string
-		if !needsDecoding {
-			return string(value)
-		}
-
-		// For types that need decoding, pass raw bytes to ParquetTypeToJSONTypeWithLogical
-		// Statistics bytes don't include the length prefix, so we pass them as-is
-		precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
-		return types.ParquetTypeToJSONTypeWithLogical(
-			string(value),
-			schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-			precision, scale)
+		val = vals[0]
 	}
 
-	// For numeric types, use parquet-go's encoding functions
-	buf := bytes.NewReader(value)
-	vals, err := encoding.ReadPlain(buf, *schemaNode.Type, 1, 0)
-	if err != nil {
-		return fmt.Sprintf("failed to read data as %s: %v", schemaNode.Type.String(), err)
-	}
-	if len(vals) == 0 {
-		return nil
-	}
-
-	precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
 	return types.ParquetTypeToJSONTypeWithLogical(
-		vals[0],
+		val,
 		schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-		precision, scale)
+		int(schemaNode.GetPrecision()), int(schemaNode.GetScale()))
 }
 
 func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode) ([]map[string]any, error) {

@@ -6,8 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-go/v2/common"
+	"github.com/hangxie/parquet-go/v2/parquet"
 
 	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 func Test_Inspect_File(t *testing.T) {
@@ -152,6 +154,16 @@ func Test_Inspect_ColumnChunk(t *testing.T) {
 			wantErr: true,
 			errMsg:  "--column-chunk requires --row-group",
 		},
+		"negative-row-group-index": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1), ColumnChunk: common.ToPtr(0)},
+			wantErr: true,
+			errMsg:  "row group index -1 out of range",
+		},
+		"out-of-range-row-group": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999), ColumnChunk: common.ToPtr(0)},
+			wantErr: true,
+			errMsg:  "row group index 999 out of range",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -202,6 +214,21 @@ func Test_Inspect_Page(t *testing.T) {
 			golden:  "inspect-row-group-rg1-page-0.json",
 			wantErr: false,
 		},
+		"data-page-v2-page-0": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
+			golden:  "inspect-data-page-v2-page-0.json",
+			wantErr: false,
+		},
+		"good-page-1": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(1)},
+			golden:  "inspect-good-page-1.json",
+			wantErr: false,
+		},
+		"row-group-page-5": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(5)},
+			golden:  "inspect-row-group-page-5.json",
+			wantErr: false,
+		},
 		"negative-page-index": {
 			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(-1)},
 			wantErr: true,
@@ -221,6 +248,26 @@ func Test_Inspect_Page(t *testing.T) {
 			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), Page: common.ToPtr(0)},
 			wantErr: true,
 			errMsg:  "--page requires both --row-group and --column-chunk",
+		},
+		"page-negative-row-group-index": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
+			wantErr: true,
+			errMsg:  "row group index -1 out of range",
+		},
+		"page-out-of-range-row-group": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
+			wantErr: true,
+			errMsg:  "row group index 999 out of range",
+		},
+		"page-negative-column-chunk-index": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1), Page: common.ToPtr(0)},
+			wantErr: true,
+			errMsg:  "column chunk index -1 out of range",
+		},
+		"page-out-of-range-column-chunk": {
+			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999), Page: common.ToPtr(0)},
+			wantErr: true,
+			errMsg:  "column chunk index 999 out of range",
 		},
 	}
 
@@ -263,6 +310,14 @@ func Test_Inspect_SpecialTypes(t *testing.T) {
 			cmd:    InspectCmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: common.ToPtr(0)},
 			golden: "inspect-nil-statistics-row-group-0.json",
 		},
+		"all-types": {
+			cmd:    InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0)},
+			golden: "inspect-all-types-row-group-0.json",
+		},
+		"all-types-interval-column": {
+			cmd:    InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(38)},
+			golden: "inspect-all-types-interval-column.json",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -276,6 +331,81 @@ func Test_Inspect_SpecialTypes(t *testing.T) {
 			expected := loadExpected(t, tc.golden)
 			require.Equal(t, expected, stdout)
 			require.Equal(t, "", stderr)
+		})
+	}
+}
+
+func Test_getStatValue(t *testing.T) {
+	cmd := InspectCmd{}
+
+	testCases := map[string]struct {
+		value      []byte
+		schemaNode *pschema.SchemaNode
+		want       any
+		wantNil    bool
+	}{
+		"nil-value": {
+			value: nil,
+			schemaNode: &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			wantNil: true,
+		},
+		"empty-value": {
+			value: []byte{},
+			schemaNode: &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			wantNil: true,
+		},
+		"geometry-with-data": {
+			value: []byte{1, 2, 3, 4}, // Some non-empty data
+			schemaNode: &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+					LogicalType: &parquet.LogicalType{
+						GEOMETRY: &parquet.GeometryType{},
+					},
+				},
+			},
+			wantNil: true, // Should return nil for geospatial types
+		},
+		"geography-with-data": {
+			value: []byte{1, 2, 3, 4}, // Some non-empty data
+			schemaNode: &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+					LogicalType: &parquet.LogicalType{
+						GEOGRAPHY: &parquet.GeographyType{},
+					},
+				},
+			},
+			wantNil: true, // Should return nil for geospatial types
+		},
+		"interval-with-data": {
+			value: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, // 12 bytes for interval
+			schemaNode: &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_INTERVAL),
+				},
+			},
+			wantNil: true, // Should return nil for interval types
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := cmd.getStatValue(tc.value, tc.schemaNode)
+			if tc.wantNil {
+				require.Nil(t, result, "expected nil result")
+			} else {
+				require.Equal(t, tc.want, result)
+			}
 		})
 	}
 }
