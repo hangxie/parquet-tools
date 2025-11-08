@@ -1,0 +1,99 @@
+{
+  "column_chunks": [
+    {
+      "compressed_size": 518,
+      "compression_codec": "SNAPPY",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN",
+        "PLAIN_DICTIONARY",
+        "RLE_DICTIONARY"
+      ],
+      "index": 0,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 20,
+      "path_in_schema": [
+        "Name"
+      ],
+      "statistics": {
+        "max_value": "Student Name_9",
+        "min_value": "Student Name",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 639
+    },
+    {
+      "compressed_size": 266,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 1,
+      "num_values": 20,
+      "path_in_schema": [
+        "Age"
+      ],
+      "type": "INT32",
+      "uncompressed_size": 260
+    },
+    {
+      "compressed_size": 346,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 2,
+      "num_values": 20,
+      "path_in_schema": [
+        "Id"
+      ],
+      "type": "INT64",
+      "uncompressed_size": 404
+    },
+    {
+      "compressed_size": 266,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 3,
+      "num_values": 20,
+      "path_in_schema": [
+        "Weight"
+      ],
+      "type": "FLOAT",
+      "uncompressed_size": 260
+    },
+    {
+      "compressed_size": 144,
+      "compression_codec": "SNAPPY",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 4,
+      "num_values": 20,
+      "path_in_schema": [
+        "Sex"
+      ],
+      "type": "BOOLEAN",
+      "uncompressed_size": 136
+    }
+  ],
+  "row_group": {
+    "index": 0,
+    "num_columns": 5,
+    "num_rows": 20,
+    "total_byte_size": 1699
+  }
+}

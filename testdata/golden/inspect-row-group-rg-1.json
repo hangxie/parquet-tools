@@ -1,0 +1,56 @@
+{
+  "column_chunks": [
+    {
+      "compressed_size": 414,
+      "compression_codec": "GZIP",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 0,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 3,
+      "path_in_schema": [
+        "brand"
+      ],
+      "statistics": {
+        "max_value": "the brand is: 19",
+        "min_value": "the brand is: 17",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 339
+    },
+    {
+      "compressed_size": 399,
+      "compression_codec": "GZIP",
+      "converted_type": "convertedtype=UTF8",
+      "encodings": [
+        "RLE",
+        "BIT_PACKED",
+        "PLAIN"
+      ],
+      "index": 1,
+      "logical_type": "logicaltype=STRING",
+      "num_values": 3,
+      "path_in_schema": [
+        "name"
+      ],
+      "statistics": {
+        "max_value": "the name is: 19",
+        "min_value": "the name is: 17",
+        "null_count": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressed_size": 324
+    }
+  ],
+  "row_group": {
+    "index": 1,
+    "num_columns": 2,
+    "num_rows": 3,
+    "total_byte_size": 663
+  }
+}

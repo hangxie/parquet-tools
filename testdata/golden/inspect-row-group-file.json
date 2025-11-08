@@ -1,0 +1,28 @@
+{
+  "file_info": {
+    "compressed_size": 3174,
+    "created_by": "github.com/hangxie/parquet-go v2 latest",
+    "num_row_groups": 2,
+    "total_rows": 20,
+    "uncompressed_size": 2649,
+    "version": 2
+  },
+  "row_groups": [
+    {
+      "compressed_size": 2361,
+      "index": 0,
+      "num_columns": 2,
+      "num_rows": 17,
+      "total_byte_size": 1986,
+      "uncompressed_size": 1986
+    },
+    {
+      "compressed_size": 813,
+      "index": 1,
+      "num_columns": 2,
+      "num_rows": 3,
+      "total_byte_size": 663,
+      "uncompressed_size": 663
+    }
+  ]
+}

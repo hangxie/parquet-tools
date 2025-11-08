@@ -1,0 +1,16 @@
+{
+  "page": {
+    "compressed_size": 53,
+    "encoding": "PLAIN",
+    "index": 0,
+    "num_values": 3,
+    "offset": 4,
+    "type": "DICTIONARY_PAGE",
+    "uncompressed_size": 28
+  },
+  "values": [
+    "adidas",
+    "reebok",
+    "nike"
+  ]
+}

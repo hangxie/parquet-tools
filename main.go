@@ -13,6 +13,7 @@ import (
 var cli struct {
 	Cat              cmd.CatCmd                   `cmd:"" help:"Prints the content of a Parquet file, data only."`
 	Import           cmd.ImportCmd                `cmd:"" help:"Create Parquet file from other source data."`
+	Inspect          cmd.InspectCmd               `cmd:"" help:"Inspect Parquet file structure in detail."`
 	Merge            cmd.MergeCmd                 `cmd:"" help:"Merge multiple parquet files into one."`
 	Meta             cmd.MetaCmd                  `cmd:"" help:"Prints the metadata."`
 	RowCount         cmd.RowCountCmd              `cmd:"" help:"Prints the count of rows."`

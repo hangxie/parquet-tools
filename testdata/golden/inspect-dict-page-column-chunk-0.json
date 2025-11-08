@@ -1,0 +1,89 @@
+{
+  "column_chunk": {
+    "column_chunk_index": 0,
+    "compressed_size": 320,
+    "compression_codec": "GZIP",
+    "converted_type": "convertedtype=UTF8",
+    "data_page_offset": 70,
+    "dictionary_page_offset": 4,
+    "encodings": [
+      "RLE",
+      "BIT_PACKED",
+      "PLAIN",
+      "PLAIN_DICTIONARY",
+      "RLE_DICTIONARY"
+    ],
+    "logical_type": "logicaltype=STRING",
+    "num_values": 5,
+    "path_in_schema": [
+      "shoe_brand"
+    ],
+    "row_group_index": 0,
+    "statistics": {
+      "max_value": "reebok",
+      "min_value": "adidas",
+      "null_count": 0
+    },
+    "type": "BYTE_ARRAY",
+    "uncompressed_size": 220
+  },
+  "pages": [
+    {
+      "compressed_size": 53,
+      "encoding": "PLAIN",
+      "index": 0,
+      "num_values": 3,
+      "offset": 4,
+      "type": "DICTIONARY_PAGE",
+      "uncompressed_size": 28
+    },
+    {
+      "compressed_size": 36,
+      "definition_level_encoding": "RLE",
+      "encoding": "PLAIN_DICTIONARY",
+      "index": 1,
+      "num_values": 2,
+      "offset": 70,
+      "repetition_level_encoding": "RLE",
+      "statistics": {
+        "max_value": "nike",
+        "min_value": "adidas",
+        "null_count": 0
+      },
+      "type": "DATA_PAGE",
+      "uncompressed_size": 11
+    },
+    {
+      "compressed_size": 36,
+      "definition_level_encoding": "RLE",
+      "encoding": "PLAIN_DICTIONARY",
+      "index": 2,
+      "num_values": 2,
+      "offset": 155,
+      "repetition_level_encoding": "RLE",
+      "statistics": {
+        "max_value": "reebok",
+        "min_value": "nike",
+        "null_count": 0
+      },
+      "type": "DATA_PAGE",
+      "uncompressed_size": 11
+    },
+    {
+      "compressed_size": 31,
+      "definition_level_encoding": "RLE",
+      "encoding": "PLAIN_DICTIONARY",
+      "index": 3,
+      "num_values": 1,
+      "offset": 240,
+      "repetition_level_encoding": "RLE",
+      "statistics": {
+        "max_value": "adidas",
+        "min_value": "adidas",
+        "null_count": 0
+      },
+      "type": "DATA_PAGE",
+      "uncompressed_size": 6
+    }
+  ]
+}
