@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"testing"
 
+	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -87,6 +89,146 @@ func Test_CatCmd_Run_good(t *testing.T) {
 			require.Equal(t, "", stderr)
 		})
 	}
+}
+
+func Test_CatCmd_encoder(t *testing.T) {
+	rOpt := pio.ReadOption{}
+
+	testCases := map[string]struct {
+		setup       func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan string, *reader.ParquetReader, []string)
+		wantErr     bool
+		errContains string
+	}{
+		"context-cancelled-in-main-loop": {
+			setup: func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan string, *reader.ParquetReader, []string) {
+				// Create a context that we can cancel
+				ctx, cancel := context.WithCancel(context.Background())
+
+				// Create channels
+				rowChan := make(chan any, 10)
+				outputChan := make(chan string, 10)
+
+				// Open a test parquet file
+				fileReader, err := pio.NewParquetFileReader("file://../testdata/good.parquet", rOpt)
+				require.NoError(t, err)
+
+				// Populate rowChan with some data, then cancel context
+				rows, err := fileReader.ReadByNumber(5)
+				require.NoError(t, err)
+
+				// Send one row and then cancel
+				rowChan <- rows[0]
+				cancel() // Cancel the context immediately
+
+				return ctx, cancel, rowChan, outputChan, fileReader, nil
+			},
+			wantErr:     true,
+			errContains: "context canceled",
+		},
+		"context-cancelled-before-send": {
+			setup: func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan string, *reader.ParquetReader, []string) {
+				// Create a context that we can cancel
+				ctx, cancel := context.WithCancel(context.Background())
+
+				// Create channels
+				rowChan := make(chan any, 10)
+				outputChan := make(chan string, 1) // Small buffer to test the send path
+
+				// Open a test parquet file
+				fileReader, err := pio.NewParquetFileReader("file://../testdata/good.parquet", rOpt)
+				require.NoError(t, err)
+
+				// Populate rowChan with data
+				rows, err := fileReader.ReadByNumber(5)
+				require.NoError(t, err)
+
+				// Fill output channel to block sending
+				outputChan <- "blocking"
+
+				// Send row to process
+				rowChan <- rows[0]
+
+				// Cancel before the encoder can send to outputChan
+				cancel()
+
+				return ctx, cancel, rowChan, outputChan, fileReader, nil
+			},
+			wantErr:     true,
+			errContains: "context canceled",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			ctx, cancel, rowChan, outputChan, fileReader, fieldList := tc.setup(t)
+			defer cancel()
+			defer func() { _ = fileReader.PFile.Close() }()
+
+			cmd := CatCmd{
+				Format: "json",
+			}
+
+			err := cmd.encoder(ctx, rowChan, outputChan, fileReader.SchemaHandler, fieldList)
+
+			if tc.wantErr {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func Test_CatCmd_encoder_invalid_format(t *testing.T) {
+	// Test the "unsupported format" error path in encoder function (line 188)
+	// This tests when cmd.Format has an invalid value that passes initial validation
+	// but fails in the encoder switch statement
+
+	rOpt := pio.ReadOption{}
+
+	// Open a test parquet file
+	fileReader, err := pio.NewParquetFileReader("file://../testdata/good.parquet", rOpt)
+	require.NoError(t, err)
+	defer func() { _ = fileReader.PFile.Close() }()
+
+	// Read some data
+	rows, err := fileReader.ReadByNumber(1)
+	require.NoError(t, err)
+	require.NotEmpty(t, rows)
+
+	// Create channels
+	rowChan := make(chan any, 10)
+	outputChan := make(chan string, 10)
+
+	// Send a row to process
+	rowChan <- rows[0]
+	close(rowChan) // Close to signal completion
+
+	// Create context
+	ctx := context.Background()
+
+	// Create a CatCmd with an invalid format
+	// We need to bypass the delimiter map check by using a format
+	// that exists in the delimiter map but will fail in encoder
+	cmd := CatCmd{
+		Format: "xml", // This format doesn't exist in the delimiter map
+	}
+
+	// Manually set up delimiter for this invalid format to bypass Run() validation
+	// This simulates the scenario where Format is corrupted after validation
+	delimiter["xml"] = struct {
+		begin          string
+		lineDelimiter  string
+		fieldDelimiter rune
+		end            string
+	}{"", "", ' ', ""}
+	defer delete(delimiter, "xml")
+
+	err = cmd.encoder(ctx, rowChan, outputChan, fileReader.SchemaHandler, nil)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "unsupported format: xml")
 }
 
 func Benchmark_CatCmd_Run(b *testing.B) {

@@ -78,7 +78,6 @@ func (c CatCmd) Run() error {
 		return fmt.Errorf("invalid sampling %f, needs to be between 0.0 and 1.0", c.SampleRatio)
 	}
 	if _, ok := delimiter[c.Format]; !ok {
-		// should never reach here
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
 
