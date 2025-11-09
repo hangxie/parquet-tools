@@ -378,7 +378,6 @@ func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) a
 }
 
 func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode) ([]map[string]any, error) {
-	// Use the new ReadAllPageHeaders function from v2.4.0
 	pageHeaders, err := reader.ReadAllPageHeaders(pr.PFile, col)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read page headers: %w", err)
@@ -393,7 +392,7 @@ func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk
 	return pages, nil
 }
 
-// convertPageHeaderInfo converts PageHeaderInfo from v2.4.0 to our JSON output format
+// convertPageHeaderInfo converts PageHeaderInfo from parquet-go to our JSON output format
 func (c InspectCmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode *pschema.SchemaNode) map[string]any {
 	pageInfo := map[string]any{
 		"index":             headerInfo.Index,
@@ -556,7 +555,6 @@ func (c InspectCmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parq
 		return nil, fmt.Errorf("unable to get page offset")
 	}
 
-	// Use the new ReadDictionaryPageValues function from v2.4.0
 	values, err := pr.ReadDictionaryPageValues(offset, meta.Codec, meta.Type)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read dictionary page values: %w", err)
