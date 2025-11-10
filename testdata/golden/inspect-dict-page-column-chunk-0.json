@@ -1,11 +1,11 @@
 {
-  "column_chunk": {
-    "column_chunk_index": 0,
-    "compressed_size": 320,
-    "compression_codec": "GZIP",
-    "converted_type": "convertedtype=UTF8",
-    "data_page_offset": 70,
-    "dictionary_page_offset": 4,
+  "columnChunk": {
+    "columnChunkIndex": 0,
+    "compressedSize": 320,
+    "compressionCodec": "GZIP",
+    "convertedType": "convertedtype=UTF8",
+    "dataPageOffset": 70,
+    "dictionaryPageOffset": 4,
     "encodings": [
       "RLE",
       "BIT_PACKED",
@@ -13,77 +13,77 @@
       "PLAIN_DICTIONARY",
       "RLE_DICTIONARY"
     ],
-    "logical_type": "logicaltype=STRING",
-    "num_values": 5,
-    "path_in_schema": [
+    "logicalType": "logicaltype=STRING",
+    "numValues": 5,
+    "pathInSchema": [
       "shoe_brand"
     ],
-    "row_group_index": 0,
+    "rowGroupIndex": 0,
     "statistics": {
-      "max_value": "reebok",
-      "min_value": "adidas",
-      "null_count": 0
+      "maxValue": "reebok",
+      "minValue": "adidas",
+      "nullCount": 0
     },
     "type": "BYTE_ARRAY",
-    "uncompressed_size": 220
+    "uncompressedSize": 220
   },
   "pages": [
     {
-      "compressed_size": 53,
-      "encoding": "PLAIN",
       "index": 0,
-      "num_values": 3,
       "offset": 4,
       "type": "DICTIONARY_PAGE",
-      "uncompressed_size": 28
+      "compressedSize": 53,
+      "uncompressedSize": 28,
+      "numValues": 3,
+      "encoding": "PLAIN"
     },
     {
-      "compressed_size": 36,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN_DICTIONARY",
       "index": 1,
-      "num_values": 2,
       "offset": 70,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "max_value": "nike",
-        "min_value": "adidas",
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 11
+      "compressedSize": 36,
+      "uncompressedSize": 11,
+      "numValues": 2,
+      "encoding": "PLAIN_DICTIONARY",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": "nike",
+        "minValue": "adidas",
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 36,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN_DICTIONARY",
       "index": 2,
-      "num_values": 2,
       "offset": 155,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "max_value": "reebok",
-        "min_value": "nike",
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 11
+      "compressedSize": 36,
+      "uncompressedSize": 11,
+      "numValues": 2,
+      "encoding": "PLAIN_DICTIONARY",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": "reebok",
+        "minValue": "nike",
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 31,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN_DICTIONARY",
       "index": 3,
-      "num_values": 1,
       "offset": 240,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "max_value": "adidas",
-        "min_value": "adidas",
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 6
+      "compressedSize": 31,
+      "uncompressedSize": 6,
+      "numValues": 1,
+      "encoding": "PLAIN_DICTIONARY",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": "adidas",
+        "minValue": "adidas",
+        "nullCount": 0
+      }
     }
   ]
 }

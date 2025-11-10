@@ -1,82 +1,82 @@
 {
-  "column_chunk": {
-    "column_chunk_index": 38,
-    "compressed_size": 143,
-    "compression_codec": "SNAPPY",
-    "converted_type": "convertedtype=INTERVAL, length=12",
-    "data_page_offset": 11490,
+  "columnChunk": {
+    "columnChunkIndex": 38,
+    "compressedSize": 143,
+    "compressionCodec": "SNAPPY",
+    "convertedType": "convertedtype=INTERVAL, length=12",
+    "dataPageOffset": 11490,
     "encodings": [
       "RLE",
       "BIT_PACKED",
       "PLAIN"
     ],
-    "num_values": 10,
-    "path_in_schema": [
+    "numValues": 10,
+    "pathInSchema": [
       "Interval"
     ],
-    "row_group_index": 0,
+    "rowGroupIndex": 0,
     "statistics": {
-      "null_count": 0
+      "nullCount": 0
     },
     "type": "FIXED_LEN_BYTE_ARRAY",
-    "uncompressed_size": 204
+    "uncompressedSize": 204
   },
   "pages": [
     {
-      "compressed_size": 13,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 0,
-      "num_values": 3,
       "offset": 11490,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 36
+      "compressedSize": 13,
+      "uncompressedSize": 36,
+      "numValues": 3,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 16,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 1,
-      "num_values": 3,
       "offset": 11524,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 36
+      "compressedSize": 16,
+      "uncompressedSize": 36,
+      "numValues": 3,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 16,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 2,
-      "num_values": 3,
       "offset": 11561,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 36
+      "compressedSize": 16,
+      "uncompressedSize": 36,
+      "numValues": 3,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 14,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 3,
-      "num_values": 1,
       "offset": 11598,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 12
+      "compressedSize": 14,
+      "uncompressedSize": 12,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 0
+      }
     }
   ]
 }

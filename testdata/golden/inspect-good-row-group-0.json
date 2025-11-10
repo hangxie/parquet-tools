@@ -1,56 +1,56 @@
 {
-  "column_chunks": [
+  "columnChunks": [
     {
-      "compressed_size": 269,
-      "compression_codec": "GZIP",
-      "converted_type": "convertedtype=UTF8",
+      "compressedSize": 269,
+      "compressionCodec": "GZIP",
+      "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 0,
-      "logical_type": "logicaltype=STRING",
-      "num_values": 3,
-      "path_in_schema": [
+      "logicalType": "logicaltype=STRING",
+      "numValues": 3,
+      "pathInSchema": [
         "shoe_brand"
       ],
       "statistics": {
-        "max_value": "steph_curry",
-        "min_value": "fila",
-        "null_count": 0
+        "maxValue": "steph_curry",
+        "minValue": "fila",
+        "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressed_size": 194
+      "uncompressedSize": 194
     },
     {
-      "compressed_size": 319,
-      "compression_codec": "GZIP",
-      "converted_type": "convertedtype=UTF8",
+      "compressedSize": 319,
+      "compressionCodec": "GZIP",
+      "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 1,
-      "logical_type": "logicaltype=STRING",
-      "num_values": 3,
-      "path_in_schema": [
+      "logicalType": "logicaltype=STRING",
+      "numValues": 3,
+      "pathInSchema": [
         "shoe_name"
       ],
       "statistics": {
-        "max_value": "grant_hill_2",
-        "min_value": "air_griffey",
-        "null_count": 0
+        "maxValue": "grant_hill_2",
+        "minValue": "air_griffey",
+        "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressed_size": 244
+      "uncompressedSize": 244
     }
   ],
-  "row_group": {
+  "rowGroup": {
     "index": 0,
-    "num_columns": 2,
-    "num_rows": 3,
-    "total_byte_size": 438
+    "numColumns": 2,
+    "numRows": 3,
+    "totalByteSize": 438
   }
 }

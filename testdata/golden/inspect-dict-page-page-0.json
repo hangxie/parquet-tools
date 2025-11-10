@@ -1,12 +1,12 @@
 {
   "page": {
-    "compressed_size": 53,
-    "encoding": "PLAIN",
     "index": 0,
-    "num_values": 3,
     "offset": 4,
     "type": "DICTIONARY_PAGE",
-    "uncompressed_size": 28
+    "compressedSize": 53,
+    "uncompressedSize": 28,
+    "numValues": 3,
+    "encoding": "PLAIN"
   },
   "values": [
     "adidas",

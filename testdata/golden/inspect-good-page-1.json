@@ -1,19 +1,19 @@
 {
   "page": {
-    "compressed_size": 33,
-    "definition_level_encoding": "RLE",
-    "encoding": "PLAIN",
     "index": 1,
-    "num_values": 1,
     "offset": 82,
-    "repetition_level_encoding": "RLE",
-    "statistics": {
-      "max_value": "fila",
-      "min_value": "fila",
-      "null_count": 0
-    },
     "type": "DATA_PAGE",
-    "uncompressed_size": 8
+    "compressedSize": 33,
+    "uncompressedSize": 8,
+    "numValues": 1,
+    "encoding": "PLAIN",
+    "definitionLevelEncoding": "RLE",
+    "repetitionLevelEncoding": "RLE",
+    "statistics": {
+      "maxValue": "fila",
+      "minValue": "fila",
+      "nullCount": 0
+    }
   },
   "values": [
     "fila"

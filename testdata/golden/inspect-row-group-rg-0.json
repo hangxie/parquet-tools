@@ -1,56 +1,56 @@
 {
-  "column_chunks": [
+  "columnChunks": [
     {
-      "compressed_size": 1263,
-      "compression_codec": "GZIP",
-      "converted_type": "convertedtype=UTF8",
+      "compressedSize": 1263,
+      "compressionCodec": "GZIP",
+      "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 0,
-      "logical_type": "logicaltype=STRING",
-      "num_values": 17,
-      "path_in_schema": [
+      "logicalType": "logicaltype=STRING",
+      "numValues": 17,
+      "pathInSchema": [
         "brand"
       ],
       "statistics": {
-        "max_value": "the brand is: 9",
-        "min_value": "the brand is: 0",
-        "null_count": 0
+        "maxValue": "the brand is: 9",
+        "minValue": "the brand is: 0",
+        "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressed_size": 1063
+      "uncompressedSize": 1063
     },
     {
-      "compressed_size": 1098,
-      "compression_codec": "GZIP",
-      "converted_type": "convertedtype=UTF8",
+      "compressedSize": 1098,
+      "compressionCodec": "GZIP",
+      "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 1,
-      "logical_type": "logicaltype=STRING",
-      "num_values": 17,
-      "path_in_schema": [
+      "logicalType": "logicaltype=STRING",
+      "numValues": 17,
+      "pathInSchema": [
         "name"
       ],
       "statistics": {
-        "max_value": "the name is: 9",
-        "min_value": "the name is: 0",
-        "null_count": 0
+        "maxValue": "the name is: 9",
+        "minValue": "the name is: 0",
+        "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressed_size": 923
+      "uncompressedSize": 923
     }
   ],
-  "row_group": {
+  "rowGroup": {
     "index": 0,
-    "num_columns": 2,
-    "num_rows": 17,
-    "total_byte_size": 1986
+    "numColumns": 2,
+    "numRows": 17,
+    "totalByteSize": 1986
   }
 }
