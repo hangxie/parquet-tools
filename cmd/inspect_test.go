@@ -445,10 +445,10 @@ func Test_buildStatistics(t *testing.T) {
 				},
 			},
 			want: map[string]any{
-				"null_count":     int64(10),
-				"distinct_count": int64(5),
-				"min_value":      int32(1),
-				"max_value":      int32(100),
+				"nullCount":     int64(10),
+				"distinctCount": int64(5),
+				"minValue":      int32(1),
+				"maxValue":      int32(100),
 			},
 		},
 		"without-distinct-count": {
@@ -463,9 +463,9 @@ func Test_buildStatistics(t *testing.T) {
 				},
 			},
 			want: map[string]any{
-				"null_count": int64(10),
-				"min_value":  int32(1),
-				"max_value":  int32(100),
+				"nullCount": int64(10),
+				"minValue":  int32(1),
+				"maxValue":  int32(100),
 			},
 		},
 		"without-null-count": {
@@ -480,9 +480,9 @@ func Test_buildStatistics(t *testing.T) {
 				},
 			},
 			want: map[string]any{
-				"distinct_count": int64(5),
-				"min_value":      int32(1),
-				"max_value":      int32(100),
+				"distinctCount": int64(5),
+				"minValue":      int32(1),
+				"maxValue":      int32(100),
 			},
 		},
 		"nil-schema-node": {
@@ -492,8 +492,8 @@ func Test_buildStatistics(t *testing.T) {
 			},
 			schemaNode: nil,
 			want: map[string]any{
-				"null_count":     int64(10),
-				"distinct_count": int64(5),
+				"nullCount":     int64(10),
+				"distinctCount": int64(5),
 			},
 		},
 	}
@@ -572,8 +572,8 @@ func Test_addTypeInformation(t *testing.T) {
 				},
 			},
 			want: map[string]any{
-				"converted_type": "convertedtype=DATE",
-				"logical_type":   "logicaltype=DATE",
+				"convertedType": "convertedtype=DATE",
+				"logicalType":   "logicaltype=DATE",
 			},
 		},
 		"nil-schema-node": {
@@ -606,7 +606,7 @@ func Test_convertPageHeaderInfo(t *testing.T) {
 	testCases := map[string]struct {
 		headerInfo reader.PageHeaderInfo
 		schemaNode *pschema.SchemaNode
-		want       map[string]any
+		want       PageInfo
 	}{
 		"data-page-without-crc": {
 			headerInfo: reader.PageHeaderInfo{
@@ -627,16 +627,16 @@ func Test_convertPageHeaderInfo(t *testing.T) {
 					Type: parquet.TypePtr(parquet.Type_INT32),
 				},
 			},
-			want: map[string]any{
-				"index":                     0,
-				"offset":                    int64(1000),
-				"type":                      "DATA_PAGE",
-				"compressed_size":           int32(500),
-				"uncompressed_size":         int32(600),
-				"num_values":                int32(100),
-				"encoding":                  "PLAIN",
-				"definition_level_encoding": "RLE",
-				"repetition_level_encoding": "RLE",
+			want: PageInfo{
+				Index:                   0,
+				Offset:                  1000,
+				Type:                    parquet.PageType_DATA_PAGE,
+				CompressedSize:          500,
+				UncompressedSize:        600,
+				NumValues:               common.ToPtr(int32(100)),
+				Encoding:                common.ToPtr(parquet.Encoding_PLAIN),
+				DefinitionLevelEncoding: common.ToPtr(parquet.Encoding_RLE),
+				RepetitionLevelEncoding: common.ToPtr(parquet.Encoding_RLE),
 			},
 		},
 		"dictionary-page-with-nil-is-sorted": {
@@ -657,16 +657,16 @@ func Test_convertPageHeaderInfo(t *testing.T) {
 					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
 				},
 			},
-			want: map[string]any{
-				"index":             1,
-				"offset":            int64(2000),
-				"type":              "DICTIONARY_PAGE",
-				"compressed_size":   int32(300),
-				"uncompressed_size": int32(400),
-				"num_values":        int32(50),
-				"encoding":          "PLAIN",
-				"has_crc":           true,
-				"crc":               int32(12345),
+			want: PageInfo{
+				Index:            1,
+				Offset:           2000,
+				Type:             parquet.PageType_DICTIONARY_PAGE,
+				CompressedSize:   300,
+				UncompressedSize: 400,
+				HasCrc:           true,
+				Crc:              12345,
+				NumValues:        common.ToPtr(int32(50)),
+				Encoding:         common.ToPtr(parquet.Encoding_PLAIN),
 			},
 		},
 		"index-page": {
@@ -683,13 +683,13 @@ func Test_convertPageHeaderInfo(t *testing.T) {
 					Type: parquet.TypePtr(parquet.Type_INT32),
 				},
 			},
-			want: map[string]any{
-				"index":             2,
-				"offset":            int64(3000),
-				"type":              "INDEX_PAGE",
-				"compressed_size":   int32(200),
-				"uncompressed_size": int32(250),
-				"note":              "Index page (column index)",
+			want: PageInfo{
+				Index:            2,
+				Offset:           3000,
+				Type:             parquet.PageType_INDEX_PAGE,
+				CompressedSize:   200,
+				UncompressedSize: 250,
+				Note:             "Index page (column index)",
 			},
 		},
 	}

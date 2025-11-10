@@ -1,9 +1,9 @@
 {
-  "column_chunks": [
+  "columnChunks": [
     {
-      "compressed_size": 518,
-      "compression_codec": "SNAPPY",
-      "converted_type": "convertedtype=UTF8",
+      "compressedSize": 518,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
         "BIT_PACKED",
@@ -12,88 +12,88 @@
         "RLE_DICTIONARY"
       ],
       "index": 0,
-      "logical_type": "logicaltype=STRING",
-      "num_values": 20,
-      "path_in_schema": [
+      "logicalType": "logicaltype=STRING",
+      "numValues": 20,
+      "pathInSchema": [
         "Name"
       ],
       "statistics": {
-        "max_value": "Student Name_9",
-        "min_value": "Student Name",
-        "null_count": 0
+        "maxValue": "Student Name_9",
+        "minValue": "Student Name",
+        "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressed_size": 639
+      "uncompressedSize": 639
     },
     {
-      "compressed_size": 266,
-      "compression_codec": "SNAPPY",
+      "compressedSize": 266,
+      "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 1,
-      "num_values": 20,
-      "path_in_schema": [
+      "numValues": 20,
+      "pathInSchema": [
         "Age"
       ],
       "type": "INT32",
-      "uncompressed_size": 260
+      "uncompressedSize": 260
     },
     {
-      "compressed_size": 346,
-      "compression_codec": "SNAPPY",
+      "compressedSize": 346,
+      "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 2,
-      "num_values": 20,
-      "path_in_schema": [
+      "numValues": 20,
+      "pathInSchema": [
         "Id"
       ],
       "type": "INT64",
-      "uncompressed_size": 404
+      "uncompressedSize": 404
     },
     {
-      "compressed_size": 266,
-      "compression_codec": "SNAPPY",
+      "compressedSize": 266,
+      "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 3,
-      "num_values": 20,
-      "path_in_schema": [
+      "numValues": 20,
+      "pathInSchema": [
         "Weight"
       ],
       "type": "FLOAT",
-      "uncompressed_size": 260
+      "uncompressedSize": 260
     },
     {
-      "compressed_size": 144,
-      "compression_codec": "SNAPPY",
+      "compressedSize": 144,
+      "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
         "BIT_PACKED",
         "PLAIN"
       ],
       "index": 4,
-      "num_values": 20,
-      "path_in_schema": [
+      "numValues": 20,
+      "pathInSchema": [
         "Sex"
       ],
       "type": "BOOLEAN",
-      "uncompressed_size": 136
+      "uncompressedSize": 136
     }
   ],
-  "row_group": {
+  "rowGroup": {
     "index": 0,
-    "num_columns": 5,
-    "num_rows": 20,
-    "total_byte_size": 1699
+    "numColumns": 5,
+    "numRows": 20,
+    "totalByteSize": 1699
   }
 }

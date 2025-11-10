@@ -1,22 +1,22 @@
 {
   "page": {
-    "compressed_size": 33,
-    "definition_levels_byte_length": 0,
-    "encoding": "PLAIN",
     "index": 0,
-    "is_compressed": true,
-    "num_nulls": 0,
-    "num_rows": 0,
-    "num_values": 1,
     "offset": 4,
-    "repetition_levels_byte_length": 0,
-    "statistics": {
-      "max_value": "nike",
-      "min_value": "nike",
-      "null_count": 0
-    },
     "type": "DATA_PAGE_V2",
-    "uncompressed_size": 8
+    "compressedSize": 33,
+    "uncompressedSize": 8,
+    "numValues": 1,
+    "encoding": "PLAIN",
+    "numNulls": 0,
+    "numRows": 0,
+    "definitionLevelsByteLength": 0,
+    "repetitionLevelsByteLength": 0,
+    "isCompressed": true,
+    "statistics": {
+      "maxValue": "nike",
+      "minValue": "nike",
+      "nullCount": 0
+    }
   },
   "values": [
     "nike"

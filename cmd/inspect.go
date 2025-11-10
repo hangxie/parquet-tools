@@ -16,6 +16,29 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
+// PageInfo represents information about a page in a Parquet file
+type PageInfo struct {
+	Index                      int               `json:"index"`
+	Offset                     int64             `json:"offset"`
+	Type                       parquet.PageType  `json:"type"`
+	CompressedSize             int32             `json:"compressedSize"`
+	UncompressedSize           int32             `json:"uncompressedSize"`
+	HasCrc                     bool              `json:"hasCrc,omitempty"`
+	Crc                        int32             `json:"crc,omitempty"`
+	NumValues                  *int32            `json:"numValues,omitempty"`
+	Encoding                   *parquet.Encoding `json:"encoding,omitempty"`
+	DefinitionLevelEncoding    *parquet.Encoding `json:"definitionLevelEncoding,omitempty"`
+	RepetitionLevelEncoding    *parquet.Encoding `json:"repetitionLevelEncoding,omitempty"`
+	NumNulls                   *int32            `json:"numNulls,omitempty"`
+	NumRows                    *int32            `json:"numRows,omitempty"`
+	DefinitionLevelsByteLength *int32            `json:"definitionLevelsByteLength,omitempty"`
+	RepetitionLevelsByteLength *int32            `json:"repetitionLevelsByteLength,omitempty"`
+	IsCompressed               *bool             `json:"isCompressed,omitempty"`
+	IsSorted                   *bool             `json:"isSorted,omitempty"`
+	Note                       string            `json:"note,omitempty"`
+	Statistics                 map[string]any    `json:"statistics,omitempty"`
+}
+
 // InspectCmd is a kong command for inspect
 type InspectCmd struct {
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
@@ -55,7 +78,7 @@ func (c InspectCmd) Run() error {
 	switch {
 	case c.Page != nil:
 		// Level 4: Show page details and values
-		return c.inspectPage(reader, *c.RowGroup, *c.ColumnChunk, *c.Page, inExNameMap, pathMap)
+		return c.inspectPage(reader, *c.RowGroup, *c.ColumnChunk, *c.Page, pathMap)
 	case c.ColumnChunk != nil:
 		// Level 3: Show column chunk details and pages
 		return c.inspectColumnChunk(reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap)
@@ -64,7 +87,7 @@ func (c InspectCmd) Run() error {
 		return c.inspectRowGroup(reader, *c.RowGroup, inExNameMap, pathMap)
 	default:
 		// Level 1: Show file info and row groups
-		return c.inspectFile(reader, inExNameMap, pathMap)
+		return c.inspectFile(reader)
 	}
 }
 
@@ -82,24 +105,15 @@ func (c InspectCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string]
 }
 
 // Level 1: File info and row groups with brief info
-func (c InspectCmd) inspectFile(reader *reader.ParquetReader, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
+func (c InspectCmd) inspectFile(reader *reader.ParquetReader) error {
 	footer := reader.Footer
 
-	// Calculate totals
+	// Calculate totals and build row group brief info in a single loop
 	totalRows := int64(0)
 	compressedSize := int64(0)
 	uncompressedSize := int64(0)
-
-	for _, rg := range footer.RowGroups {
-		totalRows += rg.NumRows
-		for _, col := range rg.Columns {
-			compressedSize += col.MetaData.TotalCompressedSize
-			uncompressedSize += col.MetaData.TotalUncompressedSize
-		}
-	}
-
-	// Build row group brief info
 	rowGroupsBrief := make([]map[string]any, len(footer.RowGroups))
+
 	for i, rg := range footer.RowGroups {
 		rgCompressed := int64(0)
 		rgUncompressed := int64(0)
@@ -109,25 +123,29 @@ func (c InspectCmd) inspectFile(reader *reader.ParquetReader, inExNameMap map[st
 		}
 
 		rowGroupsBrief[i] = map[string]any{
-			"index":             i,
-			"num_rows":          rg.NumRows,
-			"total_byte_size":   rg.TotalByteSize,
-			"num_columns":       len(rg.Columns),
-			"compressed_size":   rgCompressed,
-			"uncompressed_size": rgUncompressed,
+			"index":            i,
+			"numRows":          rg.NumRows,
+			"totalByteSize":    rg.TotalByteSize,
+			"numColumns":       len(rg.Columns),
+			"compressedSize":   rgCompressed,
+			"uncompressedSize": rgUncompressed,
 		}
+
+		totalRows += rg.NumRows
+		compressedSize += rgCompressed
+		uncompressedSize += rgUncompressed
 	}
 
 	output := map[string]any{
-		"file_info": map[string]any{
-			"version":           footer.Version,
-			"num_row_groups":    len(footer.RowGroups),
-			"total_rows":        totalRows,
-			"compressed_size":   compressedSize,
-			"uncompressed_size": uncompressedSize,
-			"created_by":        footer.CreatedBy,
+		"fileInfo": map[string]any{
+			"version":          footer.Version,
+			"numRowGroups":     len(footer.RowGroups),
+			"totalRows":        totalRows,
+			"compressedSize":   compressedSize,
+			"uncompressedSize": uncompressedSize,
+			"createdBy":        footer.CreatedBy,
 		},
-		"row_groups": rowGroupsBrief,
+		"rowGroups": rowGroupsBrief,
 	}
 
 	return c.printJSON(output)
@@ -150,13 +168,13 @@ func (c InspectCmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex 
 	}
 
 	output := map[string]any{
-		"row_group": map[string]any{
-			"index":           rowGroupIndex,
-			"num_rows":        rg.NumRows,
-			"total_byte_size": rg.TotalByteSize,
-			"num_columns":     len(rg.Columns),
+		"rowGroup": map[string]any{
+			"index":         rowGroupIndex,
+			"numRows":       rg.NumRows,
+			"totalByteSize": rg.TotalByteSize,
+			"numColumns":    len(rg.Columns),
 		},
-		"column_chunks": columnChunksBrief,
+		"columnChunks": columnChunksBrief,
 	}
 
 	return c.printJSON(output)
@@ -168,31 +186,27 @@ func (c InspectCmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, i
 	schemaNode := pathMap[pathKey]
 
 	columnChunk := map[string]any{
-		"index":             index,
-		"path_in_schema":    pathInSchema,
-		"type":              col.MetaData.Type.String(),
-		"encodings":         encodingToString(col.MetaData.Encodings),
-		"compression_codec": col.MetaData.Codec.String(),
-		"num_values":        col.MetaData.NumValues,
-		"compressed_size":   col.MetaData.TotalCompressedSize,
-		"uncompressed_size": col.MetaData.TotalUncompressedSize,
+		"index":            index,
+		"pathInSchema":     pathInSchema,
+		"type":             col.MetaData.Type.String(),
+		"encodings":        encodingToString(col.MetaData.Encodings),
+		"compressionCodec": col.MetaData.Codec.String(),
+		"numValues":        col.MetaData.NumValues,
+		"compressedSize":   col.MetaData.TotalCompressedSize,
+		"uncompressedSize": col.MetaData.TotalUncompressedSize,
 	}
 
 	c.addTypeInformation(columnChunk, schemaNode)
 
 	// Add statistics if available
 	if col.MetaData.Statistics != nil {
-		c.addColumnStatistics(columnChunk, col.MetaData.Statistics, schemaNode)
+		stats := c.buildStatistics(col.MetaData.Statistics, schemaNode)
+		if len(stats) > 0 {
+			columnChunk["statistics"] = stats
+		}
 	}
 
 	return columnChunk
-}
-
-func (c InspectCmd) addColumnStatistics(columnChunk map[string]any, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
-	stats := c.buildStatistics(statistics, schemaNode)
-	if len(stats) > 0 {
-		columnChunk["statistics"] = stats
-	}
 }
 
 // Level 3: Column chunk details and pages with brief info
@@ -216,24 +230,24 @@ func (c InspectCmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupInd
 
 	// Build column chunk details
 	columnChunkDetails := map[string]any{
-		"row_group_index":    rowGroupIndex,
-		"column_chunk_index": columnChunkIndex,
-		"path_in_schema":     pathInSchema,
-		"type":               col.MetaData.Type.String(),
-		"encodings":          encodingToString(col.MetaData.Encodings),
-		"compression_codec":  col.MetaData.Codec.String(),
-		"num_values":         col.MetaData.NumValues,
-		"compressed_size":    col.MetaData.TotalCompressedSize,
-		"uncompressed_size":  col.MetaData.TotalUncompressedSize,
-		"data_page_offset":   col.MetaData.DataPageOffset,
+		"rowGroupIndex":    rowGroupIndex,
+		"columnChunkIndex": columnChunkIndex,
+		"pathInSchema":     pathInSchema,
+		"type":             col.MetaData.Type.String(),
+		"encodings":        encodingToString(col.MetaData.Encodings),
+		"compressionCodec": col.MetaData.Codec.String(),
+		"numValues":        col.MetaData.NumValues,
+		"compressedSize":   col.MetaData.TotalCompressedSize,
+		"uncompressedSize": col.MetaData.TotalUncompressedSize,
+		"dataPageOffset":   col.MetaData.DataPageOffset,
 	}
 
 	if col.MetaData.DictionaryPageOffset != nil {
-		columnChunkDetails["dictionary_page_offset"] = *col.MetaData.DictionaryPageOffset
+		columnChunkDetails["dictionaryPageOffset"] = *col.MetaData.DictionaryPageOffset
 	}
 
 	if col.MetaData.IndexPageOffset != nil {
-		columnChunkDetails["index_page_offset"] = *col.MetaData.IndexPageOffset
+		columnChunkDetails["indexPageOffset"] = *col.MetaData.IndexPageOffset
 	}
 
 	c.addTypeInformation(columnChunkDetails, schemaNode)
@@ -253,27 +267,25 @@ func (c InspectCmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupInd
 	}
 
 	output := map[string]any{
-		"column_chunk": columnChunkDetails,
-		"pages":        pages,
+		"columnChunk": columnChunkDetails,
+		"pages":       pages,
 	}
 
 	return c.printJSON(output)
 }
 
 // Level 4: Page details and values
-func (c InspectCmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex, pageIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
+func (c InspectCmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex, pageIndex int, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
 		return fmt.Errorf("row group index %d out of range [0, %d)", rowGroupIndex, len(footer.RowGroups))
 	}
-
 	rg := footer.RowGroups[rowGroupIndex]
 
 	if columnChunkIndex < 0 || columnChunkIndex >= len(rg.Columns) {
 		return fmt.Errorf("column chunk index %d out of range [0, %d)", columnChunkIndex, len(rg.Columns))
 	}
-
 	col := rg.Columns[columnChunkIndex]
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
 	schemaNode := pathMap[pathKey]
@@ -287,7 +299,6 @@ func (c InspectCmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, col
 	if pageIndex < 0 || pageIndex >= len(pages) {
 		return fmt.Errorf("page index %d out of range [0, %d)", pageIndex, len(pages))
 	}
-
 	page := pages[pageIndex]
 
 	// Read page values
@@ -308,19 +319,24 @@ func (c InspectCmd) getConvertedType(schemaNode *pschema.SchemaNode) string {
 	tagMap := schemaNode.GetTagMap()
 	orderedTags := pschema.OrderedTags()
 
+	convertedTypeTags := map[string]struct{}{
+		"convertedtype": {},
+		"scale":         {},
+		"precision":     {},
+		"length":        {},
+	}
+
 	var convertedTypeParts []string
 	for _, tag := range orderedTags {
-		if tag == "convertedtype" || tag == "scale" || tag == "precision" || tag == "length" {
-			if value, found := tagMap[tag]; found {
-				convertedTypeParts = append(convertedTypeParts, tag+"="+value)
-			}
+		if _, ok := convertedTypeTags[tag]; !ok {
+			continue
+		}
+		if value, found := tagMap[tag]; found {
+			convertedTypeParts = append(convertedTypeParts, tag+"="+value)
 		}
 	}
 
-	if len(convertedTypeParts) > 0 {
-		return strings.Join(convertedTypeParts, ", ")
-	}
-	return ""
+	return strings.Join(convertedTypeParts, ", ")
 }
 
 func (c InspectCmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
@@ -329,17 +345,15 @@ func (c InspectCmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
 
 	var logicalTypeParts []string
 	for _, tag := range orderedTags {
-		if strings.HasPrefix(tag, "logicaltype") {
-			if value, found := tagMap[tag]; found {
-				logicalTypeParts = append(logicalTypeParts, tag+"="+value)
-			}
+		if !strings.HasPrefix(tag, "logicaltype") {
+			continue
+		}
+		if value, found := tagMap[tag]; found {
+			logicalTypeParts = append(logicalTypeParts, tag+"="+value)
 		}
 	}
 
-	if len(logicalTypeParts) > 0 {
-		return strings.Join(logicalTypeParts, ", ")
-	}
-	return ""
+	return strings.Join(logicalTypeParts, ", ")
 }
 
 func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) any {
@@ -377,14 +391,14 @@ func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) a
 		int(schemaNode.GetPrecision()), int(schemaNode.GetScale()))
 }
 
-func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode) ([]map[string]any, error) {
+func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
 	pageHeaders, err := reader.ReadAllPageHeaders(pr.PFile, col)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read page headers: %w", err)
 	}
 
 	// Convert PageHeaderInfo to our output format
-	pages := make([]map[string]any, len(pageHeaders))
+	pages := make([]PageInfo, len(pageHeaders))
 	for i, headerInfo := range pageHeaders {
 		pages[i] = c.convertPageHeaderInfo(headerInfo, schemaNode)
 	}
@@ -393,68 +407,57 @@ func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk
 }
 
 // convertPageHeaderInfo converts PageHeaderInfo from parquet-go to our JSON output format
-func (c InspectCmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode *pschema.SchemaNode) map[string]any {
-	pageInfo := map[string]any{
-		"index":             headerInfo.Index,
-		"offset":            headerInfo.Offset,
-		"type":              headerInfo.PageType.String(),
-		"compressed_size":   headerInfo.CompressedSize,
-		"uncompressed_size": headerInfo.UncompressedSize,
+func (c InspectCmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode *pschema.SchemaNode) PageInfo {
+	pageInfo := PageInfo{
+		Index:            headerInfo.Index,
+		Offset:           headerInfo.Offset,
+		Type:             headerInfo.PageType,
+		CompressedSize:   headerInfo.CompressedSize,
+		UncompressedSize: headerInfo.UncompressedSize,
 	}
 
 	if headerInfo.HasCRC {
-		pageInfo["has_crc"] = true
-		pageInfo["crc"] = headerInfo.CRC
+		pageInfo.HasCrc = true
+		pageInfo.Crc = headerInfo.CRC
 	}
 
 	switch headerInfo.PageType {
 	case parquet.PageType_DATA_PAGE:
-		pageInfo["num_values"] = headerInfo.NumValues
-		pageInfo["encoding"] = headerInfo.Encoding.String()
-		pageInfo["definition_level_encoding"] = headerInfo.DefLevelEncoding.String()
-		pageInfo["repetition_level_encoding"] = headerInfo.RepLevelEncoding.String()
+		pageInfo.NumValues = &headerInfo.NumValues
+		pageInfo.Encoding = &headerInfo.Encoding
+		pageInfo.DefinitionLevelEncoding = &headerInfo.DefLevelEncoding
+		pageInfo.RepetitionLevelEncoding = &headerInfo.RepLevelEncoding
 
 		if headerInfo.HasStatistics {
-			c.addPageStatistics(pageInfo, headerInfo.Statistics, schemaNode)
+			pageInfo.Statistics = c.buildStatistics(headerInfo.Statistics, schemaNode)
 		}
 
 	case parquet.PageType_DATA_PAGE_V2:
-		pageInfo["num_values"] = headerInfo.NumValues
-		pageInfo["num_nulls"] = headerInfo.NumNulls
-		pageInfo["num_rows"] = headerInfo.NumRows
-		pageInfo["encoding"] = headerInfo.Encoding.String()
-		pageInfo["definition_levels_byte_length"] = headerInfo.DefLevelBytes
-		pageInfo["repetition_levels_byte_length"] = headerInfo.RepLevelBytes
-		if headerInfo.IsCompressed != nil {
-			pageInfo["is_compressed"] = *headerInfo.IsCompressed
-		}
+		pageInfo.NumValues = &headerInfo.NumValues
+		pageInfo.NumNulls = &headerInfo.NumNulls
+		pageInfo.NumRows = &headerInfo.NumRows
+		pageInfo.Encoding = &headerInfo.Encoding
+		pageInfo.DefinitionLevelsByteLength = &headerInfo.DefLevelBytes
+		pageInfo.RepetitionLevelsByteLength = &headerInfo.RepLevelBytes
+		pageInfo.IsCompressed = headerInfo.IsCompressed
 
 		if headerInfo.HasStatistics {
-			c.addPageStatistics(pageInfo, headerInfo.Statistics, schemaNode)
+			pageInfo.Statistics = c.buildStatistics(headerInfo.Statistics, schemaNode)
 		}
 
 	case parquet.PageType_DICTIONARY_PAGE:
-		pageInfo["num_values"] = headerInfo.NumValues
-		pageInfo["encoding"] = headerInfo.Encoding.String()
-		if headerInfo.IsSorted != nil {
-			pageInfo["is_sorted"] = *headerInfo.IsSorted
-		}
+		pageInfo.NumValues = &headerInfo.NumValues
+		pageInfo.Encoding = &headerInfo.Encoding
+		pageInfo.IsSorted = headerInfo.IsSorted
 
 	case parquet.PageType_INDEX_PAGE:
-		pageInfo["note"] = "Index page (column index)"
+		pageInfo.Note = "Index page (column index)"
 	}
 
 	return pageInfo
 }
 
-func (c InspectCmd) addPageStatistics(pageInfo map[string]any, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
-	stats := c.buildStatistics(statistics, schemaNode)
-	if len(stats) > 0 {
-		pageInfo["statistics"] = stats
-	}
-}
-
-func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pages []map[string]any, pageIndex int) ([]any, error) {
+func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pages []PageInfo, pageIndex int) ([]any, error) {
 	meta := col.MetaData
 
 	if pageIndex < 0 || pageIndex >= len(pages) {
@@ -463,27 +466,20 @@ func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, colu
 
 	pageInfo := pages[pageIndex]
 
-	// Check page type
-	pageType, ok := pageInfo["type"].(string)
-	if !ok {
-		return nil, fmt.Errorf("unable to determine page type")
-	}
-
-	// Handle dictionary pages separately
-	if pageType == "DICTIONARY_PAGE" {
+	// Handle different page types
+	switch pageInfo.Type {
+	case parquet.PageType_DICTIONARY_PAGE:
 		return c.readDictionaryPageValues(pr, col, schemaNode, pageInfo)
-	}
-
-	// For data pages, we need to read all values from the column chunk
-	// and then extract the values for this specific page
-	if pageType != "DATA_PAGE" && pageType != "DATA_PAGE_V2" {
+	case parquet.PageType_DATA_PAGE, parquet.PageType_DATA_PAGE_V2:
+		// Continue to process data pages below
+	default:
 		// For other page types (INDEX_PAGE, etc.), return empty
 		return []any{}, nil
 	}
 
 	// Calculate total values before this row group and in this row group
 	var valuesBeforeRG int64 = 0
-	for i := 0; i < rowGroupIndex; i++ {
+	for i := range rowGroupIndex {
 		valuesBeforeRG += pr.Footer.RowGroups[i].NumRows
 	}
 
@@ -508,37 +504,31 @@ func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, colu
 
 	// Extract only the values for this row group
 	rgStartIdx := valuesBeforeRG
-	rgEndIdx := valuesBeforeRG + meta.NumValues
-	if rgEndIdx > int64(len(allValuesInFile)) {
-		rgEndIdx = int64(len(allValuesInFile))
-	}
+	rgEndIdx := min(valuesBeforeRG+meta.NumValues, int64(len(allValuesInFile)))
 
 	allValues := allValuesInFile[rgStartIdx:rgEndIdx]
 
 	// Calculate the start index for this page
 	var startIdx int64 = 0
-	for i := 0; i < pageIndex; i++ {
-		if numVals, ok := pages[i]["num_values"].(int32); ok {
-			pType, _ := pages[i]["type"].(string)
-			if pType == "DATA_PAGE" || pType == "DATA_PAGE_V2" {
-				startIdx += int64(numVals)
-			}
+	for i := range pageIndex {
+		if pages[i].Type != parquet.PageType_DATA_PAGE && pages[i].Type != parquet.PageType_DATA_PAGE_V2 {
+			continue
 		}
+		if pages[i].NumValues == nil {
+			continue
+		}
+		startIdx += int64(*pages[i].NumValues)
 	}
 
 	// Extract values for just this page
-	numVals, ok := pageInfo["num_values"].(int32)
-	if !ok {
-		return nil, fmt.Errorf("unable to get num_values for page")
+	if pageInfo.NumValues == nil {
+		return nil, fmt.Errorf("unable to get numValues for page")
 	}
 
-	endIdx := startIdx + int64(numVals)
-	if endIdx > int64(len(allValues)) {
-		endIdx = int64(len(allValues))
-	}
+	endIdx := min(startIdx+int64(*pageInfo.NumValues), int64(len(allValues)))
 
 	// Convert values to appropriate JSON types
-	pageValues := make([]interface{}, endIdx-startIdx)
+	pageValues := make([]any, endIdx-startIdx)
 	for i := startIdx; i < endIdx; i++ {
 		pageValues[i-startIdx] = allValues[i]
 	}
@@ -546,16 +536,10 @@ func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, colu
 	return c.convertValuesToJSON(pageValues, schemaNode), nil
 }
 
-func (c InspectCmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo map[string]any) ([]any, error) {
+func (c InspectCmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo PageInfo) ([]any, error) {
 	meta := col.MetaData
 
-	// Get page offset
-	offset, ok := pageInfo["offset"].(int64)
-	if !ok {
-		return nil, fmt.Errorf("unable to get page offset")
-	}
-
-	values, err := pr.ReadDictionaryPageValues(offset, meta.Codec, meta.Type)
+	values, err := pr.ReadDictionaryPageValues(pageInfo.Offset, meta.Codec, meta.Type)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read dictionary page values: %w", err)
 	}
@@ -576,7 +560,7 @@ func (c InspectCmd) printJSON(data any) error {
 }
 
 // convertValuesToJSON converts raw parquet values to JSON-friendly types
-func (c InspectCmd) convertValuesToJSON(values []interface{}, schemaNode *pschema.SchemaNode) []any {
+func (c InspectCmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) []any {
 	result := make([]any, len(values))
 	precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
 	for i, val := range values {
@@ -603,10 +587,10 @@ func (c InspectCmd) addTypeInformation(output map[string]any, schemaNode *pschem
 		return
 	}
 	if convertedType := c.getConvertedType(schemaNode); convertedType != "" {
-		output["converted_type"] = convertedType
+		output["convertedType"] = convertedType
 	}
 	if logicalType := c.getLogicalType(schemaNode); logicalType != "" {
-		output["logical_type"] = logicalType
+		output["logicalType"] = logicalType
 	}
 }
 
@@ -615,18 +599,18 @@ func (c InspectCmd) buildStatistics(statistics *parquet.Statistics, schemaNode *
 	stats := map[string]any{}
 
 	if statistics.NullCount != nil {
-		stats["null_count"] = *statistics.NullCount
+		stats["nullCount"] = *statistics.NullCount
 	}
 	if statistics.DistinctCount != nil {
-		stats["distinct_count"] = *statistics.DistinctCount
+		stats["distinctCount"] = *statistics.DistinctCount
 	}
 
 	if schemaNode != nil {
 		if minVal := c.getStatValue(statistics.MinValue, schemaNode); minVal != nil {
-			stats["min_value"] = minVal
+			stats["minValue"] = minVal
 		}
 		if maxVal := c.getStatValue(statistics.MaxValue, schemaNode); maxVal != nil {
-			stats["max_value"] = maxVal
+			stats["maxValue"] = maxVal
 		}
 	}
 

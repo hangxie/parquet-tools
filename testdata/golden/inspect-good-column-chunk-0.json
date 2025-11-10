@@ -1,77 +1,77 @@
 {
-  "column_chunk": {
-    "column_chunk_index": 0,
-    "compressed_size": 269,
-    "compression_codec": "GZIP",
-    "converted_type": "convertedtype=UTF8",
-    "data_page_offset": 4,
+  "columnChunk": {
+    "columnChunkIndex": 0,
+    "compressedSize": 269,
+    "compressionCodec": "GZIP",
+    "convertedType": "convertedtype=UTF8",
+    "dataPageOffset": 4,
     "encodings": [
       "RLE",
       "BIT_PACKED",
       "PLAIN"
     ],
-    "logical_type": "logicaltype=STRING",
-    "num_values": 3,
-    "path_in_schema": [
+    "logicalType": "logicaltype=STRING",
+    "numValues": 3,
+    "pathInSchema": [
       "shoe_brand"
     ],
-    "row_group_index": 0,
+    "rowGroupIndex": 0,
     "statistics": {
-      "max_value": "steph_curry",
-      "min_value": "fila",
-      "null_count": 0
+      "maxValue": "steph_curry",
+      "minValue": "fila",
+      "nullCount": 0
     },
     "type": "BYTE_ARRAY",
-    "uncompressed_size": 194
+    "uncompressedSize": 194
   },
   "pages": [
     {
-      "compressed_size": 33,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 0,
-      "num_values": 1,
       "offset": 4,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "max_value": "nike",
-        "min_value": "nike",
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 8
+      "compressedSize": 33,
+      "uncompressedSize": 8,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": "nike",
+        "minValue": "nike",
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 33,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 1,
-      "num_values": 1,
       "offset": 82,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "max_value": "fila",
-        "min_value": "fila",
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 8
+      "compressedSize": 33,
+      "uncompressedSize": 8,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": "fila",
+        "minValue": "fila",
+        "nullCount": 0
+      }
     },
     {
-      "compressed_size": 40,
-      "definition_level_encoding": "RLE",
-      "encoding": "PLAIN",
       "index": 2,
-      "num_values": 1,
       "offset": 160,
-      "repetition_level_encoding": "RLE",
-      "statistics": {
-        "max_value": "steph_curry",
-        "min_value": "steph_curry",
-        "null_count": 0
-      },
       "type": "DATA_PAGE",
-      "uncompressed_size": 15
+      "compressedSize": 40,
+      "uncompressedSize": 15,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": "steph_curry",
+        "minValue": "steph_curry",
+        "nullCount": 0
+      }
     }
   ]
 }
