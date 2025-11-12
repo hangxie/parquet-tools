@@ -7,7 +7,6 @@
     "dataPageOffset": 4,
     "encodings": [
       "RLE",
-      "BIT_PACKED",
       "PLAIN"
     ],
     "logicalType": "logicaltype=STRING",

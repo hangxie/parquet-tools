@@ -4,11 +4,10 @@
     "compressedSize": 143,
     "compressionCodec": "SNAPPY",
     "convertedType": "convertedtype=INTERVAL, length=12",
-    "dataPageOffset": 11490,
+    "dataPageOffset": 11560,
     "encodings": [
-      "RLE",
-      "BIT_PACKED",
-      "PLAIN"
+      "PLAIN",
+      "RLE"
     ],
     "numValues": 10,
     "pathInSchema": [
@@ -24,7 +23,7 @@
   "pages": [
     {
       "index": 0,
-      "offset": 11490,
+      "offset": 11560,
       "type": "DATA_PAGE",
       "compressedSize": 13,
       "uncompressedSize": 36,
@@ -38,7 +37,7 @@
     },
     {
       "index": 1,
-      "offset": 11524,
+      "offset": 11594,
       "type": "DATA_PAGE",
       "compressedSize": 16,
       "uncompressedSize": 36,
@@ -52,7 +51,7 @@
     },
     {
       "index": 2,
-      "offset": 11561,
+      "offset": 11631,
       "type": "DATA_PAGE",
       "compressedSize": 16,
       "uncompressedSize": 36,
@@ -66,7 +65,7 @@
     },
     {
       "index": 3,
-      "offset": 11598,
+      "offset": 11668,
       "type": "DATA_PAGE",
       "compressedSize": 14,
       "uncompressedSize": 12,

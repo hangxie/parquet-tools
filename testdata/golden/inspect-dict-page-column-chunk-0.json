@@ -7,11 +7,9 @@
     "dataPageOffset": 70,
     "dictionaryPageOffset": 4,
     "encodings": [
-      "RLE",
-      "BIT_PACKED",
       "PLAIN",
-      "PLAIN_DICTIONARY",
-      "RLE_DICTIONARY"
+      "RLE_DICTIONARY",
+      "RLE"
     ],
     "logicalType": "logicaltype=STRING",
     "numValues": 5,
@@ -44,7 +42,7 @@
       "compressedSize": 36,
       "uncompressedSize": 11,
       "numValues": 2,
-      "encoding": "PLAIN_DICTIONARY",
+      "encoding": "RLE_DICTIONARY",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
       "statistics": {
@@ -60,7 +58,7 @@
       "compressedSize": 36,
       "uncompressedSize": 11,
       "numValues": 2,
-      "encoding": "PLAIN_DICTIONARY",
+      "encoding": "RLE_DICTIONARY",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
       "statistics": {
@@ -76,7 +74,7 @@
       "compressedSize": 31,
       "uncompressedSize": 6,
       "numValues": 1,
-      "encoding": "PLAIN_DICTIONARY",
+      "encoding": "RLE_DICTIONARY",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
       "statistics": {

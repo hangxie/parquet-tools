@@ -446,7 +446,7 @@ $ GODEBUG=http2client=0 parquet-tools row-count https://...
 
 ### cat Command
 
-`cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Since most parquet files are rather large, you should use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduce the output to a certain level, these flags can be used together.
+`cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Since most parquet files are rather large, you can use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduce the output to a certain level, these flags can be used together.
 
 There is a parameter that you probably will never touch: `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
 
@@ -568,10 +568,15 @@ $ parquet-tools cat --skip 2 --limit 1 testdata/good.parquet
 [{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 ```
 
+The implementation of compound rule is:
+* skip rows first, without taking sample ratio into consideration
+* output rows based on sample ratio by using random number generator
+* once output reaches limit, stop
+
 #### Output Format
 
 > [!CAUTION]
-> `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into a list, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
+> Since almost all JSON libraries load full JSON into memory to parse and process, it will lead to memory pressure if you dump a huge amount of data. `cat` uses a hack to output data row by row so it will not hit this problem, but downstream facilities may not be able to handle the output.
 
 ```bash
 $ parquet-tools cat testdata/good.parquet
@@ -665,7 +670,7 @@ File level inspection shows basic metadata about the parquet file including vers
 
 ```bash
 $ parquet-tools inspect testdata/good.parquet
-{"file_info":{"version":1,"num_row_groups":1,"total_rows":3,"compressed_size":588,"uncompressed_size":438,"created_by":"parquet-go version 1.12.0"},"row_groups":[{"index":0,"num_rows":3,"total_byte_size":438,"num_columns":2}]}
+{"fileInfo":{"compressedSize":588,"createdBy":"github.com/hangxie/parquet-go v2 latest","numRowGroups":1,"totalRows":3,"uncompressedSize":438,"version":2},"rowGroups":[{"compressedSize":588,"index":0,"numColumns":2,"numRows":3,"totalByteSize":438,"uncompressedSize":438}]}
 ```
 
 #### Inspect Row Group Level
@@ -674,7 +679,7 @@ Row group level inspection shows details of all column chunks within a specific 
 
 ```bash
 $ parquet-tools inspect testdata/good.parquet --row-group 0
-{"row_group":{"index":0,"num_rows":3,"total_byte_size":438,"num_columns":2},"column_chunks":[{"index":0,"path_in_schema":["shoe_brand"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN"],"compression_codec":"GZIP","num_values":3,"compressed_size":269,"uncompressed_size":194,"statistics":{"null_count":0,"min_value":"fila","max_value":"steph_curry"}},{"index":1,"path_in_schema":["shoe_name"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN"],"compression_codec":"GZIP","num_values":3,"compressed_size":319,"uncompressed_size":244,"statistics":{"null_count":0,"min_value":"air_griffey","max_value":"grant_hill_2"}}]}
+{"columnChunks":[{"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["RLE","PLAIN"],"index":0,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},{"compressedSize":319,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["PLAIN","RLE"],"index":1,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_name"],"statistics":{"maxValue":"grant_hill_2","minValue":"air_griffey","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":244}],"rowGroup":{"index":0,"numColumns":2,"numRows":3,"totalByteSize":438}}
 ```
 
 #### Inspect Column Chunk Level
@@ -683,14 +688,14 @@ Column chunk level inspection shows all pages within a column chunk, including p
 
 ```bash
 $ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0
-{"column_chunk":{"row_group_index":0,"column_chunk_index":0,"path_in_schema":["shoe_brand"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN"],"compression_codec":"GZIP","num_values":3,"compressed_size":269,"uncompressed_size":194,"data_page_offset":4,"statistics":{"null_count":0,"min_value":"fila","max_value":"steph_curry"}},"pages":[{"index":0,"offset":4,"type":"DATA_PAGE","compressed_size":269,"uncompressed_size":194,"num_values":3,"encoding":"PLAIN","definition_level_encoding":"RLE","repetition_level_encoding":"BIT_PACKED"}]}
+{"columnChunk":{"columnChunkIndex":0,"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":4,"encodings":["RLE","PLAIN"],"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},"pages":[{"index":0,"offset":4,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"nike","nullCount":0}},{"index":1,"offset":82,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"fila","minValue":"fila","nullCount":0}},{"index":2,"offset":160,"type":"DATA_PAGE","compressedSize":40,"uncompressedSize":15,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"steph_curry","minValue":"steph_curry","nullCount":0}}]}
 ```
 
 For column chunks with dictionary encoding, you'll also see dictionary page information:
 
 ```bash
 $ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0
-{"column_chunk":{"row_group_index":0,"column_chunk_index":0,"path_in_schema":["brand"],"type":"BYTE_ARRAY","converted_type":"convertedtype=UTF8","logical_type":"logicaltype=STRING","encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"compression_codec":"SNAPPY","num_values":3,"compressed_size":85,"uncompressed_size":85,"dictionary_page_offset":4,"data_page_offset":70,"statistics":{"null_count":0,"min_value":"adidas","max_value":"reebok"}},"pages":[{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressed_size":53,"uncompressed_size":28,"num_values":3,"encoding":"PLAIN"},{"index":1,"offset":70,"type":"DATA_PAGE","compressed_size":85,"uncompressed_size":85,"num_values":3,"encoding":"PLAIN_DICTIONARY","definition_level_encoding":"RLE","repetition_level_encoding":"BIT_PACKED","statistics":{"null_count":0}}]}
+{"columnChunk":{"columnChunkIndex":0,"compressedSize":320,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":70,"dictionaryPageOffset":4,"encodings":["PLAIN","RLE_DICTIONARY","RLE"],"logicalType":"logicaltype=STRING","numValues":5,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"reebok","minValue":"adidas","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":220},"pages":[{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},{"index":1,"offset":70,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"adidas","nullCount":0}},{"index":2,"offset":155,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"reebok","minValue":"nike","nullCount":0}},{"index":3,"offset":240,"type":"DATA_PAGE","compressedSize":31,"uncompressedSize":6,"numValues":1,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"adidas","minValue":"adidas","nullCount":0}}]}
 ```
 
 #### Inspect Page Level
@@ -699,14 +704,14 @@ Page level inspection shows the actual decoded values from a specific page. This
 
 ```bash
 $ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0 --page 0
-{"page":{"index":0,"offset":4,"type":"DATA_PAGE","compressed_size":269,"uncompressed_size":194,"num_values":3,"encoding":"PLAIN","definition_level_encoding":"RLE","repetition_level_encoding":"BIT_PACKED"},"values":["nike","fila","steph_curry"]}
+{"page":{"index":0,"offset":4,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"nike","nullCount":0}},"values":["nike"]}
 ```
 
 For dictionary pages, the values show the dictionary entries:
 
 ```bash
 $ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0 --page 0
-{"page":{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressed_size":53,"uncompressed_size":28,"num_values":3,"encoding":"PLAIN"},"values":["nike","adidas","reebok"]}
+{"page":{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},"values":["nike","adidas","reebok"]}
 ```
 
 > [!TIP]
@@ -762,7 +767,7 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 
 ```bash
 $ parquet-tools meta testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":5,"TotalByteSize":542,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE_DICTIONARY","RLE"],"CompressedSize":320,"UncompressedSize":220,"NumValues":5,"NullCount":0,"MaxValue":"reebok","MinValue":"adidas","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE_DICTIONARY","RLE"],"CompressedSize":422,"UncompressedSize":322,"NumValues":5,"NullCount":0,"MaxValue":"ultra_boost","MinValue":"990v5","CompressionCodec":"GZIP"}]}]}
 ```
 
 > [!NOTE]
@@ -772,7 +777,7 @@ You can set `--fail-on-int96` option to fail `meta` command for parquet files th
 
 ```bash
 $ parquet-tools meta testdata/int96-nil-min-max.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","Encodings":["RLE","BIT_PACKED","PLAIN","PLAIN_DICTIONARY","RLE_DICTIONARY"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE_DICTIONARY","RLE"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["PLAIN","RLE"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
 $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
@@ -798,7 +803,7 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"}]}
+{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]}
 ```
 
 Schema will output converted type and logical type when they are present in the parquet file, however, default settings will be ignored to make output shorter, e.g.,
@@ -825,8 +830,8 @@ go struct format generates go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
-	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
 }
 ```
 
@@ -835,8 +840,8 @@ You can turn on `--camel-case` to convert field names from snake_case_name to Ca
 ```bash
 $ parquet-tools schema --format go --camel-case testdata/good.parquet
 type Parquet_go_root struct {
-	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
-	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
 }
 ```
 
@@ -848,7 +853,7 @@ $ parquet-tools schema -f go testdata/map-composite-value.parquet
 parquet-tools: error: go struct does not support LIST as MAP value in Parquet_go_root.Scores
 
 $ parquet-tools schema testdata/map-composite-value.parquet
-{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=age, type=INT32"},{"Tag":"name=id, type=INT64"},{"Tag":"name=weight, type=FLOAT"},{"Tag":"name=sex, type=BOOLEAN"},{"Tag":"name=classes, type=LIST","Fields":[{"Tag":"name=element, type=BYTE_ARRAY, convertedtype=UTF8"}]},{"Tag":"name=scores, type=MAP","Fields":[{"Tag":"name=key, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=value, type=LIST","Fields":[{"Tag":"name=element, type=FLOAT"}]}]},{"Tag":"name=friends, type=LIST","Fields":[{"Tag":"name=element","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=id, type=INT64"}]}]},{"Tag":"name=teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8"},{"Tag":"name=id, type=INT64"}]}]}
+{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=age, type=INT32"},{"Tag":"name=id, type=INT64"},{"Tag":"name=weight, type=FLOAT"},{"Tag":"name=sex, type=BOOLEAN"},{"Tag":"name=classes, type=LIST","Fields":[{"Tag":"name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]},{"Tag":"name=scores, type=MAP","Fields":[{"Tag":"name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=value, type=LIST","Fields":[{"Tag":"name=element, type=FLOAT"}]}]},{"Tag":"name=friends, type=LIST","Fields":[{"Tag":"name=element","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=id, type=INT64"}]}]},{"Tag":"name=teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=id, type=INT64"}]}]}
 ```
 
 #### CSV Format
@@ -858,7 +863,7 @@ CSV format is the schema that can be used to import from CSV files:
 ```bash
 $ parquet-tools schema --format csv testdata/csv-good.parquet
 name=Id, type=INT64
-name=Name, type=BYTE_ARRAY, convertedtype=UTF8
+name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING
 name=Age, type=INT32
 name=Temperature, type=FLOAT
 name=Vaccinated, type=BOOLEAN
@@ -1037,8 +1042,8 @@ $ parquet-tools version -j
 ```bash
 $ parquet-tools schema --format go testdata/geospatial.parquet
 type Parquet_go_root struct {
-Geometry string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
-Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY"`
+	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
+	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY"`
 }
 ```
 
@@ -1069,7 +1074,7 @@ $ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
 
 ```bash
 $ parquet-tools meta testdata/geospatial.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":4590,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1920,"UncompressedSize":2472,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["RLE","BIT_PACKED","PLAIN"],"CompressedSize":1711,"UncompressedSize":2118,"NumValues":10,"NullCount":0,"MaxValue":[10.5,10.5],"MinValue":[0,0],"CompressionCodec":"SNAPPY"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":1774,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["PLAIN","RLE"],"CompressedSize":429,"UncompressedSize":974,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["PLAIN","RLE"],"CompressedSize":397,"UncompressedSize":800,"NumValues":10,"CompressionCodec":"SNAPPY"}]}]}
 ```
 
 ## Credit

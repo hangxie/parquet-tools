@@ -12,11 +12,10 @@
           "Type": "BYTE_ARRAY",
           "LogicalType": "logicaltype=GEOMETRY",
           "Encodings": [
-            "RLE",
-            "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
-          "CompressedSize": 422,
+          "CompressedSize": 429,
           "UncompressedSize": 974,
           "NumValues": 10,
           "NullCount": 0,
@@ -37,11 +36,10 @@
           "Type": "BYTE_ARRAY",
           "LogicalType": "logicaltype=GEOGRAPHY",
           "Encodings": [
-            "RLE",
-            "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
-          "CompressedSize": 393,
+          "CompressedSize": 397,
           "UncompressedSize": 800,
           "NumValues": 10,
           "CompressionCodec": "SNAPPY"

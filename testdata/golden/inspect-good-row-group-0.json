@@ -6,7 +6,6 @@
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 0,
@@ -28,9 +27,8 @@
       "compressionCodec": "GZIP",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 1,
       "logicalType": "logicaltype=STRING",
