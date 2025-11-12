@@ -14,7 +14,6 @@
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
-            "BIT_PACKED",
             "PLAIN"
           ],
           "CompressedSize": 269,
@@ -33,9 +32,8 @@
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
-            "RLE",
-            "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
           "CompressedSize": 319,
           "UncompressedSize": 244,

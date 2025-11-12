@@ -4,9 +4,8 @@
       "compressedSize": 144,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 0,
       "numValues": 10,
@@ -26,7 +25,6 @@
       "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 1,
@@ -46,9 +44,8 @@
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 2,
       "numValues": 10,
@@ -64,12 +61,11 @@
       "uncompressedSize": 324
     },
     {
-      "compressedSize": 429,
+      "compressedSize": 436,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 3,
       "numValues": 10,
@@ -88,9 +84,8 @@
       "compressedSize": 228,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 4,
       "numValues": 10,
@@ -111,7 +106,6 @@
       "convertedType": "length=2",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 5,
@@ -131,9 +125,8 @@
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 6,
       "numValues": 10,
@@ -152,9 +145,8 @@
       "compressedSize": 390,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 7,
       "numValues": 10,
@@ -174,9 +166,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=ENUM",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 8,
       "numValues": 10,
@@ -196,9 +187,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "length=16",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 9,
       "logicalType": "logicaltype=UUID",
@@ -215,13 +205,12 @@
       "uncompressedSize": 532
     },
     {
-      "compressedSize": 325,
+      "compressedSize": 346,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=JSON",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 10,
       "numValues": 10,
@@ -241,9 +230,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=BSON",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 11,
       "logicalType": "logicaltype=BSON",
@@ -264,11 +252,10 @@
       "uncompressedSize": 468
     },
     {
-      "compressedSize": 325,
+      "compressedSize": 346,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 12,
@@ -288,9 +275,8 @@
       "compressedSize": 425,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 13,
       "logicalType": "logicaltype=BSON",
@@ -311,12 +297,11 @@
       "uncompressedSize": 468
     },
     {
-      "compressedSize": 325,
+      "compressedSize": 346,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 14,
       "logicalType": "logicaltype=VARIANT",
@@ -337,9 +322,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "length=10",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 15,
       "numValues": 10,
@@ -360,9 +344,7 @@
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN",
-        "PLAIN_DICTIONARY",
         "RLE_DICTIONARY"
       ],
       "index": 16,
@@ -383,9 +365,8 @@
       "compressedSize": 324,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 17,
       "logicalType": "logicaltype=STRING",
@@ -406,9 +387,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=INT_8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 18,
       "numValues": 10,
@@ -428,9 +408,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=INT_16",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 19,
       "numValues": 10,
@@ -450,9 +429,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=INT_32",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 20,
       "numValues": 10,
@@ -472,9 +450,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=INT_64",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 21,
       "numValues": 10,
@@ -494,9 +471,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UINT_8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 22,
       "numValues": 10,
@@ -516,9 +492,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UINT_16",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 23,
       "numValues": 10,
@@ -538,9 +513,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UINT_32",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 24,
       "numValues": 10,
@@ -560,9 +534,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UINT_64",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 25,
       "numValues": 10,
@@ -582,9 +555,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DATE",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 26,
       "logicalType": "logicaltype=DATE",
@@ -604,9 +576,8 @@
       "compressedSize": 228,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 27,
       "logicalType": "logicaltype=DATE",
@@ -627,9 +598,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=TIME_MILLIS",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 28,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
@@ -650,7 +620,6 @@
       "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 29,
@@ -673,7 +642,6 @@
       "convertedType": "convertedtype=TIME_MICROS",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 30,
@@ -694,9 +662,8 @@
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 31,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
@@ -716,9 +683,8 @@
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 32,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
@@ -740,7 +706,6 @@
       "convertedType": "convertedtype=TIMESTAMP_MILLIS",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 33,
@@ -761,9 +726,8 @@
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 34,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
@@ -784,9 +748,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=TIMESTAMP_MICROS",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 35,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
@@ -807,7 +770,6 @@
       "compressionCodec": "SNAPPY",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 36,
@@ -828,9 +790,8 @@
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 37,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
@@ -851,9 +812,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=INTERVAL, length=12",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 38,
       "numValues": 10,
@@ -871,9 +831,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=9",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 39,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
@@ -894,9 +853,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=18",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 40,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2",
@@ -917,9 +875,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 41,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
@@ -940,9 +897,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=20",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 42,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2",
@@ -962,9 +918,8 @@
       "compressedSize": 228,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 43,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
@@ -981,13 +936,12 @@
       "uncompressedSize": 220
     },
     {
-      "compressedSize": 400,
+      "compressedSize": 412,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 44,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
@@ -1004,13 +958,12 @@
       "uncompressedSize": 404
     },
     {
-      "compressedSize": 569,
+      "compressedSize": 578,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 45,
       "logicalType": "logicaltype=STRING",
@@ -1029,12 +982,11 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 377,
+      "compressedSize": 383,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 46,
       "numValues": 46,
@@ -1052,13 +1004,12 @@
       "uncompressedSize": 437
     },
     {
-      "compressedSize": 560,
+      "compressedSize": 570,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 47,
       "logicalType": "logicaltype=STRING",
@@ -1077,12 +1028,11 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 366,
+      "compressedSize": 372,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 48,
       "numValues": 46,
@@ -1098,13 +1048,12 @@
       "uncompressedSize": 436
     },
     {
-      "compressedSize": 575,
+      "compressedSize": 578,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 49,
       "logicalType": "logicaltype=STRING",
@@ -1123,13 +1072,12 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 755,
+      "compressedSize": 754,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 50,
       "logicalType": "logicaltype=STRING",
@@ -1148,15 +1096,14 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 2153
+      "uncompressedSize": 2163
     },
     {
-      "compressedSize": 520,
+      "compressedSize": 532,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 51,
       "numValues": 130,
@@ -1174,15 +1121,14 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 857
+      "uncompressedSize": 867
     },
     {
-      "compressedSize": 656,
+      "compressedSize": 661,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 52,
@@ -1202,16 +1148,15 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 2425
+      "uncompressedSize": 2434
     },
     {
-      "compressedSize": 740,
+      "compressedSize": 724,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 53,
       "logicalType": "logicaltype=STRING",
@@ -1233,12 +1178,11 @@
       "uncompressedSize": 2159
     },
     {
-      "compressedSize": 491,
+      "compressedSize": 505,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 54,
       "numValues": 130,
@@ -1259,12 +1203,11 @@
       "uncompressedSize": 863
     },
     {
-      "compressedSize": 641,
+      "compressedSize": 654,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
         "RLE",
-        "BIT_PACKED",
         "PLAIN"
       ],
       "index": 55,
@@ -1291,6 +1234,6 @@
     "index": 0,
     "numColumns": 56,
     "numRows": 10,
-    "totalByteSize": 28499
+    "totalByteSize": 28528
   }
 }

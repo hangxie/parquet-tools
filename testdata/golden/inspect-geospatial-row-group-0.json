@@ -1,12 +1,11 @@
 {
   "columnChunks": [
     {
-      "compressedSize": 422,
+      "compressedSize": 429,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 0,
       "logicalType": "logicaltype=GEOMETRY",
@@ -21,12 +20,11 @@
       "uncompressedSize": 974
     },
     {
-      "compressedSize": 393,
+      "compressedSize": 397,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 1,
       "logicalType": "logicaltype=GEOGRAPHY",

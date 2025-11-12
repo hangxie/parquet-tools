@@ -1,11 +1,11 @@
 {
   "fileInfo": {
     "compressedSize": 588,
-    "createdBy": "parquet-go version latest",
+    "createdBy": "github.com/hangxie/parquet-go v2 latest",
     "numRowGroups": 1,
     "totalRows": 3,
     "uncompressedSize": 438,
-    "version": 1
+    "version": 2
   },
   "rowGroups": [
     {
