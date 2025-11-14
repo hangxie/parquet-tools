@@ -14,8 +14,8 @@ require (
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.11.1
 	github.com/willabides/kongplete v0.4.0
-	golang.org/x/sync v0.17.0
-	google.golang.org/api v0.255.0
+	golang.org/x/sync v0.18.0
+	google.golang.org/api v0.256.0
 )
 
 require (
@@ -94,7 +94,7 @@ require (
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
-	golang.org/x/oauth2 v0.32.0 // indirect
+	golang.org/x/oauth2 v0.33.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251106204201-5cc343d36a5d // indirect
 	golang.org/x/text v0.30.0 // indirect
