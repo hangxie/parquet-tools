@@ -188,6 +188,166 @@ func Test_timeUnitToTag(t *testing.T) {
 	}
 }
 
+func Test_OrderedTags(t *testing.T) {
+	// Expected tags in order
+	expected := []string{
+		"name",
+		"type",
+		"keytype",
+		"keyconvertedtype",
+		"keyscale",
+		"keyprecision",
+		"valuetype",
+		"valueconvertedtype",
+		"valuescale",
+		"valueprecision",
+		"convertedtype",
+		"scale",
+		"precision",
+		"length",
+		"logicaltype",
+		"logicaltype.precision",
+		"logicaltype.scale",
+		"logicaltype.isadjustedtoutc",
+		"logicaltype.unit",
+		"repetitiontype",
+	}
+
+	// Get the ordered tags
+	actual := OrderedTags()
+
+	// Verify the tags are in the expected order
+	require.Equal(t, expected, actual)
+
+	// Verify that modifying the returned slice doesn't affect the internal state
+	// (i.e., the function returns a copy)
+	actual[0] = "modified"
+	secondCall := OrderedTags()
+	require.Equal(t, "name", secondCall[0], "Modifying returned slice should not affect internal orderedTags")
+	require.Equal(t, expected, secondCall)
+}
+
+func Test_updateTagFromConvertedType(t *testing.T) {
+	// Test with nan.parquet which has no converted type annotation
+	option := pio.ReadOption{}
+	uri := "../testdata/nan.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	// Find the "value" field which should not have converted type
+	pathMap := schemaRoot.GetPathMap()
+	valueNode, found := pathMap["Value"]
+	require.True(t, found, "Value field should be found")
+	require.NotNil(t, valueNode)
+
+	// Verify that ConvertedType is nil
+	require.Nil(t, valueNode.ConvertedType, "nan.parquet should not have converted type")
+
+	// Get the tag map
+	tagMap := valueNode.GetTagMap()
+
+	// Verify that convertedtype tag is not set
+	_, hasConvertedType := tagMap["convertedtype"]
+	require.False(t, hasConvertedType, "convertedtype tag should not be present when ConvertedType is nil")
+
+	// Verify expected tags are present
+	require.Equal(t, "value", tagMap["name"])
+	require.Equal(t, "DOUBLE", tagMap["type"])
+}
+
+func Test_updateTagFromLogicalType(t *testing.T) {
+	// Test with nan.parquet which has no logical type annotation
+	option := pio.ReadOption{}
+	uri := "../testdata/nan.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	// Find the "value" field which should not have logical type
+	pathMap := schemaRoot.GetPathMap()
+	valueNode, found := pathMap["Value"]
+	require.True(t, found, "Value field should be found")
+	require.NotNil(t, valueNode)
+
+	// Verify that LogicalType is nil
+	require.Nil(t, valueNode.LogicalType, "nan.parquet should not have logical type")
+
+	// Get the tag map
+	tagMap := valueNode.GetTagMap()
+
+	// Verify that logicaltype tag is not set
+	_, hasLogicalType := tagMap["logicaltype"]
+	require.False(t, hasLogicalType, "logicaltype tag should not be present when LogicalType is nil")
+
+	// Verify that logicaltype.* tags are not set
+	_, hasPrecision := tagMap["logicaltype.precision"]
+	require.False(t, hasPrecision, "logicaltype.precision tag should not be present when LogicalType is nil")
+
+	_, hasScale := tagMap["logicaltype.scale"]
+	require.False(t, hasScale, "logicaltype.scale tag should not be present when LogicalType is nil")
+
+	_, hasIsAdjusted := tagMap["logicaltype.isadjustedtoutc"]
+	require.False(t, hasIsAdjusted, "logicaltype.isadjustedtoutc tag should not be present when LogicalType is nil")
+
+	_, hasUnit := tagMap["logicaltype.unit"]
+	require.False(t, hasUnit, "logicaltype.unit tag should not be present when LogicalType is nil")
+
+	// Verify expected tags are present
+	require.Equal(t, "value", tagMap["name"])
+	require.Equal(t, "DOUBLE", tagMap["type"])
+
+	// Test with geospatial.parquet which has GEOMETRY and GEOGRAPHY logical types
+	uri = "../testdata/geospatial.parquet"
+	pr, err = pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err = NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	pathMap = schemaRoot.GetPathMap()
+
+	// Test GEOMETRY logical type
+	geometryNode, found := pathMap["Geometry"]
+	require.True(t, found, "Geometry field should be found")
+	require.NotNil(t, geometryNode)
+	require.NotNil(t, geometryNode.LogicalType, "Geometry field should have logical type")
+	require.True(t, geometryNode.LogicalType.IsSetGEOMETRY(), "Geometry field should be GEOMETRY type")
+
+	geometryTagMap := geometryNode.GetTagMap()
+	require.Equal(t, "GEOMETRY", geometryTagMap["logicaltype"], "logicaltype tag should be GEOMETRY")
+	require.Equal(t, "Geometry", geometryTagMap["name"])
+	require.Equal(t, "BYTE_ARRAY", geometryTagMap["type"])
+
+	// Test GEOGRAPHY logical type
+	geographyNode, found := pathMap["Geography"]
+	require.True(t, found, "Geography field should be found")
+	require.NotNil(t, geographyNode)
+	require.NotNil(t, geographyNode.LogicalType, "Geography field should have logical type")
+	require.True(t, geographyNode.LogicalType.IsSetGEOGRAPHY(), "Geography field should be GEOGRAPHY type")
+
+	geographyTagMap := geographyNode.GetTagMap()
+	require.Equal(t, "GEOGRAPHY", geographyTagMap["logicaltype"], "logicaltype tag should be GEOGRAPHY")
+	require.Equal(t, "Geography", geographyTagMap["name"])
+	require.Equal(t, "BYTE_ARRAY", geographyTagMap["type"])
+}
+
 func Test_JSON_schema_list_variant(t *testing.T) {
 	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
 	require.NoError(t, err)
@@ -206,14 +366,11 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	require.Equal(t, string(expected), string(actual)+"\n")
 }
 
-func Test_Json_schema_go_struct_good(t *testing.T) {
+func Test_Json_schema_go_struct(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
 
 	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.NoError(t, err)
@@ -227,29 +384,38 @@ func Test_Json_schema_go_struct_good(t *testing.T) {
 
 	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
-}
+	_ = pr.PFile.Close()
 
-func Test_Json_schema_go_struct_good_camel_case(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/good.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
+	uri = "../testdata/good.parquet"
+	pr, err = pio.NewParquetFileReader(uri, option)
 	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err = NewSchemaTree(pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
-	actual, err := schemaRoot.GoStruct(true)
+	actual, err = schemaRoot.GoStruct(true)
 	require.NoError(t, err)
-	formatted, err := format.Source([]byte(actual))
+	formatted, err = format.Source([]byte(actual))
 	require.NoError(t, err)
 	actual = string(formatted)
 
-	expected, _ := os.ReadFile("../testdata/golden/schema-good-go-camel-case.txt")
+	expected, _ = os.ReadFile("../testdata/golden/schema-good-go-camel-case.txt")
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
+	_ = pr.PFile.Close()
+
+	uri = "../testdata/list-of-list.parquet"
+	pr, err = pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+
+	schemaRoot, err = NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	_, err = schemaRoot.GoStruct(false)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "go struct does not support LIST of LIST")
+	_ = pr.PFile.Close()
 }
 
 func Test_Json_schema_json_schema_good(t *testing.T) {
