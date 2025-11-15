@@ -52,7 +52,6 @@ func (c SchemaCmd) Run() error {
 		}
 		formatted, err := format.Source([]byte(goStruct))
 		if err != nil {
-			// If formatting fails, return the original unformatted code
 			return err
 		}
 		fmt.Println(string(formatted))
