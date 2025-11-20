@@ -37,6 +37,7 @@ Commands:
   shell-completions    Install/uninstall shell completions
   size                 Prints the size.
   split                Split into multiple parquet files.
+  transcode            Transcode Parquet file with different compression.
   version              Show build version.
 
 Run "parquet-tools <command> --help" for more information on a command.
@@ -103,6 +104,8 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Name format](#name-format)
       - [Exact number of output files](#exact-number-of-output-files)
       - [Maximum records in a file](#maximum-records-in-a-file)
+    - [transcode Command](#transcode-command)
+      - [Change Compression Codec](#change-compression-codec)
     - [version Command](#version-command)
       - [Print Version](#print-version)
       - [Print All Information](#print-all-information)
@@ -614,7 +617,7 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 `import` command creates a parquet file based on data in other formats. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD), default is "SNAPPY". If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated), default is "SNAPPY". If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
@@ -749,7 +752,7 @@ $ parquet-tools row-count /tmp/merged.parquet
 6
 ```
 
-`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated) for target parquet file, default is "SNAPPY". Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
 
 When `--concurrent` option is specified, the merge command will read input files in parallel (up to number of CPUs), this can bring performance gain between 5% and 10%, trade-off is that the order of records in the result parquet file will not be strictly in the order of input files.
 
@@ -995,6 +998,164 @@ $ parquet-tools row-count 2.parquet
 $ parquet-tools row-count 3.parquet
 1
 ```
+
+### transcode Command
+
+`transcode` command converts a Parquet file to a new Parquet file with the same data but different encoding settings. This is useful for changing compression algorithms, optimizing file size, upgrading page formats, controlling statistics, or preparing files for systems with specific requirements.
+
+The command reads data from a source Parquet file and writes it to a new output file with the specified encoding parameters. All data is preserved exactly - only the storage encoding changes.
+
+#### Change Compression Codec
+
+Use the `--compression` / `-z` parameter to change the compression algorithm. This allows you to optimize file size, improve read/write performance, or ensure compatibility with systems that support specific compression codecs.
+
+Convert a Parquet file from SNAPPY to GZIP compression:
+
+```bash
+$ parquet-tools transcode -s testdata/good.parquet -z GZIP /tmp/good-gzip.parquet
+$ parquet-tools row-count /tmp/good-gzip.parquet
+3
+```
+
+Convert to ZSTD for better compression:
+
+```bash
+$ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD /tmp/all-types-zstd.parquet
+```
+
+Create an uncompressed version for debugging:
+
+```bash
+$ parquet-tools transcode -s input.parquet -z UNCOMPRESSED output.parquet
+```
+
+**Supported compression codecs:**
+* `GZIP` - Better compression ratio, slower than SNAPPY
+* `LZ4_RAW` - LZ4 raw format
+* `SNAPPY` - Fast compression/decompression (default)
+* `UNCOMPRESSED` - No compression
+* `ZSTD` - Excellent compression ratio with good speed
+
+**Deprecated compression codecs:**
+* `LZ4` - Deprecated in Parquet format. Use `LZ4_RAW` instead for LZ4 compression
+
+#### Upgrade Data Page Version
+
+Use the `--data-page-version` parameter to upgrade the data page format. Version 2 uses a more efficient encoding structure and is recommended for new files, though it requires readers that support Parquet format v2.0.
+
+Upgrade to data page format v2 for better efficiency:
+
+```bash
+$ parquet-tools transcode -s legacy.parquet --data-page-version=2 modern.parquet
+```
+
+Combine with compression:
+
+```bash
+$ parquet-tools transcode -s legacy.parquet --data-page-version=2 -z ZSTD modern.parquet
+```
+
+**Supported versions:**
+* `1` - DATA_PAGE format (default, compatible with older readers)
+* `2` - DATA_PAGE_V2 format (more efficient, requires Parquet format v2.0 readers)
+
+#### Change Data Page Encoding
+
+Use the `--data-page-encoding` parameter to specify the encoding type for columns. Different encodings can optimize for different data patterns (e.g., RLE for repeated values, dictionary encoding for low-cardinality data). The encoding is only applied to columns with compatible data types.
+
+Apply plain encoding (works with all types):
+
+```bash
+$ parquet-tools transcode -s input.parquet --data-page-encoding PLAIN output.parquet
+```
+
+Use RLE dictionary encoding (works with most types):
+
+```bash
+$ parquet-tools transcode -s input.parquet --data-page-encoding RLE_DICTIONARY output.parquet
+```
+
+Use delta encoding for numeric data:
+
+```bash
+$ parquet-tools transcode -s numeric-data.parquet --data-page-encoding DELTA_BINARY_PACKED output.parquet
+```
+
+**Supported encodings:**
+* `BIT_PACKED` - Deprecated, use `RLE` instead for better compatibility.
+* `BYTE_STREAM_SPLIT` - Byte stream split encoding (FLOAT, DOUBLE only; efficient for floating-point data)
+* `DELTA_BINARY_PACKED` - Delta encoding with binary packing (INT32, INT64 only; efficient for sorted numeric data)
+* `DELTA_BYTE_ARRAY` - Delta encoding for byte arrays (BYTE_ARRAY only)
+* `DELTA_LENGTH_BYTE_ARRAY` - Delta encoding for byte arrays (BYTE_ARRAY only)
+* `PLAIN` - Plain encoding (compatible with all types)
+* `RLE` - Run Length Encoding (efficient for repeated values; INT32, INT64, BYTE_ARRAY, BOOLEAN)
+* `RLE_DICTIONARY` - Dictionary encoding with RLE (all types; efficient for low-cardinality data)
+
+**Unsupported encodings:**
+* `PLAIN_DICTIONARY` - `transcode` command does not support this encoding, use `RLE_DICTIONARY` instead.
+
+**Note**: The encoding is automatically applied only to compatible column types. Incompatible columns retain their original encoding.
+
+#### Control Statistics
+
+Use the `--omit-stats` parameter to control whether column statistics are included in the output file. Statistics enable query engines to skip reading irrelevant data (predicate pushdown), but omitting them reduces file size and write overhead.
+
+Omit statistics for smaller files:
+
+```bash
+$ parquet-tools transcode -s input.parquet --omit-stats true output.parquet
+```
+
+Ensure statistics are included:
+
+```bash
+$ parquet-tools transcode -s input.parquet --omit-stats false output.parquet
+```
+
+**Options:**
+* `true` - Omit statistics from column chunks (smaller file size, less metadata, faster writes)
+* `false` - Include statistics (enables predicate pushdown for query optimization)
+* (empty) - Keep original statistics setting from source file
+
+#### Combine Multiple Options
+
+You can combine multiple transcode options in a single command:
+
+```bash
+$ parquet-tools transcode -s legacy.parquet \
+  --data-page-version=2 \
+  --data-page-encoding RLE_DICTIONARY \
+  --omit-stats false \
+  -z ZSTD \
+  optimized.parquet
+```
+
+This example upgrades the page format to v2, sets dictionary encoding, ensures statistics are included, and applies ZSTD compression.
+
+#### INT96 Field Detection
+
+Use the `--fail-on-int96` flag to detect and reject files containing INT96 fields.
+
+INT96 is a [deprecated timestamp format](https://issues.apache.org/jira/browse/PARQUET-323) in Parquet. While `transcode` can process files with INT96 fields by default (without converting them), you can use this flag to detect them early in data pipelines.
+
+Detect INT96 fields and fail:
+
+```bash
+$ parquet-tools transcode -s testdata/all-types.parquet --fail-on-int96 output.parquet
+parquet-tools: error: field Int96 has type INT96 which is not supported
+```
+
+Process INT96 files normally (default behavior):
+
+```bash
+$ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
+# Succeeds - INT96 fields are preserved as-is
+```
+
+**Use cases:**
+* Data validation pipelines - ensure no deprecated INT96 types exist
+* Production systems - fail fast when encountering unsupported types
+* Default behavior (flag not set) - INT96 fields are transcoded without modification
 
 ### version Command
 

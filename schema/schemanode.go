@@ -33,6 +33,8 @@ var orderedTags = []string{
 	"logicaltype.isadjustedtoutc",
 	"logicaltype.unit",
 	"repetitiontype",
+	"encoding",
+	"omitstats",
 }
 
 // OrderedTags returns a copy of the ordered tags list for external use
@@ -47,6 +49,9 @@ type SchemaNode struct {
 	Children   []*SchemaNode `json:"children,omitempty"`
 	InNamePath []string      `json:"-"`
 	ExNamePath []string      `json:"-"`
+	// Custom parquet-go writer directives (not part of Parquet format)
+	Encoding  string `json:"-"` // Data page encoding (PLAIN, RLE, etc)
+	OmitStats string `json:"-"` // Control statistics generation (true/false)
 }
 
 type SchemaOption struct {
@@ -127,6 +132,14 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 
 	if s.ConvertedType != nil {
 		s.updateTagFromConvertedType(tagMap)
+	}
+
+	// Add custom parquet-go writer directives
+	if s.Encoding != "" {
+		tagMap["encoding"] = s.Encoding
+	}
+	if s.OmitStats != "" {
+		tagMap["omitstats"] = s.OmitStats
 	}
 
 	return tagMap
