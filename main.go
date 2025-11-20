@@ -21,6 +21,7 @@ var cli struct {
 	ShellCompletions kongplete.InstallCompletions `cmd:"" help:"Install/uninstall shell completions"`
 	Size             cmd.SizeCmd                  `cmd:"" help:"Prints the size."`
 	Split            cmd.SplitCmd                 `cmd:"" help:"Split into multiple parquet files."`
+	Transcode        cmd.TranscodeCmd             `cmd:"" help:"Convert Parquet file with different encoding/compression settings."`
 	Version          cmd.VersionCmd               `cmd:"" help:"Show build version."`
 }
 

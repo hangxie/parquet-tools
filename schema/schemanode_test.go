@@ -211,6 +211,8 @@ func Test_OrderedTags(t *testing.T) {
 		"logicaltype.isadjustedtoutc",
 		"logicaltype.unit",
 		"repetitiontype",
+		"encoding",
+		"omitstats",
 	}
 
 	// Get the ordered tags
