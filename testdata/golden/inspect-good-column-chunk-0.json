@@ -6,8 +6,8 @@
     "convertedType": "convertedtype=UTF8",
     "dataPageOffset": 4,
     "encodings": [
-      "RLE",
-      "PLAIN"
+      "PLAIN",
+      "RLE"
     ],
     "logicalType": "logicaltype=STRING",
     "numValues": 3,

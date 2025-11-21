@@ -105,7 +105,7 @@ func Test_NewJSONWriter(t *testing.T) {
 		errMsg string
 	}{
 		"invalid-uri":     {"://uri", "", "unable to parse file location"},
-		"invalid-schema1": {tempFile, "invalid schema", "error in unmarshalling json schema string"},
+		"invalid-schema1": {tempFile, "invalid schema", "unmarshal json schema string"},
 		"invalid-schema2": {tempFile, `{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
 		"all-good":        {tempFile, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`, ""},
 	}
@@ -142,7 +142,7 @@ func Test_NewGenericWriter(t *testing.T) {
 		errMsg string
 	}{
 		"invalid-uri":        {"://uri", WriteOption{}, "", "unable to parse file location"},
-		"schema-not-json":    {tempFile, WriteOption{}, "invalid schema", "error in unmarshalling json schema string:"},
+		"schema-not-json":    {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
 		"schema-invalid":     {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
 		"invalid-codec":      {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
 		"unsupported-codec1": {tempFile, WriteOption{Compression: "BROTLI"}, schema, "compression is not supported at this moment"},

@@ -2,25 +2,25 @@
   "Tag": "name=parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
     },
     {
-      "Tag": "name=age, type=INT32"
+      "Tag": "name=age, type=INT32, encoding=PLAIN"
     },
     {
-      "Tag": "name=id, type=INT64"
+      "Tag": "name=id, type=INT64, encoding=PLAIN"
     },
     {
-      "Tag": "name=weight, type=FLOAT"
+      "Tag": "name=weight, type=FLOAT, encoding=PLAIN"
     },
     {
-      "Tag": "name=sex, type=BOOLEAN"
+      "Tag": "name=sex, type=BOOLEAN, encoding=PLAIN"
     },
     {
       "Tag": "name=classes, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         }
       ]
     },
@@ -28,13 +28,13 @@
       "Tag": "name=scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         },
         {
           "Tag": "name=value, type=LIST",
           "Fields": [
             {
-              "Tag": "name=element, type=FLOAT"
+              "Tag": "name=element, type=FLOAT, encoding=PLAIN"
             }
           ]
         }
@@ -47,10 +47,10 @@
           "Tag": "name=element",
           "Fields": [
             {
-              "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+              "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
             },
             {
-              "Tag": "name=id, type=INT64"
+              "Tag": "name=id, type=INT64, encoding=PLAIN"
             }
           ]
         }
@@ -60,10 +60,10 @@
       "Tag": "name=teachers, repetitiontype=REPEATED",
       "Fields": [
         {
-          "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+          "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         },
         {
-          "Tag": "name=id, type=INT64"
+          "Tag": "name=id, type=INT64, encoding=PLAIN"
         }
       ]
     }

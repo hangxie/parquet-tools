@@ -46,6 +46,65 @@ func Test_NewSchemaTree_good(t *testing.T) {
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
 }
 
+func Test_buildEncodingMap_empty_row_groups(t *testing.T) {
+	option := pio.ReadOption{}
+	uri := "../testdata/empty.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	result := buildEncodingMap(pr)
+	require.NotNil(t, result)
+	require.Empty(t, result)
+}
+
+func Test_buildEncodingMap_from_real_file(t *testing.T) {
+	option := pio.ReadOption{}
+	uri := "../testdata/good.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	result := buildEncodingMap(pr)
+	require.NotNil(t, result)
+	require.NotEmpty(t, result)
+	// Verify we get encodings for the columns in the file (internal names are capitalized)
+	require.Contains(t, result, "Shoe_brand")
+	require.Contains(t, result, "Shoe_name")
+	// Encodings should be valid encoding strings (from first data page)
+	require.NotEmpty(t, result["Shoe_brand"])
+	require.NotEmpty(t, result["Shoe_name"])
+}
+
+func Test_NewSchemaTree_with_encodings(t *testing.T) {
+	option := pio.ReadOption{}
+	uri := "../testdata/good.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	// Verify encoding is populated in the schema nodes
+	require.NotNil(t, schemaRoot.Children)
+	require.Len(t, schemaRoot.Children, 2)
+
+	// Check that leaf nodes have encoding populated
+	for _, child := range schemaRoot.Children {
+		if child.Type != nil {
+			require.NotEmpty(t, child.Encoding, "Encoding should be set for leaf node %s", child.Name)
+		}
+	}
+}
+
 func Test_SchemaNode_GetPathMap(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"

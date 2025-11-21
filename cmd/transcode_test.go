@@ -180,8 +180,9 @@ func Test_TranscodeCmd_isEncodingCompatible(t *testing.T) {
 		{"BIT_PACKED", "FLOAT", false},
 
 		// Byte array type encodings
-		{"RLE", "BYTE_ARRAY", true},
-		{"RLE", "FIXED_LEN_BYTE_ARRAY", true},
+		// Per parquet-go: RLE is NOT supported for BYTE_ARRAY or FIXED_LEN_BYTE_ARRAY
+		{"RLE", "BYTE_ARRAY", false},
+		{"RLE", "FIXED_LEN_BYTE_ARRAY", false},
 		{"DELTA_LENGTH_BYTE_ARRAY", "BYTE_ARRAY", true},
 		{"DELTA_LENGTH_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", false},
 		{"DELTA_BYTE_ARRAY", "BYTE_ARRAY", true},
@@ -201,8 +202,10 @@ func Test_TranscodeCmd_isEncodingCompatible(t *testing.T) {
 		{"BYTE_STREAM_SPLIT", "FLOAT", true},
 		{"BYTE_STREAM_SPLIT", "DOUBLE", true},
 
-		// Float-specific encodings should not work with other types
-		{"BYTE_STREAM_SPLIT", "INT32", false},
+		// Per parquet-go: BYTE_STREAM_SPLIT supports FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY
+		{"BYTE_STREAM_SPLIT", "INT32", true},
+		{"BYTE_STREAM_SPLIT", "INT64", true},
+		{"BYTE_STREAM_SPLIT", "FIXED_LEN_BYTE_ARRAY", true},
 		{"BYTE_STREAM_SPLIT", "BYTE_ARRAY", false},
 		{"BYTE_STREAM_SPLIT", "BOOLEAN", false},
 

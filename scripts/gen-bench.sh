@@ -206,7 +206,7 @@ else
         'BEGIN {FS=OFS="|"; done=0}
          /^\|[[:space:]]*-------:/ && done==0 {
              print
-             printf "| %8s | %71s | %71s | %8s | %13s | %10s | %8s | %11s |\n", version, cat, merge, meta, rowcount, schema, size, ver
+             printf "| %s | %s | %s | %s | %s | %s | %s | %s |\n", version, cat, merge, meta, rowcount, schema, size, ver
              done=1
              next
          }

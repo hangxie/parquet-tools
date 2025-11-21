@@ -63,14 +63,19 @@ func (c TranscodeCmd) isEncodingCompatible(encoding, dataType string) bool {
 	}
 
 	// Encoding compatibility matrix: maps data type to compatible encodings
+	// Per Parquet spec and parquet-go validation rules:
+	// - RLE: BOOLEAN, INT32, INT64 only
+	// - DELTA_BINARY_PACKED: INT32, INT64 only
+	// - DELTA_BYTE_ARRAY, DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only
+	// - BYTE_STREAM_SPLIT: FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY
 	compatibilityMap := map[string][]string{
 		"BOOLEAN":              {"BIT_PACKED", "RLE", "RLE_DICTIONARY"},
-		"BYTE_ARRAY":           {"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "RLE", "RLE_DICTIONARY"},
+		"BYTE_ARRAY":           {"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "RLE_DICTIONARY"},
 		"DOUBLE":               {"BYTE_STREAM_SPLIT", "RLE_DICTIONARY"},
-		"FIXED_LEN_BYTE_ARRAY": {"RLE", "RLE_DICTIONARY"},
+		"FIXED_LEN_BYTE_ARRAY": {"BYTE_STREAM_SPLIT", "RLE_DICTIONARY"},
 		"FLOAT":                {"BYTE_STREAM_SPLIT", "RLE_DICTIONARY"},
-		"INT32":                {"BIT_PACKED", "DELTA_BINARY_PACKED", "RLE", "RLE_DICTIONARY"},
-		"INT64":                {"BIT_PACKED", "DELTA_BINARY_PACKED", "RLE", "RLE_DICTIONARY"},
+		"INT32":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "RLE", "RLE_DICTIONARY"},
+		"INT64":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "RLE", "RLE_DICTIONARY"},
 	}
 
 	compatibleEncodings, exists := compatibilityMap[dataType]
@@ -157,7 +162,18 @@ func (c TranscodeCmd) Run() error {
 		return err
 	}
 
+	// Clear encoding from source file - we'll only use encoding if explicitly specified
+	var clearEncodingRecursive func(*pschema.SchemaNode)
+	clearEncodingRecursive = func(node *pschema.SchemaNode) {
+		node.Encoding = ""
+		for _, child := range node.Children {
+			clearEncodingRecursive(child)
+		}
+	}
+	clearEncodingRecursive(schemaTree)
+
 	// Modify schema tree: custom writer directives (encoding, omitstats)
+	// This will add user-specified encoding if provided
 	if c.DataPageEncoding != "" || c.OmitStats != "" {
 		c.modifySchemaTree(schemaTree)
 	}

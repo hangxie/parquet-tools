@@ -5,8 +5,8 @@
       "compressionCodec": "GZIP",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 0,
       "logicalType": "logicaltype=STRING",

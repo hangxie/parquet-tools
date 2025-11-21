@@ -2,148 +2,148 @@
   "Tag": "name=parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=Bool, type=BOOLEAN"
+      "Tag": "name=Bool, type=BOOLEAN, encoding=BIT_PACKED"
     },
     {
-      "Tag": "name=Int32, type=INT32"
+      "Tag": "name=Int32, type=INT32, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Int64, type=INT64"
+      "Tag": "name=Int64, type=INT64, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Int96, type=INT96"
+      "Tag": "name=Int96, type=INT96, encoding=PLAIN"
     },
     {
-      "Tag": "name=Float, type=FLOAT"
+      "Tag": "name=Float, type=FLOAT, encoding=BYTE_STREAM_SPLIT"
     },
     {
-      "Tag": "name=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2"
+      "Tag": "name=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2, encoding=PLAIN"
     },
     {
-      "Tag": "name=Double, type=DOUBLE"
+      "Tag": "name=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT"
     },
     {
-      "Tag": "name=ByteArray, type=BYTE_ARRAY"
+      "Tag": "name=ByteArray, type=BYTE_ARRAY, encoding=DELTA_LENGTH_BYTE_ARRAY"
     },
     {
-      "Tag": "name=Enum, type=BYTE_ARRAY, convertedtype=ENUM"
+      "Tag": "name=Enum, type=BYTE_ARRAY, convertedtype=ENUM, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID"
+      "Tag": "name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN"
     },
     {
-      "Tag": "name=Json, type=BYTE_ARRAY, convertedtype=JSON"
+      "Tag": "name=Json, type=BYTE_ARRAY, convertedtype=JSON, encoding=DELTA_BYTE_ARRAY"
     },
     {
-      "Tag": "name=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON"
+      "Tag": "name=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN"
     },
     {
-      "Tag": "name=Json2, type=BYTE_ARRAY"
+      "Tag": "name=Json2, type=BYTE_ARRAY, encoding=PLAIN"
     },
     {
-      "Tag": "name=Bson2, type=BYTE_ARRAY, logicaltype=BSON"
+      "Tag": "name=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY"
     },
     {
-      "Tag": "name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT"
+      "Tag": "name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10"
+      "Tag": "name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+      "Tag": "name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING"
+      "Tag": "name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN"
     },
     {
-      "Tag": "name=Int_8, type=INT32, convertedtype=INT_8"
+      "Tag": "name=Int_8, type=INT32, convertedtype=INT_8, encoding=BIT_PACKED"
     },
     {
-      "Tag": "name=Int_16, type=INT32, convertedtype=INT_16"
+      "Tag": "name=Int_16, type=INT32, convertedtype=INT_16, encoding=PLAIN"
     },
     {
-      "Tag": "name=Int_32, type=INT32, convertedtype=INT_32"
+      "Tag": "name=Int_32, type=INT32, convertedtype=INT_32, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Int_64, type=INT64, convertedtype=INT_64"
+      "Tag": "name=Int_64, type=INT64, convertedtype=INT_64, encoding=RLE"
     },
     {
-      "Tag": "name=Uint_8, type=INT32, convertedtype=UINT_8"
+      "Tag": "name=Uint_8, type=INT32, convertedtype=UINT_8, encoding=BIT_PACKED"
     },
     {
-      "Tag": "name=Uint_16, type=INT32, convertedtype=UINT_16"
+      "Tag": "name=Uint_16, type=INT32, convertedtype=UINT_16, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Uint_32, type=INT32, convertedtype=UINT_32"
+      "Tag": "name=Uint_32, type=INT32, convertedtype=UINT_32, encoding=PLAIN"
     },
     {
-      "Tag": "name=Uint_64, type=INT64, convertedtype=UINT_64"
+      "Tag": "name=Uint_64, type=INT64, convertedtype=UINT_64, encoding=RLE"
     },
     {
-      "Tag": "name=Date, type=INT32, convertedtype=DATE, logicaltype=DATE"
+      "Tag": "name=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Date2, type=INT32, logicaltype=DATE"
+      "Tag": "name=Date2, type=INT32, logicaltype=DATE, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"
+      "Tag": "name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"
+      "Tag": "name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
     },
     {
-      "Tag": "name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
+      "Tag": "name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
+      "Tag": "name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE"
     },
     {
-      "Tag": "name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS"
+      "Tag": "name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS"
+      "Tag": "name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"
+      "Tag": "name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
     },
     {
-      "Tag": "name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
+      "Tag": "name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"
+      "Tag": "name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS"
+      "Tag": "name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE"
     },
     {
-      "Tag": "name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12"
+      "Tag": "name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN"
     },
     {
-      "Tag": "name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"
+      "Tag": "name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2"
+      "Tag": "name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"
+      "Tag": "name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN"
     },
     {
-      "Tag": "name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2"
+      "Tag": "name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2, encoding=DELTA_LENGTH_BYTE_ARRAY"
     },
     {
-      "Tag": "name=decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2"
+      "Tag": "name=decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, repetitiontype=OPTIONAL"
+      "Tag": "name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY"
     },
     {
       "Tag": "name=Map, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         },
         {
-          "Tag": "name=value, type=INT32"
+          "Tag": "name=value, type=INT32, encoding=PLAIN"
         }
       ]
     },
@@ -151,18 +151,18 @@
       "Tag": "name=List, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         }
       ]
     },
     {
-      "Tag": "name=Repeated, type=INT32, repetitiontype=REPEATED"
+      "Tag": "name=Repeated, type=INT32, repetitiontype=REPEATED, encoding=DELTA_BINARY_PACKED"
     },
     {
       "Tag": "name=NestedMap, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         },
         {
           "Tag": "name=value",
@@ -171,10 +171,10 @@
               "Tag": "name=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
                 },
                 {
-                  "Tag": "name=value, type=INT32"
+                  "Tag": "name=value, type=INT32, encoding=PLAIN"
                 }
               ]
             },
@@ -182,7 +182,7 @@
               "Tag": "name=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"
+                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN"
                 }
               ]
             }
@@ -200,10 +200,10 @@
               "Tag": "name=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"
+                  "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
                 },
                 {
-                  "Tag": "name=value, type=INT32"
+                  "Tag": "name=value, type=INT32, encoding=PLAIN"
                 }
               ]
             },
@@ -211,7 +211,7 @@
               "Tag": "name=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"
+                  "Tag": "name=element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN"
                 }
               ]
             }
