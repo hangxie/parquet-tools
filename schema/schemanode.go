@@ -1,11 +1,14 @@
 package schema
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"maps"
 	"strings"
 
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/reader"
@@ -58,7 +61,124 @@ type SchemaOption struct {
 	FailOnInt96 bool
 }
 
+// positionTracker wraps a reader and tracks read position for Thrift reading
+type positionTracker struct {
+	r   io.Reader
+	pos int64
+}
+
+func (p *positionTracker) Read(buf []byte) (n int, err error) {
+	n, err = p.r.Read(buf)
+	p.pos += int64(n)
+	return n, err
+}
+
+func (p *positionTracker) Write(buf []byte) (int, error) {
+	return 0, fmt.Errorf("write not supported")
+}
+
+func (p *positionTracker) Close() error {
+	return nil
+}
+
+func (p *positionTracker) Flush(ctx context.Context) error {
+	return nil
+}
+
+func (p *positionTracker) RemainingBytes() uint64 {
+	return ^uint64(0) // Unknown
+}
+
+func (p *positionTracker) IsOpen() bool {
+	return true
+}
+
+func (p *positionTracker) Open() error {
+	return nil
+}
+
+// readFirstDataPageEncoding reads just the first data page encoding from a column chunk.
+// This is more efficient than ReadAllPageHeaders which reads all pages.
+func readFirstDataPageEncoding(pFile io.ReadSeeker, columnChunk *parquet.ColumnChunk) (parquet.Encoding, error) {
+	meta := columnChunk.MetaData
+	if meta == nil {
+		return 0, fmt.Errorf("column chunk metadata is nil")
+	}
+
+	// Calculate start offset - may start with dictionary page
+	startOffset := meta.DataPageOffset
+	if meta.DictionaryPageOffset != nil && *meta.DictionaryPageOffset < startOffset {
+		startOffset = *meta.DictionaryPageOffset
+	}
+
+	currentOffset := startOffset
+
+	// Read at most 2 pages (dictionary page + first data page)
+	for i := 0; i < 2; i++ {
+		// Seek to page header position
+		_, err := pFile.Seek(currentOffset, io.SeekStart)
+		if err != nil {
+			return 0, fmt.Errorf("seek to page: %w", err)
+		}
+
+		// Create a position-tracking transport
+		trackingTransport := &positionTracker{r: pFile, pos: currentOffset}
+		proto := thrift.NewTCompactProtocolConf(trackingTransport, nil)
+
+		pageHeader := parquet.NewPageHeader()
+		if err := pageHeader.Read(context.Background(), proto); err != nil {
+			return 0, err
+		}
+
+		// Check if this is a data page
+		if pageHeader.Type == parquet.PageType_DATA_PAGE && pageHeader.DataPageHeader != nil {
+			return pageHeader.DataPageHeader.Encoding, nil
+		}
+		if pageHeader.Type == parquet.PageType_DATA_PAGE_V2 && pageHeader.DataPageHeaderV2 != nil {
+			return pageHeader.DataPageHeaderV2.Encoding, nil
+		}
+
+		// Skip to next page (dictionary page case)
+		headerSize := trackingTransport.pos - currentOffset
+		currentOffset = currentOffset + headerSize + int64(pageHeader.CompressedPageSize)
+	}
+
+	return 0, fmt.Errorf("no data page found")
+}
+
+// buildEncodingMap extracts encoding information from row groups by reading page headers.
+// For each column, it finds the first DATA_PAGE or DATA_PAGE_V2 and uses its encoding.
+// Note: Parquet files should use consistent encodings across row groups for the same column.
+func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
+	result := make(map[string]string)
+
+	// Use the first row group to extract encodings
+	if len(pr.Footer.RowGroups) == 0 {
+		return result
+	}
+
+	for _, col := range pr.Footer.RowGroups[0].Columns {
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+
+		// Read just the first data page encoding
+		encoding, err := readFirstDataPageEncoding(pr.PFile, col)
+		if err != nil {
+			// Fall back to column metadata encodings if page headers can't be read
+			if len(col.MetaData.Encodings) > 0 {
+				result[pathKey] = col.MetaData.Encodings[0].String()
+			}
+			continue
+		}
+
+		result[pathKey] = encoding.String()
+	}
+
+	return result
+}
+
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
+	// Extract encoding information from the parquet file
+	encodingMap := buildEncodingMap(reader)
 	schemas := reader.SchemaHandler.SchemaElements
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],
@@ -103,6 +223,14 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		node := queue[0]
 		queue = append(queue[1:], node.Children...)
 		node.Name = node.ExNamePath[len(node.ExNamePath)-1]
+
+		// Populate encoding information for leaf nodes
+		if node.Type != nil && encodingMap != nil {
+			pathKey := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+			if encoding, found := encodingMap[pathKey]; found {
+				node.Encoding = encoding
+			}
+		}
 	}
 	return root, nil
 }

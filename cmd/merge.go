@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"runtime"
 
 	"github.com/hangxie/parquet-go/v2/reader"
@@ -80,6 +81,9 @@ func (c MergeCmd) Run() error {
 		}
 	}()
 
+	// Strip encoding from schema to let the writer choose appropriate encoding
+	schemaJson = regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJson, "")
+
 	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
@@ -154,6 +158,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 		}
 
 		if schemaJson == "" {
+			// Use schema from the first file (including its encodings)
 			schemaJson = currSchema.JSONSchema()
 			rootName = currSchema.Name
 			rootExNamePath = currSchema.ExNamePath
@@ -163,7 +168,10 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 		currSchema.Name = rootName
 		currSchema.ExNamePath = rootExNamePath
 		newSchema := currSchema.JSONSchema()
-		if newSchema != schemaJson {
+		// Strip encoding from both schemas for comparison as files may have different encodings
+		schemaJsonWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJson, "")
+		newSchemaWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(newSchema, "")
+		if newSchemaWithoutEncoding != schemaJsonWithoutEncoding {
 			return nil, "", fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}

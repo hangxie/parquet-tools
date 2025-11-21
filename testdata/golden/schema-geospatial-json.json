@@ -2,10 +2,10 @@
   "Tag": "name=parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"
+      "Tag": "name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY, encoding=PLAIN"
     },
     {
-      "Tag": "name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY"
+      "Tag": "name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, encoding=PLAIN"
     }
   ]
 }

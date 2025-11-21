@@ -682,7 +682,7 @@ Row group level inspection shows details of all column chunks within a specific 
 
 ```bash
 $ parquet-tools inspect testdata/good.parquet --row-group 0
-{"columnChunks":[{"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["RLE","PLAIN"],"index":0,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},{"compressedSize":319,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["PLAIN","RLE"],"index":1,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_name"],"statistics":{"maxValue":"grant_hill_2","minValue":"air_griffey","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":244}],"rowGroup":{"index":0,"numColumns":2,"numRows":3,"totalByteSize":438}}
+{"columnChunks":[{"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["PLAIN","RLE"],"index":0,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},{"compressedSize":319,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["PLAIN","RLE"],"index":1,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_name"],"statistics":{"maxValue":"grant_hill_2","minValue":"air_griffey","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":244}],"rowGroup":{"index":0,"numColumns":2,"numRows":3,"totalByteSize":438}}
 ```
 
 #### Inspect Column Chunk Level
@@ -691,7 +691,7 @@ Column chunk level inspection shows all pages within a column chunk, including p
 
 ```bash
 $ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0
-{"columnChunk":{"columnChunkIndex":0,"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":4,"encodings":["RLE","PLAIN"],"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},"pages":[{"index":0,"offset":4,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"nike","nullCount":0}},{"index":1,"offset":82,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"fila","minValue":"fila","nullCount":0}},{"index":2,"offset":160,"type":"DATA_PAGE","compressedSize":40,"uncompressedSize":15,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"steph_curry","minValue":"steph_curry","nullCount":0}}]}
+{"columnChunk":{"columnChunkIndex":0,"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":4,"encodings":["PLAIN","RLE"],"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},"pages":[{"index":0,"offset":4,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"nike","nullCount":0}},{"index":1,"offset":82,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"fila","minValue":"fila","nullCount":0}},{"index":2,"offset":160,"type":"DATA_PAGE","compressedSize":40,"uncompressedSize":15,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"steph_curry","minValue":"steph_curry","nullCount":0}}]}
 ```
 
 For column chunks with dictionary encoding, you'll also see dictionary page information:
@@ -770,7 +770,7 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 
 ```bash
 $ parquet-tools meta testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":5,"TotalByteSize":542,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE_DICTIONARY","RLE"],"CompressedSize":320,"UncompressedSize":220,"NumValues":5,"NullCount":0,"MaxValue":"reebok","MinValue":"adidas","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE_DICTIONARY","RLE"],"CompressedSize":422,"UncompressedSize":322,"NumValues":5,"NullCount":0,"MaxValue":"ultra_boost","MinValue":"990v5","CompressionCodec":"GZIP"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
 ```
 
 > [!NOTE]
@@ -806,7 +806,7 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]}
+{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"}]}
 ```
 
 Schema will output converted type and logical type when they are present in the parquet file, however, default settings will be ignored to make output shorter, e.g.,
@@ -814,6 +814,13 @@ Schema will output converted type and logical type when they are present in the 
 * convertedtype=MAP
 * repetitiontype=REQUIRED
 * type=STRUCT
+
+**Encoding Tag:**
+
+The schema command now includes the `encoding` tag which shows the encoding used for each column (e.g., PLAIN, RLE, DELTA_BINARY_PACKED). This information is extracted from the first row group's metadata. Note that parquet files should use consistent encodings for the same column across different row groups - if a file has different encodings for the same column in different row groups, only the first encoding encountered will be shown in the schema.
+
+> [!NOTE]
+> If you need to verify encodings for each column across different row groups, use the [`inspect` command](#inspect-command) which provides detailed encoding information at the row group and page level.
 
 Schema does not output `omitstats` tag as there is no reliable way to determine it.
 
@@ -833,8 +840,8 @@ go struct format generates go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
-	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
 }
 ```
 
@@ -843,8 +850,8 @@ You can turn on `--camel-case` to convert field names from snake_case_name to Ca
 ```bash
 $ parquet-tools schema --format go --camel-case testdata/good.parquet
 type Parquet_go_root struct {
-	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
-	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
+	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
 }
 ```
 
@@ -865,11 +872,11 @@ CSV format is the schema that can be used to import from CSV files:
 
 ```bash
 $ parquet-tools schema --format csv testdata/csv-good.parquet
-name=Id, type=INT64
-name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING
-name=Age, type=INT32
-name=Temperature, type=FLOAT
-name=Vaccinated, type=BOOLEAN
+name=Id, type=INT64, encoding=PLAIN
+name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN
+name=Age, type=INT32, encoding=PLAIN
+name=Temperature, type=FLOAT, encoding=PLAIN
+name=Vaccinated, type=BOOLEAN, encoding=PLAIN
 ```
 
 > [!NOTE]
@@ -929,14 +936,14 @@ $ parquet-tools size testdata/good.parquet
 
 ```bash
 $ parquet-tools size --query footer --json testdata/good.parquet
-{"Footer":323}
+{"Footer":335}
 ```
 
 #### Show All Sizes in JSON Format
 
 ```bash
 $ parquet-tools size -q all -j testdata/good.parquet
-{"Raw":588,"Uncompressed":438,"Footer":323}
+{"Raw":588,"Uncompressed":438,"Footer":335}
 ```
 
 ### split Command
@@ -1094,7 +1101,8 @@ $ parquet-tools transcode -s numeric-data.parquet --data-page-encoding DELTA_BIN
 **Unsupported encodings:**
 * `PLAIN_DICTIONARY` - `transcode` command does not support this encoding, use `RLE_DICTIONARY` instead.
 
-**Note**: The encoding is automatically applied only to compatible column types. Incompatible columns retain their original encoding.
+> [!NOTE]
+> The encoding is automatically applied only to compatible column types. Incompatible columns retain their original encoding.
 
 #### Control Statistics
 
@@ -1203,8 +1211,8 @@ $ parquet-tools version -j
 ```bash
 $ parquet-tools schema --format go testdata/geospatial.parquet
 type Parquet_go_root struct {
-	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
-	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY"`
+	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY, encoding=PLAIN"`
+	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, encoding=PLAIN"`
 }
 ```
 

@@ -1,5 +1,5 @@
-name=Id, type=INT64
-name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING
-name=Age, type=INT32
-name=Temperature, type=FLOAT
-name=Vaccinated, type=BOOLEAN
+name=Id, type=INT64, encoding=PLAIN
+name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN
+name=Age, type=INT32, encoding=PLAIN
+name=Temperature, type=FLOAT, encoding=PLAIN
+name=Vaccinated, type=BOOLEAN, encoding=PLAIN
