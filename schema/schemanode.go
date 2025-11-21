@@ -58,7 +58,31 @@ type SchemaOption struct {
 	FailOnInt96 bool
 }
 
+// buildEncodingMap extracts encoding information from row groups.
+// For each column, it uses the first encoding found in the first row group.
+// Note: Parquet files should use consistent encodings across row groups for the same column.
+func buildEncodingMap(rowGroups []*parquet.RowGroup) map[string]string {
+	result := make(map[string]string)
+
+	// Use the first row group to extract encodings
+	if len(rowGroups) == 0 {
+		return result
+	}
+
+	for _, col := range rowGroups[0].Columns {
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		// Use the first encoding listed for this column
+		if len(col.MetaData.Encodings) > 0 {
+			result[pathKey] = col.MetaData.Encodings[0].String()
+		}
+	}
+
+	return result
+}
+
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
+	// Extract encoding information from the parquet file
+	encodingMap := buildEncodingMap(reader.Footer.RowGroups)
 	schemas := reader.SchemaHandler.SchemaElements
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],
@@ -103,6 +127,14 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		node := queue[0]
 		queue = append(queue[1:], node.Children...)
 		node.Name = node.ExNamePath[len(node.ExNamePath)-1]
+
+		// Populate encoding information for leaf nodes
+		if node.Type != nil && encodingMap != nil {
+			pathKey := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+			if encoding, found := encodingMap[pathKey]; found {
+				node.Encoding = encoding
+			}
+		}
 	}
 	return root, nil
 }

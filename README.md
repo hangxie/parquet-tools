@@ -806,7 +806,7 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]}
+{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"}]}
 ```
 
 Schema will output converted type and logical type when they are present in the parquet file, however, default settings will be ignored to make output shorter, e.g.,
@@ -814,6 +814,13 @@ Schema will output converted type and logical type when they are present in the 
 * convertedtype=MAP
 * repetitiontype=REQUIRED
 * type=STRUCT
+
+**Encoding Tag:**
+
+The schema command now includes the `encoding` tag which shows the encoding used for each column (e.g., PLAIN, RLE, DELTA_BINARY_PACKED). This information is extracted from the first row group's metadata. Note that parquet files should use consistent encodings for the same column across different row groups - if a file has different encodings for the same column in different row groups, only the first encoding encountered will be shown in the schema.
+
+> [!NOTE]
+> If you need to verify encodings for each column across different row groups, use the [`inspect` command](#inspect-command) which provides detailed encoding information at the row group and page level.
 
 Schema does not output `omitstats` tag as there is no reliable way to determine it.
 
@@ -833,8 +840,8 @@ go struct format generates go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
-	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
 }
 ```
 
@@ -843,8 +850,8 @@ You can turn on `--camel-case` to convert field names from snake_case_name to Ca
 ```bash
 $ parquet-tools schema --format go --camel-case testdata/good.parquet
 type Parquet_go_root struct {
-	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
-	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE"`
+	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
 }
 ```
 
@@ -1094,7 +1101,8 @@ $ parquet-tools transcode -s numeric-data.parquet --data-page-encoding DELTA_BIN
 **Unsupported encodings:**
 * `PLAIN_DICTIONARY` - `transcode` command does not support this encoding, use `RLE_DICTIONARY` instead.
 
-**Note**: The encoding is automatically applied only to compatible column types. Incompatible columns retain their original encoding.
+> [!NOTE]
+> The encoding is automatically applied only to compatible column types. Incompatible columns retain their original encoding.
 
 #### Control Statistics
 

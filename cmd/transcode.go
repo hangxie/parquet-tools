@@ -157,7 +157,18 @@ func (c TranscodeCmd) Run() error {
 		return err
 	}
 
+	// Clear encoding from source file - we'll only use encoding if explicitly specified
+	var clearEncodingRecursive func(*pschema.SchemaNode)
+	clearEncodingRecursive = func(node *pschema.SchemaNode) {
+		node.Encoding = ""
+		for _, child := range node.Children {
+			clearEncodingRecursive(child)
+		}
+	}
+	clearEncodingRecursive(schemaTree)
+
 	// Modify schema tree: custom writer directives (encoding, omitstats)
+	// This will add user-specified encoding if provided
 	if c.DataPageEncoding != "" || c.OmitStats != "" {
 		c.modifySchemaTree(schemaTree)
 	}
