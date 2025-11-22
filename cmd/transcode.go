@@ -16,24 +16,63 @@ import (
 
 // TranscodeCmd is a kong command for transcode
 type TranscodeCmd struct {
-	DataPageEncoding string `help:"Data page encoding (PLAIN, RLE, etc). Leave empty to keep original."`
-	DataPageVersion  int32  `help:"Data page version (1 or 2). Use 2 for DATA_PAGE_V2 format." enum:"1,2" default:"1"`
-	FailOnInt96      bool   `help:"Fail if INT96 fields are detected in the source file." default:"false"`
-	OmitStats        string `help:"Control statistics (true/false). Leave empty to keep original." default:""`
-	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
-	Source           string `short:"s" help:"Source Parquet file to transcode." required:"true"`
-	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
+	DataPageEncoding string   `help:"Deprecated and ignored. Use --field-encoding instead."`
+	DataPageVersion  int32    `help:"Data page version (1 or 2). Use 2 for DATA_PAGE_V2 format." enum:"1,2" default:"1"`
+	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
+	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
+	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
+	ReadPageSize     int      `help:"Page size to read from Parquet." default:"1000"`
+	Source           string   `short:"s" help:"Source Parquet file to transcode." required:"true"`
+	URI              string   `arg:"" predictor:"file" help:"URI of output Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
 }
 
-func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode) {
+// parseFieldEncodings parses field-specific encoding specifications from "field.path=ENCODING" format
+// and returns a map from field path to encoding. Field paths use "." as delimiter.
+func (c TranscodeCmd) parseFieldEncodings() (map[string]string, error) {
+	result := make(map[string]string)
+	for _, spec := range c.FieldEncoding {
+		parts := strings.SplitN(spec, "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid field encoding format [%s], expected 'field.path=ENCODING'", spec)
+		}
+		fieldPath := strings.TrimSpace(parts[0])
+		encoding := strings.TrimSpace(parts[1])
+
+		if fieldPath == "" {
+			return nil, fmt.Errorf("empty field path in [%s]", spec)
+		}
+		if encoding == "" {
+			return nil, fmt.Errorf("empty encoding in [%s]", spec)
+		}
+
+		// Validate encoding
+		if _, err := parquet.EncodingFromString(strings.ToUpper(encoding)); err != nil {
+			return nil, fmt.Errorf("invalid encoding [%s] for field [%s]: %w", encoding, fieldPath, err)
+		}
+		if strings.ToUpper(encoding) == "PLAIN_DICTIONARY" {
+			return nil, fmt.Errorf("PLAIN_DICTIONARY encoding is deprecated for field [%s], use RLE_DICTIONARY instead", fieldPath)
+		}
+
+		result[fieldPath] = strings.ToUpper(encoding)
+	}
+	return result, nil
+}
+
+func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings map[string]string) error {
 	// Add custom parquet-go writer directives (encoding, omitstats)
 	// Only apply to leaf nodes (not struct/group types)
 	if schemaTree.Type != nil {
-		// Apply encoding if specified and compatible
-		if c.DataPageEncoding != "" && c.isEncodingCompatible(c.DataPageEncoding, schemaTree.Type.String()) {
-			schemaTree.Encoding = c.DataPageEncoding
+		// Build field path from ExNamePath (skip root element)
+		fieldPath := strings.Join(schemaTree.ExNamePath[1:], ".")
+
+		// Apply field-specific encoding if specified
+		if encoding, found := fieldEncodings[fieldPath]; found {
+			if !c.isEncodingCompatible(encoding, schemaTree.Type.String()) {
+				return fmt.Errorf("encoding %s is not compatible with field [%s] of type %s", encoding, fieldPath, schemaTree.Type.String())
+			}
+			schemaTree.Encoding = encoding
 		}
 
 		// Apply omit stats if specified
@@ -44,8 +83,11 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode) {
 
 	// Recursively process children
 	for _, child := range schemaTree.Children {
-		c.modifySchemaTree(child)
+		if err := c.modifySchemaTree(child, fieldEncodings); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (c TranscodeCmd) isEncodingCompatible(encoding, dataType string) bool {
@@ -136,15 +178,10 @@ func (c TranscodeCmd) Run() error {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
 
-	// Validate encoding if specified
-	if c.DataPageEncoding != "" {
-		if _, err := parquet.EncodingFromString(strings.ToUpper(c.DataPageEncoding)); err != nil {
-			return fmt.Errorf("invalid encoding [%s]: %w", c.DataPageEncoding, err)
-		}
-		// Reject deprecated encodings
-		if strings.ToUpper(c.DataPageEncoding) == "PLAIN_DICTIONARY" {
-			return fmt.Errorf("PLAIN_DICTIONARY encoding is deprecated in Parquet 2.0, use RLE_DICTIONARY instead")
-		}
+	// Parse and validate field-specific encodings
+	fieldEncodings, err := c.parseFieldEncodings()
+	if err != nil {
+		return err
 	}
 
 	// Open source file
@@ -174,8 +211,10 @@ func (c TranscodeCmd) Run() error {
 
 	// Modify schema tree: custom writer directives (encoding, omitstats)
 	// This will add user-specified encoding if provided
-	if c.DataPageEncoding != "" || c.OmitStats != "" {
-		c.modifySchemaTree(schemaTree)
+	if c.OmitStats != "" || len(fieldEncodings) > 0 {
+		if err := c.modifySchemaTree(schemaTree, fieldEncodings); err != nil {
+			return err
+		}
 	}
 
 	// Generate JSON schema from (possibly modified) SchemaTree
