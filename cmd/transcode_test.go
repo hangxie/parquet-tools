@@ -26,8 +26,6 @@ func Test_TranscodeCmd_Run_error(t *testing.T) {
 		"target-file":         {TranscodeCmd{DataPageVersion: 1, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
 		"target-compression":  {TranscodeCmd{DataPageVersion: 1, ReadOption: rOpt, WriteOption: pio.WriteOption{}, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 		"target-write":        {TranscodeCmd{DataPageVersion: 1, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: "s3://target"}, "failed to close"},
-		"invalid-encoding":    {TranscodeCmd{DataPageEncoding: "INVALID_ENCODING", DataPageVersion: 1, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "invalid encoding"},
-		"deprecated-encoding": {TranscodeCmd{DataPageEncoding: "PLAIN_DICTIONARY", DataPageVersion: 1, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "PLAIN_DICTIONARY encoding is deprecated"},
 		"fail-on-int96":       {TranscodeCmd{FailOnInt96: true, DataPageVersion: 1, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/all-types.parquet", URI: filepath.Join(tempDir, "dummy")}, "has type INT96 which is not supported"},
 	}
 
@@ -47,23 +45,20 @@ func Test_TranscodeCmd_Run_good(t *testing.T) {
 		compression     string
 		dataPageVersion int32
 		omitStats       string
-		encoding        string
 		rowCount        int64
 	}{
-		"good-gzip":           {"good.parquet", "GZIP", 1, "", "", 3},
-		"good-zstd":           {"good.parquet", "ZSTD", 1, "", "", 3},
-		"good-uncompressed":   {"good.parquet", "UNCOMPRESSED", 1, "", "", 3},
-		"good-lz4":            {"good.parquet", "LZ4", 1, "", "", 3},
-		"all-types-gzip":      {"all-types.parquet", "GZIP", 1, "", "", 10},
-		"all-types-zstd":      {"all-types.parquet", "ZSTD", 1, "", "", 10},
-		"empty-gzip":          {"empty.parquet", "GZIP", 1, "", "", 0},
-		"good-v2":             {"good.parquet", "SNAPPY", 2, "", "", 3},
-		"all-types-v2-zstd":   {"all-types.parquet", "ZSTD", 2, "", "", 10},
-		"good-stats-true":     {"good.parquet", "SNAPPY", 1, "true", "", 3},
-		"good-stats-false":    {"good.parquet", "SNAPPY", 1, "false", "", 3},
-		"good-encoding-plain": {"good.parquet", "SNAPPY", 1, "", "PLAIN", 3},
-		"good-encoding-rle":   {"good.parquet", "SNAPPY", 1, "", "RLE", 3},
-		"good-all-options":    {"good.parquet", "ZSTD", 2, "true", "PLAIN", 3},
+		"good-gzip":         {"good.parquet", "GZIP", 1, "", 3},
+		"good-zstd":         {"good.parquet", "ZSTD", 1, "", 3},
+		"good-uncompressed": {"good.parquet", "UNCOMPRESSED", 1, "", 3},
+		"good-lz4":          {"good.parquet", "LZ4", 1, "", 3},
+		"all-types-gzip":    {"all-types.parquet", "GZIP", 1, "", 10},
+		"all-types-zstd":    {"all-types.parquet", "ZSTD", 1, "", 10},
+		"empty-gzip":        {"empty.parquet", "GZIP", 1, "", 0},
+		"good-v2":           {"good.parquet", "SNAPPY", 2, "", 3},
+		"all-types-v2-zstd": {"all-types.parquet", "ZSTD", 2, "", 10},
+		"good-stats-true":   {"good.parquet", "SNAPPY", 1, "true", 3},
+		"good-stats-false":  {"good.parquet", "SNAPPY", 1, "false", 3},
+		"good-all-options":  {"good.parquet", "ZSTD", 2, "true", 3},
 	}
 	tempDir := t.TempDir()
 
@@ -71,14 +66,13 @@ func Test_TranscodeCmd_Run_good(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			wOpt := pio.WriteOption{Compression: tc.compression}
 			cmd := TranscodeCmd{
-				DataPageVersion:  tc.dataPageVersion,
-				DataPageEncoding: tc.encoding,
-				OmitStats:        tc.omitStats,
-				ReadOption:       rOpt,
-				WriteOption:      wOpt,
-				ReadPageSize:     10,
-				Source:           filepath.Join("..", "testdata", tc.source),
-				URI:              filepath.Join(tempDir, name+".parquet"),
+				DataPageVersion: tc.dataPageVersion,
+				OmitStats:       tc.omitStats,
+				ReadOption:      rOpt,
+				WriteOption:     wOpt,
+				ReadPageSize:    10,
+				Source:          filepath.Join("..", "testdata", tc.source),
+				URI:             filepath.Join(tempDir, name+".parquet"),
 			}
 			err := cmd.Run()
 			require.NoError(t, err)
@@ -236,50 +230,23 @@ func Test_TranscodeCmd_Run_schema_modification(t *testing.T) {
 	wOpt := pio.WriteOption{Compression: "SNAPPY"}
 	tempDir := t.TempDir()
 
-	testCases := []struct {
-		name             string
-		cmd              TranscodeCmd
-		expectedEncoding string
-	}{
-		{
-			name: "schema with no modifications",
-			cmd: TranscodeCmd{
-				DataPageVersion: 1,
-				ReadOption:      rOpt,
-				WriteOption:     wOpt,
-				ReadPageSize:    10,
-				Source:          "../testdata/good.parquet",
-				URI:             filepath.Join(tempDir, "no-mods.parquet"),
-			},
-			expectedEncoding: "",
-		},
-		{
-			name: "schema modification with INT96 detection",
-			cmd: TranscodeCmd{
-				DataPageVersion:  1,
-				DataPageEncoding: "PLAIN",
-				ReadOption:       rOpt,
-				WriteOption:      wOpt,
-				ReadPageSize:     10,
-				Source:           "../testdata/all-types.parquet",
-				URI:              filepath.Join(tempDir, "with-int96.parquet"),
-			},
-			expectedEncoding: "PLAIN",
-		},
+	cmd := TranscodeCmd{
+		DataPageVersion: 1,
+		ReadOption:      rOpt,
+		WriteOption:     wOpt,
+		ReadPageSize:    10,
+		Source:          "../testdata/good.parquet",
+		URI:             filepath.Join(tempDir, "no-mods.parquet"),
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := tc.cmd.Run()
-			require.NoError(t, err)
+	err := cmd.Run()
+	require.NoError(t, err)
 
-			// Verify output file
-			reader, err := pio.NewParquetFileReader(tc.cmd.URI, rOpt)
-			require.NoError(t, err)
-			require.Greater(t, reader.GetNumRows(), int64(0))
-			_ = reader.PFile.Close()
-		})
-	}
+	// Verify output file
+	reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+	require.NoError(t, err)
+	require.Greater(t, reader.GetNumRows(), int64(0))
+	_ = reader.PFile.Close()
 }
 
 func Test_TranscodeCmd_Run_with_different_page_sizes(t *testing.T) {
@@ -346,16 +313,15 @@ func Test_TranscodeCmd_Run_edge_cases(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name: "all encoding and stats options",
+			name: "all stats options",
 			cmd: TranscodeCmd{
-				DataPageVersion:  2,
-				DataPageEncoding: "PLAIN",
-				OmitStats:        "false",
-				ReadOption:       rOpt,
-				WriteOption:      wOpt,
-				ReadPageSize:     10,
-				Source:           "../testdata/good.parquet",
-				URI:              filepath.Join(tempDir, "all-opts.parquet"),
+				DataPageVersion: 2,
+				OmitStats:       "false",
+				ReadOption:      rOpt,
+				WriteOption:     wOpt,
+				ReadPageSize:    10,
+				Source:          "../testdata/good.parquet",
+				URI:             filepath.Join(tempDir, "all-opts.parquet"),
 			},
 			expectErr: false,
 		},
@@ -371,19 +337,6 @@ func Test_TranscodeCmd_Run_edge_cases(t *testing.T) {
 			},
 			expectErr: false,
 		},
-		{
-			name: "encoding with byte array fields",
-			cmd: TranscodeCmd{
-				DataPageVersion:  1,
-				DataPageEncoding: "DELTA_BYTE_ARRAY",
-				ReadOption:       rOpt,
-				WriteOption:      wOpt,
-				ReadPageSize:     10,
-				Source:           "../testdata/good.parquet",
-				URI:              filepath.Join(tempDir, "delta-byte-array.parquet"),
-			},
-			expectErr: false,
-		},
 	}
 
 	for _, tc := range testCases {
@@ -396,6 +349,181 @@ func Test_TranscodeCmd_Run_edge_cases(t *testing.T) {
 				}
 			} else {
 				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func Test_TranscodeCmd_parseFieldEncodings(t *testing.T) {
+	testCases := []struct {
+		name          string
+		fieldEncoding []string
+		expected      map[string]string
+		expectErr     bool
+		errMsg        string
+	}{
+		{
+			name:          "empty input",
+			fieldEncoding: []string{},
+			expected:      map[string]string{},
+			expectErr:     false,
+		},
+		{
+			name:          "single field encoding",
+			fieldEncoding: []string{"shoe_brand=PLAIN"},
+			expected:      map[string]string{"shoe_brand": "PLAIN"},
+			expectErr:     false,
+		},
+		{
+			name:          "multiple field encodings",
+			fieldEncoding: []string{"shoe_brand=PLAIN", "shoe_name=DELTA_BYTE_ARRAY"},
+			expected:      map[string]string{"shoe_brand": "PLAIN", "shoe_name": "DELTA_BYTE_ARRAY"},
+			expectErr:     false,
+		},
+		{
+			name:          "nested field path",
+			fieldEncoding: []string{"parent.child.leaf=RLE"},
+			expected:      map[string]string{"parent.child.leaf": "RLE"},
+			expectErr:     false,
+		},
+		{
+			name:          "case insensitive encoding",
+			fieldEncoding: []string{"field=plain"},
+			expected:      map[string]string{"field": "PLAIN"},
+			expectErr:     false,
+		},
+		{
+			name:          "encoding with whitespace",
+			fieldEncoding: []string{"  field  =  RLE  "},
+			expected:      map[string]string{"field": "RLE"},
+			expectErr:     false,
+		},
+		{
+			name:          "missing equals sign",
+			fieldEncoding: []string{"fieldPLAIN"},
+			expectErr:     true,
+			errMsg:        "invalid field encoding format",
+		},
+		{
+			name:          "empty field path",
+			fieldEncoding: []string{"=PLAIN"},
+			expectErr:     true,
+			errMsg:        "empty field path",
+		},
+		{
+			name:          "empty encoding",
+			fieldEncoding: []string{"field="},
+			expectErr:     true,
+			errMsg:        "empty encoding",
+		},
+		{
+			name:          "invalid encoding",
+			fieldEncoding: []string{"field=INVALID_ENCODING"},
+			expectErr:     true,
+			errMsg:        "invalid encoding",
+		},
+		{
+			name:          "deprecated encoding",
+			fieldEncoding: []string{"field=PLAIN_DICTIONARY"},
+			expectErr:     true,
+			errMsg:        "PLAIN_DICTIONARY encoding is deprecated",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := TranscodeCmd{FieldEncoding: tc.fieldEncoding}
+			result, err := cmd.parseFieldEncodings()
+
+			if tc.expectErr {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expected, result)
+			}
+		})
+	}
+}
+
+func Test_TranscodeCmd_Run_with_field_encoding(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	tempDir := t.TempDir()
+
+	testCases := []struct {
+		name          string
+		source        string
+		fieldEncoding []string
+		expectErr     bool
+		errMsg        string
+	}{
+		{
+			name:          "single field encoding",
+			source:        "good.parquet",
+			fieldEncoding: []string{"shoe_brand=DELTA_BYTE_ARRAY"},
+			expectErr:     false,
+		},
+		{
+			name:          "multiple field encodings",
+			source:        "good.parquet",
+			fieldEncoding: []string{"shoe_brand=DELTA_BYTE_ARRAY", "shoe_name=PLAIN"},
+			expectErr:     false,
+		},
+		{
+			name:          "field encoding with global encoding",
+			source:        "good.parquet",
+			fieldEncoding: []string{"shoe_brand=DELTA_LENGTH_BYTE_ARRAY"},
+			expectErr:     false,
+		},
+		{
+			name:          "incompatible encoding fails",
+			source:        "good.parquet",
+			fieldEncoding: []string{"shoe_brand=DELTA_BINARY_PACKED"}, // DELTA_BINARY_PACKED only works with INT32/INT64, not BYTE_ARRAY
+			expectErr:     true,
+			errMsg:        "not compatible with field",
+		},
+		{
+			name:          "invalid field encoding format",
+			source:        "good.parquet",
+			fieldEncoding: []string{"invalid-format"},
+			expectErr:     true,
+			errMsg:        "invalid field encoding format",
+		},
+		{
+			name:          "invalid encoding name",
+			source:        "good.parquet",
+			fieldEncoding: []string{"shoe_brand=NOT_A_REAL_ENCODING"},
+			expectErr:     true,
+			errMsg:        "invalid encoding",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := TranscodeCmd{
+				DataPageVersion: 1,
+				FieldEncoding:   tc.fieldEncoding,
+				ReadOption:      rOpt,
+				WriteOption:     wOpt,
+				ReadPageSize:    10,
+				Source:          filepath.Join("..", "testdata", tc.source),
+				URI:             filepath.Join(tempDir, tc.name+".parquet"),
+			}
+
+			err := cmd.Run()
+
+			if tc.expectErr {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+			} else {
+				require.NoError(t, err)
+
+				// Verify output file exists and has correct row count
+				reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+				require.NoError(t, err)
+				require.Equal(t, int64(3), reader.GetNumRows())
+				_ = reader.PFile.Close()
 			}
 		})
 	}

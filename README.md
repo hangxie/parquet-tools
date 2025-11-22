@@ -1066,43 +1066,66 @@ $ parquet-tools transcode -s legacy.parquet --data-page-version=2 -z ZSTD modern
 * `1` - DATA_PAGE format (default, compatible with older readers)
 * `2` - DATA_PAGE_V2 format (more efficient, requires Parquet format v2.0 readers)
 
-#### Change Data Page Encoding
+#### Change Data Page Encoding (Deprecated)
 
-Use the `--data-page-encoding` parameter to specify the encoding type for columns. Different encodings can optimize for different data patterns (e.g., RLE for repeated values, dictionary encoding for low-cardinality data). The encoding is only applied to columns with compatible data types.
+> [!WARNING]
+> The `--data-page-encoding` parameter is deprecated and ignored. Use `--field-encoding` instead.
 
-Apply plain encoding (works with all types):
+#### Field-Specific Encoding
 
-```bash
-$ parquet-tools transcode -s input.parquet --data-page-encoding PLAIN output.parquet
-```
+Use the `--field-encoding` parameter to apply different encodings to specific fields. This allows fine-grained control over encoding on a per-field basis, which is useful when different columns have different data characteristics.
 
-Use RLE dictionary encoding (works with most types):
+The format is `field.path=ENCODING`, where `field.path` is the dot-separated path to the field. For nested structures, use the full path including intermediate elements like `list` for LIST types and `key_value` for MAP types.
 
-```bash
-$ parquet-tools transcode -s input.parquet --data-page-encoding RLE_DICTIONARY output.parquet
-```
-
-Use delta encoding for numeric data:
+Apply different encodings to different fields:
 
 ```bash
-$ parquet-tools transcode -s numeric-data.parquet --data-page-encoding DELTA_BINARY_PACKED output.parquet
+$ parquet-tools transcode -s input.parquet \
+  --field-encoding "name=DELTA_BYTE_ARRAY" \
+  --field-encoding "age=DELTA_BINARY_PACKED" \
+  output.parquet
 ```
 
-**Supported encodings:**
-* `BIT_PACKED` - Deprecated, use `RLE` instead for better compatibility.
-* `BYTE_STREAM_SPLIT` - Byte stream split encoding (FLOAT, DOUBLE only; efficient for floating-point data)
-* `DELTA_BINARY_PACKED` - Delta encoding with binary packing (INT32, INT64 only; efficient for sorted numeric data)
-* `DELTA_BYTE_ARRAY` - Delta encoding for byte arrays (BYTE_ARRAY only)
-* `DELTA_LENGTH_BYTE_ARRAY` - Delta encoding for byte arrays (BYTE_ARRAY only)
-* `PLAIN` - Plain encoding (compatible with all types)
-* `RLE` - Run Length Encoding (efficient for repeated values; INT32, INT64, BYTE_ARRAY, BOOLEAN)
-* `RLE_DICTIONARY` - Dictionary encoding with RLE (all types; efficient for low-cardinality data)
+For nested fields, use the full path:
 
-**Unsupported encodings:**
-* `PLAIN_DICTIONARY` - `transcode` command does not support this encoding, use `RLE_DICTIONARY` instead.
+```bash
+# For a LIST field named "classes" with string elements
+$ parquet-tools transcode -s input.parquet \
+  --field-encoding "classes.list.element=DELTA_BYTE_ARRAY" \
+  output.parquet
+
+# For nested struct fields
+$ parquet-tools transcode -s input.parquet \
+  --field-encoding "teachers.name=DELTA_BYTE_ARRAY" \
+  --field-encoding "friends.list.element.id=DELTA_BINARY_PACKED" \
+  output.parquet
+```
+
+**Path format for complex types:**
+* **Simple fields**: `fieldname` (e.g., `name`, `age`)
+* **Nested structs**: `parent.child` (e.g., `teachers.name`)
+* **LIST elements**: `fieldname.list.element` (e.g., `classes.list.element`)
+* **LIST of structs**: `fieldname.list.element.child` (e.g., `friends.list.element.id`)
+* **MAP keys/values**: `fieldname.key_value.key` or `fieldname.key_value.value`
+
+**Supported encodings and compatible types:**
+
+| Encoding | Compatible Types | Description |
+|----------|------------------|-------------|
+| `PLAIN` | All types | Default encoding, no compression |
+| `RLE` | BOOLEAN, INT32, INT64 | Run-length encoding for repeated values |
+| `BIT_PACKED` | BOOLEAN, INT32, INT64 | Deprecated, use RLE instead |
+| `DELTA_BINARY_PACKED` | INT32, INT64 | Delta encoding for sorted integers |
+| `DELTA_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for strings |
+| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for variable-length byte arrays |
+| `BYTE_STREAM_SPLIT` | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data |
+| `RLE_DICTIONARY` | All types | Dictionary encoding with RLE, efficient for low-cardinality data |
 
 > [!NOTE]
-> The encoding is automatically applied only to compatible column types. Incompatible columns retain their original encoding.
+> Encodings must be compatible with the field type. Specifying an incompatible encoding will result in an error.
+
+> [!TIP]
+> Use `parquet-tools schema` to see the field structure and determine the correct paths.
 
 #### Control Statistics
 
@@ -1132,13 +1155,13 @@ You can combine multiple transcode options in a single command:
 ```bash
 $ parquet-tools transcode -s legacy.parquet \
   --data-page-version=2 \
-  --data-page-encoding RLE_DICTIONARY \
+  --field-encoding "name=DELTA_BYTE_ARRAY" \
   --omit-stats false \
   -z ZSTD \
   optimized.parquet
 ```
 
-This example upgrades the page format to v2, sets dictionary encoding, ensures statistics are included, and applies ZSTD compression.
+This example upgrades the page format to v2, sets encoding for the "name" field, ensures statistics are included, and applies ZSTD compression.
 
 #### INT96 Field Detection
 

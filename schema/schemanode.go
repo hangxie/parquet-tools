@@ -61,93 +61,44 @@ type SchemaOption struct {
 	FailOnInt96 bool
 }
 
-// positionTracker wraps a reader and tracks read position for Thrift reading
-type positionTracker struct {
-	r   io.Reader
-	pos int64
-}
-
-func (p *positionTracker) Read(buf []byte) (n int, err error) {
-	n, err = p.r.Read(buf)
-	p.pos += int64(n)
-	return n, err
-}
-
-func (p *positionTracker) Write(buf []byte) (int, error) {
-	return 0, fmt.Errorf("write not supported")
-}
-
-func (p *positionTracker) Close() error {
-	return nil
-}
-
-func (p *positionTracker) Flush(ctx context.Context) error {
-	return nil
-}
-
-func (p *positionTracker) RemainingBytes() uint64 {
-	return ^uint64(0) // Unknown
-}
-
-func (p *positionTracker) IsOpen() bool {
-	return true
-}
-
-func (p *positionTracker) Open() error {
-	return nil
-}
-
-// readFirstDataPageEncoding reads just the first data page encoding from a column chunk.
-// This is more efficient than ReadAllPageHeaders which reads all pages.
-func readFirstDataPageEncoding(pFile io.ReadSeeker, columnChunk *parquet.ColumnChunk) (parquet.Encoding, error) {
-	meta := columnChunk.MetaData
+// readFirstDataPageEncoding reads the page header at DataPageOffset and returns the encoding.
+// This is more efficient than reading all page headers when only the encoding is needed.
+func readFirstDataPageEncoding(pFile io.ReadSeeker, col *parquet.ColumnChunk) (parquet.Encoding, error) {
+	meta := col.MetaData
 	if meta == nil {
 		return 0, fmt.Errorf("column chunk metadata is nil")
 	}
 
-	// Calculate start offset - may start with dictionary page
-	startOffset := meta.DataPageOffset
-	if meta.DictionaryPageOffset != nil && *meta.DictionaryPageOffset < startOffset {
-		startOffset = *meta.DictionaryPageOffset
+	// Seek to the first data page (DataPageOffset skips any dictionary page)
+	if _, err := pFile.Seek(meta.DataPageOffset, io.SeekStart); err != nil {
+		return 0, fmt.Errorf("seek to data page: %w", err)
 	}
 
-	currentOffset := startOffset
+	// Read the page header using thrift
+	bufReader := thrift.NewTBufferedTransport(thrift.NewStreamTransportR(pFile), 1024)
+	proto := thrift.NewTCompactProtocolConf(bufReader, nil)
+	pageHeader := parquet.NewPageHeader()
+	if err := pageHeader.Read(context.Background(), proto); err != nil {
+		return 0, fmt.Errorf("read page header: %w", err)
+	}
 
-	// Read at most 2 pages (dictionary page + first data page)
-	for i := 0; i < 2; i++ {
-		// Seek to page header position
-		_, err := pFile.Seek(currentOffset, io.SeekStart)
-		if err != nil {
-			return 0, fmt.Errorf("seek to page: %w", err)
-		}
-
-		// Create a position-tracking transport
-		trackingTransport := &positionTracker{r: pFile, pos: currentOffset}
-		proto := thrift.NewTCompactProtocolConf(trackingTransport, nil)
-
-		pageHeader := parquet.NewPageHeader()
-		if err := pageHeader.Read(context.Background(), proto); err != nil {
-			return 0, err
-		}
-
-		// Check if this is a data page
-		if pageHeader.Type == parquet.PageType_DATA_PAGE && pageHeader.DataPageHeader != nil {
+	// Extract encoding based on page type
+	switch pageHeader.Type {
+	case parquet.PageType_DATA_PAGE:
+		if pageHeader.DataPageHeader != nil {
 			return pageHeader.DataPageHeader.Encoding, nil
 		}
-		if pageHeader.Type == parquet.PageType_DATA_PAGE_V2 && pageHeader.DataPageHeaderV2 != nil {
+	case parquet.PageType_DATA_PAGE_V2:
+		if pageHeader.DataPageHeaderV2 != nil {
 			return pageHeader.DataPageHeaderV2.Encoding, nil
 		}
-
-		// Skip to next page (dictionary page case)
-		headerSize := trackingTransport.pos - currentOffset
-		currentOffset = currentOffset + headerSize + int64(pageHeader.CompressedPageSize)
 	}
 
-	return 0, fmt.Errorf("no data page found")
+	return 0, fmt.Errorf("unexpected page type at DataPageOffset: %v", pageHeader.Type)
 }
 
-// buildEncodingMap extracts encoding information from row groups by reading page headers.
-// For each column, it finds the first DATA_PAGE or DATA_PAGE_V2 and uses its encoding.
+// buildEncodingMap extracts encoding information from row groups by reading the first data page header.
+// For each column, it reads the page header at DataPageOffset to get the actual data page encoding.
 // Note: Parquet files should use consistent encodings across row groups for the same column.
 func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 	result := make(map[string]string)
@@ -160,10 +111,10 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 	for _, col := range pr.Footer.RowGroups[0].Columns {
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
 
-		// Read just the first data page encoding
+		// Read just the first data page header to get encoding
 		encoding, err := readFirstDataPageEncoding(pr.PFile, col)
 		if err != nil {
-			// Fall back to column metadata encodings if page headers can't be read
+			// Fall back to column metadata encodings if page header can't be read
 			if len(col.MetaData.Encodings) > 0 {
 				result[pathKey] = col.MetaData.Encodings[0].String()
 			}
