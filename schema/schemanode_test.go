@@ -14,94 +14,131 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-func Test_NewSchemaTree_fail_on_int96(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
+func Test_NewSchemaTree(t *testing.T) {
+	testCases := []struct {
+		name             string
+		uri              string
+		option           SchemaOption
+		goldenFile       string
+		errMsg           string
+		checkEncodings   bool
+		expectedChildren int
+	}{
+		{
+			name:   "fail on int96",
+			uri:    "../testdata/all-types.parquet",
+			option: SchemaOption{FailOnInt96: true},
+			errMsg: "type INT96 which is not supported",
+		},
+		{
+			name:       "good with golden file",
+			uri:        "../testdata/all-types.parquet",
+			option:     SchemaOption{},
+			goldenFile: "../testdata/golden/schema-all-types-raw.json",
+		},
+		{
+			name:             "with encodings populated",
+			uri:              "../testdata/good.parquet",
+			option:           SchemaOption{},
+			checkEncodings:   true,
+			expectedChildren: 2,
+		},
+	}
 
-	_, err = NewSchemaTree(pr, SchemaOption{FailOnInt96: true})
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "type INT96 which is not supported")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := pio.ReadOption{}
+			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
+
+			schemaRoot, err := NewSchemaTree(pr, tc.option)
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, schemaRoot)
+
+			if tc.goldenFile != "" {
+				actual, _ := json.MarshalIndent(schemaRoot, "", "  ")
+				expected, _ := os.ReadFile(tc.goldenFile)
+				require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
+			}
+
+			if tc.checkEncodings {
+				require.NotNil(t, schemaRoot.Children)
+				require.Len(t, schemaRoot.Children, tc.expectedChildren)
+				for _, child := range schemaRoot.Children {
+					if child.Type != nil {
+						require.NotEmpty(t, child.Encoding, "Encoding should be set for leaf node %s", child.Name)
+					}
+				}
+			}
+		})
+	}
 }
 
-func Test_NewSchemaTree_good(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
+func Test_buildEncodingMap(t *testing.T) {
+	testCases := []struct {
+		name         string
+		uri          string
+		expectEmpty  bool
+		expectedKeys []string // keys that should exist in the result
+	}{
+		{
+			name:        "empty row groups",
+			uri:         "../testdata/empty.parquet",
+			expectEmpty: true,
+		},
+		{
+			name:         "real file with data",
+			uri:          "../testdata/good.parquet",
+			expectEmpty:  false,
+			expectedKeys: []string{"Shoe_brand", "Shoe_name"},
+		},
+		{
+			name:        "data page v2 format",
+			uri:         "../testdata/data-page-v2.parquet",
+			expectEmpty: false,
+		},
+		{
+			name:        "dictionary encoded file",
+			uri:         "../testdata/dict-page.parquet",
+			expectEmpty: false,
+		},
+	}
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := pio.ReadOption{}
+			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
 
-	actual, _ := json.MarshalIndent(schemaRoot, "", "  ")
-	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-raw.json")
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
-}
+			result := buildEncodingMap(pr)
+			require.NotNil(t, result)
 
-func Test_buildEncodingMap_empty_row_groups(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/empty.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
+			if tc.expectEmpty {
+				require.Empty(t, result)
+			} else {
+				require.NotEmpty(t, result)
+				for _, encoding := range result {
+					require.NotEmpty(t, encoding)
+				}
+			}
 
-	result := buildEncodingMap(pr)
-	require.NotNil(t, result)
-	require.Empty(t, result)
-}
-
-func Test_buildEncodingMap_from_real_file(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/good.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
-
-	result := buildEncodingMap(pr)
-	require.NotNil(t, result)
-	require.NotEmpty(t, result)
-	// Verify we get encodings for the columns in the file (internal names are capitalized)
-	require.Contains(t, result, "Shoe_brand")
-	require.Contains(t, result, "Shoe_name")
-	// Encodings should be valid encoding strings (from first data page)
-	require.NotEmpty(t, result["Shoe_brand"])
-	require.NotEmpty(t, result["Shoe_name"])
-}
-
-func Test_NewSchemaTree_with_encodings(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/good.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
-
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
-
-	// Verify encoding is populated in the schema nodes
-	require.NotNil(t, schemaRoot.Children)
-	require.Len(t, schemaRoot.Children, 2)
-
-	// Check that leaf nodes have encoding populated
-	for _, child := range schemaRoot.Children {
-		if child.Type != nil {
-			require.NotEmpty(t, child.Encoding, "Encoding should be set for leaf node %s", child.Name)
-		}
+			for _, key := range tc.expectedKeys {
+				require.Contains(t, result, key)
+				require.NotEmpty(t, result[key])
+			}
+		})
 	}
 }
 
@@ -427,59 +464,65 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	require.Equal(t, string(expected), string(actual)+"\n")
 }
 
-func Test_Json_schema_go_struct(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
+func Test_GoStruct(t *testing.T) {
+	testCases := []struct {
+		name       string
+		uri        string
+		camelCase  bool
+		goldenFile string
+		errMsg     string
+	}{
+		{
+			name:       "all types",
+			uri:        "../testdata/all-types.parquet",
+			camelCase:  false,
+			goldenFile: "../testdata/golden/schema-all-types-go.txt",
+		},
+		{
+			name:       "good with camel case",
+			uri:        "../testdata/good.parquet",
+			camelCase:  true,
+			goldenFile: "../testdata/golden/schema-good-go-camel-case.txt",
+		},
+		{
+			name:      "list of list not supported",
+			uri:       "../testdata/list-of-list.parquet",
+			camelCase: false,
+			errMsg:    "go struct does not support LIST of LIST",
+		},
+	}
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := pio.ReadOption{}
+			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
 
-	actual, err := schemaRoot.GoStruct(false)
-	require.NoError(t, err)
-	formatted, err := format.Source([]byte(actual))
-	require.NoError(t, err)
-	actual = string(formatted)
+			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			require.NoError(t, err)
+			require.NotNil(t, schemaRoot)
 
-	expected, _ := os.ReadFile("../testdata/golden/schema-all-types-go.txt")
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
-	_ = pr.PFile.Close()
+			actual, err := schemaRoot.GoStruct(tc.camelCase)
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
 
-	uri = "../testdata/good.parquet"
-	pr, err = pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
+			require.NoError(t, err)
+			formatted, err := format.Source([]byte(actual))
+			require.NoError(t, err)
 
-	schemaRoot, err = NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
-
-	actual, err = schemaRoot.GoStruct(true)
-	require.NoError(t, err)
-	formatted, err = format.Source([]byte(actual))
-	require.NoError(t, err)
-	actual = string(formatted)
-
-	expected, _ = os.ReadFile("../testdata/golden/schema-good-go-camel-case.txt")
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
-	_ = pr.PFile.Close()
-
-	uri = "../testdata/list-of-list.parquet"
-	pr, err = pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-
-	schemaRoot, err = NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
-
-	_, err = schemaRoot.GoStruct(false)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "go struct does not support LIST of LIST")
-	_ = pr.PFile.Close()
+			expected, _ := os.ReadFile(tc.goldenFile)
+			require.Equal(t, strings.TrimRight(string(expected), "\n"), string(formatted))
+		})
+	}
 }
 
-func Test_Json_schema_json_schema_good(t *testing.T) {
+func Test_JSONSchema(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
@@ -501,76 +544,58 @@ func Test_Json_schema_json_schema_good(t *testing.T) {
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
-func Test_Json_schema_csv_schema_good(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/csv-good.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
+func Test_CSVSchema(t *testing.T) {
+	testCases := []struct {
+		name       string
+		uri        string
+		goldenFile string
+		errMsg     string
+	}{
+		{
+			name:       "good flat schema",
+			uri:        "../testdata/csv-good.parquet",
+			goldenFile: "../testdata/golden/schema-csv-good.txt",
+		},
+		{
+			name:   "nested schema not supported",
+			uri:    "../testdata/csv-nested.parquet",
+			errMsg: "CSV supports flat schema only",
+		},
+		{
+			name:   "optional column not supported",
+			uri:    "../testdata/csv-optional.parquet",
+			errMsg: "CSV does not support optional column",
+		},
+		{
+			name:   "repeated column not supported",
+			uri:    "../testdata/csv-repeated.parquet",
+			errMsg: "CSV does not support column in LIST typ",
+		},
+	}
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := pio.ReadOption{}
+			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
 
-	actual, err := schemaRoot.CSVSchema()
-	require.NoError(t, err)
+			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			require.NoError(t, err)
+			require.NotNil(t, schemaRoot)
 
-	expected, _ := os.ReadFile("../testdata/golden/schema-csv-good.txt")
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
-}
+			actual, err := schemaRoot.CSVSchema()
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
 
-func Test_Json_schema_csv_schema_nested(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/csv-nested.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
-
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
-
-	_, err = schemaRoot.CSVSchema()
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "CSV supports flat schema only")
-}
-
-func Test_Json_schema_csv_schema_optional(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/csv-optional.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
-
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
-
-	_, err = schemaRoot.CSVSchema()
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "CSV does not support optional column")
-}
-
-func Test_Json_schema_csv_schema_repeated(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/csv-repeated.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
-
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
-
-	_, err = schemaRoot.CSVSchema()
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "CSV does not support column in LIST typ")
+			require.NoError(t, err)
+			expected, _ := os.ReadFile(tc.goldenFile)
+			require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
+		})
+	}
 }
