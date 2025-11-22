@@ -98,22 +98,25 @@ func Test_NewCSVWriter(t *testing.T) {
 func Test_NewJSONWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
+	validSchema := `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`
 
 	testCases := map[string]struct {
-		uri    string
-		schema string
-		errMsg string
+		uri         string
+		schema      string
+		compression string
+		errMsg      string
 	}{
-		"invalid-uri":     {"://uri", "", "unable to parse file location"},
-		"invalid-schema1": {tempFile, "invalid schema", "unmarshal json schema string"},
-		"invalid-schema2": {tempFile, `{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"all-good":        {tempFile, `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`, ""},
+		"invalid-uri":         {"://uri", "", "SNAPPY", "unable to parse file location"},
+		"invalid-schema1":     {tempFile, "invalid schema", "SNAPPY", "unmarshal json schema string"},
+		"invalid-schema2":     {tempFile, `{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "SNAPPY", "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-compression": {tempFile, validSchema, "INVALID", "not a valid CompressionCodec"},
+		"all-good":            {tempFile, validSchema, "SNAPPY", ""},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			pw, err := NewJSONWriter(tc.uri, WriteOption{Compression: "SNAPPY"}, tc.schema)
+			pw, err := NewJSONWriter(tc.uri, WriteOption{Compression: tc.compression}, tc.schema)
 			defer func() {
 				if pw != nil {
 					_ = pw.PFile.Close()
