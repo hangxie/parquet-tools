@@ -65,6 +65,9 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Azure Storage Container](#azure-storage-container)
       - [HDFS File](#hdfs-file)
       - [HTTP Endpoint](#http-endpoint)
+    - [Encoding Options](#encoding-options)
+      - [Data Page Version](#data-page-version)
+      - [Encoding](#encoding)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
       - [Skip Rows](#skip-rows)
@@ -447,6 +450,41 @@ $ GODEBUG=http2client=0 parquet-tools row-count https://...
 18141856
 ```
 
+### Encoding Options
+
+This section describes encoding options for commands that write Parquet files.
+
+#### Data Page Version
+
+Use `--data-page-version` to specify the data page format version. This option is available for `import`, `merge`, `split`, and `transcode` commands.
+
+Data page version 2 is preferred as it offers better compression efficiency and read performance by separating repetition/definition levels from the data. However, version 1 has wider support among older Parquet readers.
+
+**Supported versions:**
+* `1` - DATA_PAGE format (legacy, compatible with older readers)
+* `2` - DATA_PAGE_V2 format (default, more efficient, requires Parquet format v2.0 readers)
+
+#### Encoding
+
+Parquet supports various encodings for different data types. Encoding can be specified in the schema file (for `import` command) or via `--field-encoding` option (for `transcode` command).
+
+**Supported encodings and compatible types:**
+
+| Encoding | Compatible Types | Description |
+|----------|------------------|-------------|
+| `PLAIN` | All types | Default encoding, no compression |
+| `RLE` | BOOLEAN, INT32, INT64 | Run-length encoding for repeated values |
+| `BIT_PACKED` | BOOLEAN, INT32, INT64 | Deprecated, use RLE instead |
+| `DELTA_BINARY_PACKED` | INT32, INT64 | Delta encoding for sorted integers |
+| `DELTA_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for strings |
+| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for variable-length byte arrays |
+| `BYTE_STREAM_SPLIT` | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data |
+| `RLE_DICTIONARY` | All types | Dictionary encoding with RLE, efficient for low-cardinality data |
+| `PLAIN_DICTIONARY` | All types | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
+
+> [!NOTE]
+> Encodings must be compatible with the field type. Specifying an incompatible encoding will result in an error.
+
 ### cat Command
 
 `cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Since most parquet files are rather large, you can use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduce the output to a certain level, these flags can be used together.
@@ -617,7 +655,7 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 `import` command creates a parquet file based on data in other formats. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated), default is "SNAPPY". You can also use `--data-page-version` to specify the data page format version (1 or 2), default is 2. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated), default is "SNAPPY". You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
@@ -752,7 +790,7 @@ $ parquet-tools row-count /tmp/merged.parquet
 6
 ```
 
-`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated) for target parquet file, default is "SNAPPY". You can use `--data-page-version` to specify the data page format version (1 or 2) for the output file, default is 2. Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated) for target parquet file, default is "SNAPPY". You can use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
 
 When `--concurrent` option is specified, the merge command will read input files in parallel (up to number of CPUs), this can bring performance gain between 5% and 10%, trade-off is that the order of records in the result parquet file will not be strictly in the order of input files.
 
@@ -955,7 +993,7 @@ Name of output files is determined by `--name-format` and will be used by `fmt.S
 Other useful parameters include:
 * `--fail-on-int96` to fail the command if source parquet file contains INT96 fields
 * `--compression` to specify compression codec for output files, default is `SNAPPY`
-* `--data-page-version` to specify data page format version (1 or 2), default is 2
+* `--data-page-version` to specify data page format version, see [Data Page Version](#data-page-version) for details
 * `--read-page-size` to tell how many rows will be read per batch from source
 
 #### Name format
@@ -1047,25 +1085,13 @@ $ parquet-tools transcode -s input.parquet -z UNCOMPRESSED output.parquet
 **Deprecated compression codecs:**
 * `LZ4` - Deprecated in Parquet format. Use `LZ4_RAW` instead for LZ4 compression
 
-#### Upgrade Data Page Version
+#### Change Data Page Version
 
-Use the `--data-page-version` parameter to upgrade the data page format. Version 2 uses a more efficient encoding structure and is recommended for new files, though it requires readers that support Parquet format v2.0.
-
-Upgrade to data page format v2 for better efficiency:
+Use `--data-page-version` to change the data page format. See [Data Page Version](#data-page-version) for details.
 
 ```bash
-$ parquet-tools transcode -s legacy.parquet --data-page-version=2 modern.parquet
+$ parquet-tools transcode -s legacy.parquet --data-page-version=1 compatible.parquet
 ```
-
-Combine with compression:
-
-```bash
-$ parquet-tools transcode -s legacy.parquet --data-page-version=2 -z ZSTD modern.parquet
-```
-
-**Supported versions:**
-* `1` - DATA_PAGE format (legacy, compatible with older readers)
-* `2` - DATA_PAGE_V2 format (default, more efficient, requires Parquet format v2.0 readers)
 
 #### Change Data Page Encoding (Deprecated)
 
@@ -1109,25 +1135,7 @@ $ parquet-tools transcode -s input.parquet \
 * **LIST of structs**: `fieldname.list.element.child` (e.g., `friends.list.element.id`)
 * **MAP keys/values**: `fieldname.key_value.key` or `fieldname.key_value.value`
 
-**Supported encodings and compatible types:**
-
-| Encoding | Compatible Types | Description |
-|----------|------------------|-------------|
-| `PLAIN` | All types | Default encoding, no compression |
-| `RLE` | BOOLEAN, INT32, INT64 | Run-length encoding for repeated values |
-| `BIT_PACKED` | BOOLEAN, INT32, INT64 | Deprecated, use RLE instead |
-| `DELTA_BINARY_PACKED` | INT32, INT64 | Delta encoding for sorted integers |
-| `DELTA_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for strings |
-| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for variable-length byte arrays |
-| `BYTE_STREAM_SPLIT` | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data |
-| `RLE_DICTIONARY` | All types | Dictionary encoding with RLE, efficient for low-cardinality data |
-| `PLAIN_DICTIONARY` | All types | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
-
-> [!NOTE]
-> Encodings must be compatible with the field type. Specifying an incompatible encoding will result in an error.
-
-> [!NOTE]
-> `PLAIN_DICTIONARY` encoding is only allowed when using `--data-page-version=1`. For data page version 2, use `RLE_DICTIONARY` instead.
+See [Encoding](#encoding) for supported encodings and compatible types.
 
 > [!TIP]
 > Use `parquet-tools schema` to see the field structure and determine the correct paths.
