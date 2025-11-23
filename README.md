@@ -215,7 +215,6 @@ Arguments:
 Flags:
   -h, --help                        Show context-sensitive help.
 
-  -b, --base64                      deprecated, will be removed in future version
       --fail-on-int96               fail command if INT96 data type is present.
       --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
       --http-extra-headers=         (HTTP URI only) extra HTTP headers.
@@ -1092,11 +1091,6 @@ Use `--data-page-version` to change the data page format. See [Data Page Version
 ```bash
 $ parquet-tools transcode -s legacy.parquet --data-page-version=1 compatible.parquet
 ```
-
-#### Change Data Page Encoding (Deprecated)
-
-> [!WARNING]
-> The `--data-page-encoding` parameter is deprecated and ignored. Use `--field-encoding` instead.
 
 #### Field-Specific Encoding
 
