@@ -17,7 +17,6 @@ import (
 // TranscodeCmd is a kong command for transcode
 type TranscodeCmd struct {
 	DataPageEncoding string   `help:"Deprecated and ignored. Use --field-encoding instead."`
-	DataPageVersion  int32    `help:"Data page version (1 or 2). Use 2 for DATA_PAGE_V2 format." enum:"1,2" default:"1"`
 	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
 	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
 	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
@@ -51,8 +50,9 @@ func (c TranscodeCmd) parseFieldEncodings() (map[string]string, error) {
 		if _, err := parquet.EncodingFromString(strings.ToUpper(encoding)); err != nil {
 			return nil, fmt.Errorf("invalid encoding [%s] for field [%s]: %w", encoding, fieldPath, err)
 		}
-		if strings.ToUpper(encoding) == "PLAIN_DICTIONARY" {
-			return nil, fmt.Errorf("PLAIN_DICTIONARY encoding is deprecated for field [%s], use RLE_DICTIONARY instead", fieldPath)
+		// PLAIN_DICTIONARY is only allowed in v1 data pages
+		if strings.ToUpper(encoding) == "PLAIN_DICTIONARY" && c.DataPageVersion != 1 {
+			return nil, fmt.Errorf("PLAIN_DICTIONARY encoding is only allowed with data page version 1, use RLE_DICTIONARY instead for field [%s]", fieldPath)
 		}
 
 		result[fieldPath] = strings.ToUpper(encoding)
@@ -110,14 +110,15 @@ func (c TranscodeCmd) isEncodingCompatible(encoding, dataType string) bool {
 	// - DELTA_BINARY_PACKED: INT32, INT64 only
 	// - DELTA_BYTE_ARRAY, DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only
 	// - BYTE_STREAM_SPLIT: FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY
+	// - PLAIN_DICTIONARY: All types (v1 data pages only, validated in parseFieldEncodings)
 	compatibilityMap := map[string][]string{
-		"BOOLEAN":              {"BIT_PACKED", "RLE", "RLE_DICTIONARY"},
-		"BYTE_ARRAY":           {"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "RLE_DICTIONARY"},
-		"DOUBLE":               {"BYTE_STREAM_SPLIT", "RLE_DICTIONARY"},
-		"FIXED_LEN_BYTE_ARRAY": {"BYTE_STREAM_SPLIT", "RLE_DICTIONARY"},
-		"FLOAT":                {"BYTE_STREAM_SPLIT", "RLE_DICTIONARY"},
-		"INT32":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "RLE", "RLE_DICTIONARY"},
-		"INT64":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "RLE", "RLE_DICTIONARY"},
+		"BOOLEAN":              {"BIT_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
+		"BYTE_ARRAY":           {"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"DOUBLE":               {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"FIXED_LEN_BYTE_ARRAY": {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"FLOAT":                {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"INT32":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
+		"INT64":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
 	}
 
 	compatibleEncodings, exists := compatibilityMap[dataType]
@@ -229,9 +230,6 @@ func (c TranscodeCmd) Run() error {
 		_ = fileWriter.WriteStop()
 		_ = fileWriter.PFile.Close()
 	}()
-
-	// Set data page version if specified
-	fileWriter.DataPageVersion = c.DataPageVersion
 
 	// Dedicated goroutine for output to ensure output integrity
 	ctx, cancel := context.WithCancel(context.Background())
