@@ -31,7 +31,6 @@ type CatCmd struct {
 	ReadPageSize int     `help:"Page size to read from Parquet." default:"1000"`
 	SampleRatio  float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
-	SkipPageSize int64   `help:"deprecated, will be removed in future release." default:"100000"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }

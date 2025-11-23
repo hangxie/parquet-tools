@@ -16,13 +16,12 @@ import (
 
 // TranscodeCmd is a kong command for transcode
 type TranscodeCmd struct {
-	DataPageEncoding string   `help:"Deprecated and ignored. Use --field-encoding instead."`
-	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
-	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
-	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
-	ReadPageSize     int      `help:"Page size to read from Parquet." default:"1000"`
-	Source           string   `short:"s" help:"Source Parquet file to transcode." required:"true"`
-	URI              string   `arg:"" predictor:"file" help:"URI of output Parquet file."`
+	FailOnInt96   bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
+	FieldEncoding []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
+	OmitStats     string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
+	ReadPageSize  int      `help:"Page size to read from Parquet." default:"1000"`
+	Source        string   `short:"s" help:"Source Parquet file to transcode." required:"true"`
+	URI           string   `arg:"" predictor:"file" help:"URI of output Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
 }

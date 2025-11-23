@@ -17,7 +17,6 @@ import (
 
 // MetaCmd is a kong command for meta
 type MetaCmd struct {
-	Base64      bool   `name:"base64" short:"b" help:"deprecated, will be removed in future version" default:"false"`
 	FailOnInt96 bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
