@@ -58,7 +58,8 @@ type SchemaNode struct {
 }
 
 type SchemaOption struct {
-	FailOnInt96 bool
+	FailOnInt96          bool
+	RetrievePageEncoding bool // Read encoding from first data page header (expensive I/O)
 }
 
 // readFirstDataPageEncoding reads the page header at DataPageOffset and returns the encoding.
@@ -128,8 +129,11 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 }
 
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
-	// Extract encoding information from the parquet file
-	encodingMap := buildEncodingMap(reader)
+	// Extract encoding information from the parquet file (only if requested)
+	var encodingMap map[string]string
+	if option.RetrievePageEncoding {
+		encodingMap = buildEncodingMap(reader)
+	}
 	schemas := reader.SchemaHandler.SchemaElements
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],

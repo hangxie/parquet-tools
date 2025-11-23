@@ -39,7 +39,7 @@ func Test_NewSchemaTree(t *testing.T) {
 		{
 			name:             "with encodings populated",
 			uri:              "../testdata/good.parquet",
-			option:           SchemaOption{},
+			option:           SchemaOption{RetrievePageEncoding: true},
 			checkEncodings:   true,
 			expectedChildren: 2,
 		},
@@ -501,7 +501,7 @@ func Test_GoStruct(t *testing.T) {
 				_ = pr.PFile.Close()
 			}()
 
-			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			schemaRoot, err := NewSchemaTree(pr, SchemaOption{RetrievePageEncoding: true})
 			require.NoError(t, err)
 			require.NotNil(t, schemaRoot)
 
@@ -531,7 +531,7 @@ func Test_JSONSchema(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{RetrievePageEncoding: true})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -582,7 +582,7 @@ func Test_CSVSchema(t *testing.T) {
 				_ = pr.PFile.Close()
 			}()
 
-			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			schemaRoot, err := NewSchemaTree(pr, SchemaOption{RetrievePageEncoding: true})
 			require.NoError(t, err)
 			require.NotNil(t, schemaRoot)
 

@@ -22,7 +22,7 @@ func Test_GoStructNode_String_good(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{RetrievePageEncoding: true})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -187,7 +187,7 @@ func Test_GoStructNode_asList(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	root, err := NewSchemaTree(pr, SchemaOption{})
+	root, err := NewSchemaTree(pr, SchemaOption{RetrievePageEncoding: true})
 	require.NoError(t, err)
 	require.NotNil(t, root)
 

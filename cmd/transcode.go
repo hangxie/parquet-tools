@@ -195,7 +195,7 @@ func (c TranscodeCmd) Run() error {
 	}()
 
 	// Get schema from source
-	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, RetrievePageEncoding: true})
 	if err != nil {
 		return err
 	}
