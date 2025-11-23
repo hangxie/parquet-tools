@@ -19,7 +19,7 @@ func Test_JSONSchemaNode_Schema_good(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{RetrievePageEncoding: true})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 

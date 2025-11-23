@@ -152,7 +152,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
-		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96, RetrievePageEncoding: true})
 		if err != nil {
 			return nil, "", err
 		}
