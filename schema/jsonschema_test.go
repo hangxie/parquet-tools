@@ -10,7 +10,7 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-func Test_JSONSchemaNode_Schema_good(t *testing.T) {
+func TestJSONSchemaNode(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
