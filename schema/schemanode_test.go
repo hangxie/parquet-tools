@@ -14,7 +14,7 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-func Test_NewSchemaTree(t *testing.T) {
+func TestNewSchemaTree(t *testing.T) {
 	testCases := []struct {
 		name             string
 		uri              string
@@ -83,7 +83,7 @@ func Test_NewSchemaTree(t *testing.T) {
 	}
 }
 
-func Test_buildEncodingMap(t *testing.T) {
+func TestBuildEncodingMap(t *testing.T) {
 	testCases := []struct {
 		name         string
 		uri          string
@@ -142,7 +142,7 @@ func Test_buildEncodingMap(t *testing.T) {
 	}
 }
 
-func Test_SchemaNode_GetPathMap(t *testing.T) {
+func TestSchemaNodeGetPathMap(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
@@ -228,7 +228,7 @@ func Test_SchemaNode_GetPathMap(t *testing.T) {
 	}
 }
 
-func Test_typeStr(t *testing.T) {
+func TestTypeStr(t *testing.T) {
 	// all nil
 	se := parquet.SchemaElement{}
 	require.Equal(t, "STRUCT", typeStr(se))
@@ -248,7 +248,7 @@ func Test_typeStr(t *testing.T) {
 	require.Equal(t, "DECIMAL", typeStr(se))
 }
 
-func Test_repetitionTyeStr(t *testing.T) {
+func TestRepetitionTypeStr(t *testing.T) {
 	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
 
 	testCases := map[string]parquet.FieldRepetitionType{
@@ -264,7 +264,7 @@ func Test_repetitionTyeStr(t *testing.T) {
 	}
 }
 
-func Test_timeUnitToTag(t *testing.T) {
+func TestTimeUnitToTag(t *testing.T) {
 	require.Equal(t, "", timeUnitToTag(nil))
 
 	testCases := map[string]struct {
@@ -284,7 +284,7 @@ func Test_timeUnitToTag(t *testing.T) {
 	}
 }
 
-func Test_OrderedTags(t *testing.T) {
+func TestOrderedTags(t *testing.T) {
 	// Expected tags in order
 	expected := []string{
 		"name",
@@ -325,7 +325,7 @@ func Test_OrderedTags(t *testing.T) {
 	require.Equal(t, expected, secondCall)
 }
 
-func Test_updateTagFromConvertedType(t *testing.T) {
+func TestUpdateTagFromConvertedType(t *testing.T) {
 	// Test with nan.parquet which has no converted type annotation
 	option := pio.ReadOption{}
 	uri := "../testdata/nan.parquet"
@@ -360,7 +360,7 @@ func Test_updateTagFromConvertedType(t *testing.T) {
 	require.Equal(t, "DOUBLE", tagMap["type"])
 }
 
-func Test_updateTagFromLogicalType(t *testing.T) {
+func TestUpdateTagFromLogicalType(t *testing.T) {
 	// Test with nan.parquet which has no logical type annotation
 	option := pio.ReadOption{}
 	uri := "../testdata/nan.parquet"
@@ -446,7 +446,7 @@ func Test_updateTagFromLogicalType(t *testing.T) {
 	require.Equal(t, "BYTE_ARRAY", geographyTagMap["type"])
 }
 
-func Test_JSON_schema_list_variant(t *testing.T) {
+func TestJSONSchemaListVariant(t *testing.T) {
 	buf, err := os.ReadFile("../testdata/golden/schema-list-variants-raw.json")
 	require.NoError(t, err)
 
@@ -464,7 +464,7 @@ func Test_JSON_schema_list_variant(t *testing.T) {
 	require.Equal(t, string(expected), string(actual)+"\n")
 }
 
-func Test_GoStruct(t *testing.T) {
+func TestGoStruct(t *testing.T) {
 	testCases := []struct {
 		name       string
 		uri        string
@@ -522,7 +522,7 @@ func Test_GoStruct(t *testing.T) {
 	}
 }
 
-func Test_JSONSchema(t *testing.T) {
+func TestJSONSchema(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
 	pr, err := pio.NewParquetFileReader(uri, option)
@@ -544,7 +544,7 @@ func Test_JSONSchema(t *testing.T) {
 	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 }
 
-func Test_CSVSchema(t *testing.T) {
+func TestCSVSchema(t *testing.T) {
 	testCases := []struct {
 		name       string
 		uri        string

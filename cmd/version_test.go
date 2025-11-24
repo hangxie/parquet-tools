@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_versionCmd(t *testing.T) {
+func TestVersionCmd(t *testing.T) {
 	testCases := map[string]struct {
 		cmd    VersionCmd
 		stdout string
@@ -38,7 +38,7 @@ func Test_versionCmd(t *testing.T) {
 	}
 }
 
-func Benchmark_VersionCmd_Run(b *testing.B) {
+func BenchmarkVersionCmd(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {

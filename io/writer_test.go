@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_NewParquetFileWriter(t *testing.T) {
+func TestNewParquetFileWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	testCases := map[string]struct {
@@ -53,7 +53,7 @@ func Test_NewParquetFileWriter(t *testing.T) {
 	}
 }
 
-func Test_NewCSVWriter(t *testing.T) {
+func TestNewCSVWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	wOpt := WriteOption{}
@@ -95,7 +95,7 @@ func Test_NewCSVWriter(t *testing.T) {
 	}
 }
 
-func Test_NewJSONWriter(t *testing.T) {
+func TestNewJSONWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	validSchema := `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`
@@ -133,7 +133,7 @@ func Test_NewJSONWriter(t *testing.T) {
 	}
 }
 
-func Test_NewGenericWriter(t *testing.T) {
+func TestNewGenericWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
 	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=INT64"}]}`

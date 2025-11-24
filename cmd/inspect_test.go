@@ -13,330 +13,76 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-func Test_Inspect_File(t *testing.T) {
-	rOpt := pio.ReadOption{}
-	testCases := map[string]struct {
-		cmd     InspectCmd
-		golden  string
-		wantErr bool
-	}{
-		"good": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet"},
-			golden:  "inspect-good-file.json",
-			wantErr: false,
-		},
-		"dict-page": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet"},
-			golden:  "inspect-dict-page-file.json",
-			wantErr: false,
-		},
-		"row-group": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "row-group.parquet"},
-			golden:  "inspect-row-group-file.json",
-			wantErr: false,
-		},
-		"non-existent": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "nonexistent.parquet"},
-			wantErr: true,
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			if !tc.wantErr {
-				t.Parallel()
-			}
-			tc.cmd.URI = "../testdata/" + tc.cmd.URI
-			if tc.wantErr {
-				require.Error(t, tc.cmd.Run())
-			} else {
-				tc.golden = "../testdata/golden/" + tc.golden
-				stdout, stderr := captureStdoutStderr(func() {
-					require.NoError(t, tc.cmd.Run())
-				})
-				expected := loadExpected(t, tc.golden)
-				require.Equal(t, expected, stdout)
-				require.Equal(t, "", stderr)
-			}
-		})
-	}
-}
-
-func Test_Inspect_RowGroup(t *testing.T) {
-	rOpt := pio.ReadOption{}
-	testCases := map[string]struct {
-		cmd     InspectCmd
-		golden  string
-		wantErr bool
-		errMsg  string
-	}{
-		"good-rg-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0)},
-			golden:  "inspect-good-row-group-0.json",
-			wantErr: false,
-		},
-		"row-group-rg-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(0)},
-			golden:  "inspect-row-group-rg-0.json",
-			wantErr: false,
-		},
-		"row-group-rg-1": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(1)},
-			golden:  "inspect-row-group-rg-1.json",
-			wantErr: false,
-		},
-		"negative-index": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1)},
-			wantErr: true,
-			errMsg:  "row group index -1 out of range",
-		},
-		"out-of-range": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999)},
-			wantErr: true,
-			errMsg:  "row group index 999 out of range",
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			if !tc.wantErr {
-				t.Parallel()
-			}
-			tc.cmd.URI = "../testdata/" + tc.cmd.URI
-			if tc.wantErr {
-				err := tc.cmd.Run()
-				require.Error(t, err)
-				if tc.errMsg != "" {
-					require.Contains(t, err.Error(), tc.errMsg)
-				}
-			} else {
-				tc.golden = "../testdata/golden/" + tc.golden
-				stdout, stderr := captureStdoutStderr(func() {
-					require.NoError(t, tc.cmd.Run())
-				})
-				expected := loadExpected(t, tc.golden)
-				require.Equal(t, expected, stdout)
-				require.Equal(t, "", stderr)
-			}
-		})
-	}
-}
-
-func Test_Inspect_ColumnChunk(t *testing.T) {
-	rOpt := pio.ReadOption{}
-	testCases := map[string]struct {
-		cmd     InspectCmd
-		golden  string
-		wantErr bool
-		errMsg  string
-	}{
-		"good-col-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)},
-			golden:  "inspect-good-column-chunk-0.json",
-			wantErr: false,
-		},
-		"dict-page-col-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)},
-			golden:  "inspect-dict-page-column-chunk-0.json",
-			wantErr: false,
-		},
-		"negative-column-index": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1)},
-			wantErr: true,
-			errMsg:  "column chunk index -1 out of range",
-		},
-		"out-of-range-column": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999)},
-			wantErr: true,
-			errMsg:  "column chunk index 999 out of range",
-		},
-		"column-without-row-group": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", ColumnChunk: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "--column-chunk requires --row-group",
-		},
-		"negative-row-group-index": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1), ColumnChunk: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "row group index -1 out of range",
-		},
-		"out-of-range-row-group": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999), ColumnChunk: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "row group index 999 out of range",
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			if !tc.wantErr {
-				t.Parallel()
-			}
-			tc.cmd.URI = "../testdata/" + tc.cmd.URI
-			if tc.wantErr {
-				err := tc.cmd.Run()
-				require.Error(t, err)
-				if tc.errMsg != "" {
-					require.Contains(t, err.Error(), tc.errMsg)
-				}
-			} else {
-				tc.golden = "../testdata/golden/" + tc.golden
-				stdout, stderr := captureStdoutStderr(func() {
-					require.NoError(t, tc.cmd.Run())
-				})
-				expected := loadExpected(t, tc.golden)
-				require.Equal(t, expected, stdout)
-				require.Equal(t, "", stderr)
-			}
-		})
-	}
-}
-
-func Test_Inspect_Page(t *testing.T) {
-	rOpt := pio.ReadOption{}
-	testCases := map[string]struct {
-		cmd     InspectCmd
-		golden  string
-		wantErr bool
-		errMsg  string
-	}{
-		"good-page-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
-			golden:  "inspect-good-page-0.json",
-			wantErr: false,
-		},
-		"dict-page-page-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
-			golden:  "inspect-dict-page-page-0.json",
-			wantErr: false,
-		},
-		"row-group-rg1-page-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(1), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
-			golden:  "inspect-row-group-rg1-page-0.json",
-			wantErr: false,
-		},
-		"data-page-v2-page-0": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
-			golden:  "inspect-data-page-v2-page-0.json",
-			wantErr: false,
-		},
-		"good-page-1": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(1)},
-			golden:  "inspect-good-page-1.json",
-			wantErr: false,
-		},
-		"row-group-page-5": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(5)},
-			golden:  "inspect-row-group-page-5.json",
-			wantErr: false,
-		},
-		"negative-page-index": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(-1)},
-			wantErr: true,
-			errMsg:  "page index -1 out of range",
-		},
-		"out-of-range-page": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(999)},
-			wantErr: true,
-			errMsg:  "page index 999 out of range",
-		},
-		"page-without-row-group-and-column": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", Page: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "--page requires both --row-group and --column-chunk",
-		},
-		"page-without-column": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), Page: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "--page requires both --row-group and --column-chunk",
-		},
-		"page-negative-row-group-index": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "row group index -1 out of range",
-		},
-		"page-out-of-range-row-group": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "row group index 999 out of range",
-		},
-		"page-negative-column-chunk-index": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1), Page: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "column chunk index -1 out of range",
-		},
-		"page-out-of-range-column-chunk": {
-			cmd:     InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999), Page: common.ToPtr(0)},
-			wantErr: true,
-			errMsg:  "column chunk index 999 out of range",
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			if !tc.wantErr {
-				t.Parallel()
-			}
-			tc.cmd.URI = "../testdata/" + tc.cmd.URI
-			if tc.wantErr {
-				err := tc.cmd.Run()
-				require.Error(t, err)
-				if tc.errMsg != "" {
-					require.Contains(t, err.Error(), tc.errMsg)
-				}
-			} else {
-				tc.golden = "../testdata/golden/" + tc.golden
-				stdout, stderr := captureStdoutStderr(func() {
-					require.NoError(t, tc.cmd.Run())
-				})
-				expected := loadExpected(t, tc.golden)
-				require.Equal(t, expected, stdout)
-				require.Equal(t, "", stderr)
-			}
-		})
-	}
-}
-
-func Test_Inspect_SpecialTypes(t *testing.T) {
+func TestInspect(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
 		cmd    InspectCmd
 		golden string
+		errMsg string
 	}{
-		"geospatial": {
-			cmd:    InspectCmd{ReadOption: rOpt, URI: "geospatial.parquet", RowGroup: common.ToPtr(0)},
-			golden: "inspect-geospatial-row-group-0.json",
-		},
-		"nil-statistics": {
-			cmd:    InspectCmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: common.ToPtr(0)},
-			golden: "inspect-nil-statistics-row-group-0.json",
-		},
-		"all-types": {
-			cmd:    InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0)},
-			golden: "inspect-all-types-row-group-0.json",
-		},
-		"all-types-interval-column": {
-			cmd:    InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(38)},
-			golden: "inspect-all-types-interval-column.json",
-		},
+		// file level
+		"file/good":         {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "inspect-good-file.json"},
+		"file/dict-page":    {cmd: InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet"}, golden: "inspect-dict-page-file.json"},
+		"file/row-group":    {cmd: InspectCmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "inspect-row-group-file.json"},
+		"file/non-existent": {cmd: InspectCmd{ReadOption: rOpt, URI: "nonexistent.parquet"}, errMsg: "no such file or directory"},
+		// row group level
+		"row-group/good-rg-0":      {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-good-row-group-0.json"},
+		"row-group/row-group-rg-0": {cmd: InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-row-group-rg-0.json"},
+		"row-group/row-group-rg-1": {cmd: InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(1)}, golden: "inspect-row-group-rg-1.json"},
+		"row-group/negative-index": {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1)}, errMsg: "row group index -1 out of range"},
+		"row-group/out-of-range":   {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999)}, errMsg: "row group index 999 out of range"},
+		"row-group/geospatial":     {cmd: InspectCmd{ReadOption: rOpt, URI: "geospatial.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-geospatial-row-group-0.json"},
+		"row-group/nil-statistics": {cmd: InspectCmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-nil-statistics-row-group-0.json"},
+		"row-group/all-types":      {cmd: InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-all-types-row-group-0.json"},
+		// column chunk level
+		"column-chunk/good-col-0":             {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-good-column-chunk-0.json"},
+		"column-chunk/dict-page-col-0":        {cmd: InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-dict-page-column-chunk-0.json"},
+		"column-chunk/all-types-interval":     {cmd: InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(38)}, golden: "inspect-all-types-interval-column.json"},
+		"column-chunk/negative-column-index":  {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1)}, errMsg: "column chunk index -1 out of range"},
+		"column-chunk/out-of-range-column":    {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999)}, errMsg: "column chunk index 999 out of range"},
+		"column-chunk/without-row-group":      {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", ColumnChunk: common.ToPtr(0)}, errMsg: "--column-chunk requires --row-group"},
+		"column-chunk/negative-row-group":     {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1), ColumnChunk: common.ToPtr(0)}, errMsg: "row group index -1 out of range"},
+		"column-chunk/out-of-range-row-group": {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999), ColumnChunk: common.ToPtr(0)}, errMsg: "row group index 999 out of range"},
+		// page level
+		"page/good-page-0":                  {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)}, golden: "inspect-good-page-0.json"},
+		"page/dict-page-page-0":             {cmd: InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)}, golden: "inspect-dict-page-page-0.json"},
+		"page/row-group-rg1-page-0":         {cmd: InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(1), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)}, golden: "inspect-row-group-rg1-page-0.json"},
+		"page/data-page-v2-page-0":          {cmd: InspectCmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)}, golden: "inspect-data-page-v2-page-0.json"},
+		"page/good-page-1":                  {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(1)}, golden: "inspect-good-page-1.json"},
+		"page/row-group-page-5":             {cmd: InspectCmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(5)}, golden: "inspect-row-group-page-5.json"},
+		"page/negative-page-index":          {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(-1)}, errMsg: "page index -1 out of range"},
+		"page/out-of-range-page":            {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(999)}, errMsg: "page index 999 out of range"},
+		"page/without-row-group-and-column": {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", Page: common.ToPtr(0)}, errMsg: "--page requires both --row-group and --column-chunk"},
+		"page/without-column":               {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), Page: common.ToPtr(0)}, errMsg: "--page requires both --row-group and --column-chunk"},
+		"page/negative-row-group":           {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(-1), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)}, errMsg: "row group index -1 out of range"},
+		"page/out-of-range-row-group":       {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(999), ColumnChunk: common.ToPtr(0), Page: common.ToPtr(0)}, errMsg: "row group index 999 out of range"},
+		"page/negative-column-chunk":        {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1), Page: common.ToPtr(0)}, errMsg: "column chunk index -1 out of range"},
+		"page/out-of-range-column-chunk":    {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999), Page: common.ToPtr(0)}, errMsg: "column chunk index 999 out of range"},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+			if tc.errMsg == "" {
+				t.Parallel()
+			}
 			tc.cmd.URI = "../testdata/" + tc.cmd.URI
-			tc.golden = "../testdata/golden/" + tc.golden
-			stdout, stderr := captureStdoutStderr(func() {
-				require.NoError(t, tc.cmd.Run())
-			})
-			expected := loadExpected(t, tc.golden)
-			require.Equal(t, expected, stdout)
-			require.Equal(t, "", stderr)
+			if tc.errMsg != "" {
+				err := tc.cmd.Run()
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+			} else {
+				tc.golden = "../testdata/golden/" + tc.golden
+				stdout, stderr := captureStdoutStderr(func() {
+					require.NoError(t, tc.cmd.Run())
+				})
+				require.Equal(t, loadExpected(t, tc.golden), stdout)
+				require.Equal(t, "", stderr)
+			}
 		})
 	}
 }
 
-func Test_getStatValue(t *testing.T) {
+func TestGetStatValue(t *testing.T) {
 	cmd := InspectCmd{}
 
 	testCases := map[string]struct {
@@ -424,7 +170,7 @@ func Test_getStatValue(t *testing.T) {
 	}
 }
 
-func Test_buildStatistics(t *testing.T) {
+func TestBuildStatistics(t *testing.T) {
 	cmd := InspectCmd{}
 
 	testCases := map[string]struct {
@@ -506,7 +252,7 @@ func Test_buildStatistics(t *testing.T) {
 	}
 }
 
-func Test_resolvePathInSchema(t *testing.T) {
+func TestResolvePathInSchema(t *testing.T) {
 	cmd := InspectCmd{}
 
 	testCases := map[string]struct {
@@ -552,7 +298,7 @@ func Test_resolvePathInSchema(t *testing.T) {
 	}
 }
 
-func Test_addTypeInformation(t *testing.T) {
+func TestAddTypeInformation(t *testing.T) {
 	cmd := InspectCmd{}
 
 	testCases := map[string]struct {
@@ -600,7 +346,7 @@ func Test_addTypeInformation(t *testing.T) {
 	}
 }
 
-func Test_convertPageHeaderInfo(t *testing.T) {
+func TestConvertPageHeaderInfo(t *testing.T) {
 	cmd := InspectCmd{}
 
 	testCases := map[string]struct {
@@ -702,7 +448,7 @@ func Test_convertPageHeaderInfo(t *testing.T) {
 	}
 }
 
-func Test_printJSON(t *testing.T) {
+func TestPrintJSON(t *testing.T) {
 	cmd := InspectCmd{}
 
 	testCases := map[string]struct {

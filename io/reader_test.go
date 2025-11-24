@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_NewParquetFileReader(t *testing.T) {
+func TestNewParquetFileReader(t *testing.T) {
 	rOpt := ReadOption{}
 	s3URL := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff"
 	gcsURL := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
