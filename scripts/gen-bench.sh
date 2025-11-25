@@ -99,7 +99,7 @@ for i in 1 2 3; do
 done
 
 # Detect the CPU core suffix for concurrent benchmarks
-CORE_SUFFIX=$(grep "Benchmark_CatCmd_Run/concurrent" "$TEMP_DIR/benchmark_run_1.txt" | sed 's/.*concurrent-\([0-9]*\).*/\1/' | head -1)
+CORE_SUFFIX=$(grep "BenchmarkCatCmd/concurrent" "$TEMP_DIR/benchmark_run_1.txt" | sed 's/.*concurrent-\([0-9]*\).*/\1/' | head -1)
 if [ -z "$CORE_SUFFIX" ]; then
     CORE_SUFFIX="8"  # Default fallback
 fi
@@ -109,13 +109,13 @@ echo "Detected core suffix: $CORE_SUFFIX"
 
 # Define benchmark mappings
 declare -A BENCHMARKS=(
-    ["cat"]="Benchmark_CatCmd_Run/concurrent-${CORE_SUFFIX}"
-    ["merge"]="Benchmark_MergeCmd_Run/concurrent-${CORE_SUFFIX}"
-    ["meta"]="Benchmark_MetaCmd_Run/default-${CORE_SUFFIX}"
-    ["row-count"]="Benchmark_RowCountCmd_Run/default-${CORE_SUFFIX}"
-    ["schema"]="Benchmark_SchemaCmd_Run/default-${CORE_SUFFIX}"
-    ["size"]="Benchmark_SizeCmd_Run/default-${CORE_SUFFIX}"
-    ["version"]="Benchmark_VersionCmd_Run/default-${CORE_SUFFIX}"
+    ["cat"]="BenchmarkCatCmd/concurrent-${CORE_SUFFIX}"
+    ["merge"]="BenchmarkMergeCmd/concurrent-${CORE_SUFFIX}"
+    ["meta"]="BenchmarkMetaCmd/default-${CORE_SUFFIX}"
+    ["row-count"]="BenchmarkRowCountCmd/default-${CORE_SUFFIX}"
+    ["schema"]="BenchmarkSchemaCmd/default-${CORE_SUFFIX}"
+    ["size"]="BenchmarkSizeCmd/default-${CORE_SUFFIX}"
+    ["version"]="BenchmarkVersionCmd/default-${CORE_SUFFIX}"
 )
 
 # Extract values and calculate medians
@@ -166,10 +166,13 @@ fi
 TEMP_BENCHMARKS=$(mktemp)
 
 # Check if version already exists in the table
-if grep -q "^|[[:space:]]*${VERSION}[[:space:]]*|" "$BENCHMARKS_FILE"; then
+# Escape special regex characters in VERSION for grep
+ESCAPED_VERSION=$(printf '%s\n' "$VERSION" | sed 's/[]\/$*.^[]/\\&/g')
+if grep -q "^|[[:space:]]*${ESCAPED_VERSION}[[:space:]]*|" "$BENCHMARKS_FILE"; then
     echo "Version $VERSION already exists in benchmarks.md, updating values..."
 
     # Update existing line
+    # Use awk variables instead of embedding version in regex to handle "/" in version names
     awk -v version="$VERSION" \
         -v cat="${MEDIAN_VALUES[cat]}" \
         -v merge="${MEDIAN_VALUES[merge]}" \
@@ -179,17 +182,21 @@ if grep -q "^|[[:space:]]*${VERSION}[[:space:]]*|" "$BENCHMARKS_FILE"; then
         -v size="${MEDIAN_VALUES[size]}" \
         -v ver="${MEDIAN_VALUES[version]}" \
         'BEGIN {FS=OFS="|"}
-         /^\|[[:space:]]*'"$VERSION"'[[:space:]]*\|/ {
-             $2 = " " version " "
-             $3 = sprintf(" %71s ", cat)
-             $4 = sprintf(" %71s ", merge)
-             $5 = sprintf(" %8s ", meta)
-             $6 = sprintf(" %13s ", rowcount)
-             $7 = sprintf(" %10s ", schema)
-             $8 = sprintf(" %8s ", size)
-             $9 = sprintf(" %11s ", ver)
-         }
-         {print}' "$BENCHMARKS_FILE" > "$TEMP_BENCHMARKS"
+         {
+             # Strip leading/trailing whitespace from field 2 for comparison
+             gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2)
+             if ($2 == version) {
+                 $2 = " " version " "
+                 $3 = " " cat " "
+                 $4 = " " merge " "
+                 $5 = " " meta " "
+                 $6 = " " rowcount " "
+                 $7 = " " schema " "
+                 $8 = " " size " "
+                 $9 = " " ver " "
+             }
+             print
+         }' "$BENCHMARKS_FILE" > "$TEMP_BENCHMARKS"
 else
     echo "Version $VERSION not found, adding to top of table..."
 
