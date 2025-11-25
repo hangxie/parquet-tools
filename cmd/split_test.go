@@ -12,75 +12,63 @@ import (
 )
 
 func TestSplitCmd(t *testing.T) {
-	t.Run("error", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
-		tw := TrunkWriter{}
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	tw := TrunkWriter{}
+	testCases := map[string]struct {
+		cmd    SplitCmd
+		result map[string]int64
+		errMsg string
+	}{
+		// error cases
+		"page-size":   {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 0, RecordCount: 0, URI: "dummy", current: tw}, errMsg: "invalid read page size"},
+		"no-count":    {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 1000, RecordCount: 0, URI: "dummy", current: tw}, errMsg: "needs either --file-count or --record-count"},
+		"name-format": {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%%parquet", ReadPageSize: 1000, RecordCount: 10, URI: "", current: tw}, errMsg: "lack of useable verb"},
+		"source-file": {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "%d", ReadPageSize: 1000, RecordCount: 10, URI: "does/not/exist", current: tw}, errMsg: "failed to open"},
+		"int96":       {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: true, FileCount: 0, NameFormat: "%d", ReadPageSize: 1000, RecordCount: 10, URI: "../testdata/all-types.parquet", current: tw}, errMsg: "has type INT96 which is not supported"},
+		"target-file": {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "dummy://%d.parquet", ReadPageSize: 1000, RecordCount: 2, URI: "../testdata/good.parquet", current: tw}, errMsg: "unknown location scheme"},
+		"first-write": {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 1, URI: "../testdata/good.parquet", current: tw}, errMsg: "failed to close"},
+		"last-write":  {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "../testdata/good.parquet", current: tw}, errMsg: "failed to close"},
+		// good cases - URI will be prefixed with "../testdata/"
+		"record-count": {
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "all-types.parquet", current: TrunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 3, "ut-2.parquet": 3, "ut-3.parquet": 1},
+		},
+		"file-count": {
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 4, "ut-1.parquet": 3, "ut-2.parquet": 3},
+		},
+		"one-result-record-count": {
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 20, URI: "all-types.parquet", current: TrunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 10},
+		},
+		"one-result-filecount": {
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 1, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 10},
+		},
+		"empty-record-count": {
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "empty.parquet", current: TrunkWriter{}},
+			result: map[string]int64{},
+		},
+		"empty-file-count": {
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "empty.parquet", current: TrunkWriter{}},
+			result: map[string]int64{},
+		},
+	}
 
-		testCases := map[string]struct {
-			cmd    SplitCmd
-			errMsg string
-		}{
-			"page-size":   {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 0, RecordCount: 0, URI: "dummy", current: tw}, "invalid read page size"},
-			"no-count":    {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 1000, RecordCount: 0, URI: "dummy", current: tw}, "needs either --file-count or --record-count"},
-			"name-format": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%%parquet", ReadPageSize: 1000, RecordCount: 10, URI: "", current: tw}, "lack of useable verb"},
-			"source-file": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "%d", ReadPageSize: 1000, RecordCount: 10, URI: "does/not/exist", current: tw}, "failed to open"},
-			"int96":       {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: true, FileCount: 0, NameFormat: "%d", ReadPageSize: 1000, RecordCount: 10, URI: "../testdata/all-types.parquet", current: tw}, "has type INT96 which is not supported"},
-			"target-file": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "dummy://%d.parquet", ReadPageSize: 1000, RecordCount: 2, URI: "../testdata/good.parquet", current: tw}, "unknown location scheme"},
-			"first-write": {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 1, URI: "../testdata/good.parquet", current: tw}, "failed to close"},
-			"last-write":  {SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "../testdata/good.parquet", current: tw}, "failed to close"},
-		}
-
-		for name, tc := range testCases {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-				err := tc.cmd.Run()
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := tc.cmd
+			if tc.errMsg != "" {
+				err := cmd.Run()
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
-			})
-		}
-	})
-
-	t.Run("good", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
-		testCases := map[string]struct {
-			cmd    SplitCmd
-			result map[string]int64
-		}{
-			"record-count": {
-				SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "all-types.parquet", current: TrunkWriter{}},
-				map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 3, "ut-2.parquet": 3, "ut-3.parquet": 1},
-			},
-			"file-count": {
-				SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
-				map[string]int64{"ut-0.parquet": 4, "ut-1.parquet": 3, "ut-2.parquet": 3},
-			},
-			"one-result-record-count": {
-				SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 20, URI: "all-types.parquet", current: TrunkWriter{}},
-				map[string]int64{"ut-0.parquet": 10},
-			},
-			"one-result-filecount": {
-				SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 1, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
-				map[string]int64{"ut-0.parquet": 10},
-			},
-			"empty-record-count": {
-				SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "empty.parquet", current: TrunkWriter{}},
-				map[string]int64{},
-			},
-			"empty-file-count": {
-				SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "empty.parquet", current: TrunkWriter{}},
-				map[string]int64{},
-			},
-		}
-
-		for name, tc := range testCases {
-			t.Run(name, func(t *testing.T) {
+			} else {
+				t.Parallel()
 				tempDir := t.TempDir()
-
-				tc.cmd.URI = filepath.Join("../testdata", tc.cmd.URI)
-				tc.cmd.NameFormat = filepath.Join(tempDir, tc.cmd.NameFormat)
-				err := tc.cmd.Run()
+				cmd.URI = filepath.Join("../testdata", cmd.URI)
+				cmd.NameFormat = filepath.Join(tempDir, cmd.NameFormat)
+				err := cmd.Run()
 				require.NoError(t, err)
 				files, _ := os.ReadDir(tempDir)
 				require.Equal(t, len(files), len(tc.result))
@@ -94,9 +82,9 @@ func TestSplitCmd(t *testing.T) {
 					require.Equal(t, reader.GetNumRows(), rowCount)
 					_ = reader.PFile.Close()
 				}
-			})
-		}
-	})
+			}
+		})
+	}
 
 	t.Run("optional-fields", func(t *testing.T) {
 		tempDir := t.TempDir()
