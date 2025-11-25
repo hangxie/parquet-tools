@@ -10,66 +10,59 @@ import (
 )
 
 func TestSchemaCmd(t *testing.T) {
-	t.Run("error", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		testCases := map[string]struct {
-			cmd    SchemaCmd
-			errMsg string
-		}{
-			"invalid-uri":       {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, "unknown location scheme"},
-			"invalid-format":    {SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "../testdata/good.parquet"}, "unknown schema format"},
-			"go-map-value":      {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/map-composite-value.parquet"}, "go struct does not support LIST as MAP value in Parquet_go_root.Scores"},
-			"go-list-value":     {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/list-of-list.parquet"}, "go struct does not support LIST of LIST in Parquet_go_root.Lol"},
-			"go-old-style-list": {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/old-style-list.parquet"}, "go struct does not support LIST of LIST in My_record.First.Second.A"},
-			"csv-nested":        {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-nested.parquet"}, "CSV supports flat schema only"},
-			"csv-optional":      {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-optional.parquet"}, "CSV does not support optional column"},
-			"csv-repeated":      {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-repeated.parquet"}, "CSV does not support column in LIST type"},
-		}
+	rOpt := pio.ReadOption{}
+	testCases := map[string]struct {
+		cmd    SchemaCmd
+		golden string
+		errMsg string
+	}{
+		// error cases
+		"invalid-uri":       {cmd: SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, errMsg: "unknown location scheme"},
+		"invalid-format":    {cmd: SchemaCmd{ReadOption: rOpt, Format: "foobar", URI: "../testdata/good.parquet"}, errMsg: "unknown schema format"},
+		"go-map-value":      {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/map-composite-value.parquet"}, errMsg: "go struct does not support LIST as MAP value in Parquet_go_root.Scores"},
+		"go-list-value":     {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/list-of-list.parquet"}, errMsg: "go struct does not support LIST of LIST in Parquet_go_root.Lol"},
+		"go-old-style-list": {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "../testdata/old-style-list.parquet"}, errMsg: "go struct does not support LIST of LIST in My_record.First.Second.A"},
+		"csv-nested":        {cmd: SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-nested.parquet"}, errMsg: "CSV supports flat schema only"},
+		"csv-optional":      {cmd: SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-optional.parquet"}, errMsg: "CSV does not support optional column"},
+		"csv-repeated":      {cmd: SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "../testdata/csv-repeated.parquet"}, errMsg: "CSV does not support column in LIST type"},
+		// good cases - URI will be prefixed with "../testdata/"
+		"raw":                 {cmd: SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, golden: "schema-all-types-raw.json"},
+		"json":                {cmd: SchemaCmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"}, golden: "schema-all-types-json.json"},
+		"go":                  {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "all-types.parquet"}, golden: "schema-all-types-go.txt"},
+		"csv":                 {cmd: SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "csv-good.parquet"}, golden: "schema-csv-good.txt"},
+		"raw-map-value-list":  {cmd: SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "map-composite-value.parquet"}, golden: "schema-map-composite-value-raw.json"},
+		"json-map-value-list": {cmd: SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-composite-value.parquet"}, golden: "schema-map-composite-value-json.json"},
+		"json-map-value-map":  {cmd: SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-value-map.parquet"}, golden: "schema-map-value-map-json.json"},
+		"pargo-prefix-flat":   {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-flat.parquet"}, golden: "schema-pargo-prefix-flat-go.txt"},
+		"pargo-prefix-nested": {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-nested.parquet"}, golden: "schema-pargo-prefix-nested-go.txt"},
+		"geospatial-go":       {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", URI: "geospatial.parquet"}, golden: "schema-geospatial-go.txt"},
+		"geospatial-json":     {cmd: SchemaCmd{ReadOption: rOpt, Format: "json", URI: "geospatial.parquet"}, golden: "schema-geospatial-json.json"},
+		"geospatial-raw":      {cmd: SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"}, golden: "schema-geospatial-raw.json"},
+		"camel-case":          {cmd: SchemaCmd{ReadOption: rOpt, Format: "go", CamelCase: true, URI: "good.parquet"}, golden: "schema-good-go-camel-case.txt"},
+	}
 
-		for name, tc := range testCases {
-			t.Run(name, func(t *testing.T) {
-				err := tc.cmd.Run()
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			if tc.errMsg == "" {
+				t.Parallel()
+			}
+			cmd := tc.cmd
+			if tc.golden != "" {
+				cmd.URI = "../testdata/" + tc.cmd.URI
+			}
+			if tc.errMsg != "" {
+				err := cmd.Run()
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
-			})
-		}
-	})
-
-	t.Run("good", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		testCases := map[string]struct {
-			cmd    SchemaCmd
-			golden string
-		}{
-			"raw":                 {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, "schema-all-types-raw.json"},
-			"json":                {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"}, "schema-all-types-json.json"},
-			"go":                  {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "all-types.parquet"}, "schema-all-types-go.txt"},
-			"csv":                 {SchemaCmd{ReadOption: rOpt, Format: "csv", URI: "csv-good.parquet"}, "schema-csv-good.txt"},
-			"raw-map-value-list":  {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "map-composite-value.parquet"}, "schema-map-composite-value-raw.json"},
-			"json-map-value-list": {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-composite-value.parquet"}, "schema-map-composite-value-json.json"},
-			"json-map-value-map":  {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "map-value-map.parquet"}, "schema-map-value-map-json.json"},
-			"pargo-prefix-flat":   {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-flat.parquet"}, "schema-pargo-prefix-flat-go.txt"},
-			"pargo-prefix-nested": {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-nested.parquet"}, "schema-pargo-prefix-nested-go.txt"},
-			"geospatial-go":       {SchemaCmd{ReadOption: rOpt, Format: "go", URI: "geospatial.parquet"}, "schema-geospatial-go.txt"},
-			"geospatial-json":     {SchemaCmd{ReadOption: rOpt, Format: "json", URI: "geospatial.parquet"}, "schema-geospatial-json.json"},
-			"geospatial-raw":      {SchemaCmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"}, "schema-geospatial-raw.json"},
-			"camel-case":          {SchemaCmd{ReadOption: rOpt, Format: "go", CamelCase: true, URI: "good.parquet"}, "schema-good-go-camel-case.txt"},
-		}
-
-		for name, tc := range testCases {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-				tc.cmd.URI = "../testdata/" + tc.cmd.URI
-				tc.golden = "../testdata/golden/" + tc.golden
+			} else {
 				stdout, stderr := captureStdoutStderr(func() {
-					require.Nil(t, tc.cmd.Run())
+					require.NoError(t, cmd.Run())
 				})
-				expected := loadExpected(t, tc.golden)
-				require.Equal(t, expected, stdout)
+				require.Equal(t, loadExpected(t, "../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
-			})
-		}
-	})
+			}
+		})
+	}
 }
 
 func BenchmarkSchemaCmd(b *testing.B) {

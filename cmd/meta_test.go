@@ -162,55 +162,48 @@ func TestSortingToString(t *testing.T) {
 }
 
 func TestMetaCmd(t *testing.T) {
-	t.Run("error", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		testCases := map[string]struct {
-			cmd    MetaCmd
-			errMsg string
-		}{
-			"non-existent":   {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "file/does/not/exist"}, "no such file or directory"},
-			"no-int96":       {MetaCmd{ReadOption: rOpt, FailOnInt96: true, URI: "../testdata/all-types.parquet"}, "type INT96 which is not supported"},
-			"nan-json-error": {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "../testdata/nan.parquet"}, "json: unsupported value: NaN"},
-			"arrow-gh-41317": {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "../testdata/ARROW-GH-41317.parquet"}, "schema node not found for column path"},
-		}
+	rOpt := pio.ReadOption{}
+	testCases := map[string]struct {
+		cmd    MetaCmd
+		golden string
+		errMsg string
+	}{
+		// error cases
+		"non-existent":   {cmd: MetaCmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"no-int96":       {cmd: MetaCmd{ReadOption: rOpt, FailOnInt96: true, URI: "../testdata/all-types.parquet"}, errMsg: "type INT96 which is not supported"},
+		"nan-json-error": {cmd: MetaCmd{ReadOption: rOpt, URI: "../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
+		"arrow-gh-41317": {cmd: MetaCmd{ReadOption: rOpt, URI: "../testdata/ARROW-GH-41317.parquet"}, errMsg: "schema node not found for column path"},
+		// good cases - URI will be prefixed with "../testdata/"
+		"raw":         {cmd: MetaCmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "meta-good-raw.json"},
+		"nil-stat":    {cmd: MetaCmd{ReadOption: rOpt, URI: "nil-statistics.parquet"}, golden: "meta-nil-statistics-raw.json"},
+		"sorting-col": {cmd: MetaCmd{ReadOption: rOpt, URI: "sorting-col.parquet"}, golden: "meta-sorting-col-raw.json"},
+		"all-types":   {cmd: MetaCmd{ReadOption: rOpt, URI: "all-types.parquet"}, golden: "meta-all-types-raw.json"},
+		"geospatial":  {cmd: MetaCmd{ReadOption: rOpt, URI: "geospatial.parquet"}, golden: "meta-geospatial-raw.json"},
+		"row-group":   {cmd: MetaCmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "meta-row-group-raw.json"},
+	}
 
-		for name, tc := range testCases {
-			t.Run(name, func(t *testing.T) {
-				err := tc.cmd.Run()
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			if tc.errMsg == "" {
+				t.Parallel()
+			}
+			cmd := tc.cmd
+			if tc.golden != "" {
+				cmd.URI = "../testdata/" + tc.cmd.URI
+			}
+			if tc.errMsg != "" {
+				err := cmd.Run()
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
-			})
-		}
-	})
-
-	t.Run("good", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		testCases := map[string]struct {
-			cmd    MetaCmd
-			golden string
-		}{
-			"raw":         {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "good.parquet"}, "meta-good-raw.json"},
-			"nil-stat":    {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "nil-statistics.parquet"}, "meta-nil-statistics-raw.json"},
-			"sorting-col": {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "sorting-col.parquet"}, "meta-sorting-col-raw.json"},
-			"all-types":   {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "all-types.parquet"}, "meta-all-types-raw.json"},
-			"geospatial":  {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "geospatial.parquet"}, "meta-geospatial-raw.json"},
-			"row-group":   {MetaCmd{ReadOption: rOpt, FailOnInt96: false, URI: "row-group.parquet"}, "meta-row-group-raw.json"},
-		}
-
-		for name, tc := range testCases {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-				tc.cmd.URI = "../testdata/" + tc.cmd.URI
-				tc.golden = "../testdata/golden/" + tc.golden
+			} else {
 				stdout, stderr := captureStdoutStderr(func() {
-					require.Nil(t, tc.cmd.Run())
+					require.NoError(t, cmd.Run())
 				})
-				expected := loadExpected(t, tc.golden)
-				require.Equal(t, expected, stdout)
+				require.Equal(t, loadExpected(t, "../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
-			})
-		}
-	})
+			}
+		})
+	}
 }
 
 func BenchmarkMetaCmd(b *testing.B) {
