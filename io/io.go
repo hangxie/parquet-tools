@@ -121,7 +121,7 @@ func compressionCodec(codecName string) (parquet.CompressionCodec, error) {
 		return parquet.CompressionCodec_UNCOMPRESSED, err
 	}
 	switch codec {
-	case parquet.CompressionCodec_BROTLI, parquet.CompressionCodec_LZO:
+	case parquet.CompressionCodec_LZO:
 		return parquet.CompressionCodec_UNCOMPRESSED, fmt.Errorf("%s compression is not supported at this moment", codec.String())
 	}
 	return codec, nil

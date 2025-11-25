@@ -63,16 +63,16 @@ func TestNewCSVWriter(t *testing.T) {
 		schema []string
 		errMsg string
 	}{
-		"invalid-uri":        {wOpt, "://uri", nil, "unable to parse file location"},
-		"invalid-scheme":     {wOpt, "invalid-scheme://something", nil, "unknown location scheme"},
-		"invalid-schema1":    {wOpt, tempFile, []string{"invalid schema"}, "expect 'key=value'"},
-		"invalid-schema2":    {wOpt, tempFile, []string{"name=Id"}, "not a valid Type string"},
-		"invalid-schema3":    {wOpt, tempFile, []string{"name=Id, type=FOOBAR"}, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-codec":      {WriteOption{Compression: "FOOBAR"}, tempFile, []string{"name=Id, type=INT64"}, "not a valid CompressionCodec string"},
-		"unsupported-codec1": {WriteOption{Compression: "BROTLI"}, tempFile, []string{"name=Id, type=INT64"}, "compression is not supported at this moment"},
-		"unsupported-codec2": {WriteOption{Compression: "LZO"}, tempFile, []string{"name=Id, type=INT64"}, "compression is not supported at this moment"},
-		"hdfs-failed":        {wOpt, "hdfs://localhost:1/temp/good.parquet", nil, "connection refused"},
-		"all-good":           {WriteOption{Compression: "SNAPPY"}, tempFile, []string{"name=Id, type=INT64"}, ""},
+		"invalid-uri":       {wOpt, "://uri", nil, "unable to parse file location"},
+		"invalid-scheme":    {wOpt, "invalid-scheme://something", nil, "unknown location scheme"},
+		"invalid-schema1":   {wOpt, tempFile, []string{"invalid schema"}, "expect 'key=value'"},
+		"invalid-schema2":   {wOpt, tempFile, []string{"name=Id"}, "not a valid Type string"},
+		"invalid-schema3":   {wOpt, tempFile, []string{"name=Id, type=FOOBAR"}, "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-codec":     {WriteOption{Compression: "FOOBAR"}, tempFile, []string{"name=Id, type=INT64"}, "not a valid CompressionCodec string"},
+		"unsupported-codec": {WriteOption{Compression: "LZO"}, tempFile, []string{"name=Id, type=INT64"}, "compression is not supported at this moment"},
+		"supported-brotli":  {WriteOption{Compression: "BROTLI"}, tempFile, []string{"name=Id, type=INT64"}, ""},
+		"hdfs-failed":       {wOpt, "hdfs://localhost:1/temp/good.parquet", nil, "connection refused"},
+		"all-good":          {WriteOption{Compression: "SNAPPY"}, tempFile, []string{"name=Id, type=INT64"}, ""},
 	}
 
 	for name, tc := range testCases {
@@ -144,13 +144,13 @@ func TestNewGenericWriter(t *testing.T) {
 		schema string
 		errMsg string
 	}{
-		"invalid-uri":        {"://uri", WriteOption{}, "", "unable to parse file location"},
-		"schema-not-json":    {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
-		"schema-invalid":     {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-codec":      {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
-		"unsupported-codec1": {tempFile, WriteOption{Compression: "BROTLI"}, schema, "compression is not supported at this moment"},
-		"unsupported-codec2": {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
-		"all-good":           {tempFile, WriteOption{Compression: "SNAPPY"}, schema, ""},
+		"invalid-uri":       {"://uri", WriteOption{}, "", "unable to parse file location"},
+		"schema-not-json":   {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
+		"schema-invalid":    {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-codec":     {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
+		"unsupported-codec": {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
+		"supported-brotli":  {tempFile, WriteOption{Compression: "BROTLI"}, schema, ""},
+		"all-good":          {tempFile, WriteOption{Compression: "SNAPPY"}, schema, ""},
 	}
 
 	for name, tc := range testCases {
