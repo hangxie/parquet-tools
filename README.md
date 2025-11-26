@@ -65,7 +65,8 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Azure Storage Container](#azure-storage-container)
       - [HDFS File](#hdfs-file)
       - [HTTP Endpoint](#http-endpoint)
-    - [Encoding Options](#encoding-options)
+    - [File Format Options](#file-format-options)
+      - [Compression Codecs](#compression-codecs)
       - [Data Page Version](#data-page-version)
       - [Encoding](#encoding)
     - [cat Command](#cat-command)
@@ -449,9 +450,35 @@ $ GODEBUG=http2client=0 parquet-tools row-count https://...
 18141856
 ```
 
-### Encoding Options
+### File Format Options
 
-This section describes encoding options for commands that write Parquet files.
+This section describes format options for commands that write Parquet files, including compression, data page version, and encoding settings.
+
+#### Compression Codecs
+
+The `--compression` / `-z` parameter controls the compression algorithm used for writing Parquet files. This option is available for `import`, `merge`, `split`, and `transcode` commands. Different compression codecs offer different trade-offs between compression ratio, speed, and compatibility.
+
+**Supported compression codecs:**
+* `BROTLI` - Excellent compression ratio with moderate speed
+* `GZIP` - Better compression ratio, slower than SNAPPY
+* `LZ4_RAW` - LZ4 raw format, fast compression/decompression
+* `SNAPPY` - Fast compression/decompression (default for most commands)
+* `UNCOMPRESSED` - No compression
+* `ZSTD` - Excellent compression ratio with good speed
+
+**Deprecated compression codecs:**
+* `LZ4` - Deprecated in Parquet format. Use `LZ4_RAW` instead for LZ4 compression
+
+**Unsupported codecs:**
+* `LZO` - Not supported. See [parquet-go#150](https://github.com/hangxie/parquet-go/issues/150) for details.
+
+> [!TIP]
+> Choose compression codecs based on your use case:
+> - **SNAPPY** (default): Best for balanced performance and moderate compression
+> - **ZSTD** or **BROTLI**: Best for storage optimization when compression ratio is priority
+> - **GZIP**: Good compression ratio with wide compatibility
+> - **LZ4_RAW**: Best for write-heavy workloads requiring maximum speed
+> - **UNCOMPRESSED**: Best for debugging or when data is already compressed
 
 #### Data Page Version
 
@@ -654,7 +681,7 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 `import` command creates a parquet file based on data in other formats. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated), default is "SNAPPY". You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec, default is "SNAPPY", see [Compression Codecs](#compression-codecs) for available options. You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
@@ -789,7 +816,7 @@ $ parquet-tools row-count /tmp/merged.parquet
 6
 ```
 
-`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4_RAW/ZSTD, note: LZ4 is deprecated) for target parquet file, default is "SNAPPY". You can use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec for target parquet file, default is "SNAPPY", see [Compression Codecs](#compression-codecs) for available options. You can use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
 
 When `--concurrent` option is specified, the merge command will read input files in parallel (up to number of CPUs), this can bring performance gain between 5% and 10%, trade-off is that the order of records in the result parquet file will not be strictly in the order of input files.
 
@@ -991,7 +1018,7 @@ Name of output files is determined by `--name-format` and will be used by `fmt.S
 
 Other useful parameters include:
 * `--fail-on-int96` to fail the command if source parquet file contains INT96 fields
-* `--compression` to specify compression codec for output files, default is `SNAPPY`
+* `--compression` to specify compression codec for output files, default is `SNAPPY`, see [Compression Codecs](#compression-codecs) for available options
 * `--data-page-version` to specify data page format version, see [Data Page Version](#data-page-version) for details
 * `--read-page-size` to tell how many rows will be read per batch from source
 
@@ -1052,7 +1079,7 @@ The command reads data from a source Parquet file and writes it to a new output 
 
 #### Change Compression Codec
 
-Use the `--compression` / `-z` parameter to change the compression algorithm. This allows you to optimize file size, improve read/write performance, or ensure compatibility with systems that support specific compression codecs.
+Use the `--compression` / `-z` parameter to change the compression algorithm. This allows you to optimize file size, improve read/write performance, or ensure compatibility with systems that support specific compression codecs. See [Compression Codecs](#compression-codecs) for the complete list of available options.
 
 Convert a Parquet file from SNAPPY to GZIP compression:
 
@@ -1073,16 +1100,6 @@ Create an uncompressed version for debugging:
 ```bash
 $ parquet-tools transcode -s input.parquet -z UNCOMPRESSED output.parquet
 ```
-
-**Supported compression codecs:**
-* `GZIP` - Better compression ratio, slower than SNAPPY
-* `LZ4_RAW` - LZ4 raw format
-* `SNAPPY` - Fast compression/decompression (default)
-* `UNCOMPRESSED` - No compression
-* `ZSTD` - Excellent compression ratio with good speed
-
-**Deprecated compression codecs:**
-* `LZ4` - Deprecated in Parquet format. Use `LZ4_RAW` instead for LZ4 compression
 
 #### Change Data Page Version
 
