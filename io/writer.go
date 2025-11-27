@@ -20,7 +20,7 @@ import (
 
 // WriteOption includes options for write operation
 type WriteOption struct {
-	Compression     string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,LZ4_RAW,ZSTD" default:"SNAPPY"`
+	Compression     string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" enum:"UNCOMPRESSED,SNAPPY,GZIP,LZ4,LZ4_RAW,ZSTD,BROTLI" default:"SNAPPY"`
 	DataPageVersion int32  `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
 }
 
