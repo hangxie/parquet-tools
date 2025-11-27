@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go/storage v1.57.2
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.3
 	github.com/alecthomas/kong v1.13.0
-	github.com/apache/thrift v0.22.0
 	github.com/aws/aws-sdk-go-v2 v1.40.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.92.0
@@ -34,6 +33,7 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.54.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/apache/arrow-go/v18 v18.4.1 // indirect
+	github.com/apache/thrift v0.22.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.3 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.1 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.14 // indirect
