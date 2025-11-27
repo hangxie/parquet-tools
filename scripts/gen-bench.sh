@@ -184,8 +184,9 @@ if grep -q "^|[[:space:]]*${ESCAPED_VERSION}[[:space:]]*|" "$BENCHMARKS_FILE"; t
         'BEGIN {FS=OFS="|"}
          {
              # Strip leading/trailing whitespace from field 2 for comparison
-             gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2)
-             if ($2 == version) {
+             field2_trimmed = $2
+             gsub(/^[[:space:]]+|[[:space:]]+$/, "", field2_trimmed)
+             if (field2_trimmed == version) {
                  $2 = " " version " "
                  $3 = " " cat " "
                  $4 = " " merge " "
@@ -194,8 +195,11 @@ if grep -q "^|[[:space:]]*${ESCAPED_VERSION}[[:space:]]*|" "$BENCHMARKS_FILE"; t
                  $7 = " " schema " "
                  $8 = " " size " "
                  $9 = " " ver " "
+                 print
+             } else {
+                 # Print line as-is without modifying field separators
+                 print $0
              }
-             print
          }' "$BENCHMARKS_FILE" > "$TEMP_BENCHMARKS"
 else
     echo "Version $VERSION not found, adding to top of table..."
@@ -210,14 +214,14 @@ else
         -v schema="${MEDIAN_VALUES[schema]}" \
         -v size="${MEDIAN_VALUES[size]}" \
         -v ver="${MEDIAN_VALUES[version]}" \
-        'BEGIN {FS=OFS="|"; done=0}
+        'BEGIN {done=0}
          /^\|[[:space:]]*-------:/ && done==0 {
-             print
+             print $0
              printf "| %s | %s | %s | %s | %s | %s | %s | %s |\n", version, cat, merge, meta, rowcount, schema, size, ver
              done=1
              next
          }
-         {print}' "$BENCHMARKS_FILE" > "$TEMP_BENCHMARKS"
+         {print $0}' "$BENCHMARKS_FILE" > "$TEMP_BENCHMARKS"
 fi
 
 # Replace original file with updated content
