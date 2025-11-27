@@ -1,10 +1,10 @@
 type Parquet_go_root struct {
 	PARGO_PREFIX__NestedMap map[string]struct {
-		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
-		PARGO_PREFIX__List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
-	} `parquet:"name=_NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=STRUCT, convertedtype=MAP"`
+		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keyencoding=PLAIN, valuetype=INT32, valueencoding=PLAIN, convertedtype=MAP"`
+		PARGO_PREFIX__List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, valueencoding=PLAIN, convertedtype=LIST"`
+	} `parquet:"name=_NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keyencoding=PLAIN, valuetype=STRUCT, convertedtype=MAP"`
 	PARGO_PREFIX__NestedList []struct {
-		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, convertedtype=MAP"`
-		PARGO_PREFIX__List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, convertedtype=LIST"`
+		PARGO_PREFIX__Map  map[string]int32 `parquet:"name=_Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keyencoding=PLAIN, valuetype=INT32, valueencoding=PLAIN, convertedtype=MAP"`
+		PARGO_PREFIX__List []string         `parquet:"name=_List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, valueencoding=PLAIN, convertedtype=LIST"`
 	} `parquet:"name=_NestedList, type=LIST, valuetype=STRUCT, convertedtype=LIST"`
 }
