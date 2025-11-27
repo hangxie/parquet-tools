@@ -1,14 +1,12 @@
 package schema
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"maps"
 	"strings"
 
-	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/reader"
@@ -61,40 +59,29 @@ type SchemaOption struct {
 	FailOnInt96 bool
 }
 
-// readFirstDataPageEncoding reads the page header at DataPageOffset and returns the encoding.
-// This is more efficient than reading all page headers when only the encoding is needed.
+// readFirstDataPageEncoding reads page headers to find the first data page encoding.
+// Uses the parquet-go library's ReadAllPageHeaders which correctly handles page offsets.
+// For most columns, there are only 1-2 page headers (dictionary + data), so reading "all"
+// is not a performance issue.
 func readFirstDataPageEncoding(pFile io.ReadSeeker, col *parquet.ColumnChunk) (parquet.Encoding, error) {
-	meta := col.MetaData
-	if meta == nil {
-		return 0, fmt.Errorf("column chunk metadata is nil")
+	// Use parquet-go's ReadAllPageHeaders which correctly handles:
+	// - Dictionary pages at DataPageOffset
+	// - Proper offset calculation including header sizes
+	// - CRC and other page header variations
+	pageHeaders, err := reader.ReadAllPageHeaders(pFile, col)
+	if err != nil {
+		return 0, fmt.Errorf("read page headers: %w", err)
 	}
 
-	// Seek to the first data page (DataPageOffset skips any dictionary page)
-	if _, err := pFile.Seek(meta.DataPageOffset, io.SeekStart); err != nil {
-		return 0, fmt.Errorf("seek to data page: %w", err)
-	}
-
-	// Read the page header using thrift
-	bufReader := thrift.NewTBufferedTransport(thrift.NewStreamTransportR(pFile), 1024)
-	proto := thrift.NewTCompactProtocolConf(bufReader, nil)
-	pageHeader := parquet.NewPageHeader()
-	if err := pageHeader.Read(context.Background(), proto); err != nil {
-		return 0, fmt.Errorf("read page header: %w", err)
-	}
-
-	// Extract encoding based on page type
-	switch pageHeader.Type {
-	case parquet.PageType_DATA_PAGE:
-		if pageHeader.DataPageHeader != nil {
-			return pageHeader.DataPageHeader.Encoding, nil
-		}
-	case parquet.PageType_DATA_PAGE_V2:
-		if pageHeader.DataPageHeaderV2 != nil {
-			return pageHeader.DataPageHeaderV2.Encoding, nil
+	// Find the first DATA_PAGE or DATA_PAGE_V2
+	for _, headerInfo := range pageHeaders {
+		switch headerInfo.PageType {
+		case parquet.PageType_DATA_PAGE, parquet.PageType_DATA_PAGE_V2:
+			return headerInfo.Encoding, nil
 		}
 	}
 
-	return 0, fmt.Errorf("unexpected page type at DataPageOffset: %v", pageHeader.Type)
+	return 0, fmt.Errorf("no data page found")
 }
 
 // buildEncodingMap extracts encoding information from row groups by reading the first data page header.
@@ -114,10 +101,10 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 		// Read just the first data page header to get encoding
 		encoding, err := readFirstDataPageEncoding(pr.PFile, col)
 		if err != nil {
-			// Fall back to column metadata encodings if page header can't be read
-			if len(col.MetaData.Encodings) > 0 {
-				result[pathKey] = col.MetaData.Encodings[0].String()
-			}
+			// If we can't read the data page encoding, omit it from the schema.
+			// This lets the writer choose an appropriate default encoding for the type.
+			// Note: We don't try to guess from col.MetaData.Encodings because it mixes
+			// data encodings with definition/repetition level encodings (RLE, BIT_PACKED).
 			continue
 		}
 
