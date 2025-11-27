@@ -20,10 +20,12 @@ var orderedTags = []string{
 	"keyconvertedtype",
 	"keyscale",
 	"keyprecision",
+	"keyencoding",
 	"valuetype",
 	"valueconvertedtype",
 	"valuescale",
 	"valueprecision",
+	"valueencoding",
 	"convertedtype",
 	"scale",
 	"precision",
@@ -196,16 +198,17 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 		s.updateTagFromLogicalType(tagMap)
 	}
 
-	if s.ConvertedType != nil {
-		s.updateTagFromConvertedType(tagMap)
-	}
-
-	// Add custom parquet-go writer directives
+	// Add custom parquet-go writer directives before updateTagFromConvertedType
+	// so that LIST/MAP elements can include valueencoding/keyencoding tags
 	if s.Encoding != "" {
 		tagMap["encoding"] = s.Encoding
 	}
 	if s.OmitStats != "" {
 		tagMap["omitstats"] = s.OmitStats
+	}
+
+	if s.ConvertedType != nil {
+		s.updateTagFromConvertedType(tagMap)
 	}
 
 	return tagMap
