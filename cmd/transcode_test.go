@@ -330,6 +330,228 @@ func TestTranscodeCmd(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("encoding-preservation", func(t *testing.T) {
+		rOpt := pio.ReadOption{}
+		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		tempDir := t.TempDir()
+
+		// First, create a test file with specific encodings
+		createTestFileWithEncodings := func(filename string) string {
+			testFilePath := filepath.Join(tempDir, filename)
+			// Use the schema command to create a test file with known encodings
+			// We'll use the testdata generation approach
+			sourceFile := "../testdata/all-types.parquet"
+
+			// Create initial transcode
+			cmd := TranscodeCmd{
+				ReadOption:   rOpt,
+				WriteOption:  wOpt,
+				ReadPageSize: 10,
+				Source:       sourceFile,
+				URI:          testFilePath,
+			}
+			err := cmd.Run()
+			require.NoError(t, err)
+			return testFilePath
+		}
+
+		testFile := createTestFileWithEncodings("source-with-encodings.parquet")
+
+		// Get the schema from the source file
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        testFile,
+		}
+		originalSchema, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+
+		t.Run("preserves_encodings_without_override", func(t *testing.T) {
+			// Transcode without specifying field encodings
+			transcodedFile := filepath.Join(tempDir, "transcoded-preserved.parquet")
+			cmd := TranscodeCmd{
+				ReadOption:   rOpt,
+				WriteOption:  pio.WriteOption{Compression: "ZSTD", DataPageVersion: 1},
+				ReadPageSize: 10,
+				Source:       testFile,
+				URI:          transcodedFile,
+			}
+			err := cmd.Run()
+			require.NoError(t, err)
+
+			// Get schema from transcoded file
+			schemaCmd := SchemaCmd{
+				Format:     "go",
+				ReadOption: rOpt,
+				URI:        transcodedFile,
+			}
+			transcodedSchema, _ := captureStdoutStderr(func() {
+				require.NoError(t, schemaCmd.Run())
+			})
+
+			// Schemas should match (encodings preserved)
+			require.Equal(t, originalSchema, transcodedSchema,
+				"Encodings should be preserved when transcoding without field-encoding overrides")
+
+			// Verify data integrity
+			catOriginal := CatCmd{
+				ReadOption:   rOpt,
+				ReadPageSize: 1000,
+				SampleRatio:  1.0,
+				Format:       "json",
+				GeoFormat:    "geojson",
+				URI:          testFile,
+			}
+			catTranscoded := CatCmd{
+				ReadOption:   rOpt,
+				ReadPageSize: 1000,
+				SampleRatio:  1.0,
+				Format:       "json",
+				GeoFormat:    "geojson",
+				URI:          transcodedFile,
+			}
+
+			originalOutput, _ := captureStdoutStderr(func() {
+				require.NoError(t, catOriginal.Run())
+			})
+			transcodedOutput, _ := captureStdoutStderr(func() {
+				require.NoError(t, catTranscoded.Run())
+			})
+
+			require.Equal(t, originalOutput, transcodedOutput,
+				"Data should be identical after transcoding")
+		})
+
+		t.Run("overrides_encoding_when_specified", func(t *testing.T) {
+			// Transcode with explicit field encoding override
+			transcodedFile := filepath.Join(tempDir, "transcoded-override.parquet")
+
+			// Use good.parquet which has BYTE_ARRAY fields
+			// Override one of the fields to use DELTA_BYTE_ARRAY
+			cmd := TranscodeCmd{
+				FieldEncoding: []string{"shoe_name=DELTA_BYTE_ARRAY"},
+				ReadOption:    rOpt,
+				WriteOption:   pio.WriteOption{Compression: "ZSTD", DataPageVersion: 1},
+				ReadPageSize:  10,
+				Source:        "../testdata/good.parquet",
+				URI:           transcodedFile,
+			}
+			err := cmd.Run()
+			require.NoError(t, err)
+
+			// Get schema from transcoded file
+			schemaCmd := SchemaCmd{
+				Format:     "go",
+				ReadOption: rOpt,
+				URI:        transcodedFile,
+			}
+			transcodedSchema, _ := captureStdoutStderr(func() {
+				require.NoError(t, schemaCmd.Run())
+			})
+
+			// Verify the encoding was overridden for shoe_name
+			require.Contains(t, transcodedSchema, "encoding=DELTA_BYTE_ARRAY",
+				"Field encoding should be overridden when explicitly specified")
+
+			// Verify data integrity by checking row count and basic data
+			reader, err := pio.NewParquetFileReader(transcodedFile, rOpt)
+			require.NoError(t, err)
+			require.Equal(t, int64(3), reader.GetNumRows())
+			_ = reader.PFile.Close()
+
+			// Verify data using cat
+			catTranscoded := CatCmd{
+				ReadOption:   rOpt,
+				ReadPageSize: 1000,
+				SampleRatio:  1.0,
+				Format:       "json",
+				GeoFormat:    "geojson",
+				URI:          transcodedFile,
+			}
+			catOriginal := CatCmd{
+				ReadOption:   rOpt,
+				ReadPageSize: 1000,
+				SampleRatio:  1.0,
+				Format:       "json",
+				GeoFormat:    "geojson",
+				URI:          "../testdata/good.parquet",
+			}
+
+			transcodedOutput, _ := captureStdoutStderr(func() {
+				require.NoError(t, catTranscoded.Run())
+			})
+			originalOutput, _ := captureStdoutStderr(func() {
+				require.NoError(t, catOriginal.Run())
+			})
+
+			require.Equal(t, originalOutput, transcodedOutput,
+				"Data should be identical even with different encoding")
+		})
+
+		t.Run("preserves_encodings_with_compression_change", func(t *testing.T) {
+			// Transcode with different compression but preserve encodings
+			transcodedFile := filepath.Join(tempDir, "transcoded-gzip.parquet")
+			cmd := TranscodeCmd{
+				ReadOption:   rOpt,
+				WriteOption:  pio.WriteOption{Compression: "GZIP", DataPageVersion: 1},
+				ReadPageSize: 10,
+				Source:       testFile,
+				URI:          transcodedFile,
+			}
+			err := cmd.Run()
+			require.NoError(t, err)
+
+			// Get schemas
+			schemaCmd := SchemaCmd{
+				Format:     "go",
+				ReadOption: rOpt,
+				URI:        transcodedFile,
+			}
+			transcodedSchema, _ := captureStdoutStderr(func() {
+				require.NoError(t, schemaCmd.Run())
+			})
+
+			// Encodings should be preserved even with different compression
+			require.Equal(t, originalSchema, transcodedSchema,
+				"Encodings should be preserved when only changing compression")
+		})
+
+		t.Run("preserves_encodings_with_data_page_version_change", func(t *testing.T) {
+			// Transcode from v1 to v2 and preserve encodings (except PLAIN_DICTIONARY)
+			transcodedFile := filepath.Join(tempDir, "transcoded-v2.parquet")
+			cmd := TranscodeCmd{
+				ReadOption:   rOpt,
+				WriteOption:  pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 2},
+				ReadPageSize: 10,
+				Source:       "../testdata/all-types.parquet",
+				URI:          transcodedFile,
+			}
+			err := cmd.Run()
+			require.NoError(t, err)
+
+			// Verify file was created and data is correct
+			reader, err := pio.NewParquetFileReader(transcodedFile, rOpt)
+			require.NoError(t, err)
+			require.Equal(t, int64(10), reader.GetNumRows())
+			_ = reader.PFile.Close()
+
+			// Note: PLAIN_DICTIONARY should NOT be in v2 files
+			schemaCmd := SchemaCmd{
+				Format:     "go",
+				ReadOption: rOpt,
+				URI:        transcodedFile,
+			}
+			transcodedSchema, _ := captureStdoutStderr(func() {
+				require.NoError(t, schemaCmd.Run())
+			})
+
+			// Should not contain PLAIN_DICTIONARY in v2
+			require.NotContains(t, transcodedSchema, "PLAIN_DICTIONARY",
+				"PLAIN_DICTIONARY should not appear in v2 data pages")
+		})
+	})
 }
 
 func TestTranscodeCmdIsEncodingCompatible(t *testing.T) {
