@@ -3,7 +3,6 @@ package schema
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"maps"
 	"strings"
 
@@ -61,29 +60,20 @@ type SchemaOption struct {
 	FailOnInt96 bool
 }
 
-// readFirstDataPageEncoding reads page headers to find the first data page encoding.
-// Uses the parquet-go library's ReadAllPageHeaders which correctly handles page offsets.
-// For most columns, there are only 1-2 page headers (dictionary + data), so reading "all"
-// is not a performance issue.
-func readFirstDataPageEncoding(pFile io.ReadSeeker, col *parquet.ColumnChunk) (parquet.Encoding, error) {
-	// Use parquet-go's ReadAllPageHeaders which correctly handles:
+// readFirstDataPageEncoding reads the first data page header to get its encoding.
+// Uses the parquet-go library's GetFirstDataPageHeader which efficiently reads only
+// the first data page, skipping any dictionary pages.
+func readFirstDataPageEncoding(pr *reader.ParquetReader, rowGroupIndex, columnIndex int) (parquet.Encoding, error) {
+	// Use parquet-go's GetFirstDataPageHeader which correctly handles:
 	// - Dictionary pages at DataPageOffset
 	// - Proper offset calculation including header sizes
 	// - CRC and other page header variations
-	pageHeaders, err := reader.ReadAllPageHeaders(pFile, col)
+	headerInfo, err := pr.GetFirstDataPageHeader(rowGroupIndex, columnIndex)
 	if err != nil {
-		return 0, fmt.Errorf("read page headers: %w", err)
+		return 0, fmt.Errorf("read first data page header: %w", err)
 	}
 
-	// Find the first DATA_PAGE or DATA_PAGE_V2
-	for _, headerInfo := range pageHeaders {
-		switch headerInfo.PageType {
-		case parquet.PageType_DATA_PAGE, parquet.PageType_DATA_PAGE_V2:
-			return headerInfo.Encoding, nil
-		}
-	}
-
-	return 0, fmt.Errorf("no data page found")
+	return headerInfo.Encoding, nil
 }
 
 // buildEncodingMap extracts encoding information from row groups by reading the first data page header.
@@ -97,11 +87,11 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 		return result
 	}
 
-	for _, col := range pr.Footer.RowGroups[0].Columns {
+	for colIndex, col := range pr.Footer.RowGroups[0].Columns {
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
 
 		// Read just the first data page header to get encoding
-		encoding, err := readFirstDataPageEncoding(pr.PFile, col)
+		encoding, err := readFirstDataPageEncoding(pr, 0, colIndex)
 		if err != nil {
 			// If we can't read the data page encoding, omit it from the schema.
 			// This lets the writer choose an appropriate default encoding for the type.
