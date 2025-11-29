@@ -47,7 +47,12 @@ func (c TranscodeCmd) parseFieldEncodings() (map[string]string, error) {
 
 		// Validate encoding
 		if _, err := parquet.EncodingFromString(strings.ToUpper(encoding)); err != nil {
-			return nil, fmt.Errorf("invalid encoding [%s] for field [%s]: %w", encoding, fieldPath, err)
+			validEncodings := []string{
+				"PLAIN", "RLE", "BIT_PACKED", "DELTA_BINARY_PACKED",
+				"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "BYTE_STREAM_SPLIT",
+				"RLE_DICTIONARY", "PLAIN_DICTIONARY",
+			}
+			return nil, fmt.Errorf("invalid encoding [%s] for field [%s]: %w, valid encodings: %s", encoding, fieldPath, err, strings.Join(validEncodings, ", "))
 		}
 		// PLAIN_DICTIONARY is only allowed in v1 data pages
 		if strings.ToUpper(encoding) == "PLAIN_DICTIONARY" && c.DataPageVersion != 1 {
@@ -68,8 +73,9 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 
 		// Apply field-specific encoding if specified
 		if encoding, found := fieldEncodings[fieldPath]; found {
+			allowed := c.getAllowedEncodings(schemaTree.Type.String())
 			if !c.isEncodingCompatible(encoding, schemaTree.Type.String()) {
-				return fmt.Errorf("encoding %s is not compatible with field [%s] of type %s", encoding, fieldPath, schemaTree.Type.String())
+				return fmt.Errorf("encoding %s is not compatible with field [%s] of type %s, allowed encodings: %s", encoding, fieldPath, schemaTree.Type.String(), strings.Join(allowed, ", "))
 			}
 			schemaTree.Encoding = encoding
 		}
@@ -87,6 +93,35 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 		}
 	}
 	return nil
+}
+
+func (c TranscodeCmd) getAllowedEncodings(dataType string) []string {
+	dataType = strings.ToUpper(dataType)
+
+	// Encoding compatibility matrix: maps data type to compatible encodings
+	// Per Parquet spec and parquet-go validation rules:
+	// - RLE: BOOLEAN, INT32, INT64 only
+	// - DELTA_BINARY_PACKED: INT32, INT64 only
+	// - DELTA_BYTE_ARRAY, DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only
+	// - BYTE_STREAM_SPLIT: FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY
+	// - PLAIN_DICTIONARY: All types (v1 data pages only, validated in parseFieldEncodings)
+	compatibilityMap := map[string][]string{
+		"BOOLEAN":              {"BIT_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
+		"BYTE_ARRAY":           {"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"DOUBLE":               {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"FIXED_LEN_BYTE_ARRAY": {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"FLOAT":                {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		"INT32":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
+		"INT64":                {"BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
+	}
+
+	allowed, exists := compatibilityMap[dataType]
+	if !exists {
+		return []string{"PLAIN"}
+	}
+
+	// PLAIN encoding works with all types, so always include it
+	return append([]string{"PLAIN"}, allowed...)
 }
 
 func (c TranscodeCmd) isEncodingCompatible(encoding, dataType string) bool {
