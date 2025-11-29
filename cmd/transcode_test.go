@@ -752,6 +752,87 @@ func TestTranscodeCmdParseFieldEncodings(t *testing.T) {
 	}
 }
 
+func TestTranscodeCmd_getAllowedEncodings(t *testing.T) {
+	cmd := TranscodeCmd{}
+
+	testCases := []struct {
+		name              string
+		dataType          string
+		expectedEncodings []string
+	}{
+		{
+			name:     "BOOLEAN",
+			dataType: "BOOLEAN",
+			expectedEncodings: []string{
+				"PLAIN", "BIT_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "BYTE_ARRAY",
+			dataType: "BYTE_ARRAY",
+			expectedEncodings: []string{
+				"PLAIN", "DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "INT32",
+			dataType: "INT32",
+			expectedEncodings: []string{
+				"PLAIN", "BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "INT64",
+			dataType: "INT64",
+			expectedEncodings: []string{
+				"PLAIN", "BIT_PACKED", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "FLOAT",
+			dataType: "FLOAT",
+			expectedEncodings: []string{
+				"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "DOUBLE",
+			dataType: "DOUBLE",
+			expectedEncodings: []string{
+				"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "FIXED_LEN_BYTE_ARRAY",
+			dataType: "FIXED_LEN_BYTE_ARRAY",
+			expectedEncodings: []string{
+				"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
+			},
+		},
+		{
+			name:     "unknown type",
+			dataType: "UNKNOWN_TYPE",
+			expectedEncodings: []string{
+				"PLAIN",
+			},
+		},
+		{
+			name:     "lowercase input",
+			dataType: "byte_array",
+			expectedEncodings: []string{
+				"PLAIN", "DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := cmd.getAllowedEncodings(tc.dataType)
+			require.Equal(t, tc.expectedEncodings, result)
+		})
+	}
+}
+
 func BenchmarkTranscodeCmd(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
