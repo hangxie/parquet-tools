@@ -261,7 +261,7 @@ func (c InspectCmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupInd
 	}
 
 	// Read pages - this requires reading the actual data from the file
-	pages, err := c.readPages(reader, col, schemaNode)
+	pages, err := c.readPages(reader, rowGroupIndex, columnChunkIndex, schemaNode)
 	if err != nil {
 		return fmt.Errorf("failed to read pages: %w", err)
 	}
@@ -291,7 +291,7 @@ func (c InspectCmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, col
 	schemaNode := pathMap[pathKey]
 
 	// Read pages
-	pages, err := c.readPages(reader, col, schemaNode)
+	pages, err := c.readPages(reader, rowGroupIndex, columnChunkIndex, schemaNode)
 	if err != nil {
 		return fmt.Errorf("failed to read pages: %w", err)
 	}
@@ -391,8 +391,8 @@ func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) a
 		int(schemaNode.GetPrecision()), int(schemaNode.GetScale()))
 }
 
-func (c InspectCmd) readPages(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
-	pageHeaders, err := reader.ReadAllPageHeaders(pr.PFile, col)
+func (c InspectCmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
+	pageHeaders, err := pr.GetAllPageHeaders(rowGroupIndex, columnChunkIndex)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read page headers: %w", err)
 	}
