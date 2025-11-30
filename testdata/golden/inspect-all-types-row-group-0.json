@@ -109,6 +109,7 @@
         "RLE"
       ],
       "index": 5,
+      "logicalType": "logicaltype=FLOAT16",
       "numValues": 10,
       "pathInSchema": [
         "Float16Val"
@@ -171,6 +172,7 @@
         "RLE"
       ],
       "index": 8,
+      "logicalType": "logicaltype=ENUM",
       "numValues": 10,
       "pathInSchema": [
         "Enum"
@@ -214,6 +216,7 @@
         "RLE"
       ],
       "index": 10,
+      "logicalType": "logicaltype=JSON",
       "numValues": 10,
       "pathInSchema": [
         "Json"
@@ -260,6 +263,7 @@
         "PLAIN"
       ],
       "index": 12,
+      "logicalType": "logicaltype=JSON",
       "numValues": 10,
       "pathInSchema": [
         "Json2"
@@ -394,6 +398,7 @@
         "RLE"
       ],
       "index": 18,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
         "Int_8"
@@ -415,6 +420,7 @@
         "PLAIN"
       ],
       "index": 19,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
         "Int_16"
@@ -437,6 +443,7 @@
         "RLE"
       ],
       "index": 20,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
         "Int_32"
@@ -457,6 +464,7 @@
         "RLE"
       ],
       "index": 21,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
         "Int_64"
@@ -478,6 +486,7 @@
         "RLE"
       ],
       "index": 22,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
         "Uint_8"
@@ -499,6 +508,7 @@
         "RLE"
       ],
       "index": 23,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
         "Uint_16"
@@ -520,6 +530,7 @@
         "RLE"
       ],
       "index": 24,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
         "Uint_32"
@@ -540,6 +551,7 @@
         "RLE"
       ],
       "index": 25,
+      "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
         "Uint_64"

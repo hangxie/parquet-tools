@@ -309,6 +309,8 @@ func TestOrderedTags(t *testing.T) {
 		"logicaltype.scale",
 		"logicaltype.isadjustedtoutc",
 		"logicaltype.unit",
+		"logicaltype.bitwidth",
+		"logicaltype.issigned",
 		"repetitiontype",
 		"encoding",
 		"omitstats",

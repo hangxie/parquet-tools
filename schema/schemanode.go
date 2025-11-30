@@ -35,6 +35,8 @@ var orderedTags = []string{
 	"logicaltype.scale",
 	"logicaltype.isadjustedtoutc",
 	"logicaltype.unit",
+	"logicaltype.bitwidth",
+	"logicaltype.issigned",
 	"repetitiontype",
 	"encoding",
 	"omitstats",
@@ -312,10 +314,20 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 		tagMap["logicaltype"] = "DECIMAL"
 		tagMap["logicaltype.precision"] = fmt.Sprint(s.LogicalType.DECIMAL.Precision)
 		tagMap["logicaltype.scale"] = fmt.Sprint(s.LogicalType.DECIMAL.Scale)
+	case s.LogicalType.IsSetENUM():
+		tagMap["logicaltype"] = "ENUM"
+	case s.LogicalType.IsSetFLOAT16():
+		tagMap["logicaltype"] = "FLOAT16"
 	case s.LogicalType.IsSetGEOGRAPHY():
 		tagMap["logicaltype"] = "GEOGRAPHY"
 	case s.LogicalType.IsSetGEOMETRY():
 		tagMap["logicaltype"] = "GEOMETRY"
+	case s.LogicalType.IsSetINTEGER():
+		tagMap["logicaltype"] = "INTEGER"
+		tagMap["logicaltype.bitwidth"] = fmt.Sprint(s.LogicalType.INTEGER.BitWidth)
+		tagMap["logicaltype.issigned"] = fmt.Sprint(s.LogicalType.INTEGER.IsSigned)
+	case s.LogicalType.IsSetJSON():
+		tagMap["logicaltype"] = "JSON"
 	case s.LogicalType.IsSetVARIANT():
 		// VARIANT is a semi-structured logical type introduced in newer parquet-format
 		tagMap["logicaltype"] = "VARIANT"
