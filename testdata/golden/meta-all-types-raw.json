@@ -96,6 +96,7 @@
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
           "ConvertedType": "length=2",
+          "LogicalType": "logicaltype=FLOAT16",
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -148,6 +149,7 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=ENUM",
+          "LogicalType": "logicaltype=ENUM",
           "Encodings": [
             "PLAIN",
             "RLE_DICTIONARY",
@@ -186,6 +188,7 @@
           ],
           "Type": "BYTE_ARRAY",
           "ConvertedType": "convertedtype=JSON",
+          "LogicalType": "logicaltype=JSON",
           "Encodings": [
             "DELTA_BYTE_ARRAY",
             "RLE"
@@ -226,6 +229,7 @@
             "Json2"
           ],
           "Type": "BYTE_ARRAY",
+          "LogicalType": "logicaltype=JSON",
           "Encodings": [
             "RLE",
             "PLAIN"
@@ -342,6 +346,7 @@
           ],
           "Type": "INT32",
           "ConvertedType": "convertedtype=INT_8",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true",
           "Encodings": [
             "BIT_PACKED",
             "RLE"
@@ -360,6 +365,7 @@
           ],
           "Type": "INT32",
           "ConvertedType": "convertedtype=INT_16",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true",
           "Encodings": [
             "RLE",
             "PLAIN"
@@ -378,6 +384,7 @@
           ],
           "Type": "INT32",
           "ConvertedType": "convertedtype=INT_32",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true",
           "Encodings": [
             "PLAIN",
             "RLE_DICTIONARY",
@@ -397,6 +404,7 @@
           ],
           "Type": "INT64",
           "ConvertedType": "convertedtype=INT_64",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true",
           "Encodings": [
             "RLE"
           ],
@@ -414,6 +422,7 @@
           ],
           "Type": "INT32",
           "ConvertedType": "convertedtype=UINT_8",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false",
           "Encodings": [
             "BIT_PACKED",
             "RLE"
@@ -432,6 +441,7 @@
           ],
           "Type": "INT32",
           "ConvertedType": "convertedtype=UINT_16",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false",
           "Encodings": [
             "DELTA_BINARY_PACKED",
             "RLE"
@@ -450,6 +460,7 @@
           ],
           "Type": "INT32",
           "ConvertedType": "convertedtype=UINT_32",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false",
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -468,6 +479,7 @@
           ],
           "Type": "INT64",
           "ConvertedType": "convertedtype=UINT_64",
+          "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false",
           "Encodings": [
             "RLE"
           ],

@@ -17,7 +17,7 @@
       "Tag": "name=Float, inname=Float, type=FLOAT, encoding=BYTE_STREAM_SPLIT"
     },
     {
-      "Tag": "name=Float16Val, inname=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2, encoding=PLAIN"
+      "Tag": "name=Float16Val, inname=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16, encoding=PLAIN"
     },
     {
       "Tag": "name=Double, inname=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT"
@@ -26,19 +26,19 @@
       "Tag": "name=ByteArray, inname=ByteArray, type=BYTE_ARRAY, encoding=DELTA_LENGTH_BYTE_ARRAY"
     },
     {
-      "Tag": "name=Enum, inname=Enum, type=BYTE_ARRAY, convertedtype=ENUM, encoding=RLE_DICTIONARY"
+      "Tag": "name=Enum, inname=Enum, type=BYTE_ARRAY, convertedtype=ENUM, logicaltype=ENUM, encoding=RLE_DICTIONARY"
     },
     {
       "Tag": "name=Uuid, inname=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN"
     },
     {
-      "Tag": "name=Json, inname=Json, type=BYTE_ARRAY, convertedtype=JSON, encoding=DELTA_BYTE_ARRAY"
+      "Tag": "name=Json, inname=Json, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=DELTA_BYTE_ARRAY"
     },
     {
       "Tag": "name=Bson, inname=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN"
     },
     {
-      "Tag": "name=Json2, inname=Json2, type=BYTE_ARRAY, encoding=PLAIN"
+      "Tag": "name=Json2, inname=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=PLAIN"
     },
     {
       "Tag": "name=Bson2, inname=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY"
@@ -56,28 +56,28 @@
       "Tag": "name=Utf8_2, inname=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN"
     },
     {
-      "Tag": "name=Int_8, inname=Int_8, type=INT32, convertedtype=INT_8, encoding=BIT_PACKED"
+      "Tag": "name=Int_8, inname=Int_8, type=INT32, convertedtype=INT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true, encoding=BIT_PACKED"
     },
     {
-      "Tag": "name=Int_16, inname=Int_16, type=INT32, convertedtype=INT_16, encoding=PLAIN"
+      "Tag": "name=Int_16, inname=Int_16, type=INT32, convertedtype=INT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true, encoding=PLAIN"
     },
     {
-      "Tag": "name=Int_32, inname=Int_32, type=INT32, convertedtype=INT_32, encoding=RLE_DICTIONARY"
+      "Tag": "name=Int_32, inname=Int_32, type=INT32, convertedtype=INT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Int_64, inname=Int_64, type=INT64, convertedtype=INT_64, encoding=RLE"
+      "Tag": "name=Int_64, inname=Int_64, type=INT64, convertedtype=INT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true, encoding=RLE"
     },
     {
-      "Tag": "name=Uint_8, inname=Uint_8, type=INT32, convertedtype=UINT_8, encoding=BIT_PACKED"
+      "Tag": "name=Uint_8, inname=Uint_8, type=INT32, convertedtype=UINT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false, encoding=BIT_PACKED"
     },
     {
-      "Tag": "name=Uint_16, inname=Uint_16, type=INT32, convertedtype=UINT_16, encoding=DELTA_BINARY_PACKED"
+      "Tag": "name=Uint_16, inname=Uint_16, type=INT32, convertedtype=UINT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Uint_32, inname=Uint_32, type=INT32, convertedtype=UINT_32, encoding=PLAIN"
+      "Tag": "name=Uint_32, inname=Uint_32, type=INT32, convertedtype=UINT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false, encoding=PLAIN"
     },
     {
-      "Tag": "name=Uint_64, inname=Uint_64, type=INT64, convertedtype=UINT_64, encoding=RLE"
+      "Tag": "name=Uint_64, inname=Uint_64, type=INT64, convertedtype=UINT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false, encoding=RLE"
     },
     {
       "Tag": "name=Date, inname=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=DELTA_BINARY_PACKED"
