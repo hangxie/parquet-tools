@@ -143,6 +143,7 @@ func (c MergeCmd) Run() error {
 func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 	var schemaJson string
 	var rootExNamePath []string
+	var rootInNamePath []string
 	var rootName string
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Source))
@@ -162,11 +163,13 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 			schemaJson = currSchema.JSONSchema()
 			rootName = currSchema.Name
 			rootExNamePath = currSchema.ExNamePath
+			rootInNamePath = currSchema.InNamePath
 			continue
 		}
 
 		currSchema.Name = rootName
 		currSchema.ExNamePath = rootExNamePath
+		currSchema.InNamePath = rootInNamePath
 		newSchema := currSchema.JSONSchema()
 		// Strip encoding from both schemas for comparison as files may have different encodings
 		schemaJsonWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJson, "")

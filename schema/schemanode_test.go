@@ -288,6 +288,7 @@ func TestOrderedTags(t *testing.T) {
 	// Expected tags in order
 	expected := []string{
 		"name",
+		"inname",
 		"type",
 		"keytype",
 		"keyconvertedtype",

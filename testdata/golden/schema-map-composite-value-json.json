@@ -1,69 +1,69 @@
 {
-  "Tag": "name=parquet_go_root",
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
     },
     {
-      "Tag": "name=age, type=INT32, encoding=PLAIN"
+      "Tag": "name=age, inname=Age, type=INT32, encoding=PLAIN"
     },
     {
-      "Tag": "name=id, type=INT64, encoding=PLAIN"
+      "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN"
     },
     {
-      "Tag": "name=weight, type=FLOAT, encoding=PLAIN"
+      "Tag": "name=weight, inname=Weight, type=FLOAT, encoding=PLAIN"
     },
     {
-      "Tag": "name=sex, type=BOOLEAN, encoding=PLAIN"
+      "Tag": "name=sex, inname=Sex, type=BOOLEAN, encoding=PLAIN"
     },
     {
-      "Tag": "name=classes, type=LIST",
+      "Tag": "name=classes, inname=Classes, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         }
       ]
     },
     {
-      "Tag": "name=scores, type=MAP",
+      "Tag": "name=scores, inname=Scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         },
         {
-          "Tag": "name=value, type=LIST",
+          "Tag": "name=value, inname=Value, type=LIST",
           "Fields": [
             {
-              "Tag": "name=element, type=FLOAT, encoding=PLAIN"
+              "Tag": "name=element, inname=Element, type=FLOAT, encoding=PLAIN"
             }
           ]
         }
       ]
     },
     {
-      "Tag": "name=friends, type=LIST",
+      "Tag": "name=friends, inname=Friends, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element",
+          "Tag": "name=element, inname=Element",
           "Fields": [
             {
-              "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+              "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
             },
             {
-              "Tag": "name=id, type=INT64, encoding=PLAIN"
+              "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN"
             }
           ]
         }
       ]
     },
     {
-      "Tag": "name=teachers, repetitiontype=REPEATED",
+      "Tag": "name=teachers, inname=Teachers, repetitiontype=REPEATED",
       "Fields": [
         {
-          "Tag": "name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
         },
         {
-          "Tag": "name=id, type=INT64, encoding=PLAIN"
+          "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN"
         }
       ]
     }
