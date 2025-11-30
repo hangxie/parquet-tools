@@ -14,6 +14,7 @@ import (
 // this represents order of tags in JSON schema and go struct
 var orderedTags = []string{
 	"name",
+	"inname",
 	"type",
 	"keytype",
 	"keyconvertedtype",
@@ -174,6 +175,10 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 
 	if len(s.ExNamePath) != 0 {
 		tagMap["name"] = s.ExNamePath[len(s.ExNamePath)-1]
+	}
+
+	if len(s.InNamePath) != 0 {
+		tagMap["inname"] = s.InNamePath[len(s.InNamePath)-1]
 	}
 
 	if tagMap["type"] == "STRUCT" {
@@ -402,7 +407,24 @@ func (s SchemaNode) CSVSchema() (string, error) {
 		if strings.Contains(f.Tag, "repetitiontype=OPTIONAL") {
 			return "", fmt.Errorf("CSV does not support optional column")
 		}
-		schema[i] = strings.Replace(f.Tag, ", repetitiontype=REQUIRED", "", 1)
+		tag := strings.Replace(f.Tag, ", repetitiontype=REQUIRED", "", 1)
+		// Remove inname tag from CSV schema as it's Go-specific
+		tag = removeTagFromString(tag, "inname")
+		schema[i] = tag
 	}
 	return strings.Join(schema, "\n"), nil
+}
+
+// removeTagFromString removes a tag and its value from a tag string
+// e.g., removeTagFromString("name=foo, inname=Foo, type=INT32", "inname") -> "name=foo, type=INT32"
+func removeTagFromString(tagString, tagName string) string {
+	// Pattern: either ", tagName=value" or "tagName=value, "
+	parts := strings.Split(tagString, ", ")
+	filtered := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if !strings.HasPrefix(part, tagName+"=") {
+			filtered = append(filtered, part)
+		}
+	}
+	return strings.Join(filtered, ", ")
 }

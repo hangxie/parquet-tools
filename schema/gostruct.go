@@ -176,6 +176,10 @@ func (n goStructNode) getStructTags() (string, error) {
 
 	annotations := make([]string, 0, len(orderedTags))
 	for _, tag := range orderedTags {
+		if tag == "inname" {
+			// inname is for raw JSON schema only, not for go struct tags
+			continue
+		}
 		if val, found := tagMap[tag]; found &&
 			!(tag == "repetitiontype" && val == "REQUIRED") {
 			// repetitiontype=REQUIRED is redundant in go struct
