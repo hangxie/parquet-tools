@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/reader"
+	"golang.org/x/sync/errgroup"
 )
 
 // this represents order of tags in JSON schema and go struct
@@ -82,6 +85,7 @@ func readFirstDataPageEncoding(pr *reader.ParquetReader, rowGroupIndex, columnIn
 // buildEncodingMap extracts encoding information from row groups by reading the first data page header.
 // For each column, it reads the page header at DataPageOffset to get the actual data page encoding.
 // Note: Parquet files should use consistent encodings across row groups for the same column.
+// This function reads columns in parallel to speed up remote file access.
 func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 	result := make(map[string]string)
 
@@ -90,22 +94,57 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 		return result
 	}
 
-	for colIndex, col := range pr.Footer.RowGroups[0].Columns {
-		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	columns := pr.Footer.RowGroups[0].Columns
 
-		// Read just the first data page header to get encoding
-		encoding, err := readFirstDataPageEncoding(pr, 0, colIndex)
-		if err != nil {
-			// If we can't read the data page encoding, omit it from the schema.
-			// This lets the writer choose an appropriate default encoding for the type.
-			// Note: We don't try to guess from col.MetaData.Encodings because it mixes
-			// data encodings with definition/repetition level encodings (RLE, BIT_PACKED).
-			continue
-		}
+	// Use a mutex to protect concurrent writes to the result map
+	var mu sync.Mutex
 
-		result[pathKey] = encoding.String()
+	// Process columns in parallel, use runtime.NumCPU() to match available cores
+	g := new(errgroup.Group)
+	g.SetLimit(runtime.NumCPU())
+
+	for colIndex, col := range columns {
+		colIndex, col := colIndex, col // capture loop variables
+		g.Go(func() error {
+			pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+
+			// Clone the reader to get a dedicated file handle for concurrent access
+			// This is necessary because io.ReadSeeker operations (Seek/Read) are not thread-safe
+			clonedFile, err := pr.PFile.Clone()
+			if err != nil {
+				// If cloning fails, skip this column's encoding
+				return nil
+			}
+			defer func() {
+				_ = clonedFile.Close()
+			}()
+
+			// Create a temporary reader with the cloned file
+			clonedReader := &reader.ParquetReader{
+				PFile:         clonedFile,
+				Footer:        pr.Footer,
+				SchemaHandler: pr.SchemaHandler,
+			}
+
+			// Read just the first data page header to get encoding
+			encoding, err := readFirstDataPageEncoding(clonedReader, 0, colIndex)
+			if err != nil {
+				// If we can't read the data page encoding, omit it from the schema.
+				// This lets the writer choose an appropriate default encoding for the type.
+				// Note: We don't try to guess from col.MetaData.Encodings because it mixes
+				// data encodings with definition/repetition level encodings (RLE, BIT_PACKED).
+				return nil
+			}
+
+			mu.Lock()
+			result[pathKey] = encoding.String()
+			mu.Unlock()
+			return nil
+		})
 	}
 
+	// Wait for all goroutines to complete, ignoring errors since we handle them inline
+	_ = g.Wait()
 	return result
 }
 
