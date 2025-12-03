@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 29211,
+      "TotalByteSize": 23603,
       "Columns": [
         {
           "PathInSchema": [
@@ -28,8 +28,8 @@
           ],
           "Type": "INT32",
           "Encodings": [
-            "RLE",
-            "DELTA_BINARY_PACKED"
+            "DELTA_BINARY_PACKED",
+            "RLE"
           ],
           "CompressedSize": 223,
           "UncompressedSize": 215,
@@ -65,7 +65,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 436,
+          "CompressedSize": 429,
           "UncompressedSize": 428,
           "NumValues": 10,
           "NullCount": 0,
@@ -193,7 +193,7 @@
             "DELTA_BYTE_ARRAY",
             "RLE"
           ],
-          "CompressedSize": 412,
+          "CompressedSize": 385,
           "UncompressedSize": 404,
           "NumValues": 10,
           "NullCount": 0,
@@ -231,10 +231,10 @@
           "Type": "BYTE_ARRAY",
           "LogicalType": "logicaltype=JSON",
           "Encodings": [
-            "RLE",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
-          "CompressedSize": 346,
+          "CompressedSize": 325,
           "UncompressedSize": 338,
           "NumValues": 10,
           "NullCount": 0,
@@ -252,7 +252,7 @@
             "DELTA_BYTE_ARRAY",
             "RLE"
           ],
-          "CompressedSize": 497,
+          "CompressedSize": 499,
           "UncompressedSize": 543,
           "NumValues": 10,
           "NullCount": 0,
@@ -271,9 +271,9 @@
           "Type": "BYTE_ARRAY",
           "LogicalType": "logicaltype=VARIANT",
           "Encodings": [
+            "PLAIN",
             "RLE_DICTIONARY",
-            "RLE",
-            "PLAIN"
+            "RLE"
           ],
           "CompressedSize": 382,
           "UncompressedSize": 407,
@@ -367,8 +367,8 @@
           "ConvertedType": "convertedtype=INT_16",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true",
           "Encodings": [
-            "RLE",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
           "CompressedSize": 228,
           "UncompressedSize": 220,
@@ -499,8 +499,8 @@
           "ConvertedType": "convertedtype=DATE",
           "LogicalType": "logicaltype=DATE",
           "Encodings": [
-            "RLE",
-            "DELTA_BINARY_PACKED"
+            "DELTA_BINARY_PACKED",
+            "RLE"
           ],
           "CompressedSize": 230,
           "UncompressedSize": 222,
@@ -681,9 +681,9 @@
           "Type": "INT64",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
-            "RLE",
             "PLAIN",
-            "RLE_DICTIONARY"
+            "RLE_DICTIONARY",
+            "RLE"
           ],
           "CompressedSize": 370,
           "UncompressedSize": 392,
@@ -809,9 +809,9 @@
           "Type": "INT32",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
-            "RLE",
             "PLAIN",
-            "RLE_DICTIONARY"
+            "RLE_DICTIONARY",
+            "RLE"
           ],
           "CompressedSize": 293,
           "UncompressedSize": 283,
@@ -833,10 +833,10 @@
             "RLE_DICTIONARY",
             "RLE"
           ],
-          "CompressedSize": 407,
+          "CompressedSize": 413,
           "UncompressedSize": 422,
           "NumValues": 10,
-          "NullCount": 6,
+          "NullCount": 5,
           "MaxValue": 0.03,
           "MinValue": -0.44,
           "CompressionCodec": "SNAPPY"
@@ -852,10 +852,11 @@
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "RLE",
-            "PLAIN"
+            "PLAIN",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 582,
-          "UncompressedSize": 1047,
+          "CompressedSize": 575,
+          "UncompressedSize": 737,
           "NumValues": 46,
           "NullCount": 1,
           "MaxValue": "Composite-8",
@@ -870,11 +871,11 @@
           ],
           "Type": "INT32",
           "Encodings": [
-            "PLAIN",
+            "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 383,
-          "UncompressedSize": 437,
+          "CompressedSize": 373,
+          "UncompressedSize": 436,
           "NumValues": 46,
           "NullCount": 1,
           "MaxValue": 8,
@@ -894,7 +895,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 570,
+          "CompressedSize": 560,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -932,7 +933,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 576,
+          "CompressedSize": 573,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -953,11 +954,12 @@
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
-            "PLAIN",
-            "RLE"
+            "RLE_DICTIONARY",
+            "RLE",
+            "PLAIN"
           ],
-          "CompressedSize": 773,
-          "UncompressedSize": 2157,
+          "CompressedSize": 678,
+          "UncompressedSize": 1142,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -975,10 +977,10 @@
           ],
           "Type": "INT32",
           "Encodings": [
-            "PLAIN",
-            "RLE"
+            "RLE",
+            "BIT_PACKED"
           ],
-          "CompressedSize": 527,
+          "CompressedSize": 500,
           "UncompressedSize": 861,
           "NumValues": 130,
           "NullCount": 10,
@@ -1000,10 +1002,11 @@
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "PLAIN",
+            "RLE_DICTIONARY",
             "RLE"
           ],
-          "CompressedSize": 678,
-          "UncompressedSize": 2429,
+          "CompressedSize": 593,
+          "UncompressedSize": 782,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
@@ -1023,11 +1026,12 @@
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
-            "PLAIN",
-            "RLE"
+            "RLE_DICTIONARY",
+            "RLE",
+            "PLAIN"
           ],
-          "CompressedSize": 757,
-          "UncompressedSize": 2159,
+          "CompressedSize": 664,
+          "UncompressedSize": 1164,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -1045,11 +1049,11 @@
           ],
           "Type": "INT32",
           "Encodings": [
-            "PLAIN",
+            "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 513,
-          "UncompressedSize": 862,
+          "CompressedSize": 491,
+          "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
@@ -1070,10 +1074,11 @@
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
           "Encodings": [
             "PLAIN",
+            "RLE_DICTIONARY",
             "RLE"
           ],
-          "CompressedSize": 654,
-          "UncompressedSize": 2430,
+          "CompressedSize": 594,
+          "UncompressedSize": 789,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
