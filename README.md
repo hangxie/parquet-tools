@@ -171,9 +171,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.39.5
+v1.39.8
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.39.5
+v1.39.8
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -183,20 +183,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.39.5_amd64.deb
-Preparing to unpack parquet-tools_1.39.5_amd64.deb ...
-Unpacking parquet-tools (1.39.5) ...
-Setting up parquet-tools (1.39.5) ...
+$ sudo dpkg -i parquet-tools_1.39.8_amd64.deb
+Preparing to unpack parquet-tools_1.39.8_amd64.deb ...
+Unpacking parquet-tools (1.39.8) ...
+Setting up parquet-tools (1.39.8) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.39.5-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.39.8-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.39.5-1          ################################# [100%]
+   1:parquet-tools-1.39.8-1          ################################# [100%]
 ```
 
 ## Usage
@@ -762,7 +762,7 @@ For column chunks with dictionary encoding, you'll also see dictionary page info
 
 ```bash
 $ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0
-{"columnChunk":{"columnChunkIndex":0,"compressedSize":320,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":70,"dictionaryPageOffset":4,"encodings":["PLAIN","RLE_DICTIONARY","RLE"],"logicalType":"logicaltype=STRING","numValues":5,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"reebok","minValue":"adidas","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":220},"pages":[{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},{"index":1,"offset":70,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"adidas","nullCount":0}},{"index":2,"offset":155,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"reebok","minValue":"nike","nullCount":0}},{"index":3,"offset":240,"type":"DATA_PAGE","compressedSize":31,"uncompressedSize":6,"numValues":1,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"adidas","minValue":"adidas","nullCount":0}}]}
+{"columnChunk":{"columnChunkIndex":0,"compressedSize":320,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":70,"dictionaryPageOffset":4,"encodings":["PLAIN","RLE","RLE_DICTIONARY"],"logicalType":"logicaltype=STRING","numValues":5,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"reebok","minValue":"adidas","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":220},"pages":[{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},{"index":1,"offset":70,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"adidas","nullCount":0}},{"index":2,"offset":155,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"reebok","minValue":"nike","nullCount":0}},{"index":3,"offset":240,"type":"DATA_PAGE","compressedSize":31,"uncompressedSize":6,"numValues":1,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"adidas","minValue":"adidas","nullCount":0}}]}
 ```
 
 #### Inspect Page Level
@@ -844,7 +844,7 @@ You can set `--fail-on-int96` option to fail `meta` command for parquet files th
 
 ```bash
 $ parquet-tools meta testdata/int96-nil-min-max.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE_DICTIONARY","RLE"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["PLAIN","RLE"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE","RLE_DICTIONARY"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["PLAIN","RLE"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
 $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
@@ -870,7 +870,7 @@ JSON format schema can be used directly in parquet-go based golang program like 
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"}]}
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"}]}
 ```
 
 Schema will output converted type and logical type when they are present in the parquet file, however, default settings will be ignored to make output shorter, e.g.,
@@ -927,7 +927,7 @@ $ parquet-tools schema -f go testdata/map-composite-value.parquet
 parquet-tools: error: go struct does not support LIST as MAP value in Parquet_go_root.Scores
 
 $ parquet-tools schema testdata/map-composite-value.parquet
-{"Tag":"name=parquet_go_root","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=age, type=INT32"},{"Tag":"name=id, type=INT64"},{"Tag":"name=weight, type=FLOAT"},{"Tag":"name=sex, type=BOOLEAN"},{"Tag":"name=classes, type=LIST","Fields":[{"Tag":"name=element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]},{"Tag":"name=scores, type=MAP","Fields":[{"Tag":"name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=value, type=LIST","Fields":[{"Tag":"name=element, type=FLOAT"}]}]},{"Tag":"name=friends, type=LIST","Fields":[{"Tag":"name=element","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=id, type=INT64"}]}]},{"Tag":"name=teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=id, type=INT64"}]}]}
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=age, inname=Age, type=INT32, encoding=PLAIN"},{"Tag":"name=id, inname=Id, type=INT64, encoding=PLAIN"},{"Tag":"name=weight, inname=Weight, type=FLOAT, encoding=PLAIN"},{"Tag":"name=sex, inname=Sex, type=BOOLEAN, encoding=PLAIN"},{"Tag":"name=classes, inname=Classes, type=LIST","Fields":[{"Tag":"name=element, inname=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"}]},{"Tag":"name=scores, inname=Scores, type=MAP","Fields":[{"Tag":"name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=value, inname=Value, type=LIST","Fields":[{"Tag":"name=element, inname=Element, type=FLOAT, encoding=PLAIN"}]}]},{"Tag":"name=friends, inname=Friends, type=LIST","Fields":[{"Tag":"name=element, inname=Element","Fields":[{"Tag":"name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=id, inname=Id, type=INT64, encoding=PLAIN"}]}]},{"Tag":"name=teachers, inname=Teachers, repetitiontype=REPEATED","Fields":[{"Tag":"name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=id, inname=Id, type=INT64, encoding=PLAIN"}]}]}
 ```
 
 #### CSV Format
@@ -1220,7 +1220,7 @@ $ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
 
 ```bash
 $ parquet-tools version
-v1.39.5
+v1.39.8
 ```
 
 #### Print All Information
@@ -1229,8 +1229,8 @@ v1.39.5
 
 ```bash
 $ parquet-tools version -a
-v1.39.5
-2025-11-28T08:00:00Z
+v1.39.8
+2025-12-01T20:17:50Z
 Homebrew
 ```
 
@@ -1238,14 +1238,14 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.39.5","BuildTime":"2025-11-28T08:00:00Z"}
+{"Version":"v1.39.8","BuildTime":"2025-12-01T20:17:50Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.39.5"}
+{"Version":"v1.39.8"}
 ```
 
 ### Geo Data Type Support
