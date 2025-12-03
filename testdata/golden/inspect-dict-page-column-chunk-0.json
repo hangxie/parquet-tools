@@ -8,8 +8,8 @@
     "dictionaryPageOffset": 4,
     "encodings": [
       "PLAIN",
-      "RLE_DICTIONARY",
-      "RLE"
+      "RLE",
+      "RLE_DICTIONARY"
     ],
     "logicalType": "logicaltype=STRING",
     "numValues": 5,

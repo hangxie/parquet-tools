@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
@@ -260,6 +261,7 @@ func encodingToString(encodings []parquet.Encoding) []string {
 	for i := range encodings {
 		ret[i] = encodings[i].String()
 	}
+	sort.Strings(ret)
 	return ret
 }
 

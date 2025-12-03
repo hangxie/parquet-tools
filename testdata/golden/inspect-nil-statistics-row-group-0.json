@@ -5,10 +5,10 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
         "BIT_PACKED",
         "PLAIN",
         "PLAIN_DICTIONARY",
+        "RLE",
         "RLE_DICTIONARY"
       ],
       "index": 0,
@@ -29,9 +29,9 @@
       "compressedSize": 266,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
         "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 1,
       "numValues": 20,
@@ -45,9 +45,9 @@
       "compressedSize": 346,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
         "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 2,
       "numValues": 20,
@@ -61,9 +61,9 @@
       "compressedSize": 266,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
         "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 3,
       "numValues": 20,
@@ -77,9 +77,9 @@
       "compressedSize": 144,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
         "BIT_PACKED",
-        "PLAIN"
+        "PLAIN",
+        "RLE"
       ],
       "index": 4,
       "numValues": 20,
