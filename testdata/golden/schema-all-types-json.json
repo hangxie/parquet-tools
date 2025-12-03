@@ -140,10 +140,10 @@
       "Tag": "name=Map, inname=Map, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"
         },
         {
-          "Tag": "name=value, inname=Value, type=INT32, encoding=PLAIN"
+          "Tag": "name=value, inname=Value, type=INT32, encoding=BIT_PACKED"
         }
       ]
     },
@@ -171,10 +171,10 @@
               "Tag": "name=Map, inname=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+                  "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"
                 },
                 {
-                  "Tag": "name=value, inname=Value, type=INT32, encoding=PLAIN"
+                  "Tag": "name=value, inname=Value, type=INT32, encoding=BIT_PACKED"
                 }
               ]
             },
@@ -182,7 +182,7 @@
               "Tag": "name=List, inname=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN"
+                  "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=RLE_DICTIONARY"
                 }
               ]
             }
@@ -200,10 +200,10 @@
               "Tag": "name=Map, inname=Map, type=MAP",
               "Fields": [
                 {
-                  "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+                  "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"
                 },
                 {
-                  "Tag": "name=value, inname=Value, type=INT32, encoding=PLAIN"
+                  "Tag": "name=value, inname=Value, type=INT32, encoding=BIT_PACKED"
                 }
               ]
             },
@@ -211,7 +211,7 @@
               "Tag": "name=List, inname=List, type=LIST",
               "Fields": [
                 {
-                  "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN"
+                  "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=RLE_DICTIONARY"
                 }
               ]
             }
