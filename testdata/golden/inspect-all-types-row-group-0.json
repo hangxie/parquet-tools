@@ -168,8 +168,8 @@
       "convertedType": "convertedtype=ENUM",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 8,
       "logicalType": "logicaltype=ENUM",
@@ -306,8 +306,8 @@
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 14,
       "logicalType": "logicaltype=VARIANT",
@@ -329,8 +329,8 @@
       "convertedType": "length=10",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 15,
       "numValues": 10,
@@ -351,8 +351,8 @@
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 16,
       "logicalType": "logicaltype=STRING",
@@ -439,8 +439,8 @@
       "convertedType": "convertedtype=INT_32",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 20,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true",
@@ -590,8 +590,8 @@
       "compressedSize": 297,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
         "PLAIN",
+        "RLE",
         "RLE_DICTIONARY"
       ],
       "index": 27,
@@ -782,8 +782,8 @@
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 36,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
@@ -865,8 +865,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=18",
       "encodings": [
-        "RLE",
-        "DELTA_BINARY_PACKED"
+        "DELTA_BINARY_PACKED",
+        "RLE"
       ],
       "index": 40,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2",
@@ -931,8 +931,8 @@
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 43,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
@@ -954,8 +954,8 @@
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 44,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
@@ -976,8 +976,8 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE",
         "PLAIN",
+        "RLE",
         "RLE_DICTIONARY"
       ],
       "index": 45,
@@ -1091,9 +1091,9 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE_DICTIONARY",
+        "PLAIN",
         "RLE",
-        "PLAIN"
+        "RLE_DICTIONARY"
       ],
       "index": 50,
       "logicalType": "logicaltype=STRING",
@@ -1118,8 +1118,8 @@
       "compressedSize": 500,
       "compressionCodec": "SNAPPY",
       "encodings": [
-        "RLE",
-        "BIT_PACKED"
+        "BIT_PACKED",
+        "RLE"
       ],
       "index": 51,
       "numValues": 130,
@@ -1145,8 +1145,8 @@
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 52,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
@@ -1172,9 +1172,9 @@
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
-        "RLE_DICTIONARY",
+        "PLAIN",
         "RLE",
-        "PLAIN"
+        "RLE_DICTIONARY"
       ],
       "index": 53,
       "logicalType": "logicaltype=STRING",
@@ -1226,8 +1226,8 @@
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
         "PLAIN",
-        "RLE_DICTIONARY",
-        "RLE"
+        "RLE",
+        "RLE_DICTIONARY"
       ],
       "index": 55,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",

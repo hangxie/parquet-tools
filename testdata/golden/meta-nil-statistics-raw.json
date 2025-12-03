@@ -13,10 +13,10 @@
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
-            "RLE",
             "BIT_PACKED",
             "PLAIN",
             "PLAIN_DICTIONARY",
+            "RLE",
             "RLE_DICTIONARY"
           ],
           "CompressedSize": 518,
@@ -33,9 +33,9 @@
           ],
           "Type": "INT32",
           "Encodings": [
-            "RLE",
             "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
           "CompressedSize": 266,
           "UncompressedSize": 260,
@@ -48,9 +48,9 @@
           ],
           "Type": "INT64",
           "Encodings": [
-            "RLE",
             "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
           "CompressedSize": 346,
           "UncompressedSize": 404,
@@ -63,9 +63,9 @@
           ],
           "Type": "FLOAT",
           "Encodings": [
-            "RLE",
             "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
           "CompressedSize": 266,
           "UncompressedSize": 260,
@@ -78,9 +78,9 @@
           ],
           "Type": "BOOLEAN",
           "Encodings": [
-            "RLE",
             "BIT_PACKED",
-            "PLAIN"
+            "PLAIN",
+            "RLE"
           ],
           "CompressedSize": 144,
           "UncompressedSize": 136,
