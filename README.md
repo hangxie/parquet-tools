@@ -556,7 +556,7 @@ $ parquet-tools cat --skip 20 testdata/good.parquet
 #### CSV/TSV Format
 
 > [!WARNING]
-> There is no standard for CSV and TSV format, `parquet-tools` utilizes Go's `encoding/csv` module to maximize compatibility, however, there is no guarantee that output can be interpreted by other utilities, especially if they are from other programming languages.
+> `parquet-tools` uses Go's encoding/csv library for CSV output. Since this library is [not fully compliant](https://pkg.go.dev/encoding/csv#pkg-overview) with the [RFC 4180](https://datatracker.ietf.org/doc/html/rfc4180) CSV standard, there's no guarantee that the resulting CSV file will be correctly interpreted by other data analysis tools, especially those written in different programming languages. There is no wide-accepted TSV standard so it may have more compatibility problems.
 
 ```bash
 $ parquet-tools cat -f csv testdata/good.parquet
