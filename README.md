@@ -650,7 +650,7 @@ $ parquet-tools cat testdata/good.parquet
 [{"shoe_brand":"nike","shoe_name":"air_griffey"},{"shoe_brand":"fila","shoe_name":"grant_hill_2"},{"shoe_brand":"steph_curry","shoe_name":"curry7"}]
 ```
 
-`cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) format by specifying `--format jsonl`, allows readers of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
+`cat` also supports [line delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON_2) by specifying `--format jsonl`, allows readers of the output to process in a streaming manner, which will greatly reduce the memory footprint. Note that there is always a newline by end of the output.
 
 > [!TIP]
 > If you want to filter data, use JSONL format output and pipe to `jq`.
