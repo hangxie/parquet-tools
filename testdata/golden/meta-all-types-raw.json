@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 23603,
+      "TotalByteSize": 23643,
       "Columns": [
         {
           "PathInSchema": [
@@ -105,8 +105,8 @@
           "UncompressedSize": 168,
           "NumValues": 10,
           "NullCount": 0,
-          "MaxValue": 9.5,
-          "MinValue": 0.5,
+          "MaxValue": 2.140625,
+          "MinValue": -2.140625,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -833,7 +833,7 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 413,
+          "CompressedSize": 411,
           "UncompressedSize": 422,
           "NumValues": 10,
           "NullCount": 5,
@@ -855,7 +855,7 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 575,
+          "CompressedSize": 565,
           "UncompressedSize": 737,
           "NumValues": 46,
           "NullCount": 1,
@@ -874,7 +874,7 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 373,
+          "CompressedSize": 370,
           "UncompressedSize": 436,
           "NumValues": 46,
           "NullCount": 1,
@@ -933,7 +933,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 573,
+          "CompressedSize": 569,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -958,8 +958,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 678,
-          "UncompressedSize": 1142,
+          "CompressedSize": 698,
+          "UncompressedSize": 1169,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -980,8 +980,8 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 500,
-          "UncompressedSize": 861,
+          "CompressedSize": 519,
+          "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
@@ -1005,8 +1005,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 593,
-          "UncompressedSize": 782,
+          "CompressedSize": 615,
+          "UncompressedSize": 789,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
@@ -1030,8 +1030,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 664,
-          "UncompressedSize": 1164,
+          "CompressedSize": 659,
+          "UncompressedSize": 1169,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -1052,8 +1052,8 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 491,
-          "UncompressedSize": 863,
+          "CompressedSize": 495,
+          "UncompressedSize": 862,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,

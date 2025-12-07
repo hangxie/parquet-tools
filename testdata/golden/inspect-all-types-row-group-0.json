@@ -115,8 +115,8 @@
         "Float16Val"
       ],
       "statistics": {
-        "maxValue": 9.5,
-        "minValue": 0.5,
+        "maxValue": 2.140625,
+        "minValue": -2.140625,
         "nullCount": 0
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -949,7 +949,7 @@
       "uncompressedSize": 283
     },
     {
-      "compressedSize": 413,
+      "compressedSize": 411,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
@@ -972,7 +972,7 @@
       "uncompressedSize": 422
     },
     {
-      "compressedSize": 575,
+      "compressedSize": 565,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -997,7 +997,7 @@
       "uncompressedSize": 737
     },
     {
-      "compressedSize": 373,
+      "compressedSize": 370,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "BIT_PACKED",
@@ -1063,7 +1063,7 @@
       "uncompressedSize": 322
     },
     {
-      "compressedSize": 573,
+      "compressedSize": 569,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1087,7 +1087,7 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 678,
+      "compressedSize": 698,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1112,10 +1112,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1142
+      "uncompressedSize": 1169
     },
     {
-      "compressedSize": 500,
+      "compressedSize": 519,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "BIT_PACKED",
@@ -1137,10 +1137,10 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 861
+      "uncompressedSize": 863
     },
     {
-      "compressedSize": 593,
+      "compressedSize": 615,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
@@ -1165,10 +1165,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 782
+      "uncompressedSize": 789
     },
     {
-      "compressedSize": 664,
+      "compressedSize": 659,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1193,10 +1193,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1164
+      "uncompressedSize": 1169
     },
     {
-      "compressedSize": 491,
+      "compressedSize": 495,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "BIT_PACKED",
@@ -1218,7 +1218,7 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 863
+      "uncompressedSize": 862
     },
     {
       "compressedSize": 594,
@@ -1253,6 +1253,6 @@
     "index": 0,
     "numColumns": 56,
     "numRows": 10,
-    "totalByteSize": 23603
+    "totalByteSize": 23643
   }
 }
