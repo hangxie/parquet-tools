@@ -55,5 +55,5 @@ jobs:
           docker run -dq --rm --name hadoop -p 9000:9000 -p 9866:9866 hangxie/hadoop-all-in-one && sleep 10
           docker exec hadoop hdfs dfs -mkdir /temp && sleep 3
           ./build/parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
-          test "$(./build/parquet-tools row-count hdfs://localhost:9000/temp/good.parquet)" == '7'
+          test "$(./build/parquet-tools row-count hdfs://localhost:9000/temp/good.parquet)" == '10'
           docker stop hadoop
