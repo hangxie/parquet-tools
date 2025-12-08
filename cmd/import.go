@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -57,9 +56,6 @@ func (c ImportCmd) importCSV() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
-	}
-	if matched, _ := regexp.Match(`(?i)type\s*=\s*int96`, schemaData); matched {
-		return fmt.Errorf("import does not support INT96 type")
 	}
 
 	var schema []string
@@ -117,9 +113,6 @@ func (c ImportCmd) importJSON() error {
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
 	}
-	if matched, _ := regexp.Match(`(?i)type\s*=\s*int96`, schemaData); matched {
-		return fmt.Errorf("import does not support INT96 type")
-	}
 
 	jsonData, err := os.ReadFile(c.Source)
 	if err != nil {
@@ -157,9 +150,6 @@ func (c ImportCmd) importJSONL() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
-	}
-	if matched, _ := regexp.Match(`(?i)type\s*=\s*int96`, schemaData); matched {
-		return fmt.Errorf("import does not support INT96 type")
 	}
 
 	var dummy map[string]any

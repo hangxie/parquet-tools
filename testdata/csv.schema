@@ -1,5 +1,39 @@
-name=Id, type=INT64
-name=Name, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY
-name=Age, type=INT32
-name=Temperature, type=FLOAT
-name=Vaccinated, type=BOOLEAN
+name=Bool, type=BOOLEAN, encoding=BIT_PACKED
+name=ByteArray, type=BYTE_ARRAY, encoding=DELTA_LENGTH_BYTE_ARRAY
+name=Date, type=INT32, convertedtype=DATE, encoding=DELTA_BINARY_PACKED
+name=Date2, type=INT32, logicaltype=DATE, encoding=RLE_DICTIONARY
+name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, encoding=DELTA_BINARY_PACKED
+name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, encoding=DELTA_BINARY_PACKED
+name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, encoding=PLAIN
+name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, encoding=DELTA_LENGTH_BYTE_ARRAY
+name=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT
+name=Enum, type=BYTE_ARRAY, convertedtype=ENUM, encoding=RLE_DICTIONARY
+name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY
+name=Float, type=FLOAT, encoding=BYTE_STREAM_SPLIT
+name=Float16, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16, encoding=PLAIN
+name=Int_16, type=INT32, convertedtype=INT_16, encoding=PLAIN
+name=Int_32, type=INT32, convertedtype=INT_32, encoding=RLE_DICTIONARY
+name=Int_64, type=INT64, convertedtype=INT_64, encoding=RLE
+name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8, encoding=BIT_PACKED
+name=Int32, type=INT32, encoding=DELTA_BINARY_PACKED
+name=Int64, type=INT64, encoding=DELTA_BINARY_PACKED
+name=Int96, type=INT96
+name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN
+name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, encoding=DELTA_BINARY_PACKED
+name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE
+name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, encoding=DELTA_BINARY_PACKED
+name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE
+name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED
+name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, encoding=DELTA_BINARY_PACKED
+name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY
+name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, encoding=DELTA_BINARY_PACKED
+name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE
+name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE
+name=Uint_16, type=INT32, convertedtype=UINT_16, encoding=DELTA_BINARY_PACKED
+name=Uint_32, type=INT32, convertedtype=UINT_32
+name=Uint_64, type=INT64, convertedtype=UINT_64, encoding=RLE
+name=Uint_8, type=INT32, convertedtype=UINT_8, encoding=BIT_PACKED
+name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN
+name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=RLE_DICTIONARY
+name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN
+name=decimal5, type=INT32, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY

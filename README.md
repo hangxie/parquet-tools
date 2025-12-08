@@ -689,15 +689,28 @@ Each source data file format has its own dedicated schema format:
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/json.schema).
 * JSONL: use the same schema as JSON format.
 
-> [!WARNING]
-> You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149.
+Values in CSV and JSON/JSONL are expected to be human-readable format, same as cat command's output, following their converted or logical types:
+
+| Type                               | Format                | Examples                               |
+|------------------------------------|-----------------------|----------------------------------------|
+| DATE                               | YYYY-MM-DD            | "2024-01-15"                           |
+| TIME (MILLIS/MICROS/NANOS)         | HH:MM:SS.nnnnnnnnn    | "10:30:45.123456789"                   |
+| TIMESTAMP (MILLIS/MICROS/NANOS)    | RFC3339Nano           | "2024-01-15T10:30:00.123456789Z"       |
+| INT96                              | RFC3339Nano           | "2024-01-15T10:30:00.123456789Z"       |
+| INTERVAL                           | X mon Y day Z.zzz sec | "2 mon 15 day 7200.000 sec"            |
+| INT (8/16/32/64, signed/unsigned)  | Integer value         | 42, -128, 65535                        |
+| FLOAT / FLOAT16 / DOUBLE / DECIMAL | Float value           | 3.14, 2.718281828                      |
+| UTF8 / STRING / ENUM               | Plain string          | "hello world"                          |
+| UUID                               | Standard UUID         | "550e8400-e29b-41d4-a716-446655440000" |
+| BYTE_ARRAY / FIXED_LEN_BYTE_ARRAY  | Base64 encoded        | "SGVsbG8gV29ybGQ="                     |
+| BOOLEAN                            | true / false          | true, false                            |
 
 #### Import from CSV
 
 ```bash
 $ parquet-tools import -f csv -s testdata/csv.source -m testdata/csv.schema /tmp/csv.parquet
 $ parquet-tools row-count /tmp/csv.parquet
-7
+10
 ```
 
 #### Import from JSON
@@ -718,7 +731,7 @@ JSONL is [line-delimited JSON streaming format](https://en.wikipedia.org/wiki/JS
 ```bash
 $ parquet-tools import -f jsonl -s testdata/jsonl.source -m testdata/jsonl.schema /tmp/jsonl.parquet
 $ parquet-tools row-count /tmp/jsonl.parquet
-7
+10
 ```
 
 ### inspect Command

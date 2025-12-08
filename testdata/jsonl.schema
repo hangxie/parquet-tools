@@ -1,20 +1,122 @@
 {
-  "Tag": "name=parquet-go-root",
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=Id, type=INT64"
+      "Tag": "name=Bool, inname=Bool, type=BOOLEAN, encoding=BIT_PACKED"
     },
     {
-      "Tag": "name=Name, type=BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"
+      "Tag": "name=ByteArray, inname=ByteArray, type=BYTE_ARRAY, encoding=DELTA_LENGTH_BYTE_ARRAY"
     },
     {
-      "Tag": "name=Age, type=INT32"
+      "Tag": "name=Date, inname=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Temperature, type=FLOAT"
+      "Tag": "name=Date2, inname=Date2, type=INT32, logicaltype=DATE, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Vaccinated, type=BOOLEAN"
+      "Tag": "name=Decimal1, inname=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=Decimal2, inname=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=Decimal3, inname=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=Decimal4, inname=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2, encoding=DELTA_LENGTH_BYTE_ARRAY"
+    },
+    {
+      "Tag": "name=Double, inname=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT"
+    },
+    {
+      "Tag": "name=Enum, inname=Enum, type=BYTE_ARRAY, convertedtype=ENUM, logicaltype=ENUM, encoding=RLE_DICTIONARY"
+    },
+    {
+      "Tag": "name=FixedLenByteArray, inname=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY"
+    },
+    {
+      "Tag": "name=Float, inname=Float, type=FLOAT, encoding=BYTE_STREAM_SPLIT"
+    },
+    {
+      "Tag": "name=Float16, inname=Float16, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=Int_16, inname=Int_16, type=INT32, convertedtype=INT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=Int_32, inname=Int_32, type=INT32, convertedtype=INT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true, encoding=RLE_DICTIONARY"
+    },
+    {
+      "Tag": "name=Int_64, inname=Int_64, type=INT64, convertedtype=INT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true, encoding=RLE"
+    },
+    {
+      "Tag": "name=Int_8, inname=Int_8, type=INT32, convertedtype=INT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true, encoding=BIT_PACKED"
+    },
+    {
+      "Tag": "name=Int32, inname=Int32, type=INT32, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=Int64, inname=Int64, type=INT64, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=Int96, inname=Int96, type=INT96, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=Interval, inname=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=TimeMicros, inname=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=TimeMicros2, inname=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE"
+    },
+    {
+      "Tag": "name=TimeMillis, inname=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=TimeMillis2, inname=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
+    },
+    {
+      "Tag": "name=TimeNanos2, inname=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=TimestampMicros, inname=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=TimestampMicros2, inname=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY"
+    },
+    {
+      "Tag": "name=TimestampMillis, inname=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=TimestampMillis2, inname=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
+    },
+    {
+      "Tag": "name=TimestampNanos2, inname=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE"
+    },
+    {
+      "Tag": "name=Uint_16, inname=Uint_16, type=INT32, convertedtype=UINT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false, encoding=DELTA_BINARY_PACKED"
+    },
+    {
+      "Tag": "name=Uint_32, inname=Uint_32, type=INT32, convertedtype=UINT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=Uint_64, inname=Uint_64, type=INT64, convertedtype=UINT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false, encoding=RLE"
+    },
+    {
+      "Tag": "name=Uint_8, inname=Uint_8, type=INT32, convertedtype=UINT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false, encoding=BIT_PACKED"
+    },
+    {
+      "Tag": "name=Utf8_2, inname=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=Utf8, inname=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"
+    },
+    {
+      "Tag": "name=Uuid, inname=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN"
+    },
+    {
+      "Tag": "name=decimal5, inname=Decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY"
     }
   ]
 }
