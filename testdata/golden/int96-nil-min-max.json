@@ -14,8 +14,8 @@
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "PLAIN",
-            "RLE_DICTIONARY",
-            "RLE"
+            "RLE",
+            "RLE_DICTIONARY"
           ],
           "CompressedSize": 381,
           "UncompressedSize": 380,

@@ -38,10 +38,10 @@
       "Tag": "name=Bson, inname=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN"
     },
     {
-      "Tag": "name=Json2, inname=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=PLAIN"
+      "Tag": "name=Json2, inname=Json2, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=PLAIN"
     },
     {
-      "Tag": "name=Bson2, inname=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY"
+      "Tag": "name=Bson2, inname=Bson2, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY"
     },
     {
       "Tag": "name=Variant, inname=Variant, type=BYTE_ARRAY, logicaltype=VARIANT, encoding=RLE_DICTIONARY"
@@ -53,7 +53,7 @@
       "Tag": "name=Utf8, inname=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"
     },
     {
-      "Tag": "name=Utf8_2, inname=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN"
+      "Tag": "name=Utf8_2, inname=Utf8_2, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
     },
     {
       "Tag": "name=Int_8, inname=Int_8, type=INT32, convertedtype=INT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true, encoding=BIT_PACKED"
@@ -83,19 +83,19 @@
       "Tag": "name=Date, inname=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=Date2, inname=Date2, type=INT32, logicaltype=DATE, encoding=RLE_DICTIONARY"
+      "Tag": "name=Date2, inname=Date2, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=RLE_DICTIONARY"
     },
     {
       "Tag": "name=TimeMillis, inname=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimeMillis2, inname=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
+      "Tag": "name=TimeMillis2, inname=TimeMillis2, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
     },
     {
       "Tag": "name=TimeMicros, inname=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimeMicros2, inname=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE"
+      "Tag": "name=TimeMicros2, inname=TimeMicros2, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE"
     },
     {
       "Tag": "name=TimeNanos2, inname=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED"
@@ -104,13 +104,13 @@
       "Tag": "name=TimestampMillis, inname=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimestampMillis2, inname=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
+      "Tag": "name=TimestampMillis2, inname=TimestampMillis2, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"
     },
     {
       "Tag": "name=TimestampMicros, inname=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"
     },
     {
-      "Tag": "name=TimestampMicros2, inname=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY"
+      "Tag": "name=TimestampMicros2, inname=TimestampMicros2, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY"
     },
     {
       "Tag": "name=TimestampNanos2, inname=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE"
@@ -131,7 +131,7 @@
       "Tag": "name=Decimal4, inname=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2, encoding=DELTA_LENGTH_BYTE_ARRAY"
     },
     {
-      "Tag": "name=decimal5, inname=Decimal5, type=INT32, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY"
+      "Tag": "name=decimal5, inname=Decimal5, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY"
     },
     {
       "Tag": "name=DecimalPointer, inname=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY"

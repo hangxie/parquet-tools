@@ -258,6 +258,7 @@
     {
       "compressedSize": 325,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=JSON",
       "encodings": [
         "PLAIN",
         "RLE"
@@ -279,6 +280,7 @@
     {
       "compressedSize": 499,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=BSON",
       "encodings": [
         "DELTA_BYTE_ARRAY",
         "RLE"
@@ -371,6 +373,7 @@
     {
       "compressedSize": 324,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
         "RLE"
@@ -589,6 +592,7 @@
     {
       "compressedSize": 297,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=DATE",
       "encodings": [
         "PLAIN",
         "RLE",
@@ -633,6 +637,7 @@
     {
       "compressedSize": 254,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=TIME_MILLIS",
       "encodings": [
         "RLE"
       ],
@@ -675,6 +680,7 @@
     {
       "compressedSize": 358,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=TIME_MICROS",
       "encodings": [
         "RLE"
       ],
@@ -738,6 +744,7 @@
     {
       "compressedSize": 358,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=TIMESTAMP_MILLIS",
       "encodings": [
         "RLE"
       ],
@@ -780,6 +787,7 @@
     {
       "compressedSize": 370,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=TIMESTAMP_MICROS",
       "encodings": [
         "PLAIN",
         "RLE",
@@ -929,6 +937,7 @@
     {
       "compressedSize": 293,
       "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=DECIMAL, scale=2, precision=9",
       "encodings": [
         "PLAIN",
         "RLE",
@@ -949,7 +958,7 @@
       "uncompressedSize": 283
     },
     {
-      "compressedSize": 411,
+      "compressedSize": 407,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
@@ -972,7 +981,7 @@
       "uncompressedSize": 422
     },
     {
-      "compressedSize": 565,
+      "compressedSize": 566,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -994,10 +1003,10 @@
         "nullCount": 1
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 737
+      "uncompressedSize": 742
     },
     {
-      "compressedSize": 370,
+      "compressedSize": 376,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "BIT_PACKED",
@@ -1063,7 +1072,7 @@
       "uncompressedSize": 322
     },
     {
-      "compressedSize": 569,
+      "compressedSize": 571,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1087,7 +1096,7 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 698,
+      "compressedSize": 679,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1112,10 +1121,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1169
+      "uncompressedSize": 1177
     },
     {
-      "compressedSize": 519,
+      "compressedSize": 515,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "BIT_PACKED",
@@ -1137,10 +1146,10 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 863
+      "uncompressedSize": 861
     },
     {
-      "compressedSize": 615,
+      "compressedSize": 632,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
@@ -1165,10 +1174,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 789
+      "uncompressedSize": 794
     },
     {
-      "compressedSize": 659,
+      "compressedSize": 663,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1193,10 +1202,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1169
+      "uncompressedSize": 1159
     },
     {
-      "compressedSize": 495,
+      "compressedSize": 489,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "BIT_PACKED",
@@ -1218,7 +1227,7 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 862
+      "uncompressedSize": 863
     },
     {
       "compressedSize": 594,
@@ -1253,6 +1262,6 @@
     "index": 0,
     "numColumns": 56,
     "numRows": 10,
-    "totalByteSize": 23643
+    "totalByteSize": 23650
   }
 }
