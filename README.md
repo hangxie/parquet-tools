@@ -1303,7 +1303,7 @@ $ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
 
 ```bash
 $ parquet-tools meta testdata/geospatial.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":1774,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["PLAIN","RLE"],"CompressedSize":429,"UncompressedSize":974,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["PLAIN","RLE"],"CompressedSize":397,"UncompressedSize":800,"NumValues":10,"CompressionCodec":"SNAPPY"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":1774,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["PLAIN","RLE"],"CompressedSize":422,"UncompressedSize":974,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["PLAIN","RLE"],"CompressedSize":393,"UncompressedSize":800,"NumValues":10,"CompressionCodec":"SNAPPY"}]}]}
 ```
 
 ## Credit
