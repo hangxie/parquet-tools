@@ -15,7 +15,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 429,
+          "CompressedSize": 422,
           "UncompressedSize": 974,
           "NumValues": 10,
           "NullCount": 0,
@@ -39,7 +39,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 397,
+          "CompressedSize": 393,
           "UncompressedSize": 800,
           "NumValues": 10,
           "CompressionCodec": "SNAPPY"

@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 23643,
+      "TotalByteSize": 23650,
       "Columns": [
         {
           "PathInSchema": [
@@ -229,6 +229,7 @@
             "Json2"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=JSON",
           "LogicalType": "logicaltype=JSON",
           "Encodings": [
             "PLAIN",
@@ -247,6 +248,7 @@
             "Bson2"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=BSON",
           "LogicalType": "logicaltype=BSON",
           "Encodings": [
             "DELTA_BYTE_ARRAY",
@@ -327,6 +329,7 @@
             "Utf8_2"
           ],
           "Type": "BYTE_ARRAY",
+          "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
           "Encodings": [
             "PLAIN",
@@ -515,6 +518,7 @@
             "Date2"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DATE",
           "LogicalType": "logicaltype=DATE",
           "Encodings": [
             "PLAIN",
@@ -553,6 +557,7 @@
             "TimeMillis2"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=TIME_MILLIS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
             "RLE"
@@ -589,6 +594,7 @@
             "TimeMicros2"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=TIME_MICROS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
             "RLE"
@@ -643,6 +649,7 @@
             "TimestampMillis2"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=TIMESTAMP_MILLIS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
             "RLE"
@@ -679,6 +686,7 @@
             "TimestampMicros2"
           ],
           "Type": "INT64",
+          "ConvertedType": "convertedtype=TIMESTAMP_MICROS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
             "PLAIN",
@@ -807,6 +815,7 @@
             "decimal5"
           ],
           "Type": "INT32",
+          "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
           "Encodings": [
             "PLAIN",
@@ -833,7 +842,7 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 411,
+          "CompressedSize": 407,
           "UncompressedSize": 422,
           "NumValues": 10,
           "NullCount": 5,
@@ -855,8 +864,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 565,
-          "UncompressedSize": 737,
+          "CompressedSize": 566,
+          "UncompressedSize": 742,
           "NumValues": 46,
           "NullCount": 1,
           "MaxValue": "Composite-8",
@@ -874,7 +883,7 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 370,
+          "CompressedSize": 376,
           "UncompressedSize": 436,
           "NumValues": 46,
           "NullCount": 1,
@@ -933,7 +942,7 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 569,
+          "CompressedSize": 571,
           "UncompressedSize": 1047,
           "NumValues": 46,
           "NullCount": 1,
@@ -958,8 +967,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 698,
-          "UncompressedSize": 1169,
+          "CompressedSize": 679,
+          "UncompressedSize": 1177,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -980,8 +989,8 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 519,
-          "UncompressedSize": 863,
+          "CompressedSize": 515,
+          "UncompressedSize": 861,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
@@ -1005,8 +1014,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 615,
-          "UncompressedSize": 789,
+          "CompressedSize": 632,
+          "UncompressedSize": 794,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
@@ -1030,8 +1039,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 659,
-          "UncompressedSize": 1169,
+          "CompressedSize": 663,
+          "UncompressedSize": 1159,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -1052,8 +1061,8 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 495,
-          "UncompressedSize": 862,
+          "CompressedSize": 489,
+          "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,

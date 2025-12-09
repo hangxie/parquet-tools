@@ -1,7 +1,7 @@
 {
   "columnChunks": [
     {
-      "compressedSize": 429,
+      "compressedSize": 422,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
@@ -20,7 +20,7 @@
       "uncompressedSize": 974
     },
     {
-      "compressedSize": 397,
+      "compressedSize": 393,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
