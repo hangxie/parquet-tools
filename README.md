@@ -840,8 +840,10 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 
 `meta` command shows meta data of every row group in a parquet file.
 
-> [!NOTE]
+> [!TIP]
 > `PathInSchema` uses field name from parquet file, same as `cat` command.
+
+Use `--no-page-encoding` to skip reading page encoding information. This can speed up the command for remote files as it avoids reading page headers for each column.
 
 #### Show Meta Data
 
@@ -899,15 +901,41 @@ The schema command now includes the `encoding` tag which shows the encoding used
 > [!NOTE]
 > If you need to verify encodings for each column across different row groups, use the [`inspect` command](#inspect-command) which provides detailed encoding information at the row group and page level.
 
+Use `--show-compression-codec` to include the `compression` tag in the schema output, showing the compression codec used for each column (e.g., SNAPPY, GZIP, ZSTD). This option works with both JSON and Go struct formats. Default is not to show compression codec so JSON schema and Go struct can be used by codes that utilize old version of parquet-go codes.
+
+```bash
+$ parquet-tools schema --show-compression-codec testdata/good.parquet
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"}]}
+
+$ parquet-tools schema --format go --show-compression-codec testdata/good.parquet
+type Parquet_go_root struct {
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
+}
+```
+
+Use `--no-page-encoding` to skip reading page encoding information. This can significantly speed up the command for remote files (S3, GCS, HTTP) as it avoids reading page headers. When this flag is set, the `encoding` tag will not be included in the output. This option works with both JSON and Go struct formats.
+
+```bash
+$ parquet-tools schema --no-page-encoding testdata/good.parquet
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]}
+
+$ parquet-tools schema --format go --no-page-encoding testdata/good.parquet
+type Parquet_go_root struct {
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+}
+```
+
 Schema does not output `omitstats` tag as there is no reliable way to determine it.
 
 #### Raw Format
 
-Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format.
+Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format. The `--no-page-encoding` and `--show-compression-codec` options also apply to raw format output.
 
 ```bash
 $ parquet-tools schema --format raw testdata/good.parquet
-{"repetition_type":"REQUIRED","name":"parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}}}]}
+{"repetition_type":"REQUIRED","name":"parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}},"encoding":"PLAIN"},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}},"encoding":"PLAIN"}]}
 ```
 
 #### Go Struct Format
