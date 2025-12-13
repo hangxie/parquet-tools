@@ -1,10 +1,10 @@
 {
   "columnChunk": {
     "columnChunkIndex": 38,
-    "compressedSize": 143,
-    "compressionCodec": "SNAPPY",
+    "compressedSize": 304,
+    "compressionCodec": "GZIP",
     "convertedType": "convertedtype=INTERVAL, length=12",
-    "dataPageOffset": 11911,
+    "dataPageOffset": 12942,
     "encodings": [
       "PLAIN",
       "RLE"
@@ -23,9 +23,9 @@
   "pages": [
     {
       "index": 0,
-      "offset": 11911,
+      "offset": 12942,
       "type": "DATA_PAGE",
-      "compressedSize": 13,
+      "compressedSize": 61,
       "uncompressedSize": 36,
       "numValues": 3,
       "encoding": "PLAIN",
@@ -37,9 +37,9 @@
     },
     {
       "index": 1,
-      "offset": 11945,
+      "offset": 13024,
       "type": "DATA_PAGE",
-      "compressedSize": 16,
+      "compressedSize": 61,
       "uncompressedSize": 36,
       "numValues": 3,
       "encoding": "PLAIN",
@@ -51,9 +51,9 @@
     },
     {
       "index": 2,
-      "offset": 11982,
+      "offset": 13106,
       "type": "DATA_PAGE",
-      "compressedSize": 16,
+      "compressedSize": 61,
       "uncompressedSize": 36,
       "numValues": 3,
       "encoding": "PLAIN",
@@ -65,9 +65,9 @@
     },
     {
       "index": 3,
-      "offset": 12019,
+      "offset": 13188,
       "type": "DATA_PAGE",
-      "compressedSize": 14,
+      "compressedSize": 37,
       "uncompressedSize": 12,
       "numValues": 1,
       "encoding": "PLAIN",
