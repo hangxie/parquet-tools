@@ -15,14 +15,37 @@ import (
 )
 
 func TestNewSchemaTree(t *testing.T) {
+	verifySchemaNode := func(t *testing.T, schemaRoot *SchemaNode, checkEncodings, checkNoEncodings, checkCompressionCodec, checkNoCompressionCodec bool) {
+		t.Helper()
+		for _, child := range schemaRoot.Children {
+			if child.Type != nil && checkEncodings {
+				require.NotEmpty(t, child.Encoding, "Encoding should be set for leaf node %s", child.Name)
+			}
+			if child.Type != nil && checkNoCompressionCodec {
+				require.Empty(t, child.CompressionCodec, "CompressionCodec should not be set by default")
+			}
+		}
+		for path, node := range schemaRoot.GetPathMap() {
+			if node.Type != nil && checkNoEncodings {
+				require.Empty(t, node.Encoding, "Encoding should not be set for %s", path)
+			}
+			if node.Type != nil && checkCompressionCodec {
+				require.NotEmpty(t, node.CompressionCodec, "CompressionCodec should be set for %s", path)
+			}
+		}
+	}
+
 	testCases := []struct {
-		name             string
-		uri              string
-		option           SchemaOption
-		goldenFile       string
-		errMsg           string
-		checkEncodings   bool
-		expectedChildren int
+		name                    string
+		uri                     string
+		option                  SchemaOption
+		goldenFile              string
+		errMsg                  string
+		checkEncodings          bool
+		checkNoEncodings        bool
+		checkCompressionCodec   bool
+		checkNoCompressionCodec bool
+		expectedChildren        int
 	}{
 		{
 			name:   "fail on int96",
@@ -42,6 +65,34 @@ func TestNewSchemaTree(t *testing.T) {
 			option:           SchemaOption{},
 			checkEncodings:   true,
 			expectedChildren: 2,
+		},
+		{
+			name:             "no-page-encoding",
+			uri:              "../testdata/good.parquet",
+			option:           SchemaOption{NoPageEncoding: true},
+			checkNoEncodings: true,
+			expectedChildren: 2,
+		},
+		{
+			name:                  "show-compression-codec",
+			uri:                   "../testdata/good.parquet",
+			option:                SchemaOption{ShowCompressionCodec: true},
+			checkCompressionCodec: true,
+			expectedChildren:      2,
+		},
+		{
+			name:                    "compression-codec-not-set-by-default",
+			uri:                     "../testdata/good.parquet",
+			option:                  SchemaOption{},
+			checkNoCompressionCodec: true,
+			expectedChildren:        2,
+		},
+		{
+			name:                  "both-options",
+			uri:                   "../testdata/all-types.parquet",
+			option:                SchemaOption{NoPageEncoding: true, ShowCompressionCodec: true},
+			checkNoEncodings:      true,
+			checkCompressionCodec: true,
 		},
 	}
 
@@ -70,15 +121,12 @@ func TestNewSchemaTree(t *testing.T) {
 				require.Equal(t, strings.TrimRight(string(expected), "\n"), string(actual))
 			}
 
-			if tc.checkEncodings {
+			if tc.expectedChildren > 0 {
 				require.NotNil(t, schemaRoot.Children)
 				require.Len(t, schemaRoot.Children, tc.expectedChildren)
-				for _, child := range schemaRoot.Children {
-					if child.Type != nil {
-						require.NotEmpty(t, child.Encoding, "Encoding should be set for leaf node %s", child.Name)
-					}
-				}
 			}
+
+			verifySchemaNode(t, schemaRoot, tc.checkEncodings, tc.checkNoEncodings, tc.checkCompressionCodec, tc.checkNoCompressionCodec)
 		})
 	}
 }
@@ -295,11 +343,13 @@ func TestOrderedTags(t *testing.T) {
 		"keyscale",
 		"keyprecision",
 		"keyencoding",
+		"keycompression",
 		"valuetype",
 		"valueconvertedtype",
 		"valuescale",
 		"valueprecision",
 		"valueencoding",
+		"valuecompression",
 		"convertedtype",
 		"scale",
 		"precision",
@@ -313,6 +363,7 @@ func TestOrderedTags(t *testing.T) {
 		"logicaltype.issigned",
 		"repetitiontype",
 		"encoding",
+		"compression",
 		"omitstats",
 	}
 
@@ -602,5 +653,83 @@ func TestCSVSchema(t *testing.T) {
 			expected, _ := os.ReadFile(tc.goldenFile)
 			require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
 		})
+	}
+}
+
+func TestBuildCompressionCodecMap(t *testing.T) {
+	testCases := []struct {
+		name         string
+		uri          string
+		expectEmpty  bool
+		expectedKeys []string
+	}{
+		{
+			name:        "empty row groups",
+			uri:         "../testdata/empty.parquet",
+			expectEmpty: true,
+		},
+		{
+			name:         "real file with data",
+			uri:          "../testdata/good.parquet",
+			expectEmpty:  false,
+			expectedKeys: []string{"Shoe_brand", "Shoe_name"},
+		},
+		{
+			name:        "all types file",
+			uri:         "../testdata/all-types.parquet",
+			expectEmpty: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := pio.ReadOption{}
+			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
+
+			result := buildCompressionCodecMap(pr)
+			require.NotNil(t, result)
+
+			if tc.expectEmpty {
+				require.Empty(t, result)
+			} else {
+				require.NotEmpty(t, result)
+				for _, codec := range result {
+					require.NotEmpty(t, codec)
+				}
+			}
+
+			for _, key := range tc.expectedKeys {
+				require.Contains(t, result, key)
+				require.NotEmpty(t, result[key])
+			}
+		})
+	}
+}
+
+func TestGetTagMapWithCompression(t *testing.T) {
+	option := pio.ReadOption{}
+	pr, err := pio.NewParquetFileReader("../testdata/good.parquet", option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{ShowCompressionCodec: true})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	// Find a leaf node and verify compression tag is in the tag map
+	for _, child := range schemaRoot.Children {
+		if child.Type != nil {
+			tagMap := child.GetTagMap()
+			_, hasCompression := tagMap["compression"]
+			require.True(t, hasCompression, "compression tag should be present in tag map")
+			require.NotEmpty(t, tagMap["compression"])
+			break
+		}
 	}
 }
