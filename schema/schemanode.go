@@ -24,11 +24,13 @@ var orderedTags = []string{
 	"keyscale",
 	"keyprecision",
 	"keyencoding",
+	"keycompression",
 	"valuetype",
 	"valueconvertedtype",
 	"valuescale",
 	"valueprecision",
 	"valueencoding",
+	"valuecompression",
 	"convertedtype",
 	"scale",
 	"precision",
@@ -42,6 +44,7 @@ var orderedTags = []string{
 	"logicaltype.issigned",
 	"repetitiontype",
 	"encoding",
+	"compression",
 	"omitstats",
 }
 
@@ -58,12 +61,15 @@ type SchemaNode struct {
 	InNamePath []string      `json:"-"`
 	ExNamePath []string      `json:"-"`
 	// Custom parquet-go writer directives (not part of Parquet format)
-	Encoding  string `json:"-"` // Data page encoding (PLAIN, RLE, etc)
-	OmitStats string `json:"-"` // Control statistics generation (true/false)
+	Encoding         string `json:"encoding,omitempty"`          // Data page encoding (PLAIN, RLE, etc)
+	OmitStats        string `json:"-"`                           // Control statistics generation (true/false)
+	CompressionCodec string `json:"compression_codec,omitempty"` // Compression codec (SNAPPY, GZIP, etc)
 }
 
 type SchemaOption struct {
-	FailOnInt96 bool
+	FailOnInt96          bool
+	NoPageEncoding       bool
+	ShowCompressionCodec bool
 }
 
 // readFirstDataPageEncoding reads the first data page header to get its encoding.
@@ -148,9 +154,38 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 	return result
 }
 
+// buildCompressionCodecMap extracts compression codec information from the footer metadata.
+// This is a fast operation as it only reads from the already-loaded footer.
+func buildCompressionCodecMap(pr *reader.ParquetReader) map[string]string {
+	result := make(map[string]string)
+
+	if len(pr.Footer.RowGroups) == 0 {
+		return result
+	}
+
+	// Use the first row group to extract compression codecs
+	columns := pr.Footer.RowGroups[0].Columns
+	for _, col := range columns {
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		result[pathKey] = col.MetaData.Codec.String()
+	}
+
+	return result
+}
+
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
-	// Extract encoding information from the parquet file
-	encodingMap := buildEncodingMap(reader)
+	// Extract encoding information from the parquet file unless NoPageEncoding is set
+	var encodingMap map[string]string
+	if !option.NoPageEncoding {
+		encodingMap = buildEncodingMap(reader)
+	}
+
+	// Extract compression codec information if requested
+	var compressionCodecMap map[string]string
+	if option.ShowCompressionCodec {
+		compressionCodecMap = buildCompressionCodecMap(reader)
+	}
+
 	schemas := reader.SchemaHandler.SchemaElements
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],
@@ -196,11 +231,18 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		queue = append(queue[1:], node.Children...)
 		node.Name = node.ExNamePath[len(node.ExNamePath)-1]
 
-		// Populate encoding information for leaf nodes
-		if node.Type != nil && encodingMap != nil {
+		// Populate encoding and compression codec information for leaf nodes
+		if node.Type != nil {
 			pathKey := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
-			if encoding, found := encodingMap[pathKey]; found {
-				node.Encoding = encoding
+			if encodingMap != nil {
+				if encoding, found := encodingMap[pathKey]; found {
+					node.Encoding = encoding
+				}
+			}
+			if compressionCodecMap != nil {
+				if codec, found := compressionCodecMap[pathKey]; found {
+					node.CompressionCodec = codec
+				}
 			}
 		}
 	}
@@ -238,6 +280,9 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 	// so that LIST/MAP elements can include valueencoding/keyencoding tags
 	if s.Encoding != "" {
 		tagMap["encoding"] = s.Encoding
+	}
+	if s.CompressionCodec != "" {
+		tagMap["compression"] = s.CompressionCodec
 	}
 	if s.OmitStats != "" {
 		tagMap["omitstats"] = s.OmitStats
