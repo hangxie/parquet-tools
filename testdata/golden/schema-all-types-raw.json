@@ -10,7 +10,8 @@
       "name": "Bool",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "BIT_PACKED"
     },
     {
       "type": "INT32",
@@ -19,7 +20,8 @@
       "name": "Int32",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT64",
@@ -28,7 +30,8 @@
       "name": "Int64",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT96",
@@ -37,7 +40,8 @@
       "name": "Int96",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "PLAIN"
     },
     {
       "type": "FLOAT",
@@ -46,7 +50,8 @@
       "name": "Float",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "BYTE_STREAM_SPLIT"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -58,7 +63,8 @@
       "field_id": 0,
       "logicalType": {
         "FLOAT16": {}
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "DOUBLE",
@@ -67,7 +73,8 @@
       "name": "Double",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "BYTE_STREAM_SPLIT"
     },
     {
       "type": "BYTE_ARRAY",
@@ -76,7 +83,8 @@
       "name": "ByteArray",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "DELTA_LENGTH_BYTE_ARRAY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -89,7 +97,8 @@
       "field_id": 0,
       "logicalType": {
         "ENUM": {}
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -101,7 +110,8 @@
       "field_id": 0,
       "logicalType": {
         "UUID": {}
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "BYTE_ARRAY",
@@ -114,7 +124,8 @@
       "field_id": 0,
       "logicalType": {
         "JSON": {}
-      }
+      },
+      "encoding": "DELTA_BYTE_ARRAY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -127,7 +138,8 @@
       "field_id": 0,
       "logicalType": {
         "BSON": {}
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "BYTE_ARRAY",
@@ -140,7 +152,8 @@
       "field_id": 0,
       "logicalType": {
         "JSON": {}
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "BYTE_ARRAY",
@@ -153,7 +166,8 @@
       "field_id": 0,
       "logicalType": {
         "BSON": {}
-      }
+      },
+      "encoding": "DELTA_BYTE_ARRAY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -165,7 +179,8 @@
       "field_id": 0,
       "logicalType": {
         "VARIANT": {}
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -174,7 +189,8 @@
       "name": "FixedLenByteArray",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -187,7 +203,8 @@
       "field_id": 0,
       "logicalType": {
         "STRING": {}
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -200,7 +217,8 @@
       "field_id": 0,
       "logicalType": {
         "STRING": {}
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "INT32",
@@ -216,7 +234,8 @@
           "bitWidth": 8,
           "isSigned": true
         }
-      }
+      },
+      "encoding": "BIT_PACKED"
     },
     {
       "type": "INT32",
@@ -232,7 +251,8 @@
           "bitWidth": 16,
           "isSigned": true
         }
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "INT32",
@@ -248,7 +268,8 @@
           "bitWidth": 32,
           "isSigned": true
         }
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -264,7 +285,8 @@
           "bitWidth": 64,
           "isSigned": true
         }
-      }
+      },
+      "encoding": "RLE"
     },
     {
       "type": "INT32",
@@ -280,7 +302,8 @@
           "bitWidth": 8,
           "isSigned": false
         }
-      }
+      },
+      "encoding": "BIT_PACKED"
     },
     {
       "type": "INT32",
@@ -296,7 +319,8 @@
           "bitWidth": 16,
           "isSigned": false
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT32",
@@ -312,7 +336,8 @@
           "bitWidth": 32,
           "isSigned": false
         }
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "INT64",
@@ -328,7 +353,8 @@
           "bitWidth": 64,
           "isSigned": false
         }
-      }
+      },
+      "encoding": "RLE"
     },
     {
       "type": "INT32",
@@ -341,7 +367,8 @@
       "field_id": 0,
       "logicalType": {
         "DATE": {}
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT32",
@@ -354,7 +381,8 @@
       "field_id": 0,
       "logicalType": {
         "DATE": {}
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -372,7 +400,8 @@
             "MILLIS": {}
           }
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT32",
@@ -390,7 +419,8 @@
             "MILLIS": {}
           }
         }
-      }
+      },
+      "encoding": "RLE"
     },
     {
       "type": "INT64",
@@ -408,7 +438,8 @@
             "MICROS": {}
           }
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT64",
@@ -426,7 +457,8 @@
             "MICROS": {}
           }
         }
-      }
+      },
+      "encoding": "RLE"
     },
     {
       "type": "INT64",
@@ -443,7 +475,8 @@
             "NANOS": {}
           }
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT64",
@@ -461,7 +494,8 @@
             "MILLIS": {}
           }
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT64",
@@ -479,7 +513,8 @@
             "MILLIS": {}
           }
         }
-      }
+      },
+      "encoding": "RLE"
     },
     {
       "type": "INT64",
@@ -497,7 +532,8 @@
             "MICROS": {}
           }
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT64",
@@ -515,7 +551,8 @@
             "MICROS": {}
           }
         }
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -532,7 +569,8 @@
             "NANOS": {}
           }
         }
-      }
+      },
+      "encoding": "RLE"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -542,7 +580,8 @@
       "converted_type": "INTERVAL",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "PLAIN"
     },
     {
       "type": "INT32",
@@ -558,7 +597,8 @@
           "scale": 2,
           "precision": 9
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "INT64",
@@ -574,7 +614,8 @@
           "scale": 2,
           "precision": 18
         }
-      }
+      },
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -590,7 +631,8 @@
           "scale": 2,
           "precision": 10
         }
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "BYTE_ARRAY",
@@ -606,7 +648,8 @@
           "scale": 2,
           "precision": 20
         }
-      }
+      },
+      "encoding": "DELTA_LENGTH_BYTE_ARRAY"
     },
     {
       "type": "INT32",
@@ -622,7 +665,8 @@
           "scale": 2,
           "precision": 9
         }
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -638,7 +682,8 @@
           "scale": 2,
           "precision": 10
         }
-      }
+      },
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "repetition_type": "REQUIRED",
@@ -663,7 +708,8 @@
               "field_id": 0,
               "logicalType": {
                 "STRING": {}
-              }
+              },
+              "encoding": "RLE_DICTIONARY"
             },
             {
               "type": "INT32",
@@ -672,7 +718,8 @@
               "name": "value",
               "scale": 0,
               "precision": 0,
-              "field_id": 0
+              "field_id": 0,
+              "encoding": "BIT_PACKED"
             }
           ]
         }
@@ -700,7 +747,8 @@
               "field_id": 0,
               "logicalType": {
                 "STRING": {}
-              }
+              },
+              "encoding": "PLAIN"
             }
           ]
         }
@@ -713,7 +761,8 @@
       "name": "Repeated",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "DELTA_BINARY_PACKED"
     },
     {
       "repetition_type": "REQUIRED",
@@ -738,7 +787,8 @@
               "field_id": 0,
               "logicalType": {
                 "STRING": {}
-              }
+              },
+              "encoding": "PLAIN"
             },
             {
               "repetition_type": "REQUIRED",
@@ -768,7 +818,8 @@
                           "field_id": 0,
                           "logicalType": {
                             "STRING": {}
-                          }
+                          },
+                          "encoding": "RLE_DICTIONARY"
                         },
                         {
                           "type": "INT32",
@@ -777,7 +828,8 @@
                           "name": "value",
                           "scale": 0,
                           "precision": 0,
-                          "field_id": 0
+                          "field_id": 0,
+                          "encoding": "BIT_PACKED"
                         }
                       ]
                     }
@@ -808,7 +860,8 @@
                               "scale": 2,
                               "precision": 10
                             }
-                          }
+                          },
+                          "encoding": "RLE_DICTIONARY"
                         }
                       ]
                     }
@@ -859,7 +912,8 @@
                           "field_id": 0,
                           "logicalType": {
                             "STRING": {}
-                          }
+                          },
+                          "encoding": "RLE_DICTIONARY"
                         },
                         {
                           "type": "INT32",
@@ -868,7 +922,8 @@
                           "name": "value",
                           "scale": 0,
                           "precision": 0,
-                          "field_id": 0
+                          "field_id": 0,
+                          "encoding": "BIT_PACKED"
                         }
                       ]
                     }
@@ -899,7 +954,8 @@
                               "scale": 2,
                               "precision": 10
                             }
-                          }
+                          },
+                          "encoding": "RLE_DICTIONARY"
                         }
                       ]
                     }
