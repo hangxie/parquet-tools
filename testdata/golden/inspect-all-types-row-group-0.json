@@ -1,8 +1,8 @@
 {
   "columnChunks": [
     {
-      "compressedSize": 144,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 136,
+      "compressionCodec": "UNCOMPRESSED",
       "encodings": [
         "BIT_PACKED",
         "RLE"
@@ -41,8 +41,8 @@
       "uncompressedSize": 215
     },
     {
-      "compressedSize": 287,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 379,
+      "compressionCodec": "GZIP",
       "encodings": [
         "DELTA_BINARY_PACKED",
         "RLE"
@@ -61,8 +61,8 @@
       "uncompressedSize": 279
     },
     {
-      "compressedSize": 429,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 422,
+      "compressionCodec": "LZ4_RAW",
       "encodings": [
         "PLAIN",
         "RLE"
@@ -81,8 +81,8 @@
       "uncompressedSize": 428
     },
     {
-      "compressedSize": 228,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 272,
+      "compressionCodec": "ZSTD",
       "encodings": [
         "BYTE_STREAM_SPLIT",
         "RLE"
@@ -101,8 +101,8 @@
       "uncompressedSize": 220
     },
     {
-      "compressedSize": 176,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 184,
+      "compressionCodec": "BROTLI",
       "convertedType": "length=2",
       "encodings": [
         "PLAIN",
@@ -123,8 +123,8 @@
       "uncompressedSize": 168
     },
     {
-      "compressedSize": 332,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 324,
+      "compressionCodec": "UNCOMPRESSED",
       "encodings": [
         "BYTE_STREAM_SPLIT",
         "RLE"
@@ -163,8 +163,8 @@
       "uncompressedSize": 437
     },
     {
-      "compressedSize": 336,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 506,
+      "compressionCodec": "GZIP",
       "convertedType": "convertedtype=ENUM",
       "encodings": [
         "PLAIN",
@@ -183,11 +183,11 @@
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 380
+      "uncompressedSize": 381
     },
     {
-      "compressedSize": 438,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 453,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "length=16",
       "encodings": [
         "PLAIN",
@@ -208,8 +208,8 @@
       "uncompressedSize": 532
     },
     {
-      "compressedSize": 385,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 459,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=JSON",
       "encodings": [
         "DELTA_BYTE_ARRAY",
@@ -227,11 +227,11 @@
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 404
+      "uncompressedSize": 407
     },
     {
-      "compressedSize": 425,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 416,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=BSON",
       "encodings": [
         "PLAIN",
@@ -256,8 +256,8 @@
       "uncompressedSize": 468
     },
     {
-      "compressedSize": 325,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 338,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=JSON",
       "encodings": [
         "PLAIN",
@@ -304,8 +304,8 @@
       "uncompressedSize": 543
     },
     {
-      "compressedSize": 382,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 532,
+      "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
         "RLE",
@@ -326,8 +326,8 @@
       "uncompressedSize": 407
     },
     {
-      "compressedSize": 400,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 406,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "length=10",
       "encodings": [
         "PLAIN",
@@ -348,8 +348,8 @@
       "uncompressedSize": 444
     },
     {
-      "compressedSize": 336,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 381,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
@@ -371,8 +371,8 @@
       "uncompressedSize": 380
     },
     {
-      "compressedSize": 324,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 346,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
@@ -393,8 +393,8 @@
       "uncompressedSize": 364
     },
     {
-      "compressedSize": 228,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 220,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=INT_8",
       "encodings": [
         "BIT_PACKED",
@@ -437,8 +437,8 @@
       "uncompressedSize": 220
     },
     {
-      "compressedSize": 297,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 413,
+      "compressionCodec": "GZIP",
       "convertedType": "convertedtype=INT_32",
       "encodings": [
         "PLAIN",
@@ -457,11 +457,11 @@
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 287
+      "uncompressedSize": 288
     },
     {
-      "compressedSize": 358,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 329,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=INT_64",
       "encodings": [
         "RLE"
@@ -481,8 +481,8 @@
       "uncompressedSize": 350
     },
     {
-      "compressedSize": 228,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 272,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=UINT_8",
       "encodings": [
         "BIT_PACKED",
@@ -503,8 +503,8 @@
       "uncompressedSize": 220
     },
     {
-      "compressedSize": 223,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 231,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=UINT_16",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -525,8 +525,8 @@
       "uncompressedSize": 215
     },
     {
-      "compressedSize": 228,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 220,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=UINT_32",
       "encodings": [
         "PLAIN",
@@ -568,8 +568,8 @@
       "uncompressedSize": 350
     },
     {
-      "compressedSize": 230,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 322,
+      "compressionCodec": "GZIP",
       "convertedType": "convertedtype=DATE",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -590,8 +590,8 @@
       "uncompressedSize": 222
     },
     {
-      "compressedSize": 297,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 296,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=DATE",
       "encodings": [
         "PLAIN",
@@ -613,8 +613,8 @@
       "uncompressedSize": 287
     },
     {
-      "compressedSize": 230,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 274,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=TIME_MILLIS",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -635,8 +635,8 @@
       "uncompressedSize": 222
     },
     {
-      "compressedSize": 254,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 262,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=TIME_MILLIS",
       "encodings": [
         "RLE"
@@ -656,8 +656,8 @@
       "uncompressedSize": 246
     },
     {
-      "compressedSize": 302,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 294,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=TIME_MICROS",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -699,8 +699,8 @@
       "uncompressedSize": 350
     },
     {
-      "compressedSize": 311,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 403,
+      "compressionCodec": "GZIP",
       "encodings": [
         "DELTA_BINARY_PACKED",
         "RLE"
@@ -720,8 +720,8 @@
       "uncompressedSize": 303
     },
     {
-      "compressedSize": 307,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 306,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=TIMESTAMP_MILLIS",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -742,8 +742,8 @@
       "uncompressedSize": 299
     },
     {
-      "compressedSize": 358,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 402,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=TIMESTAMP_MILLIS",
       "encodings": [
         "RLE"
@@ -763,8 +763,8 @@
       "uncompressedSize": 350
     },
     {
-      "compressedSize": 315,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 323,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=TIMESTAMP_MICROS",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -785,8 +785,8 @@
       "uncompressedSize": 307
     },
     {
-      "compressedSize": 370,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 393,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=TIMESTAMP_MICROS",
       "encodings": [
         "PLAIN",
@@ -805,7 +805,7 @@
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 392
+      "uncompressedSize": 393
     },
     {
       "compressedSize": 358,
@@ -828,8 +828,8 @@
       "uncompressedSize": 350
     },
     {
-      "compressedSize": 143,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 304,
+      "compressionCodec": "GZIP",
       "convertedType": "convertedtype=INTERVAL, length=12",
       "encodings": [
         "PLAIN",
@@ -847,8 +847,8 @@
       "uncompressedSize": 204
     },
     {
-      "compressedSize": 260,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 276,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=9",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -869,8 +869,8 @@
       "uncompressedSize": 332
     },
     {
-      "compressedSize": 324,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 366,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=18",
       "encodings": [
         "DELTA_BINARY_PACKED",
@@ -891,8 +891,8 @@
       "uncompressedSize": 396
     },
     {
-      "compressedSize": 362,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 363,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
         "PLAIN",
@@ -913,8 +913,8 @@
       "uncompressedSize": 428
     },
     {
-      "compressedSize": 185,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 177,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=20",
       "encodings": [
         "DELTA_LENGTH_BYTE_ARRAY",
@@ -958,8 +958,8 @@
       "uncompressedSize": 283
     },
     {
-      "compressedSize": 407,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 547,
+      "compressionCodec": "GZIP",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
         "PLAIN",
@@ -981,8 +981,8 @@
       "uncompressedSize": 422
     },
     {
-      "compressedSize": 566,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 584,
+      "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
@@ -1003,11 +1003,11 @@
         "nullCount": 1
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 742
+      "uncompressedSize": 732
     },
     {
-      "compressedSize": 376,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 393,
+      "compressionCodec": "ZSTD",
       "encodings": [
         "BIT_PACKED",
         "RLE"
@@ -1028,8 +1028,8 @@
       "uncompressedSize": 436
     },
     {
-      "compressedSize": 560,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 592,
+      "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
@@ -1052,8 +1052,8 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 330,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 313,
+      "compressionCodec": "BROTLI",
       "encodings": [
         "DELTA_BINARY_PACKED",
         "RLE"
@@ -1072,8 +1072,8 @@
       "uncompressedSize": 322
     },
     {
-      "compressedSize": 571,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 1047,
+      "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
         "PLAIN",
@@ -1096,7 +1096,7 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 679,
+      "compressedSize": 697,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1121,11 +1121,11 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1177
+      "uncompressedSize": 1161
     },
     {
-      "compressedSize": 515,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 500,
+      "compressionCodec": "GZIP",
       "encodings": [
         "BIT_PACKED",
         "RLE"
@@ -1146,11 +1146,11 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 861
+      "uncompressedSize": 865
     },
     {
-      "compressedSize": 632,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 551,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
         "PLAIN",
@@ -1174,10 +1174,10 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 794
+      "uncompressedSize": 790
     },
     {
-      "compressedSize": 663,
+      "compressedSize": 670,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1202,11 +1202,11 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1159
+      "uncompressedSize": 1144
     },
     {
-      "compressedSize": 489,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 492,
+      "compressionCodec": "GZIP",
       "encodings": [
         "BIT_PACKED",
         "RLE"
@@ -1230,8 +1230,8 @@
       "uncompressedSize": 863
     },
     {
-      "compressedSize": 594,
-      "compressionCodec": "SNAPPY",
+      "compressedSize": 542,
+      "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
         "PLAIN",
@@ -1255,13 +1255,13 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 789
+      "uncompressedSize": 788
     }
   ],
   "rowGroup": {
     "index": 0,
     "numColumns": 56,
     "numRows": 10,
-    "totalByteSize": 23650
+    "totalByteSize": 23614
   }
 }
