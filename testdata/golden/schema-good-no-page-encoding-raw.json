@@ -7,27 +7,27 @@
       "type": "BYTE_ARRAY",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Geometry",
+      "name": "shoe_brand",
+      "converted_type": "UTF8",
       "scale": 0,
       "precision": 0,
       "field_id": 0,
       "logicalType": {
-        "GEOMETRY": {}
-      },
-      "encoding": "PLAIN"
+        "STRING": {}
+      }
     },
     {
       "type": "BYTE_ARRAY",
       "type_length": 0,
       "repetition_type": "REQUIRED",
-      "name": "Geography",
+      "name": "shoe_name",
+      "converted_type": "UTF8",
       "scale": 0,
       "precision": 0,
       "field_id": 0,
       "logicalType": {
-        "GEOGRAPHY": {}
-      },
-      "encoding": "PLAIN"
+        "STRING": {}
+      }
     }
   ]
 }

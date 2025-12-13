@@ -18,9 +18,11 @@ var (
 
 // SchemaCmd is a kong command for schema
 type SchemaCmd struct {
-	CamelCase bool   `help:"enforce go struct field name to be CamelCase" default:"false"`
-	Format    string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
-	URI       string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	CamelCase            bool   `help:"enforce go struct field name to be CamelCase" default:"false"`
+	Format               string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
+	NoPageEncoding       bool   `help:"skip reading page encoding information" name:"no-page-encoding" default:"false"`
+	ShowCompressionCodec bool   `help:"show compression codec for each column" name:"show-compression-codec" default:"false"`
+	URI                  string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }
 
@@ -34,7 +36,7 @@ func (c SchemaCmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false})
+	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false, NoPageEncoding: c.NoPageEncoding, ShowCompressionCodec: c.ShowCompressionCodec})
 	if err != nil {
 		return err
 	}

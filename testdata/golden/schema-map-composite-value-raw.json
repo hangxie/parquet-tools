@@ -14,7 +14,8 @@
       "field_id": 0,
       "logicalType": {
         "STRING": {}
-      }
+      },
+      "encoding": "PLAIN"
     },
     {
       "type": "INT32",
@@ -23,7 +24,8 @@
       "name": "age",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "PLAIN"
     },
     {
       "type": "INT64",
@@ -32,7 +34,8 @@
       "name": "id",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "PLAIN"
     },
     {
       "type": "FLOAT",
@@ -41,7 +44,8 @@
       "name": "weight",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "PLAIN"
     },
     {
       "type": "BOOLEAN",
@@ -50,7 +54,8 @@
       "name": "sex",
       "scale": 0,
       "precision": 0,
-      "field_id": 0
+      "field_id": 0,
+      "encoding": "PLAIN"
     },
     {
       "repetition_type": "REQUIRED",
@@ -74,7 +79,8 @@
               "field_id": 0,
               "logicalType": {
                 "STRING": {}
-              }
+              },
+              "encoding": "PLAIN"
             }
           ]
         }
@@ -103,7 +109,8 @@
               "field_id": 0,
               "logicalType": {
                 "STRING": {}
-              }
+              },
+              "encoding": "PLAIN"
             },
             {
               "repetition_type": "REQUIRED",
@@ -123,7 +130,8 @@
                       "name": "element",
                       "scale": 0,
                       "precision": 0,
-                      "field_id": 0
+                      "field_id": 0,
+                      "encoding": "PLAIN"
                     }
                   ]
                 }
@@ -160,7 +168,8 @@
                   "field_id": 0,
                   "logicalType": {
                     "STRING": {}
-                  }
+                  },
+                  "encoding": "PLAIN"
                 },
                 {
                   "type": "INT64",
@@ -169,7 +178,8 @@
                   "name": "id",
                   "scale": 0,
                   "precision": 0,
-                  "field_id": 0
+                  "field_id": 0,
+                  "encoding": "PLAIN"
                 }
               ]
             }
@@ -193,7 +203,8 @@
           "field_id": 0,
           "logicalType": {
             "STRING": {}
-          }
+          },
+          "encoding": "PLAIN"
         },
         {
           "type": "INT64",
@@ -202,7 +213,8 @@
           "name": "id",
           "scale": 0,
           "precision": 0,
-          "field_id": 0
+          "field_id": 0,
+          "encoding": "PLAIN"
         }
       ]
     }
