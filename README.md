@@ -110,6 +110,12 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Maximum records in a file](#maximum-records-in-a-file)
     - [transcode Command](#transcode-command)
       - [Change Compression Codec](#change-compression-codec)
+      - [Change Data Page Version](#change-data-page-version)
+      - [Field-Specific Encoding](#field-specific-encoding)
+      - [Control Statistics](#control-statistics)
+      - [Field-Specific Compression](#field-specific-compression)
+      - [Combine Multiple Options](#combine-multiple-options)
+      - [INT96 Field Detection](#int96-field-detection)
     - [version Command](#version-command)
       - [Print Version](#print-version)
       - [Print All Information](#print-all-information)
@@ -496,17 +502,17 @@ Parquet supports various encodings for different data types. Encoding can be spe
 
 **Supported encodings and compatible types:**
 
-| Encoding | Compatible Types | Description |
-|----------|------------------|-------------|
-| `PLAIN` | All types | Default encoding, no compression |
-| `RLE` | BOOLEAN, INT32, INT64 | Run-length encoding for repeated values |
-| `BIT_PACKED` | BOOLEAN, INT32, INT64 | Deprecated, use RLE instead |
-| `DELTA_BINARY_PACKED` | INT32, INT64 | Delta encoding for sorted integers |
-| `DELTA_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for strings |
-| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY | Delta encoding for variable-length byte arrays |
-| `BYTE_STREAM_SPLIT` | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data |
-| `RLE_DICTIONARY` | All types | Dictionary encoding with RLE, efficient for low-cardinality data |
-| `PLAIN_DICTIONARY` | All types | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
+| Encoding                  | Compatible Types                                  | Description                                                         |
+| ------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+| `PLAIN`                   | All types                                         | Default encoding, no compression                                    |
+| `RLE`                     | BOOLEAN, INT32, INT64                             | Run-length encoding for repeated values                             |
+| `BIT_PACKED`              | BOOLEAN, INT32, INT64                             | Deprecated, use RLE instead                                         |
+| `DELTA_BINARY_PACKED`     | INT32, INT64                                      | Delta encoding for sorted integers                                  |
+| `DELTA_BYTE_ARRAY`        | BYTE_ARRAY                                        | Delta encoding for strings                                          |
+| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY                                        | Delta encoding for variable-length byte arrays                      |
+| `BYTE_STREAM_SPLIT`       | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data                           |
+| `RLE_DICTIONARY`          | All types                                         | Dictionary encoding with RLE, efficient for low-cardinality data    |
+| `PLAIN_DICTIONARY`        | All types                                         | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
 
 > [!NOTE]
 > Encodings must be compatible with the field type. Specifying an incompatible encoding will result in an error.
@@ -692,7 +698,7 @@ Each source data file format has its own dedicated schema format:
 Values in CSV and JSON/JSONL are expected to be human-readable format, same as cat command's output, following their converted or logical types:
 
 | Type                               | Format                | Examples                               |
-|------------------------------------|-----------------------|----------------------------------------|
+| ---------------------------------- | --------------------- | -------------------------------------- |
 | DATE                               | YYYY-MM-DD            | "2024-01-15"                           |
 | TIME (MILLIS/MICROS/NANOS)         | HH:MM:SS.nnnnnnnnn    | "10:30:45.123456789"                   |
 | TIMESTAMP (MILLIS/MICROS/NANOS)    | RFC3339Nano           | "2024-01-15T10:30:00.123456789Z"       |
@@ -1222,25 +1228,29 @@ The format is `field.path=CODEC`, where `field.path` is the dot-separated path t
 Apply different compression codecs to different fields:
 
 ```bash
-$ parquet-tools transcode -s input.parquet \
-  --field-compression "large_text=ZSTD" \
-  --field-compression "small_id=UNCOMPRESSED" \
-  output.parquet
+$ parquet-tools transcode -s testdata/good.parquet --field-compression shoe_brand=ZSTD --field-compression shoe_name=GZIP /tmp/field-compression.parquet
+$ parquet-tools schema --show-compression-codec /tmp/field-compression.parquet
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=ZSTD"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"}]}
 ```
 
-For nested fields, use the full path:
+For nested fields, use the full path. For example, to set compression for elements in a LIST field:
 
 ```bash
-# For a LIST field named "items" with string elements
-$ parquet-tools transcode -s input.parquet \
-  --field-compression "items.list.element=GZIP" \
-  output.parquet
+$ parquet-tools transcode -s testdata/map-composite-value.parquet --field-compression classes.list.element=ZSTD /tmp/field-compression-list.parquet
+```
 
-# For nested struct fields
-$ parquet-tools transcode -s input.parquet \
-  --field-compression "metadata.description=ZSTD" \
-  --field-compression "metadata.tags.list.element=SNAPPY" \
-  output.parquet
+For nested struct fields (LIST of structs), specify the full path including intermediate elements:
+
+```bash
+$ parquet-tools transcode -s testdata/map-composite-value.parquet --field-compression friends.list.element.name=ZSTD --field-compression friends.list.element.id=BROTLI /tmp/field-compression-nested.parquet
+```
+
+When both file-level (`-z`/`--compression`) and field-level (`--field-compression`) compression are specified, field-level takes precedence for the specified fields, while file-level is used as the default for other fields:
+
+```bash
+$ parquet-tools transcode -s testdata/good.parquet --field-compression shoe_brand=ZSTD -z SNAPPY /tmp/mixed-compression.parquet
+$ parquet-tools schema --show-compression-codec /tmp/mixed-compression.parquet
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=ZSTD"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"}]}
 ```
 
 **Supported compression codecs:**
@@ -1262,16 +1272,12 @@ See [Compression Codecs](#compression-codecs) for more details.
 You can combine multiple transcode options in a single command:
 
 ```bash
-$ parquet-tools transcode -s legacy.parquet \
-  --data-page-version=2 \
-  --field-encoding "name=DELTA_BYTE_ARRAY" \
-  --field-compression "description=ZSTD" \
-  --omit-stats false \
-  -z SNAPPY \
-  optimized.parquet
+$ parquet-tools transcode -s testdata/good.parquet --data-page-version=2 --field-encoding shoe_brand=DELTA_BYTE_ARRAY --field-compression shoe_brand=ZSTD --omit-stats false -z SNAPPY /tmp/transcode-combined.parquet
+$ parquet-tools schema --show-compression-codec /tmp/transcode-combined.parquet
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=DELTA_BYTE_ARRAY, compression=ZSTD"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"}]}
 ```
 
-This example upgrades the page format to v2, sets encoding for the "name" field, applies ZSTD compression to the "description" field, ensures statistics are included, and uses SNAPPY as the default compression for other fields.
+This example upgrades the page format to v2, sets DELTA_BYTE_ARRAY encoding and ZSTD compression for the "shoe_brand" field, ensures statistics are included, and uses SNAPPY as the default compression for other fields.
 
 #### INT96 Field Detection
 
