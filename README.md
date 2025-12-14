@@ -849,7 +849,7 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 > [!TIP]
 > `PathInSchema` uses field name from parquet file, same as `cat` command.
 
-Use `--no-page-encoding` to skip reading page encoding information. This can speed up the command for remote files as it avoids reading page headers for each column.
+Use `--skip-page-encoding` to skip reading page encoding information. This can speed up the command for remote files as it avoids reading page headers for each column.
 
 #### Show Meta Data
 
@@ -920,13 +920,13 @@ type Parquet_go_root struct {
 }
 ```
 
-Use `--no-page-encoding` to skip reading page encoding information. This can significantly speed up the command for remote files (S3, GCS, HTTP) as it avoids reading page headers. When this flag is set, the `encoding` tag will not be included in the output. This option works with both JSON and Go struct formats.
+Use `--skip-page-encoding` to skip reading page encoding information. This can significantly speed up the command for remote files (S3, GCS, HTTP) as it avoids reading page headers. When this flag is set, the `encoding` tag will not be included in the output. This option works with both JSON and Go struct formats.
 
 ```bash
-$ parquet-tools schema --no-page-encoding testdata/good.parquet
+$ parquet-tools schema --skip-page-encoding testdata/good.parquet
 {"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]}
 
-$ parquet-tools schema --format go --no-page-encoding testdata/good.parquet
+$ parquet-tools schema --format go --skip-page-encoding testdata/good.parquet
 type Parquet_go_root struct {
 	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
 	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
@@ -937,7 +937,7 @@ Schema does not output `omitstats` tag as there is no reliable way to determine 
 
 #### Raw Format
 
-Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format. The `--no-page-encoding` and `--show-compression-codec` options also apply to raw format output.
+Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format. The `--skip-page-encoding` and `--show-compression-codec` options also apply to raw format output.
 
 ```bash
 $ parquet-tools schema --format raw testdata/good.parquet

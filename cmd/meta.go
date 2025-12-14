@@ -58,7 +58,7 @@ func (c MetaCmd) Run() error {
 		return err
 	}
 
-	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, NoPageEncoding: true})
+	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, SkipPageEncoding: true})
 	if err != nil {
 		return err
 	}
