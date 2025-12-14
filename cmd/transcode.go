@@ -16,12 +16,13 @@ import (
 
 // TranscodeCmd is a kong command for transcode
 type TranscodeCmd struct {
-	FailOnInt96   bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
-	FieldEncoding []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
-	OmitStats     string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
-	ReadPageSize  int      `help:"Page size to read from Parquet." default:"1000"`
-	Source        string   `short:"s" help:"Source Parquet file to transcode." required:"true"`
-	URI           string   `arg:"" predictor:"file" help:"URI of output Parquet file."`
+	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
+	FieldCompression []string `help:"Field-specific compression in 'field.path=CODEC' format. Can be specified multiple times."`
+	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
+	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
+	ReadPageSize     int      `help:"Page size to read from Parquet." default:"1000"`
+	Source           string   `short:"s" help:"Source Parquet file to transcode." required:"true"`
+	URI              string   `arg:"" predictor:"file" help:"URI of output Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
 }
@@ -64,8 +65,48 @@ func (c TranscodeCmd) parseFieldEncodings() (map[string]string, error) {
 	return result, nil
 }
 
-func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings map[string]string) error {
-	// Add custom parquet-go writer directives (encoding, omitstats)
+// parseFieldCompressions parses field-specific compression specifications from "field.path=CODEC" format
+// and returns a map from field path to compression codec. Field paths use "." as delimiter.
+func (c TranscodeCmd) parseFieldCompressions() (map[string]string, error) {
+	result := make(map[string]string)
+	validCodecs := []string{
+		"UNCOMPRESSED", "SNAPPY", "GZIP", "LZ4", "LZ4_RAW", "ZSTD", "BROTLI",
+	}
+	for _, spec := range c.FieldCompression {
+		parts := strings.SplitN(spec, "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid field compression format [%s], expected 'field.path=CODEC'", spec)
+		}
+		fieldPath := strings.TrimSpace(parts[0])
+		codec := strings.TrimSpace(parts[1])
+
+		if fieldPath == "" {
+			return nil, fmt.Errorf("empty field path in [%s]", spec)
+		}
+		if codec == "" {
+			return nil, fmt.Errorf("empty compression codec in [%s]", spec)
+		}
+
+		// Validate compression codec
+		codec = strings.ToUpper(codec)
+		isValid := false
+		for _, validCodec := range validCodecs {
+			if codec == validCodec {
+				isValid = true
+				break
+			}
+		}
+		if !isValid {
+			return nil, fmt.Errorf("invalid compression codec [%s] for field [%s], valid codecs: %s", codec, fieldPath, strings.Join(validCodecs, ", "))
+		}
+
+		result[fieldPath] = codec
+	}
+	return result, nil
+}
+
+func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions map[string]string) error {
+	// Add custom parquet-go writer directives (encoding, compression, omitstats)
 	// Only apply to leaf nodes (not struct/group types)
 	if schemaTree.Type != nil {
 		// Build field path from ExNamePath (skip root element)
@@ -80,6 +121,11 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 			schemaTree.Encoding = encoding
 		}
 
+		// Apply field-specific compression if specified
+		if compression, found := fieldCompressions[fieldPath]; found {
+			schemaTree.CompressionCodec = compression
+		}
+
 		// Apply omit stats if specified
 		if c.OmitStats != "" {
 			schemaTree.OmitStats = c.OmitStats
@@ -88,7 +134,7 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 
 	// Recursively process children
 	for _, child := range schemaTree.Children {
-		if err := c.modifySchemaTree(child, fieldEncodings); err != nil {
+		if err := c.modifySchemaTree(child, fieldEncodings, fieldCompressions); err != nil {
 			return err
 		}
 	}
@@ -219,6 +265,12 @@ func (c TranscodeCmd) Run() error {
 		return err
 	}
 
+	// Parse and validate field-specific compressions
+	fieldCompressions, err := c.parseFieldCompressions()
+	if err != nil {
+		return err
+	}
+
 	// Open source file
 	fileReader, err := pio.NewParquetFileReader(c.Source, c.ReadOption)
 	if err != nil {
@@ -234,10 +286,10 @@ func (c TranscodeCmd) Run() error {
 		return err
 	}
 
-	// Modify schema tree: custom writer directives (encoding, omitstats)
-	// Preserve source encodings by default, but allow user-specified encodings to override
-	if c.OmitStats != "" || len(fieldEncodings) > 0 {
-		if err := c.modifySchemaTree(schemaTree, fieldEncodings); err != nil {
+	// Modify schema tree: custom writer directives (encoding, compression, omitstats)
+	// Preserve source encodings by default, but allow user-specified values to override
+	if c.OmitStats != "" || len(fieldEncodings) > 0 || len(fieldCompressions) > 0 {
+		if err := c.modifySchemaTree(schemaTree, fieldEncodings, fieldCompressions); err != nil {
 			return err
 		}
 	}
