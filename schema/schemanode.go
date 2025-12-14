@@ -68,7 +68,7 @@ type SchemaNode struct {
 
 type SchemaOption struct {
 	FailOnInt96          bool
-	NoPageEncoding       bool
+	SkipPageEncoding     bool
 	ShowCompressionCodec bool
 }
 
@@ -174,9 +174,9 @@ func buildCompressionCodecMap(pr *reader.ParquetReader) map[string]string {
 }
 
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
-	// Extract encoding information from the parquet file unless NoPageEncoding is set
+	// Extract encoding information from the parquet file unless SkipPageEncoding is set
 	var encodingMap map[string]string
-	if !option.NoPageEncoding {
+	if !option.SkipPageEncoding {
 		encodingMap = buildEncodingMap(reader)
 	}
 

@@ -67,9 +67,9 @@ func TestNewSchemaTree(t *testing.T) {
 			expectedChildren: 2,
 		},
 		{
-			name:             "no-page-encoding",
+			name:             "skip-page-encoding",
 			uri:              "../testdata/good.parquet",
-			option:           SchemaOption{NoPageEncoding: true},
+			option:           SchemaOption{SkipPageEncoding: true},
 			checkNoEncodings: true,
 			expectedChildren: 2,
 		},
@@ -90,7 +90,7 @@ func TestNewSchemaTree(t *testing.T) {
 		{
 			name:                  "both-options",
 			uri:                   "../testdata/all-types.parquet",
-			option:                SchemaOption{NoPageEncoding: true, ShowCompressionCodec: true},
+			option:                SchemaOption{SkipPageEncoding: true, ShowCompressionCodec: true},
 			checkNoEncodings:      true,
 			checkCompressionCodec: true,
 		},
