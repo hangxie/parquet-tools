@@ -331,6 +331,118 @@ func TestTranscodeCmd(t *testing.T) {
 		}
 	})
 
+	t.Run("field-compression", func(t *testing.T) {
+		rOpt := pio.ReadOption{}
+		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		tempDir := t.TempDir()
+
+		testCases := []struct {
+			name             string
+			source           string
+			fieldCompression []string
+			errMsg           string
+		}{
+			{
+				name:             "single field compression",
+				source:           "good.parquet",
+				fieldCompression: []string{"shoe_brand=ZSTD"},
+			},
+			{
+				name:             "multiple field compressions",
+				source:           "good.parquet",
+				fieldCompression: []string{"shoe_brand=ZSTD", "shoe_name=GZIP"},
+			},
+			{
+				name:             "uncompressed field",
+				source:           "good.parquet",
+				fieldCompression: []string{"shoe_brand=UNCOMPRESSED"},
+			},
+			{
+				name:             "all compression codecs",
+				source:           "good.parquet",
+				fieldCompression: []string{"shoe_brand=SNAPPY"},
+			},
+			{
+				name:             "invalid field compression format",
+				source:           "good.parquet",
+				fieldCompression: []string{"invalid-format"},
+				errMsg:           "invalid field compression format",
+			},
+			{
+				name:             "invalid compression codec",
+				source:           "good.parquet",
+				fieldCompression: []string{"shoe_brand=NOT_A_REAL_CODEC"},
+				errMsg:           "invalid compression codec",
+			},
+			{
+				name:             "empty field path",
+				source:           "good.parquet",
+				fieldCompression: []string{"=ZSTD"},
+				errMsg:           "empty field path",
+			},
+			{
+				name:             "empty compression codec",
+				source:           "good.parquet",
+				fieldCompression: []string{"shoe_brand="},
+				errMsg:           "empty compression codec",
+			},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				cmd := TranscodeCmd{
+					FieldCompression: tc.fieldCompression,
+					ReadOption:       rOpt,
+					WriteOption:      wOpt,
+					ReadPageSize:     10,
+					Source:           filepath.Join("..", "testdata", tc.source),
+					URI:              filepath.Join(tempDir, tc.name+".parquet"),
+				}
+
+				err := cmd.Run()
+
+				if tc.errMsg != "" {
+					require.Error(t, err)
+					require.Contains(t, err.Error(), tc.errMsg)
+				} else {
+					require.NoError(t, err)
+
+					// Verify output file exists and has correct row count
+					reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+					require.NoError(t, err)
+					require.Equal(t, int64(3), reader.GetNumRows())
+					_ = reader.PFile.Close()
+				}
+			})
+		}
+	})
+
+	t.Run("field-encoding-and-compression", func(t *testing.T) {
+		rOpt := pio.ReadOption{}
+		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		tempDir := t.TempDir()
+
+		// Test combining field-encoding and field-compression
+		cmd := TranscodeCmd{
+			FieldEncoding:    []string{"shoe_brand=DELTA_BYTE_ARRAY"},
+			FieldCompression: []string{"shoe_name=ZSTD"},
+			ReadOption:       rOpt,
+			WriteOption:      wOpt,
+			ReadPageSize:     10,
+			Source:           filepath.Join("..", "testdata", "good.parquet"),
+			URI:              filepath.Join(tempDir, "combined.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify output file exists and has correct row count
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		require.Equal(t, int64(3), reader.GetNumRows())
+		_ = reader.PFile.Close()
+	})
+
 	t.Run("encoding-preservation", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
@@ -829,6 +941,101 @@ func TestTranscodeCmd_getAllowedEncodings(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := cmd.getAllowedEncodings(tc.dataType)
 			require.Equal(t, tc.expectedEncodings, result)
+		})
+	}
+}
+
+func TestTranscodeCmdParseFieldCompressions(t *testing.T) {
+	testCases := []struct {
+		name             string
+		fieldCompression []string
+		expected         map[string]string
+		errMsg           string
+	}{
+		{
+			name:             "empty input",
+			fieldCompression: []string{},
+			expected:         map[string]string{},
+		},
+		{
+			name:             "single field compression",
+			fieldCompression: []string{"shoe_brand=SNAPPY"},
+			expected:         map[string]string{"shoe_brand": "SNAPPY"},
+		},
+		{
+			name:             "multiple field compressions",
+			fieldCompression: []string{"shoe_brand=SNAPPY", "shoe_name=ZSTD"},
+			expected:         map[string]string{"shoe_brand": "SNAPPY", "shoe_name": "ZSTD"},
+		},
+		{
+			name:             "nested field path",
+			fieldCompression: []string{"parent.child.leaf=GZIP"},
+			expected:         map[string]string{"parent.child.leaf": "GZIP"},
+		},
+		{
+			name:             "case insensitive codec",
+			fieldCompression: []string{"field=snappy"},
+			expected:         map[string]string{"field": "SNAPPY"},
+		},
+		{
+			name:             "codec with whitespace",
+			fieldCompression: []string{"  field  =  ZSTD  "},
+			expected:         map[string]string{"field": "ZSTD"},
+		},
+		{
+			name:             "all valid codecs",
+			fieldCompression: []string{"f1=UNCOMPRESSED", "f2=SNAPPY", "f3=GZIP", "f4=LZ4", "f5=LZ4_RAW", "f6=ZSTD", "f7=BROTLI"},
+			expected: map[string]string{
+				"f1": "UNCOMPRESSED",
+				"f2": "SNAPPY",
+				"f3": "GZIP",
+				"f4": "LZ4",
+				"f5": "LZ4_RAW",
+				"f6": "ZSTD",
+				"f7": "BROTLI",
+			},
+		},
+		{
+			name:             "missing equals sign",
+			fieldCompression: []string{"fieldSNAPPY"},
+			errMsg:           "invalid field compression format",
+		},
+		{
+			name:             "empty field path",
+			fieldCompression: []string{"=SNAPPY"},
+			errMsg:           "empty field path",
+		},
+		{
+			name:             "empty compression codec",
+			fieldCompression: []string{"field="},
+			errMsg:           "empty compression codec",
+		},
+		{
+			name:             "invalid compression codec",
+			fieldCompression: []string{"field=INVALID_CODEC"},
+			errMsg:           "invalid compression codec",
+		},
+		{
+			name:             "LZO not supported",
+			fieldCompression: []string{"field=LZO"},
+			errMsg:           "invalid compression codec",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := TranscodeCmd{
+				FieldCompression: tc.fieldCompression,
+			}
+			result, err := cmd.parseFieldCompressions()
+
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expected, result)
+			}
 		})
 	}
 }

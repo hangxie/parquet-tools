@@ -1213,6 +1213,50 @@ $ parquet-tools transcode -s input.parquet --omit-stats false output.parquet
 * `false` - Include statistics (enables predicate pushdown for query optimization)
 * (empty) - Keep original statistics setting from source file
 
+#### Field-Specific Compression
+
+Use the `--field-compression` parameter to apply different compression codecs to specific fields. This allows fine-grained control over compression on a per-field basis, which is useful when different columns have different data characteristics or size requirements.
+
+The format is `field.path=CODEC`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`).
+
+Apply different compression codecs to different fields:
+
+```bash
+$ parquet-tools transcode -s input.parquet \
+  --field-compression "large_text=ZSTD" \
+  --field-compression "small_id=UNCOMPRESSED" \
+  output.parquet
+```
+
+For nested fields, use the full path:
+
+```bash
+# For a LIST field named "items" with string elements
+$ parquet-tools transcode -s input.parquet \
+  --field-compression "items.list.element=GZIP" \
+  output.parquet
+
+# For nested struct fields
+$ parquet-tools transcode -s input.parquet \
+  --field-compression "metadata.description=ZSTD" \
+  --field-compression "metadata.tags.list.element=SNAPPY" \
+  output.parquet
+```
+
+**Supported compression codecs:**
+* `UNCOMPRESSED` - No compression (fastest read/write, largest file size)
+* `SNAPPY` - Fast compression with reasonable ratio (default)
+* `GZIP` - Good compression ratio, slower than SNAPPY
+* `LZ4` - Very fast compression
+* `LZ4_RAW` - LZ4 without frame format
+* `ZSTD` - Excellent compression ratio with good speed
+* `BROTLI` - High compression ratio, slower compression speed
+
+See [Compression Codecs](#compression-codecs) for more details.
+
+> [!TIP]
+> Use `parquet-tools schema --show-compression-codec` to see the current compression codec for each field.
+
 #### Combine Multiple Options
 
 You can combine multiple transcode options in a single command:
@@ -1221,12 +1265,13 @@ You can combine multiple transcode options in a single command:
 $ parquet-tools transcode -s legacy.parquet \
   --data-page-version=2 \
   --field-encoding "name=DELTA_BYTE_ARRAY" \
+  --field-compression "description=ZSTD" \
   --omit-stats false \
-  -z ZSTD \
+  -z SNAPPY \
   optimized.parquet
 ```
 
-This example upgrades the page format to v2, sets encoding for the "name" field, ensures statistics are included, and applies ZSTD compression.
+This example upgrades the page format to v2, sets encoding for the "name" field, applies ZSTD compression to the "description" field, ensures statistics are included, and uses SNAPPY as the default compression for other fields.
 
 #### INT96 Field Detection
 
