@@ -490,6 +490,47 @@ func (s SchemaNode) JSONSchema() string {
 	return string(schema)
 }
 
+// ConvertInt96ToTimestamp recursively converts all INT96 fields to INT64 with TIMESTAMP_NANOS logical type.
+// Returns a set of field names (external names) that were converted for O(1) lookup.
+func (s *SchemaNode) ConvertInt96ToTimestamp() map[string]struct{} {
+	convertedFields := make(map[string]struct{})
+
+	// Process this node if it's an INT96 leaf node
+	if s.Type != nil && *s.Type == parquet.Type_INT96 {
+		// Change type from INT96 to INT64
+		int64Type := parquet.Type_INT64
+		s.Type = &int64Type
+
+		// Set logical type to TIMESTAMP with NANOS unit, adjusted to UTC
+		s.LogicalType = &parquet.LogicalType{
+			TIMESTAMP: &parquet.TimestampType{
+				IsAdjustedToUTC: true,
+				Unit: &parquet.TimeUnit{
+					NANOS: &parquet.NanoSeconds{},
+				},
+			},
+		}
+
+		// Clear any existing converted type (INT96 doesn't have one, but be safe)
+		s.ConvertedType = nil
+
+		// Use PLAIN encoding for the converted column
+		s.Encoding = "PLAIN"
+
+		// Record the field name for data conversion
+		if len(s.ExNamePath) > 0 {
+			convertedFields[s.ExNamePath[len(s.ExNamePath)-1]] = struct{}{}
+		}
+	}
+
+	// Recursively process children
+	for _, child := range s.Children {
+		maps.Copy(convertedFields, child.ConvertInt96ToTimestamp())
+	}
+
+	return convertedFields
+}
+
 func (s SchemaNode) CSVSchema() (string, error) {
 	jsonSchema := jsonSchemaNode{s}.Schema()
 	schema := make([]string, len(jsonSchema.Fields))
