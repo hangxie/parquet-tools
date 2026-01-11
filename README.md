@@ -32,6 +32,7 @@ Commands:
   inspect              Inspect Parquet file structure in detail.
   merge                Merge multiple parquet files into one.
   meta                 Prints the metadata.
+  retype               Change column type.
   row-count            Prints the count of rows.
   schema               Prints the schema.
   shell-completions    Install/uninstall shell completions
@@ -90,6 +91,8 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
     - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
+    - [retype Command](#retype-command)
+      - [Convert INT96 to Timestamp](#convert-int96-to-timestamp)
     - [row-count Command](#row-count-command)
       - [Show Number of Rows](#show-number-of-rows)
     - [schema Command](#schema-command)
@@ -902,6 +905,30 @@ $ parquet-tools meta testdata/int96-nil-min-max.parquet
 {"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE","RLE_DICTIONARY"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["PLAIN","RLE"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
 $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
+```
+
+### retype Command
+
+`retype` command changes the data type of columns in a parquet file. Currently, it supports converting INT96 columns to TIMESTAMP_NANOS.
+
+#### Convert INT96 to Timestamp
+
+INT96 is a deprecated timestamp format so lots of tools do not support it, you can use `--int96-to-timestamp` to convert all INT96 columns to INT64 columns with TIMESTAMP (NANOS) logical type.
+
+> [!NOTE]
+> This option converts all INT96 fields in the parquet file; there is currently no way to select a particular field for conversion.
+
+Following example shows how to retype INT96 to TIMESTAMP so Apache parquet-cli can read the file:
+
+```bash
+$ parquet cat testdata/int96-nil-min-max.parquet
+Argument error: INT96 is deprecated. As interim enable READ_INT96_AS_FIXED flag to read as byte array.
+$ parquet-tools retype --int96-to-timestamp -s testdata/int96-nil-min-max.parquet /tmp/timestamp.parquet
+$ parquet cat /tmp/timestamp.parquet
+{"Utf8": "UTF8-1", "Int96": null}
+{"Utf8": "UTF8-2", "Int96": null}
+{"Utf8": "UTF8-3", "Int96": null}
+...
 ```
 
 ### row-count Command

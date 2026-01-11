@@ -16,6 +16,7 @@ var cli struct {
 	Inspect          cmd.InspectCmd               `cmd:"" help:"Inspect Parquet file structure in detail."`
 	Merge            cmd.MergeCmd                 `cmd:"" help:"Merge multiple parquet files into one."`
 	Meta             cmd.MetaCmd                  `cmd:"" help:"Prints the metadata."`
+	Retype           cmd.RetypeCmd                `cmd:"" help:"Retype Parquet columns (e.g., INT96 to TIMESTAMP)."`
 	RowCount         cmd.RowCountCmd              `cmd:"" help:"Prints the count of rows."`
 	Schema           cmd.SchemaCmd                `cmd:"" help:"Prints the schema."`
 	ShellCompletions kongplete.InstallCompletions `cmd:"" help:"Install/uninstall shell completions"`
