@@ -1040,6 +1040,439 @@ func TestTranscodeCmdParseFieldCompressions(t *testing.T) {
 	}
 }
 
+func TestTranscodeCmdFieldType(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+
+	t.Run("int96-to-timestamp-nanos", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Int96=INT64:TIMESTAMP_NANOS"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "int96-to-nanos.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify the output file exists and has correct row count
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		require.Equal(t, int64(10), reader.GetNumRows())
+		_ = reader.PFile.Close()
+
+		// Verify schema has changed - Int96 should now be INT64 with TIMESTAMP_NANOS
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "type=INT64")
+		require.Contains(t, schemaOutput, "logicaltype.unit=NANOS")
+	})
+
+	t.Run("int96-to-timestamp-micros", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Int96=INT64:TIMESTAMP_MICROS"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "int96-to-micros.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify schema has changed
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "type=INT64")
+		require.Contains(t, schemaOutput, "logicaltype.unit=MICROS")
+	})
+
+	t.Run("int96-to-timestamp-millis", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Int96=INT64:TIMESTAMP_MILLIS"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "int96-to-millis.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify schema has changed
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "type=INT64")
+		require.Contains(t, schemaOutput, "logicaltype.unit=MILLIS")
+	})
+
+	t.Run("int32-to-int64", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Int32=INT64:NONE"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "int32-to-int64.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify schema has changed
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		// Int32 field should now be INT64
+		require.Contains(t, schemaOutput, "name=Int32")
+		require.Contains(t, schemaOutput, "type=INT64")
+	})
+
+	t.Run("float-to-double", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Float=DOUBLE:NONE"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "float-to-double.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify output file
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		require.Equal(t, int64(10), reader.GetNumRows())
+		_ = reader.PFile.Close()
+	})
+
+	t.Run("decimal-int32-to-int64", func(t *testing.T) {
+		tempDir := t.TempDir()
+		// Decimal1 is INT32 with precision=9, scale=2
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Decimal1=INT64:DECIMAL(18,2)"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "decimal-int32-to-int64.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify schema has changed
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "name=Decimal1")
+		require.Contains(t, schemaOutput, "type=INT64")
+		require.Contains(t, schemaOutput, "precision=18")
+	})
+
+	t.Run("decimal-scale-change", func(t *testing.T) {
+		tempDir := t.TempDir()
+		// Decimal1 is INT32 with precision=9, scale=2, change to scale=4
+		cmd := TranscodeCmd{
+			FieldType:    []string{"Decimal1=INT64:DECIMAL(18,4)"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "decimal-scale-change.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify schema has changed
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "scale=4")
+	})
+
+	t.Run("byte-array-to-string", func(t *testing.T) {
+		tempDir := t.TempDir()
+		// ByteArray is a plain BYTE_ARRAY without logical type
+		cmd := TranscodeCmd{
+			FieldType:    []string{"ByteArray=BYTE_ARRAY:STRING"},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "byte-array-to-string.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify schema has changed
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "name=ByteArray")
+		require.Contains(t, schemaOutput, "logicaltype=STRING")
+	})
+
+	t.Run("multiple-field-types", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType: []string{
+				"Int96=INT64:TIMESTAMP_NANOS",
+				"Int32=INT64:NONE",
+			},
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       "../testdata/all-types.parquet",
+			URI:          filepath.Join(tempDir, "multiple-conversions.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify both conversions
+		schemaCmd := SchemaCmd{
+			Format:     "go",
+			ReadOption: rOpt,
+			URI:        cmd.URI,
+		}
+		schemaOutput, _ := captureStdoutStderr(func() {
+			require.NoError(t, schemaCmd.Run())
+		})
+		require.Contains(t, schemaOutput, "logicaltype.unit=NANOS")
+	})
+
+	t.Run("field-type-with-encoding", func(t *testing.T) {
+		tempDir := t.TempDir()
+		cmd := TranscodeCmd{
+			FieldType:     []string{"Int32=INT64:NONE"},
+			FieldEncoding: []string{"Int64=DELTA_BINARY_PACKED"},
+			ReadOption:    rOpt,
+			WriteOption:   wOpt,
+			ReadPageSize:  10,
+			Source:        "../testdata/all-types.parquet",
+			URI:           filepath.Join(tempDir, "type-with-encoding.parquet"),
+		}
+
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify output file
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		require.Equal(t, int64(10), reader.GetNumRows())
+		_ = reader.PFile.Close()
+	})
+}
+
+func TestTranscodeCmdFieldTypeErrors(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+	tempDir := t.TempDir()
+
+	testCases := []struct {
+		name      string
+		fieldType []string
+		errMsg    string
+	}{
+		{
+			name:      "invalid format - no equals",
+			fieldType: []string{"Int32INT64:NONE"},
+			errMsg:    "invalid field type format",
+		},
+		{
+			name:      "empty field path",
+			fieldType: []string{"=INT64:NONE"},
+			errMsg:    "empty field path",
+		},
+		{
+			name:      "empty type spec",
+			fieldType: []string{"Int32="},
+			errMsg:    "empty type specification",
+		},
+		{
+			name:      "invalid primitive type",
+			fieldType: []string{"Int32=INVALID:NONE"},
+			errMsg:    "unknown primitive type",
+		},
+		{
+			name:      "missing logical type",
+			fieldType: []string{"Int32=INT64"},
+			errMsg:    "must be PRIMITIVE:LOGICAL format",
+		},
+		{
+			name:      "field not found",
+			fieldType: []string{"NonExistentField=INT64:NONE"},
+			errMsg:    "not found in schema",
+		},
+		{
+			name:      "invalid conversion - string to int",
+			fieldType: []string{"Utf8=INT64:NONE"},
+			errMsg:    "is not supported",
+		},
+		{
+			name:      "decimal without precision",
+			fieldType: []string{"Int32=INT64:DECIMAL"},
+			errMsg:    "DECIMAL requires precision and scale",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := TranscodeCmd{
+				FieldType:    tc.fieldType,
+				ReadOption:   rOpt,
+				WriteOption:  wOpt,
+				ReadPageSize: 10,
+				Source:       "../testdata/all-types.parquet",
+				URI:          filepath.Join(tempDir, tc.name+".parquet"),
+			}
+
+			err := cmd.Run()
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
+}
+
+func TestTranscodeCmdParseFieldTypes(t *testing.T) {
+	testCases := []struct {
+		name      string
+		fieldType []string
+		expected  map[string]string // field path -> primitive type (simplified check)
+		errMsg    string
+	}{
+		{
+			name:      "empty input",
+			fieldType: []string{},
+			expected:  map[string]string{},
+		},
+		{
+			name:      "single field type",
+			fieldType: []string{"field=INT64:NONE"},
+			expected:  map[string]string{"field": "INT64"},
+		},
+		{
+			name:      "multiple field types",
+			fieldType: []string{"f1=INT64:NONE", "f2=DOUBLE:NONE"},
+			expected:  map[string]string{"f1": "INT64", "f2": "DOUBLE"},
+		},
+		{
+			name:      "nested field path",
+			fieldType: []string{"parent.child.leaf=INT64:NONE"},
+			expected:  map[string]string{"parent.child.leaf": "INT64"},
+		},
+		{
+			name:      "with whitespace",
+			fieldType: []string{"  field  =  INT64:NONE  "},
+			expected:  map[string]string{"field": "INT64"},
+		},
+		{
+			name:      "decimal type",
+			fieldType: []string{"field=INT64:DECIMAL(18,2)"},
+			expected:  map[string]string{"field": "INT64"},
+		},
+		{
+			name:      "timestamp type",
+			fieldType: []string{"field=INT64:TIMESTAMP_NANOS"},
+			expected:  map[string]string{"field": "INT64"},
+		},
+		{
+			name:      "fixed len byte array",
+			fieldType: []string{"field=FIXED_LEN_BYTE_ARRAY(16):DECIMAL(38,10)"},
+			expected:  map[string]string{"field": "FIXED_LEN_BYTE_ARRAY"},
+		},
+		{
+			name:      "missing equals sign",
+			fieldType: []string{"fieldINT64:NONE"},
+			errMsg:    "invalid field type format",
+		},
+		{
+			name:      "empty field path",
+			fieldType: []string{"=INT64:NONE"},
+			errMsg:    "empty field path",
+		},
+		{
+			name:      "empty type spec",
+			fieldType: []string{"field="},
+			errMsg:    "empty type specification",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := TranscodeCmd{
+				FieldType: tc.fieldType,
+			}
+			result, err := cmd.parseFieldTypes()
+
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, len(tc.expected), len(result))
+				for fieldPath, expectedPrimitive := range tc.expected {
+					typeSpec, found := result[fieldPath]
+					require.True(t, found, "field %s not found in result", fieldPath)
+					require.Equal(t, expectedPrimitive, typeSpec.Primitive)
+				}
+			}
+		})
+	}
+}
+
 func BenchmarkTranscodeCmd(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)

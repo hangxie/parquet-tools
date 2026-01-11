@@ -1267,6 +1267,68 @@ See [Compression Codecs](#compression-codecs) for more details.
 > [!TIP]
 > Use `parquet-tools schema --show-compression-codec` to see the current compression codec for each field.
 
+#### Field Type Conversion
+
+Use the `--field-type` parameter to convert field types during transcoding. This is particularly useful for converting deprecated INT96 timestamps to standard INT64 timestamp formats, or for changing decimal storage formats.
+
+The format is `field.path=PRIMITIVE:LOGICAL`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`). Use `NONE` as the logical type for types without logical annotations (e.g., `INT64:NONE`).
+
+Convert INT96 timestamps to INT64 TIMESTAMP_MICROS:
+
+```bash
+$ parquet-tools transcode -s testdata/all-types.parquet \
+  --field-type "Int96=INT64:TIMESTAMP_MICROS" \
+  /tmp/converted.parquet
+$ parquet-tools schema /tmp/converted.parquet | grep -i timestamp
+  {"Tag":"name=Int96, inname=Int96, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MICROS, encoding=PLAIN"}
+```
+
+Convert numeric types:
+
+```bash
+# Widen INT32 to INT64
+$ parquet-tools transcode -s input.parquet \
+  --field-type "count=INT64" \
+  output.parquet
+
+# Convert FLOAT to DOUBLE for higher precision
+$ parquet-tools transcode -s input.parquet \
+  --field-type "price=DOUBLE" \
+  output.parquet
+```
+
+Change decimal storage format:
+
+```bash
+# Convert INT32-based decimal to INT64-based decimal with higher precision
+$ parquet-tools transcode -s input.parquet \
+  --field-type "amount=INT64:DECIMAL(18,2)" \
+  output.parquet
+```
+
+**Supported conversions:**
+
+| Source Type | Target Types |
+|-------------|--------------|
+| INT96 | INT64:TIMESTAMP_NANOS, INT64:TIMESTAMP_MICROS, INT64:TIMESTAMP_MILLIS |
+| INT32 | INT64, FLOAT, DOUBLE |
+| INT64 | INT32, FLOAT, DOUBLE |
+| FLOAT | INT32, INT64, DOUBLE |
+| DOUBLE | INT32, INT64, FLOAT |
+| BYTE_ARRAY | FIXED_LEN_BYTE_ARRAY, BYTE_ARRAY:STRING |
+| FIXED_LEN_BYTE_ARRAY | BYTE_ARRAY |
+| INT32:DECIMAL | INT64:DECIMAL, BYTE_ARRAY:DECIMAL, FIXED_LEN_BYTE_ARRAY:DECIMAL |
+| INT64:DECIMAL | INT32:DECIMAL, BYTE_ARRAY:DECIMAL, FIXED_LEN_BYTE_ARRAY:DECIMAL |
+
+**Notes:**
+* INT96 to TIMESTAMP conversion assumes the INT96 value contains a Julian day number and nanoseconds since midnight (standard Parquet INT96 timestamp format)
+* Numeric conversions may lose precision or fail at runtime if values overflow the target type
+* Decimal scale changes are supported - increasing scale multiplies the value, decreasing scale rounds using half-up rounding
+* BYTE_ARRAY to STRING conversion validates UTF-8 encoding and will fail if the data contains invalid UTF-8 sequences
+
+> [!TIP]
+> Use `parquet-tools schema` to see the current field types and determine which conversions are needed.
+
 #### Combine Multiple Options
 
 You can combine multiple transcode options in a single command:
@@ -1297,6 +1359,15 @@ Process INT96 files normally (default behavior):
 ```bash
 $ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
 # Succeeds - INT96 fields are preserved as-is
+```
+
+Convert INT96 to standard timestamp format (recommended approach):
+
+```bash
+$ parquet-tools transcode -s testdata/all-types.parquet \
+  --field-type "Int96=INT64:TIMESTAMP_MICROS" \
+  output.parquet
+# INT96 fields are converted to standard INT64 TIMESTAMP
 ```
 
 **Use cases:**
