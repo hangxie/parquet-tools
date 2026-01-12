@@ -11,7 +11,12 @@ import (
 
 func TestImportCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
+		wOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
 		tempDir := t.TempDir()
 
 		testCases := map[string]struct {
@@ -53,7 +58,12 @@ func TestImportCmd(t *testing.T) {
 	})
 
 	t.Run("good", func(t *testing.T) {
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
+		wOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
 		testCases := map[string]struct {
 			cmd      ImportCmd
 			rowCount int64

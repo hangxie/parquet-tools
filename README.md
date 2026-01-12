@@ -68,6 +68,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
     - [File Format Options](#file-format-options)
       - [Compression Codecs](#compression-codecs)
       - [Data Page Version](#data-page-version)
+      - [Writer Tuning Options](#writer-tuning-options)
       - [Encoding](#encoding)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
@@ -495,6 +496,39 @@ Data page version 2 is preferred as it offers better compression efficiency and 
 **Supported versions:**
 * `1` - DATA_PAGE format (legacy, compatible with older readers)
 * `2` - DATA_PAGE_V2 format (default, more efficient, requires Parquet format v2.0 readers)
+
+#### Writer Tuning Options
+
+These options allow fine-grained control over how Parquet files are written. They are available for `import`, `merge`, `split`, and `transcode` commands.
+
+**Page Size (`--page-size`):**
+
+Controls the target size of data pages in bytes. Smaller pages allow more granular access but increase metadata overhead. Default is `1048576` (1 MB).
+
+```bash
+$ parquet-tools import -f csv -s data.csv -m schema.json --page-size 524288 output.parquet
+```
+
+**Row Group Size (`--row-group-size`):**
+
+Controls the target size of row groups in bytes. Larger row groups improve compression and reduce metadata overhead, but require more memory during read/write operations. Default is `134217728` (128 MB).
+
+```bash
+$ parquet-tools transcode -s input.parquet --row-group-size 268435456 output.parquet
+```
+
+**Parallel Number (`--parallel-number`):**
+
+Controls the number of parallel writer goroutines. Set to `0` (default) to use the number of CPU cores. Higher values can improve write performance on systems with many cores.
+
+```bash
+$ parquet-tools merge -s file1.parquet,file2.parquet --parallel-number 4 output.parquet
+```
+
+> [!TIP]
+> - Use smaller `--page-size` for better random access performance at the cost of higher metadata overhead
+> - Use larger `--row-group-size` for better compression ratios, but ensure sufficient memory is available
+> - Adjust `--parallel-number` based on your system's CPU cores and I/O capabilities
 
 #### Encoding
 
