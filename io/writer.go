@@ -22,6 +22,9 @@ import (
 type WriteOption struct {
 	Compression     string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" default:"SNAPPY"`
 	DataPageVersion int32  `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
+	PageSize        int64  `help:"Page size in bytes." default:"1048576"`
+	RowGroupSize    int64  `help:"Row group size in bytes." default:"134217728"`
+	ParallelNumber  int64  `help:"Number of parallel writer goroutines, 0 means number of cores." default:"0"`
 }
 
 func newLocalWriter(u *url.URL) (source.ParquetFileWriter, error) {
@@ -125,6 +128,13 @@ func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVW
 	}
 	pw.CompressionType = codec
 	pw.DataPageVersion = option.DataPageVersion
+	pw.PageSize = option.PageSize
+	pw.RowGroupSize = option.RowGroupSize
+	if option.ParallelNumber == 0 {
+		pw.NP = int64(runtime.NumCPU())
+	} else {
+		pw.NP = option.ParallelNumber
+	}
 	return pw, nil
 }
 
@@ -146,6 +156,13 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 	}
 	pw.CompressionType = codec
 	pw.DataPageVersion = option.DataPageVersion
+	pw.PageSize = option.PageSize
+	pw.RowGroupSize = option.RowGroupSize
+	if option.ParallelNumber == 0 {
+		pw.NP = int64(runtime.NumCPU())
+	} else {
+		pw.NP = option.ParallelNumber
+	}
 	return pw, nil
 }
 
@@ -167,5 +184,12 @@ func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.Pa
 	}
 	pw.CompressionType = codec
 	pw.DataPageVersion = option.DataPageVersion
+	pw.PageSize = option.PageSize
+	pw.RowGroupSize = option.RowGroupSize
+	if option.ParallelNumber == 0 {
+		pw.NP = int64(runtime.NumCPU())
+	} else {
+		pw.NP = option.ParallelNumber
+	}
 	return pw, nil
 }

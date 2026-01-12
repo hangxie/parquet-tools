@@ -14,7 +14,17 @@ import (
 func TestMergeCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
+		wOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
+		wOptNoCompression := pio.WriteOption{
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
 		tempDir := t.TempDir()
 
 		testCases := map[string]struct {
@@ -27,7 +37,7 @@ func TestMergeCmd(t *testing.T) {
 			"source-not-parquet":  {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/not-a-parquet-file", "../testdata/not-a-parquet-file"}, URI: "dummy"}, "failed to read from"},
 			"source-diff-schema":  {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/empty.parquet"}, URI: "dummy"}, "does not have same schema"},
 			"target-file":         {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: "://uri"}, "unable to parse file location"},
-			"target-compression":  {MergeCmd{ReadOption: rOpt, WriteOption: pio.WriteOption{}, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
+			"target-compression":  {MergeCmd{ReadOption: rOpt, WriteOption: wOptNoCompression, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 			"target-write":        {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../testdata/good.parquet", "../testdata/good.parquet"}, URI: "s3://target"}, "failed to close"},
 			"int96":               {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../testdata/all-types.parquet", "../testdata/all-types.parquet"}, URI: "dummy"}, "type INT96 which is not supported"},
 		}
@@ -43,7 +53,12 @@ func TestMergeCmd(t *testing.T) {
 
 	t.Run("good", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
+		wOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
 		testCases := map[string]struct {
 			cmd      MergeCmd
 			rowCount int64
@@ -74,7 +89,12 @@ func TestMergeCmd(t *testing.T) {
 
 	t.Run("repeat", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
+		wOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
 		tempDir := t.TempDir()
 		source := "../testdata/all-types.parquet"
 
@@ -110,8 +130,13 @@ func TestMergeCmd(t *testing.T) {
 		tempDir := t.TempDir()
 		resultFile := filepath.Join(tempDir, "ut.parquet")
 		mergeCmd := MergeCmd{
-			ReadOption:   pio.ReadOption{},
-			WriteOption:  pio.WriteOption{Compression: "SNAPPY"},
+			ReadOption: pio.ReadOption{},
+			WriteOption: pio.WriteOption{
+				Compression:    "SNAPPY",
+				PageSize:       1024 * 1024,
+				RowGroupSize:   128 * 1024 * 1024,
+				ParallelNumber: 0,
+			},
 			ReadPageSize: 11000,
 			Source:       []string{"../testdata/optional-fields.parquet", "../testdata/optional-fields.parquet"},
 			URI:          resultFile,
@@ -148,8 +173,13 @@ func BenchmarkMergeCmd(b *testing.B) {
 	}()
 
 	cmd := MergeCmd{
-		ReadOption:   pio.ReadOption{},
-		WriteOption:  pio.WriteOption{Compression: "SNAPPY"},
+		ReadOption: pio.ReadOption{},
+		WriteOption: pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		},
 		ReadPageSize: 1000,
 		Source:       slices.Repeat([]string{"../build/benchmark.parquet"}, 3),
 		URI:          "../build/merged.parquet",

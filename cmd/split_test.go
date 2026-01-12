@@ -13,7 +13,12 @@ import (
 
 func TestSplitCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
-	wOpt := pio.WriteOption{Compression: "SNAPPY"}
+	wOpt := pio.WriteOption{
+		Compression:    "SNAPPY",
+		PageSize:       1024 * 1024,
+		RowGroupSize:   128 * 1024 * 1024,
+		ParallelNumber: 0,
+	}
 	tw := TrunkWriter{}
 	testCases := map[string]struct {
 		cmd    SplitCmd
@@ -89,8 +94,13 @@ func TestSplitCmd(t *testing.T) {
 	t.Run("optional-fields", func(t *testing.T) {
 		tempDir := t.TempDir()
 		splitCmd := SplitCmd{
-			ReadOption:   pio.ReadOption{},
-			WriteOption:  pio.WriteOption{Compression: "SNAPPY"},
+			ReadOption: pio.ReadOption{},
+			WriteOption: pio.WriteOption{
+				Compression:    "SNAPPY",
+				PageSize:       1024 * 1024,
+				RowGroupSize:   128 * 1024 * 1024,
+				ParallelNumber: 0,
+			},
 			ReadPageSize: 11000,
 			URI:          "../testdata/optional-fields.parquet",
 			FileCount:    1,

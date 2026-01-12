@@ -14,7 +14,12 @@ import (
 func TestTranscodeCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY"}
+		wOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 0,
+		}
 		tempDir := t.TempDir()
 
 		testCases := map[string]struct {
@@ -25,9 +30,13 @@ func TestTranscodeCmd(t *testing.T) {
 			"source-non-existent": {TranscodeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
 			"source-not-parquet":  {TranscodeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
 			"target-file":         {TranscodeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
-			"target-compression":  {TranscodeCmd{ReadOption: rOpt, WriteOption: pio.WriteOption{}, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 			"target-write":        {TranscodeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: "s3://target"}, "failed to close"},
 			"fail-on-int96":       {TranscodeCmd{FailOnInt96: true, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/all-types.parquet", URI: filepath.Join(tempDir, "dummy")}, "has type INT96 which is not supported"},
+			"target-compression": {TranscodeCmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
+				PageSize:       1024 * 1024,
+				RowGroupSize:   128 * 1024 * 1024,
+				ParallelNumber: 0,
+			}, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 		}
 
 		for name, tc := range testCases {
@@ -68,7 +77,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 		for name, tc := range testCases {
 			t.Run(name, func(t *testing.T) {
-				wOpt := pio.WriteOption{Compression: tc.compression, DataPageVersion: tc.dataPageVersion}
+				wOpt := pio.WriteOption{
+					Compression:     tc.compression,
+					DataPageVersion: tc.dataPageVersion,
+					PageSize:        1024 * 1024,
+					RowGroupSize:    128 * 1024 * 1024,
+					ParallelNumber:  0,
+				}
 				cmd := TranscodeCmd{
 					OmitStats:    tc.omitStats,
 					ReadOption:   rOpt,
@@ -97,7 +112,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("verify-data", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "ZSTD", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "ZSTD",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		// Transcode a file
@@ -141,7 +162,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("schema-modification", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		cmd := TranscodeCmd{
@@ -164,7 +191,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("page-sizes", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		pageSizes := []int{1, 5, 10, 100, 1000}
@@ -191,8 +224,20 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("edge-cases", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
-		wOptV2 := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 2}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
+		wOptV2 := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 2,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		testCases := []struct {
@@ -234,8 +279,13 @@ func TestTranscodeCmd(t *testing.T) {
 			{
 				name: "multiple compression types",
 				cmd: TranscodeCmd{
-					ReadOption:   rOpt,
-					WriteOption:  pio.WriteOption{Compression: "LZ4_RAW", DataPageVersion: 1},
+					ReadOption: rOpt,
+					WriteOption: pio.WriteOption{
+						Compression:    "LZ4_RAW",
+						PageSize:       1024 * 1024,
+						RowGroupSize:   128 * 1024 * 1024,
+						ParallelNumber: 0,
+					},
 					ReadPageSize: 10,
 					Source:       "../testdata/good.parquet",
 					URI:          filepath.Join(tempDir, "lz4-raw.parquet"),
@@ -258,7 +308,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("field-encoding", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		testCases := []struct {
@@ -333,7 +389,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("field-compression", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		testCases := []struct {
@@ -419,7 +481,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("field-encoding-and-compression", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		// Test combining field-encoding and field-compression
@@ -445,7 +513,13 @@ func TestTranscodeCmd(t *testing.T) {
 
 	t.Run("encoding-preservation", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 1}
+		wOpt := pio.WriteOption{
+			Compression:     "SNAPPY",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		}
 		tempDir := t.TempDir()
 
 		// First, create a test file with specific encodings
@@ -484,8 +558,14 @@ func TestTranscodeCmd(t *testing.T) {
 			// Transcode without specifying field encodings
 			transcodedFile := filepath.Join(tempDir, "transcoded-preserved.parquet")
 			cmd := TranscodeCmd{
-				ReadOption:   rOpt,
-				WriteOption:  pio.WriteOption{Compression: "ZSTD", DataPageVersion: 1},
+				ReadOption: rOpt,
+				WriteOption: pio.WriteOption{
+					Compression:     "ZSTD",
+					DataPageVersion: 1,
+					PageSize:        1024 * 1024,
+					RowGroupSize:    128 * 1024 * 1024,
+					ParallelNumber:  0,
+				},
 				ReadPageSize: 10,
 				Source:       testFile,
 				URI:          transcodedFile,
@@ -545,10 +625,16 @@ func TestTranscodeCmd(t *testing.T) {
 			cmd := TranscodeCmd{
 				FieldEncoding: []string{"shoe_name=DELTA_BYTE_ARRAY"},
 				ReadOption:    rOpt,
-				WriteOption:   pio.WriteOption{Compression: "ZSTD", DataPageVersion: 1},
-				ReadPageSize:  10,
-				Source:        "../testdata/good.parquet",
-				URI:           transcodedFile,
+				WriteOption: pio.WriteOption{
+					Compression:     "ZSTD",
+					DataPageVersion: 1,
+					PageSize:        1024 * 1024,
+					RowGroupSize:    128 * 1024 * 1024,
+					ParallelNumber:  0,
+				},
+				ReadPageSize: 10,
+				Source:       "../testdata/good.parquet",
+				URI:          transcodedFile,
 			}
 			err := cmd.Run()
 			require.NoError(t, err)
@@ -606,8 +692,14 @@ func TestTranscodeCmd(t *testing.T) {
 			// Transcode with different compression but preserve encodings
 			transcodedFile := filepath.Join(tempDir, "transcoded-gzip.parquet")
 			cmd := TranscodeCmd{
-				ReadOption:   rOpt,
-				WriteOption:  pio.WriteOption{Compression: "GZIP", DataPageVersion: 1},
+				ReadOption: rOpt,
+				WriteOption: pio.WriteOption{
+					Compression:     "GZIP",
+					DataPageVersion: 1,
+					PageSize:        1024 * 1024,
+					RowGroupSize:    128 * 1024 * 1024,
+					ParallelNumber:  0,
+				},
 				ReadPageSize: 10,
 				Source:       testFile,
 				URI:          transcodedFile,
@@ -634,8 +726,14 @@ func TestTranscodeCmd(t *testing.T) {
 			// Transcode from v1 to v2 and preserve encodings (except PLAIN_DICTIONARY)
 			transcodedFile := filepath.Join(tempDir, "transcoded-v2.parquet")
 			cmd := TranscodeCmd{
-				ReadOption:   rOpt,
-				WriteOption:  pio.WriteOption{Compression: "SNAPPY", DataPageVersion: 2},
+				ReadOption: rOpt,
+				WriteOption: pio.WriteOption{
+					Compression:     "SNAPPY",
+					DataPageVersion: 2,
+					PageSize:        1024 * 1024,
+					RowGroupSize:    128 * 1024 * 1024,
+					ParallelNumber:  0,
+				},
 				ReadPageSize: 10,
 				Source:       "../testdata/all-types.parquet",
 				URI:          transcodedFile,
@@ -849,7 +947,13 @@ func TestTranscodeCmdParseFieldEncodings(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cmd := TranscodeCmd{
 				FieldEncoding: tc.fieldEncoding,
-				WriteOption:   pio.WriteOption{Compression: "SNAPPY", DataPageVersion: tc.dataPageVersion},
+				WriteOption: pio.WriteOption{
+					Compression:     "SNAPPY",
+					DataPageVersion: tc.dataPageVersion,
+					PageSize:        1024 * 1024,
+					RowGroupSize:    128 * 1024 * 1024,
+					ParallelNumber:  0,
+				},
 			}
 			result, err := cmd.parseFieldEncodings()
 
@@ -1054,8 +1158,14 @@ func BenchmarkTranscodeCmd(b *testing.B) {
 
 	tempDir := b.TempDir()
 	cmd := TranscodeCmd{
-		ReadOption:   pio.ReadOption{},
-		WriteOption:  pio.WriteOption{Compression: "ZSTD", DataPageVersion: 1},
+		ReadOption: pio.ReadOption{},
+		WriteOption: pio.WriteOption{
+			Compression:     "ZSTD",
+			DataPageVersion: 1,
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+		},
 		ReadPageSize: 1000,
 		Source:       "../build/benchmark.parquet",
 		URI:          filepath.Join(tempDir, "transcoded.parquet"),
