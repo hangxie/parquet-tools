@@ -1,0 +1,105 @@
+{
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
+  "Fields": [
+    {
+      "Tag": "name=Id, inname=Id, type=INT32, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Int96Field, inname=Int96Field, type=INT96, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Int96Field2, inname=Int96Field2, type=INT96, repetitiontype=OPTIONAL, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=BsonField, inname=BsonField, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=BsonField2, inname=BsonField2, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=JsonField, inname=JsonField, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=JsonField2, inname=JsonField2, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Float16Field, inname=Float16Field, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Nested, inname=Nested",
+      "Fields": [
+        {
+          "Tag": "name=ContainerBson, inname=ContainerBson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=GZIP"
+        }
+      ]
+    },
+    {
+      "Tag": "name=ListOfStructs, inname=ListOfStructs, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, inname=Element",
+          "Fields": [
+            {
+              "Tag": "name=ElemBson, inname=ElemBson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=LZ4_RAW"
+            },
+            {
+              "Tag": "name=ElemInt96, inname=ElemInt96, type=INT96, encoding=PLAIN, compression=LZ4_RAW"
+            },
+            {
+              "Tag": "name=ElemName, inname=ElemName, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=ZSTD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Tag": "name=MapOfStructs, inname=MapOfStructs, type=MAP",
+      "Fields": [
+        {
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+        },
+        {
+          "Tag": "name=value, inname=Value",
+          "Fields": [
+            {
+              "Tag": "name=ValueBson, inname=ValueBson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN, compression=SNAPPY"
+            },
+            {
+              "Tag": "name=ValueInt96, inname=ValueInt96, type=INT96, encoding=PLAIN, compression=LZ4_RAW"
+            },
+            {
+              "Tag": "name=ValueNested, inname=ValueNested",
+              "Fields": [
+                {
+                  "Tag": "name=DeepBson, inname=DeepBson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=UNCOMPRESSED"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Tag": "name=BsonList, inname=BsonList, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN, compression=SNAPPY"
+        }
+      ]
+    },
+    {
+      "Tag": "name=BsonMap, inname=BsonMap, type=MAP",
+      "Fields": [
+        {
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+        },
+        {
+          "Tag": "name=value, inname=Value, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN, compression=SNAPPY"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+[
+  {
+    "BsonField": {
+      "id": 0,
+      "value": "item-0"
+    },
+    "BsonField2": {
+      "id": 0,
+      "value": "item-0"
+    },
+    "BsonList": [],
+    "BsonMap": {},
+    "Float16Field": 0,
+    "Id": 0,
+    "Int96Field": "2022-01-01T00:00:00.000000000Z",
+    "Int96Field2": "2022-01-01T00:00:00.000000000Z",
+    "JsonField": "{\"id\":0,\"value\":\"item-0\"}",
+    "JsonField2": "{\"id\":0,\"value\":\"item-0\"}",
+    "ListOfStructs": [],
+    "MapOfStructs": {},
+    "Name": "record-0",
+    "Nested": {
+      "ContainerBson": {
+        "nested": true,
+        "nested_id": 0
+      }
+    }
+  },
+  {
+    "BsonField": {
+      "id": 1,
+      "value": "item-1"
+    },
+    "BsonField2": {
+      "id": 1,
+      "value": "item-1"
+    },
+    "BsonList": [
+      {
+        "list_item": 0
+      }
+    ],
+    "BsonMap": {
+      "bson-key-0": {
+        "map_item": 0
+      }
+    },
+    "Float16Field": 1,
+    "Id": 1,
+    "Int96Field": "2022-01-01T01:01:01.001001000Z",
+    "Int96Field2": null,
+    "JsonField": "{\"id\":1,\"value\":\"item-1\"}",
+    "JsonField2": "{\"id\":1,\"value\":\"item-1\"}",
+    "ListOfStructs": [
+      {
+        "ElemBson": {
+          "elem": 0,
+          "parent": 1
+        },
+        "ElemInt96": "2022-02-01T00:00:00.000000000Z",
+        "ElemName": "elem-1-0"
+      }
+    ],
+    "MapOfStructs": {
+      "key-0": {
+        "ValueBson": {
+          "map_value": 0,
+          "parent": 1
+        },
+        "ValueInt96": "2022-03-01T00:00:00.000000000Z",
+        "ValueNested": {
+          "DeepBson": {
+            "deep": 100
+          }
+        }
+      }
+    },
+    "Name": "record-1",
+    "Nested": {
+      "ContainerBson": {
+        "nested": true,
+        "nested_id": 10
+      }
+    }
+  },
+  {
+    "BsonField": {
+      "id": 2,
+      "value": "item-2"
+    },
+    "BsonField2": {
+      "id": 2,
+      "value": "item-2"
+    },
+    "BsonList": [
+      {
+        "list_item": 0
+      },
+      {
+        "list_item": 1
+      }
+    ],
+    "BsonMap": {
+      "bson-key-0": {
+        "map_item": 0
+      },
+      "bson-key-1": {
+        "map_item": 1
+      }
+    },
+    "Float16Field": 2,
+    "Id": 2,
+    "Int96Field": "2022-01-01T02:02:02.002002000Z",
+    "Int96Field2": "2022-01-01T02:02:02.002002000Z",
+    "JsonField": "{\"id\":2,\"value\":\"item-2\"}",
+    "JsonField2": "{\"id\":2,\"value\":\"item-2\"}",
+    "ListOfStructs": [
+      {
+        "ElemBson": {
+          "elem": 0,
+          "parent": 2
+        },
+        "ElemInt96": "2022-02-01T00:00:00.000000000Z",
+        "ElemName": "elem-2-0"
+      },
+      {
+        "ElemBson": {
+          "elem": 1,
+          "parent": 2
+        },
+        "ElemInt96": "2022-02-02T01:01:01.000000000Z",
+        "ElemName": "elem-2-1"
+      }
+    ],
+    "MapOfStructs": {
+      "key-0": {
+        "ValueBson": {
+          "map_value": 0,
+          "parent": 2
+        },
+        "ValueInt96": "2022-03-01T00:00:00.000000000Z",
+        "ValueNested": {
+          "DeepBson": {
+            "deep": 200
+          }
+        }
+      },
+      "key-1": {
+        "ValueBson": {
+          "map_value": 1,
+          "parent": 2
+        },
+        "ValueInt96": "2022-03-02T01:01:01.000000000Z",
+        "ValueNested": {
+          "DeepBson": {
+            "deep": 200
+          }
+        }
+      }
+    },
+    "Name": "record-2",
+    "Nested": {
+      "ContainerBson": {
+        "nested": true,
+        "nested_id": 20
+      }
+    }
+  }
+]

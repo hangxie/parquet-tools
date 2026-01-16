@@ -93,6 +93,9 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Show Meta Data](#show-meta-data)
     - [retype Command](#retype-command)
       - [Convert INT96 to Timestamp](#convert-int96-to-timestamp)
+      - [Convert BSON to String](#convert-bson-to-string)
+      - [Remove JSON Logical Type](#remove-json-logical-type)
+      - [Convert FLOAT16 to FLOAT32](#convert-float16-to-float32)
     - [row-count Command](#row-count-command)
       - [Show Number of Rows](#show-number-of-rows)
     - [schema Command](#schema-command)
@@ -909,14 +912,20 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 
 ### retype Command
 
-`retype` command changes the data type of columns in a parquet file. Currently, it supports converting INT96 columns to TIMESTAMP_NANOS.
+`retype` command changes the data type of columns in a parquet file. It supports several type conversions to improve compatibility with tools that don't support certain Parquet types.
+
+**Supported conversions:**
+* `--int96-to-timestamp` - Convert INT96 columns to INT64 with TIMESTAMP_NANOS logical type
+* `--bson-to-string` - Convert BSON columns to plain strings (JSON encoded)
+* `--json-to-string` - Remove JSON logical type from columns (keep as plain BYTE_ARRAY)
+* `--float16-to-float32` - Convert FLOAT16 columns to FLOAT32
+
+> [!NOTE]
+> These options convert all matching fields in the parquet file; there is currently no way to select particular fields for conversion.
 
 #### Convert INT96 to Timestamp
 
 INT96 is a deprecated timestamp format so lots of tools do not support it, you can use `--int96-to-timestamp` to convert all INT96 columns to INT64 columns with TIMESTAMP (NANOS) logical type.
-
-> [!NOTE]
-> This option converts all INT96 fields in the parquet file; there is currently no way to select a particular field for conversion.
 
 Following example shows how to retype INT96 to TIMESTAMP so Apache parquet-cli can read the file:
 
@@ -929,6 +938,46 @@ $ parquet cat /tmp/timestamp.parquet
 {"Utf8": "UTF8-2", "Int96": null}
 {"Utf8": "UTF8-3", "Int96": null}
 ...
+```
+
+#### Convert BSON to String
+
+BSON is a binary format that some tools (e.g., DuckDB) do not support. You can use `--bson-to-string` to convert BSON columns to plain strings with STRING logical type. The BSON data is decoded and re-encoded as JSON strings.
+
+```bash
+$ parquet-tools retype --bson-to-string -s testdata/all-types.parquet /tmp/bson-to-string.parquet
+```
+
+Following example shows how to retype BSON to string so DuckDB can read the file:
+
+```bash
+$ duckdb -s 'select count(*) from "testdata/retype.parquet"'
+IO Error:
+Unsupported converted type (20)
+$ parquet-tools retype --bson-to-string -s testdata/retype.parquet /tmp/retype.parquet
+$ duckdb -s 'select count(*) from "/tmp/retype.parquet"'
+┌──────────────┐
+│ count_star() │
+│    int64     │
+├──────────────┤
+│      3       │
+└──────────────┘
+```
+
+#### Remove JSON Logical Type
+
+Some tools may have issues with the JSON logical type annotation. You can use `--json-to-string` to remove the JSON logical type from columns, keeping them as plain BYTE_ARRAY (UTF8 string) without the JSON annotation.
+
+```bash
+$ parquet-tools retype --json-to-string -s input.parquet /tmp/json-to-string.parquet
+```
+
+#### Convert FLOAT16 to FLOAT32
+
+FLOAT16 (half-precision floating point) is not supported by all tools. You can use `--float16-to-float32` to convert FLOAT16 columns to FLOAT32 (single-precision), which has wider compatibility.
+
+```bash
+$ parquet-tools retype --float16-to-float32 -s input.parquet /tmp/float16-to-float32.parquet
 ```
 
 ### row-count Command
