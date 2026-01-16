@@ -255,6 +255,45 @@ $PT cat --format json "$TEMP_DIR/merged.parquet" | format_json > "$GOLDEN_DIR/me
 rm -f "$TEMP_DIR"/*.parquet
 
 # ============================================================================
+# retype command golden files
+# ============================================================================
+echo "  retype command..."
+
+# Temporary file for retype output
+RETYPE_OUTPUT="$TEMP_DIR/retype-output.parquet"
+
+# retype-schema.json (no retype, original schema)
+$PT retype --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema.json"
+
+# retype-data.json (no retype, original data)
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data.json"
+rm -f "$RETYPE_OUTPUT"
+
+# retype-schema-int96-to-timestamp.json and retype-data-int96-to-timestamp.json
+$PT retype --int96-to-timestamp --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-int96-to-timestamp.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data-int96-to-timestamp.json"
+rm -f "$RETYPE_OUTPUT"
+
+# retype-schema-bson-to-string.json and retype-data-bson-to-string.json
+$PT retype --bson-to-string --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-bson-to-string.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data-bson-to-string.json"
+rm -f "$RETYPE_OUTPUT"
+
+# retype-schema-float16-to-float32.json and retype-data-float16-to-float32.json
+$PT retype --float16-to-float32 --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-float16-to-float32.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data-float16-to-float32.json"
+rm -f "$RETYPE_OUTPUT"
+
+# retype-schema-json-to-string.json
+$PT retype --json-to-string --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-json-to-string.json"
+rm -f "$RETYPE_OUTPUT"
+
+# ============================================================================
 # int96-nil-min-max.json (special case from int96 test)
 # ============================================================================
 echo "  special cases..."

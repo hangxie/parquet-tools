@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson"
 
 	pio "github.com/hangxie/parquet-tools/io"
-	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 func TestRetypeCmd(t *testing.T) {
@@ -46,7 +46,7 @@ func TestRetypeCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("int96-to-timestamp", func(t *testing.T) {
+	t.Run("good", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
 			Compression:    "SNAPPY",
@@ -55,481 +55,461 @@ func TestRetypeCmd(t *testing.T) {
 			ParallelNumber: 0,
 		}
 		tempDir := t.TempDir()
-
-		// Use simpler file without nested types for reliable conversion
-		cmd := RetypeCmd{
-			Int96ToTimestamp: true,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     100,
-			Source:           "../testdata/int96-nil-min-max.parquet",
-			URI:              filepath.Join(tempDir, "retyped.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-
-		// Verify the output file exists and has the correct row count
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
-		require.NoError(t, err)
-		defer func() { _ = reader.PFile.Close() }()
-
-		require.Equal(t, int64(10), reader.GetNumRows())
-
-		// Verify the schema has TIMESTAMP_NANOS instead of INT96
-		schemaTree, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{SkipPageEncoding: true})
-		require.NoError(t, err)
-
-		jsonSchema := schemaTree.JSONSchema()
-		require.Contains(t, jsonSchema, "TIMESTAMP")
-		require.Contains(t, jsonSchema, "NANOS")
-		require.NotContains(t, jsonSchema, "INT96")
-	})
-
-	t.Run("no-conversion-without-flag", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		cmd := RetypeCmd{
-			Int96ToTimestamp: false,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     100,
-			Source:           "../testdata/all-types.parquet",
-			URI:              filepath.Join(tempDir, "no-retype.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-
-		// Verify the output file exists
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
-		require.NoError(t, err)
-		defer func() { _ = reader.PFile.Close() }()
-
-		require.Equal(t, int64(10), reader.GetNumRows())
-
-		// Verify INT96 is still in the schema
-		schemaTree, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{SkipPageEncoding: true})
-		require.NoError(t, err)
-
-		jsonSchema := schemaTree.JSONSchema()
-		require.Contains(t, jsonSchema, "INT96")
-	})
-
-	t.Run("preserves-other-types", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		// Use simpler file without nested types
-		cmd := RetypeCmd{
-			Int96ToTimestamp: true,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     100,
-			Source:           "../testdata/int96-nil-min-max.parquet",
-			URI:              filepath.Join(tempDir, "retyped-preserve.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-
-		// Verify data integrity using cat command
-		catCmd := CatCmd{
-			ReadOption:   rOpt,
-			ReadPageSize: 1000,
-			SampleRatio:  1.0,
-			Format:       "json",
-			GeoFormat:    "geojson",
-			FailOnInt96:  true,
-			URI:          cmd.URI,
-		}
-
-		// Should not fail because INT96 has been converted
-		output, _ := captureStdoutStderr(func() {
-			require.NoError(t, catCmd.Run())
-		})
-
-		// Verify the Utf8 field is present
-		require.Contains(t, output, "Utf8")
-	})
-
-	t.Run("empty-parquet-file", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		cmd := RetypeCmd{
-			Int96ToTimestamp: true,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     100,
-			Source:           "../testdata/empty.parquet",
-			URI:              filepath.Join(tempDir, "retyped-empty.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-
-		// Verify the output file exists and has 0 rows
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
-		require.NoError(t, err)
-		defer func() { _ = reader.PFile.Close() }()
-
-		require.Equal(t, int64(0), reader.GetNumRows())
-	})
-
-	t.Run("small-page-size", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		// Use small page size to test multiple read iterations
-		cmd := RetypeCmd{
-			Int96ToTimestamp: true,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     2, // Small page size forces multiple read iterations
-			Source:           "../testdata/int96-nil-min-max.parquet",
-			URI:              filepath.Join(tempDir, "retyped-small-page.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-
-		// Verify the output file has the same row count
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
-		require.NoError(t, err)
-		defer func() { _ = reader.PFile.Close() }()
-
-		require.Equal(t, int64(10), reader.GetNumRows())
-	})
-
-	t.Run("page-size-one", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		// Use page size of 1 - the minimum allowed
-		cmd := RetypeCmd{
-			Int96ToTimestamp: false,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     1,
-			Source:           "../testdata/good.parquet",
-			URI:              filepath.Join(tempDir, "retyped-page-one.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-	})
-
-	t.Run("no-int96-fields-in-file", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		// Using a file that has no INT96 fields, with INT96 conversion enabled
-		cmd := RetypeCmd{
-			Int96ToTimestamp: true,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     100,
-			Source:           "../testdata/good.parquet",
-			URI:              filepath.Join(tempDir, "retyped-no-int96.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-	})
-
-	t.Run("conversion-without-int96-fields-map", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
-		}
-		tempDir := t.TempDir()
-
-		// Test path where Int96ToTimestamp is true but no INT96 fields exist
-		// This exercises the len(int96Fields) == 0 path in reader
-		cmd := RetypeCmd{
-			Int96ToTimestamp: true,
-			ReadOption:       rOpt,
-			WriteOption:      wOpt,
-			ReadPageSize:     100,
-			Source:           "../testdata/good.parquet", // No INT96 fields
-			URI:              filepath.Join(tempDir, "retyped-no-int96-map.parquet"),
-		}
-
-		err := cmd.Run()
-		require.NoError(t, err)
-
-		// Verify the output
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
-		require.NoError(t, err)
-		defer func() { _ = reader.PFile.Close() }()
-
-		require.Equal(t, int64(3), reader.GetNumRows())
-	})
-
-	t.Run("different-compression-formats", func(t *testing.T) {
-		rOpt := pio.ReadOption{}
-		tempDir := t.TempDir()
-
-		compressions := []string{"GZIP", "ZSTD", "LZ4_RAW", "UNCOMPRESSED"}
-		for _, comp := range compressions {
-			t.Run(comp, func(t *testing.T) {
-				wOpt := pio.WriteOption{
-					Compression:    comp,
-					PageSize:       1024 * 1024,
-					RowGroupSize:   128 * 1024 * 1024,
-					ParallelNumber: 0,
-				}
-
-				cmd := RetypeCmd{
+		resultFile := filepath.Join(tempDir, "retyped.parquet")
+		testCases := map[string]struct {
+			cmd          RetypeCmd
+			goldenSchema string
+			goldenData   string
+		}{
+			"int96-to-timestamp": {
+				cmd: RetypeCmd{
+					Int96ToTimestamp: true,
+					ReadOption:       rOpt,
+					WriteOption:      wOpt,
+					ReadPageSize:     100,
+					Source:           "../testdata/retype.parquet",
+					URI:              resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-schema-int96-to-timestamp.json",
+				goldenData:   "../testdata/golden/retype-data.json",
+			},
+			"bson-to-string": {
+				cmd: RetypeCmd{
+					BsonToString: true,
+					ReadOption:   rOpt,
+					WriteOption:  wOpt,
+					ReadPageSize: 100,
+					Source:       "../testdata/retype.parquet",
+					URI:          resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-schema-bson-to-string.json",
+				goldenData:   "../testdata/golden/retype-data-bson-to-string.json",
+			},
+			"float16-to-float32": {
+				cmd: RetypeCmd{
+					Float16ToFloat32: true,
+					ReadOption:       rOpt,
+					WriteOption:      wOpt,
+					ReadPageSize:     100,
+					Source:           "../testdata/retype.parquet",
+					URI:              resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-schema-float16-to-float32.json",
+				goldenData:   "../testdata/golden/retype-data.json",
+			},
+			"json-to-string": {
+				cmd: RetypeCmd{
+					JsonToString: true,
+					ReadOption:   rOpt,
+					WriteOption:  wOpt,
+					ReadPageSize: 100,
+					Source:       "../testdata/retype.parquet",
+					URI:          resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-schema-json-to-string.json",
+				goldenData:   "../testdata/golden/retype-data.json",
+			},
+			"no-retype": {
+				cmd: RetypeCmd{
 					Int96ToTimestamp: false,
 					ReadOption:       rOpt,
 					WriteOption:      wOpt,
 					ReadPageSize:     100,
-					Source:           "../testdata/good.parquet",
-					URI:              filepath.Join(tempDir, "retyped-"+comp+".parquet"),
-				}
+					Source:           "../testdata/retype.parquet",
+					URI:              resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-schema.json",
+				goldenData:   "../testdata/golden/retype-data.json",
+			},
+		}
 
-				err := cmd.Run()
+		for name, tc := range testCases {
+			t.Run(name, func(t *testing.T) {
+				err := tc.cmd.Run()
 				require.NoError(t, err)
+
+				stdout, stderr := captureStdoutStderr(func() {
+					cmd := CatCmd{
+						ReadOption:   rOpt,
+						ReadPageSize: 1000,
+						SampleRatio:  1.0,
+						Format:       "json",
+						URI:          resultFile,
+					}
+					require.NoError(t, cmd.Run())
+				})
+				require.Equal(t, loadExpected(t, tc.goldenData), stdout)
+				require.Equal(t, "", stderr)
+
+				stdout, stderr = captureStdoutStderr(func() {
+					cmd := SchemaCmd{
+						ReadOption:           rOpt,
+						Format:               "json",
+						ShowCompressionCodec: true,
+						URI:                  resultFile,
+					}
+					require.NoError(t, cmd.Run())
+				})
+				require.Equal(t, loadExpected(t, tc.goldenSchema), stdout)
+				require.Equal(t, "", stderr)
 			})
 		}
 	})
 }
 
-func TestConvertStructWithInt96(t *testing.T) {
-	// Valid INT96 timestamp string (format used by parquet-go)
+func TestConverter(t *testing.T) {
 	validInt96 := "AADgpBwAAAAAmpcUAA=="
-	// Invalid INT96 string that will fail conversion - base64 decodes to less than 12 bytes
-	invalidInt96 := "c2hvcnQ=" // "short" in base64, only 5 bytes when decoded
+	invalidInt96 := "c2hvcnQ="
 
-	t.Run("invalid-int96-string", func(t *testing.T) {
-		type TestStruct struct {
-			Name      string
-			Timestamp string
-		}
+	t.Run("int96-conversion", func(t *testing.T) {
+		t.Run("invalid-int96-string", func(t *testing.T) {
+			type TestStruct struct {
+				Name      string
+				Timestamp string
+			}
 
-		input := &TestStruct{Name: "test", Timestamp: invalidInt96}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
+			input := &TestStruct{Name: "test", Timestamp: invalidInt96}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
 
-		_, err := convertStructWithInt96(input, int96Fields)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "failed to convert INT96 field")
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "failed to convert")
+		})
+
+		t.Run("invalid-int96-pointer-string", func(t *testing.T) {
+			type TestStruct struct {
+				Name      string
+				Timestamp *string
+			}
+
+			ts := invalidInt96
+			input := &TestStruct{Name: "test", Timestamp: &ts}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "failed to convert")
+		})
+
+		t.Run("string-int96-field", func(t *testing.T) {
+			type TestStruct struct {
+				Name      string
+				Timestamp string
+			}
+
+			input := &TestStruct{Name: "test", Timestamp: validInt96}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("pointer-int96-field-non-nil", func(t *testing.T) {
+			type TestStruct struct {
+				Name      string
+				Timestamp *string
+			}
+
+			ts := validInt96
+			input := &TestStruct{Name: "test", Timestamp: &ts}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("pointer-int96-field-nil", func(t *testing.T) {
+			type TestStruct struct {
+				Name      string
+				Timestamp *string
+			}
+
+			input := &TestStruct{Name: "test", Timestamp: nil}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("no-matching-fields", func(t *testing.T) {
+			type TestStruct struct {
+				Name  string
+				Value int
+			}
+
+			input := &TestStruct{Name: "test", Value: 42}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("nil-pointer-input", func(t *testing.T) {
+			var input *struct{ Name string }
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.Nil(t, result)
+		})
+
+		t.Run("non-struct-input", func(t *testing.T) {
+			input := "not a struct"
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.Equal(t, input, result)
+		})
+
+		t.Run("unexpected-type-for-int96", func(t *testing.T) {
+			type TestStruct struct {
+				Timestamp int
+			}
+
+			input := &TestStruct{Timestamp: 123}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "unexpected type")
+		})
+
+		t.Run("struct-value-not-pointer", func(t *testing.T) {
+			type TestStruct struct {
+				Name      string
+				Timestamp string
+			}
+
+			input := TestStruct{Name: "test", Timestamp: validInt96}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("complex-struct-with-mixed-fields", func(t *testing.T) {
+			type TestStruct struct {
+				Name       string
+				Value      int64
+				Timestamp1 string
+				Timestamp2 *string
+				Data       []byte
+			}
+
+			ts := validInt96
+			input := &TestStruct{
+				Name:       "test",
+				Value:      100,
+				Timestamp1: validInt96,
+				Timestamp2: &ts,
+				Data:       []byte{1, 2, 3},
+			}
+			rule := RuleRegistry[RuleInt96ToTimestamp]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp1": {}, "Timestamp2": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
 	})
 
-	t.Run("invalid-int96-pointer-string", func(t *testing.T) {
-		type TestStruct struct {
-			Name      string
-			Timestamp *string
-		}
-
-		ts := invalidInt96
-		input := &TestStruct{Name: "test", Timestamp: &ts}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-
-		_, err := convertStructWithInt96(input, int96Fields)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "failed to convert INT96 field")
-	})
-
-	t.Run("string-int96-field", func(t *testing.T) {
-		type TestStruct struct {
-			Name      string
-			Timestamp string
-		}
-
-		input := &TestStruct{Name: "test", Timestamp: validInt96}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-
-		result, err := convertStructWithInt96(input, int96Fields)
+	t.Run("bson-conversion", func(t *testing.T) {
+		bsonData, err := bson.Marshal(bson.M{"key": "value"})
 		require.NoError(t, err)
-		require.NotNil(t, result)
+		validBson := string(bsonData)
+		invalidBson := "not valid bson"
 
-		// The result should be a pointer to a struct with int64 Timestamp
-		// Verify the Name field is preserved
-		require.NotNil(t, result)
+		t.Run("valid-bson-string", func(t *testing.T) {
+			type TestStruct struct {
+				Name string
+				Data string
+			}
+
+			input := &TestStruct{Name: "test", Data: validBson}
+			rule := RuleRegistry[RuleBsonToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+
+			resultVal := reflect.ValueOf(result).Elem()
+			dataField := resultVal.FieldByName("Data")
+			require.Contains(t, dataField.String(), `"key"`)
+			require.Contains(t, dataField.String(), `"value"`)
+		})
+
+		t.Run("invalid-bson-string", func(t *testing.T) {
+			type TestStruct struct {
+				Name string
+				Data string
+			}
+
+			input := &TestStruct{Name: "test", Data: invalidBson}
+			rule := RuleRegistry[RuleBsonToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "failed to convert")
+		})
+
+		t.Run("pointer-bson-field-non-nil", func(t *testing.T) {
+			type TestStruct struct {
+				Name string
+				Data *string
+			}
+
+			data := validBson
+			input := &TestStruct{Name: "test", Data: &data}
+			rule := RuleRegistry[RuleBsonToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("pointer-bson-field-nil", func(t *testing.T) {
+			type TestStruct struct {
+				Name string
+				Data *string
+			}
+
+			input := &TestStruct{Name: "test", Data: nil}
+			rule := RuleRegistry[RuleBsonToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("no-bson-fields", func(t *testing.T) {
+			type TestStruct struct {
+				Name  string
+				Value int
+			}
+
+			input := &TestStruct{Name: "test", Value: 42}
+			rule := RuleRegistry[RuleBsonToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+		})
+
+		t.Run("unexpected-type-for-bson", func(t *testing.T) {
+			type TestStruct struct {
+				Data int
+			}
+
+			input := &TestStruct{Data: 123}
+			rule := RuleRegistry[RuleBsonToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "unexpected type")
+		})
 	})
 
-	t.Run("pointer-int96-field-non-nil", func(t *testing.T) {
-		type TestStruct struct {
-			Name      string
-			Timestamp *string
-		}
+	t.Run("float16-conversion", func(t *testing.T) {
+		t.Run("valid-float16", func(t *testing.T) {
+			validFloat16 := string([]byte{0x00, 0x3C})
 
-		ts := validInt96
-		input := &TestStruct{Name: "test", Timestamp: &ts}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
+			type TestStruct struct {
+				Value string
+			}
 
-		result, err := convertStructWithInt96(input, int96Fields)
-		require.NoError(t, err)
-		require.NotNil(t, result)
+			input := &TestStruct{Value: validFloat16}
+			rule := RuleRegistry[RuleFloat16ToFloat32]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+
+			resultVal := reflect.ValueOf(result).Elem()
+			valueField := resultVal.FieldByName("Value")
+			require.InDelta(t, float32(1.0), valueField.Interface().(float32), 0.001)
+		})
+
+		t.Run("invalid-float16-length", func(t *testing.T) {
+			invalidFloat16 := "x"
+
+			type TestStruct struct {
+				Value string
+			}
+
+			input := &TestStruct{Value: invalidFloat16}
+			rule := RuleRegistry[RuleFloat16ToFloat32]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "float16 requires 2 bytes")
+		})
 	})
 
-	t.Run("pointer-int96-field-nil", func(t *testing.T) {
-		type TestStruct struct {
-			Name      string
-			Timestamp *string
-		}
-
-		input := &TestStruct{Name: "test", Timestamp: nil}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-
-		result, err := convertStructWithInt96(input, int96Fields)
-		require.NoError(t, err)
-		require.NotNil(t, result)
-	})
-
-	t.Run("no-int96-fields", func(t *testing.T) {
+	t.Run("no-rules", func(t *testing.T) {
 		type TestStruct struct {
 			Name  string
 			Value int
 		}
 
 		input := &TestStruct{Name: "test", Value: 42}
-		int96Fields := map[string]struct{}{}
+		conv := NewConverter(nil, nil)
 
-		result, err := convertStructWithInt96(input, int96Fields)
-		require.NoError(t, err)
-		require.NotNil(t, result)
-	})
-
-	t.Run("nil-pointer-input", func(t *testing.T) {
-		var input *struct{ Name string }
-		int96Fields := map[string]struct{}{}
-
-		result, err := convertStructWithInt96(input, int96Fields)
-		require.NoError(t, err)
-		require.Nil(t, result)
-	})
-
-	t.Run("non-struct-input", func(t *testing.T) {
-		input := "not a struct"
-		int96Fields := map[string]struct{}{}
-
-		result, err := convertStructWithInt96(input, int96Fields)
+		result, err := conv.Convert(input)
 		require.NoError(t, err)
 		require.Equal(t, input, result)
 	})
 
-	t.Run("unexpected-type-for-int96", func(t *testing.T) {
+	t.Run("schema-only-rule", func(t *testing.T) {
 		type TestStruct struct {
-			Timestamp int // Not a string or *string
+			Json string
 		}
 
-		input := &TestStruct{Timestamp: 123}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
+		input := &TestStruct{Json: `{"key":"value"}`}
+		rule := RuleRegistry[RuleJsonToString]
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Json": {}}})
 
-		_, err := convertStructWithInt96(input, int96Fields)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "unexpected type for INT96 field")
-	})
-
-	t.Run("struct-value-not-pointer", func(t *testing.T) {
-		type TestStruct struct {
-			Name      string
-			Timestamp string
-		}
-
-		input := TestStruct{Name: "test", Timestamp: validInt96}
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-
-		result, err := convertStructWithInt96(input, int96Fields)
+		result, err := conv.Convert(input)
 		require.NoError(t, err)
-		require.NotNil(t, result)
-	})
-
-	t.Run("complex-struct-with-mixed-fields", func(t *testing.T) {
-		type TestStruct struct {
-			Name       string
-			Value      int64
-			Timestamp1 string
-			Timestamp2 *string
-			Data       []byte
-		}
-
-		ts := validInt96
-		input := &TestStruct{
-			Name:       "test",
-			Value:      100,
-			Timestamp1: validInt96,
-			Timestamp2: &ts,
-			Data:       []byte{1, 2, 3},
-		}
-		int96Fields := map[string]struct{}{"Timestamp1": {}, "Timestamp2": {}}
-
-		result, err := convertStructWithInt96(input, int96Fields)
-		require.NoError(t, err)
-		require.NotNil(t, result)
+		require.Equal(t, input, result)
 	})
 }
 
 func TestGetOrCreateTargetType(t *testing.T) {
-	t.Run("caches-type", func(t *testing.T) {
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-
-		// Clear cache first by creating a unique struct type
-		type UniqueStruct struct {
-			UniqueField string
-		}
-
-		srcType := reflect.TypeOf(UniqueStruct{})
-		targetType1 := getOrCreateTargetType(srcType, int96Fields)
-		targetType2 := getOrCreateTargetType(srcType, int96Fields)
-
-		// Should return the same type from cache
-		require.Equal(t, targetType1, targetType2)
-	})
-
 	t.Run("converts-string-to-int64", func(t *testing.T) {
 		type TestStruct struct {
 			Timestamp string
 		}
 
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-		srcType := reflect.TypeOf(TestStruct{})
-		targetType := getOrCreateTargetType(srcType, int96Fields)
+		rule := RuleRegistry[RuleInt96ToTimestamp]
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
 
-		// Verify the field type is int64
+		srcType := reflect.TypeFor[TestStruct]()
+		targetType := conv.getOrCreateTargetType(srcType)
+
 		field, ok := targetType.FieldByName("Timestamp")
 		require.True(t, ok)
 		require.Equal(t, "int64", field.Type.String())
@@ -540,27 +520,29 @@ func TestGetOrCreateTargetType(t *testing.T) {
 			Timestamp *string
 		}
 
-		int96Fields := map[string]struct{}{"Timestamp": {}}
-		srcType := reflect.TypeOf(TestStruct{})
-		targetType := getOrCreateTargetType(srcType, int96Fields)
+		rule := RuleRegistry[RuleInt96ToTimestamp]
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
 
-		// Verify the field type is *int64
+		srcType := reflect.TypeFor[TestStruct]()
+		targetType := conv.getOrCreateTargetType(srcType)
+
 		field, ok := targetType.FieldByName("Timestamp")
 		require.True(t, ok)
 		require.Equal(t, "*int64", field.Type.String())
 	})
 
-	t.Run("preserves-non-int96-fields", func(t *testing.T) {
+	t.Run("preserves-non-matching-fields", func(t *testing.T) {
 		type TestStruct struct {
 			Name  string
 			Value int
 		}
 
-		int96Fields := map[string]struct{}{}
-		srcType := reflect.TypeOf(TestStruct{})
-		targetType := getOrCreateTargetType(srcType, int96Fields)
+		rule := RuleRegistry[RuleInt96ToTimestamp]
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
 
-		// Verify fields are preserved
+		srcType := reflect.TypeFor[TestStruct]()
+		targetType := conv.getOrCreateTargetType(srcType)
+
 		nameField, ok := targetType.FieldByName("Name")
 		require.True(t, ok)
 		require.Equal(t, "string", nameField.Type.String())
@@ -568,5 +550,20 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		valueField, ok := targetType.FieldByName("Value")
 		require.True(t, ok)
 		require.Equal(t, "int", valueField.Type.String())
+	})
+
+	t.Run("caches-type", func(t *testing.T) {
+		type UniqueStruct struct {
+			UniqueField string
+		}
+
+		rule := RuleRegistry[RuleInt96ToTimestamp]
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+
+		srcType := reflect.TypeFor[UniqueStruct]()
+		targetType1 := conv.getOrCreateTargetType(srcType)
+		targetType2 := conv.getOrCreateTargetType(srcType)
+
+		require.Equal(t, targetType1, targetType2)
 	})
 }
