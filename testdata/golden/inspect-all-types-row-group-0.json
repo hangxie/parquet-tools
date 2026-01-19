@@ -304,7 +304,7 @@
       "uncompressedSize": 543
     },
     {
-      "compressedSize": 532,
+      "compressedSize": 480,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -312,18 +312,40 @@
         "RLE_DICTIONARY"
       ],
       "index": 14,
-      "logicalType": "logicaltype=VARIANT",
       "numValues": 10,
       "pathInSchema": [
-        "Variant"
+        "Variant",
+        "metadata"
       ],
       "statistics": {
-        "maxValue": "{\"9\":9}",
-        "minValue": "{\"0\":0}",
+        "maxValue": "EQEAATk=",
+        "minValue": "EQEAATA=",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 407
+      "uncompressedSize": 355
+    },
+    {
+      "compressedSize": 573,
+      "compressionCodec": "GZIP",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "index": 15,
+      "numValues": 10,
+      "pathInSchema": [
+        "Variant",
+        "value"
+      ],
+      "statistics": {
+        "maxValue": "AgEAAAkYCQAAAAAAAAA=",
+        "minValue": "AgEAAAkYAAAAAAAAAAA=",
+        "nullCount": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressedSize": 589
     },
     {
       "compressedSize": 406,
@@ -334,7 +356,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 15,
+      "index": 16,
       "numValues": 10,
       "pathInSchema": [
         "FixedLenByteArray"
@@ -356,7 +378,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 16,
+      "index": 17,
       "logicalType": "logicaltype=STRING",
       "numValues": 10,
       "pathInSchema": [
@@ -378,7 +400,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 17,
+      "index": 18,
       "logicalType": "logicaltype=STRING",
       "numValues": 10,
       "pathInSchema": [
@@ -400,7 +422,7 @@
         "BIT_PACKED",
         "RLE"
       ],
-      "index": 18,
+      "index": 19,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
@@ -422,7 +444,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 19,
+      "index": 20,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
@@ -445,7 +467,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 20,
+      "index": 21,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
@@ -466,7 +488,7 @@
       "encodings": [
         "RLE"
       ],
-      "index": 21,
+      "index": 22,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true",
       "numValues": 10,
       "pathInSchema": [
@@ -488,7 +510,7 @@
         "BIT_PACKED",
         "RLE"
       ],
-      "index": 22,
+      "index": 23,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
@@ -510,7 +532,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 23,
+      "index": 24,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
@@ -532,7 +554,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 24,
+      "index": 25,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
@@ -553,7 +575,7 @@
       "encodings": [
         "RLE"
       ],
-      "index": 25,
+      "index": 26,
       "logicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false",
       "numValues": 10,
       "pathInSchema": [
@@ -575,7 +597,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 26,
+      "index": 27,
       "logicalType": "logicaltype=DATE",
       "numValues": 10,
       "pathInSchema": [
@@ -590,7 +612,7 @@
       "uncompressedSize": 222
     },
     {
-      "compressedSize": 296,
+      "compressedSize": 294,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=DATE",
       "encodings": [
@@ -598,7 +620,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 27,
+      "index": 28,
       "logicalType": "logicaltype=DATE",
       "numValues": 10,
       "pathInSchema": [
@@ -620,7 +642,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 28,
+      "index": 29,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
       "numValues": 10,
       "pathInSchema": [
@@ -641,7 +663,7 @@
       "encodings": [
         "RLE"
       ],
-      "index": 29,
+      "index": 30,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
       "numValues": 10,
       "pathInSchema": [
@@ -663,7 +685,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 30,
+      "index": 31,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
       "numValues": 10,
       "pathInSchema": [
@@ -684,7 +706,7 @@
       "encodings": [
         "RLE"
       ],
-      "index": 31,
+      "index": 32,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
       "numValues": 10,
       "pathInSchema": [
@@ -705,7 +727,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 32,
+      "index": 33,
       "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
       "numValues": 10,
       "pathInSchema": [
@@ -727,7 +749,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 33,
+      "index": 34,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
       "numValues": 10,
       "pathInSchema": [
@@ -748,7 +770,7 @@
       "encodings": [
         "RLE"
       ],
-      "index": 34,
+      "index": 35,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
       "numValues": 10,
       "pathInSchema": [
@@ -770,7 +792,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 35,
+      "index": 36,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
       "numValues": 10,
       "pathInSchema": [
@@ -793,7 +815,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 36,
+      "index": 37,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
       "numValues": 10,
       "pathInSchema": [
@@ -813,7 +835,7 @@
       "encodings": [
         "RLE"
       ],
-      "index": 37,
+      "index": 38,
       "logicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
       "numValues": 10,
       "pathInSchema": [
@@ -835,7 +857,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 38,
+      "index": 39,
       "numValues": 10,
       "pathInSchema": [
         "Interval"
@@ -854,7 +876,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 39,
+      "index": 40,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
       "numValues": 10,
       "pathInSchema": [
@@ -876,7 +898,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 40,
+      "index": 41,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2",
       "numValues": 10,
       "pathInSchema": [
@@ -898,7 +920,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 41,
+      "index": 42,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
       "numValues": 10,
       "pathInSchema": [
@@ -920,7 +942,7 @@
         "DELTA_LENGTH_BYTE_ARRAY",
         "RLE"
       ],
-      "index": 42,
+      "index": 43,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2",
       "numValues": 10,
       "pathInSchema": [
@@ -943,7 +965,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 43,
+      "index": 44,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
       "numValues": 10,
       "pathInSchema": [
@@ -966,7 +988,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 44,
+      "index": 45,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
       "numValues": 10,
       "pathInSchema": [
@@ -981,7 +1003,7 @@
       "uncompressedSize": 422
     },
     {
-      "compressedSize": 584,
+      "compressedSize": 587,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -989,7 +1011,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 45,
+      "index": 46,
       "logicalType": "logicaltype=STRING",
       "numValues": 46,
       "pathInSchema": [
@@ -1003,16 +1025,16 @@
         "nullCount": 1
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 732
+      "uncompressedSize": 742
     },
     {
-      "compressedSize": 393,
+      "compressedSize": 396,
       "compressionCodec": "ZSTD",
       "encodings": [
         "BIT_PACKED",
         "RLE"
       ],
-      "index": 46,
+      "index": 47,
       "numValues": 46,
       "pathInSchema": [
         "Map",
@@ -1035,7 +1057,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 47,
+      "index": 48,
       "logicalType": "logicaltype=STRING",
       "numValues": 46,
       "pathInSchema": [
@@ -1058,7 +1080,7 @@
         "DELTA_BINARY_PACKED",
         "RLE"
       ],
-      "index": 48,
+      "index": 49,
       "numValues": 46,
       "pathInSchema": [
         "Repeated"
@@ -1079,7 +1101,7 @@
         "PLAIN",
         "RLE"
       ],
-      "index": 49,
+      "index": 50,
       "logicalType": "logicaltype=STRING",
       "numValues": 46,
       "pathInSchema": [
@@ -1096,7 +1118,7 @@
       "uncompressedSize": 1047
     },
     {
-      "compressedSize": 697,
+      "compressedSize": 683,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1104,7 +1126,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 50,
+      "index": 51,
       "logicalType": "logicaltype=STRING",
       "numValues": 130,
       "pathInSchema": [
@@ -1121,16 +1143,16 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1161
+      "uncompressedSize": 1155
     },
     {
-      "compressedSize": 500,
+      "compressedSize": 498,
       "compressionCodec": "GZIP",
       "encodings": [
         "BIT_PACKED",
         "RLE"
       ],
-      "index": 51,
+      "index": 52,
       "numValues": 130,
       "pathInSchema": [
         "NestedMap",
@@ -1146,10 +1168,10 @@
         "nullCount": 10
       },
       "type": "INT32",
-      "uncompressedSize": 865
+      "uncompressedSize": 859
     },
     {
-      "compressedSize": 551,
+      "compressedSize": 555,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
@@ -1157,7 +1179,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 52,
+      "index": 53,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
       "numValues": 130,
       "pathInSchema": [
@@ -1177,7 +1199,7 @@
       "uncompressedSize": 790
     },
     {
-      "compressedSize": 670,
+      "compressedSize": 694,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1185,7 +1207,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 53,
+      "index": 54,
       "logicalType": "logicaltype=STRING",
       "numValues": 130,
       "pathInSchema": [
@@ -1202,16 +1224,16 @@
         "nullCount": 10
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 1144
+      "uncompressedSize": 1149
     },
     {
-      "compressedSize": 492,
+      "compressedSize": 501,
       "compressionCodec": "GZIP",
       "encodings": [
         "BIT_PACKED",
         "RLE"
       ],
-      "index": 54,
+      "index": 55,
       "numValues": 130,
       "pathInSchema": [
         "NestedList",
@@ -1238,7 +1260,7 @@
         "RLE",
         "RLE_DICTIONARY"
       ],
-      "index": 55,
+      "index": 56,
       "logicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
       "numValues": 130,
       "pathInSchema": [
@@ -1260,8 +1282,8 @@
   ],
   "rowGroup": {
     "index": 0,
-    "numColumns": 56,
+    "numColumns": 57,
     "numRows": 10,
-    "totalByteSize": 23614
+    "totalByteSize": 24154
   }
 }

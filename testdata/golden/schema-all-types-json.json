@@ -44,7 +44,7 @@
       "Tag": "name=Bson2, inname=Bson2, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY"
     },
     {
-      "Tag": "name=Variant, inname=Variant, type=BYTE_ARRAY, logicaltype=VARIANT, encoding=RLE_DICTIONARY"
+      "Tag": "name=Variant, inname=Variant, type=VARIANT, logicaltype=VARIANT, encoding=RLE_DICTIONARY"
     },
     {
       "Tag": "name=FixedLenByteArray, inname=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY"
