@@ -13,7 +13,7 @@ type Parquet_go_root struct {
 	Bson              string           `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN"`
 	Json2             string           `parquet:"name=Json2, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=PLAIN"`
 	Bson2             string           `parquet:"name=Bson2, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY"`
-	Variant           string           `parquet:"name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT, encoding=RLE_DICTIONARY"`
+	Variant           any              `parquet:"name=Variant, type=VARIANT, logicaltype=VARIANT, encoding=RLE_DICTIONARY"`
 	FixedLenByteArray string           `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY"`
 	Utf8              string           `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY"`
 	Utf8_2            string           `parquet:"name=Utf8_2, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`

@@ -37,7 +37,7 @@ func TestInspect(t *testing.T) {
 		// column chunk level
 		"column-chunk/good-col-0":             {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-good-column-chunk-0.json"},
 		"column-chunk/dict-page-col-0":        {cmd: InspectCmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-dict-page-column-chunk-0.json"},
-		"column-chunk/all-types-interval":     {cmd: InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(38)}, golden: "inspect-all-types-interval-column.json"},
+		"column-chunk/all-types-interval":     {cmd: InspectCmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(39)}, golden: "inspect-all-types-interval-column.json"},
 		"column-chunk/negative-column-index":  {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1)}, errMsg: "column chunk index -1 out of range"},
 		"column-chunk/out-of-range-column":    {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999)}, errMsg: "column chunk index 999 out of range"},
 		"column-chunk/without-row-group":      {cmd: InspectCmd{ReadOption: rOpt, URI: "good.parquet", ColumnChunk: common.ToPtr(0)}, errMsg: "--column-chunk requires --row-group"},

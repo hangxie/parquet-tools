@@ -44,7 +44,7 @@ type AllTypes struct {
 	Bson              string              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, compression=BROTLI"`
 	Json2             string              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=PLAIN, compression=UNCOMPRESSED"`
 	Bson2             string              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=SNAPPY"`
-	Variant           string              `parquet:"name=Variant, type=BYTE_ARRAY, logicaltype=VARIANT, encoding=RLE_DICTIONARY, compression=GZIP"`
+	Variant           any                 `parquet:"name=Variant, type=VARIANT, logicaltype=VARIANT, encoding=RLE_DICTIONARY, compression=GZIP"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=RLE_DICTIONARY, compression=ZSTD"`
 	Utf82             string              `parquet:"name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN, compression=BROTLI"`
@@ -124,7 +124,7 @@ func main() {
 			Bson:              string(bsonStr),
 			Json2:             string(jsonStr),
 			Bson2:             string(bsonStr),
-			Variant:           string(jsonStr),
+			Variant:           map[string]any{strI: i},
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
 			Utf82:             fmt.Sprintf("UTF8_2-%d", i),

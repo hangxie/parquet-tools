@@ -42,7 +42,7 @@ format_json() {
     jq '.' 2>/dev/null || cat
 }
 
-# Helper function to format JSONL with jq (each line separately)
+# Helper function to format JSONL with jq (each line separately, pretty printed)
 format_jsonl() {
     while IFS= read -r line; do
         echo "$line" | jq '.' 2>/dev/null || echo "$line"
@@ -231,7 +231,7 @@ $PT inspect --row-group 0 "$TESTDATA_DIR/nil-statistics.parquet" | format_json >
 $PT inspect --row-group 0 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-row-group-0.json"
 
 # inspect-all-types-interval-column.json
-$PT inspect --row-group 0 --column-chunk 38 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-interval-column.json"
+$PT inspect --row-group 0 --column-chunk 39 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-interval-column.json"
 
 # ============================================================================
 # split/merge command golden files (these use cat to verify output)

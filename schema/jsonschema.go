@@ -44,6 +44,11 @@ func (s jsonSchemaNode) Schema() JSONSchema {
 		Fields: make([]JSONSchema, len(s.Children)),
 	}
 
+	if s.LogicalType != nil && s.LogicalType.IsSetVARIANT() {
+		ret.Fields = nil
+		return ret
+	}
+
 	for index, child := range s.Children {
 		ret.Fields[index] = jsonSchemaNode{*child}.Schema()
 	}

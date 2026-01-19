@@ -118,6 +118,11 @@ func (n goStructNode) String() (string, error) {
 	var typeStr string
 	var err error
 	switch {
+	case n.LogicalType != nil && n.LogicalType.IsSetVARIANT():
+		typeStr = "any"
+		if typePrefix == "*" {
+			typePrefix = ""
+		}
 	case n.Type == nil && n.ConvertedType == nil:
 		typeStr, err = n.asStruct()
 	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST:

@@ -71,6 +71,12 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Data Page Version](#data-page-version)
       - [Writer Tuning Options](#writer-tuning-options)
       - [Encoding](#encoding)
+    - [Geo Data Type Support](#geo-data-type-support)
+      - [GEOGRAPHY/GEOMETRY vs GeoParquet](#geographygeometry-vs-geoparquet)
+      - [Geospatial Format](#geospatial-format)
+    - [Variant Data Type Support](#variant-data-type-support)
+      - [VARIANT Convention](#variant-convention)
+      - [Shredded VARIANT](#shredded-variant)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
       - [Skip Rows](#skip-rows)
@@ -128,9 +134,6 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Print All Information](#print-all-information)
       - [Print Version and Build Time in JSON Format](#print-version-and-build-time-in-json-format)
       - [Print Version in JSON Format](#print-version-in-json-format)
-    - [Geo Data Type Support](#geo-data-type-support)
-      - [GEOGRAPHY/GEOMETRY vs GeoParquet](#geographygeometry-vs-geoparquet)
-      - [Geospatial Format](#geospatial-format)
   - [Credit](#credit)
   - [License](#license)
 
@@ -184,9 +187,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.41.0
+v1.45.0
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.41.0
+v1.45.0
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -196,20 +199,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.41.0_amd64.deb
-Preparing to unpack parquet-tools_1.41.0_amd64.deb ...
-Unpacking parquet-tools (1.41.0) ...
-Setting up parquet-tools (1.41.0) ...
+$ sudo dpkg -i parquet-tools_1.45.0_amd64.deb
+Preparing to unpack parquet-tools_1.45.0_amd64.deb ...
+Unpacking parquet-tools (1.45.0) ...
+Setting up parquet-tools (1.45.0) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.41.0-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.45.0-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.41.0-1          ################################# [100%]
+   1:parquet-tools-1.45.0-1          ################################# [100%]
 ```
 
 ## Usage
@@ -557,6 +560,98 @@ Parquet supports various encodings for different data types. Encoding can be spe
 > [!NOTE]
 > Encodings must be compatible with the field type. Specifying an incompatible encoding will result in an error.
 
+### Geo Data Type Support
+
+> [!WARNING]
+> This is an experimental feature that still under development, functionalities may be changed in the future.
+
+`parquet-tools` recognize `GEOGRAPHY` and `GEOMETRY` logical types:
+
+```bash
+$ parquet-tools schema --format go testdata/geospatial.parquet
+type Parquet_go_root struct {
+	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY, encoding=PLAIN"`
+	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, encoding=PLAIN"`
+}
+```
+
+#### GEOGRAPHY/GEOMETRY vs GeoParquet
+`parquet-tool` support `GEOGRAPHY` and `GEOMETRY` logical types, these types were introduced in [Apache Parquet Format 2.11.0](https://github.com/apache/parquet-format/releases/tag/apache-parquet-format-2.11.0). However, `parquet-tools` does not support [GeoParquet format](https://geoparquet.org/) as it does not provide schema information in parquet file itself, those fields in GeoParquet format file are just `BYTE_ARRAY`.
+
+#### Geospatial Format
+
+`parquet-tools` support different output formats for `GEOGRAPHY` and `GEOMETRY` types:
+* `geojson`: output in [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) format
+* `hex`: output raw data in hex format, plus crs/algorithm
+* `base64`: output raw data in base64 format, plus crs/algorithm
+
+You can use `--geo-format` option to change format of `cat` command output, default is `geojson`.
+
+```bash
+$ parquet-tools cat --limit 1 testdata/geospatial.parquet
+[{"Geography":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"algorithm":"SPHERICAL","crs":"OGC:CRS84"},"type":"Feature"},"Geometry":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"crs":"OGC:CRS84"},"type":"Feature"}}]
+
+$ parquet-tools cat --limit 1 --geo-format geojson testdata/geospatial.parquet
+[{"Geography":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"algorithm":"SPHERICAL","crs":"OGC:CRS84"},"type":"Feature"},"Geometry":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"crs":"OGC:CRS84"},"type":"Feature"}}]
+
+$ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
+[{"Geography":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"},"Geometry":{"crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"}}]
+```
+
+`MinValue` and `MaxValue` of geospatial columns will be bounding box value if Geospatial Statistics presents, note that `MinValue` and `MaxValue` of underlying `BYTE_ARRAY` value do not make any sense to these columns.
+
+```bash
+$ parquet-tools meta testdata/geospatial.parquet
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":1774,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["PLAIN","RLE"],"CompressedSize":422,"UncompressedSize":974,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["PLAIN","RLE"],"CompressedSize":393,"UncompressedSize":800,"NumValues":10,"CompressionCodec":"SNAPPY"}]}]}
+```
+
+### Variant Data Type Support
+
+The `VARIANT` logical type represents semi-structured data, similar to JSON but in a more efficient binary format. It was introduced in newer Parquet format versions to provide better performance for semi-structured data.
+
+#### Physical Storage
+
+Physically, a `VARIANT` field must be a group (struct) containing two required binary fields:
+* `metadata`: `BYTE_ARRAY` containing the dictionary for the variant.
+* `value`: `BYTE_ARRAY` containing the actual data.
+
+#### Logical View
+
+`parquet-tools` abstracts away the physical storage details to provide a convenient logical view of the data.
+
+**Go Structs:**
+
+`parquet-tools` generates `any` for `VARIANT` columns, allowing seamless decoding of the semi-structured data:
+
+```go
+type MyRecord struct {
+	Data any `parquet:"name=Data, type=VARIANT, logicaltype=VARIANT"`
+}
+```
+
+**JSON Schema:**
+
+Similarly, in the JSON schema format, the internal `metadata` and `value` fields are suppressed:
+
+```json
+{
+  "Tag": "name=Data, type=VARIANT, logicaltype=VARIANT"
+}
+```
+
+#### Advanced: Fine-Grained Compression
+
+When using the `any` type (Logical View), any encoding or compression settings applied to the field are inherited by both underlying `metadata` and `value` columns.
+
+If you need granular control (e.g., using different compression codecs for `metadata` vs. `value`), you can define a custom struct that explicitly maps to the physical storage structure. Please refer to [this example](https://github.com/hangxie/parquet-go/blob/main/example/variant-fine-control/variant-fine-control.go) for more details.
+
+#### Shredded VARIANT
+
+"Shredding" is a technique where common paths within a `VARIANT` are extracted into separate columns to improve query performance and compression.
+
+* **Reading**: `parquet-tools cat` and other read commands automatically support reading shredded variants. The tool will reconstruct the original semi-structured value from the shredded columns and the base variant column.
+* **Writing**: Current version of `parquet-tools` (via `import`, `merge`, etc.) does not support writing shredded variants. It will always write the `VARIANT` data as a single base column containing the `metadata` and `value` fields.
+
 ### cat Command
 
 `cat` command outputs data in parquet file, it supports JSON, JSONL, CSV, and TSV format. Since most parquet files are rather large, you can use `row-count` command to have a rough idea how many rows are there in the parquet file, then use `--skip`, `--limit` and `--sample-ratio` flags to reduce the output to a certain level, these flags can be used together.
@@ -750,6 +845,10 @@ Values in CSV and JSON/JSONL are expected to be human-readable format, same as c
 | UUID                               | Standard UUID         | "550e8400-e29b-41d4-a716-446655440000" |
 | BYTE_ARRAY / FIXED_LEN_BYTE_ARRAY  | Base64 encoded        | "SGVsbG8gV29ybGQ="                     |
 | BOOLEAN                            | true / false          | true, false                            |
+| VARIANT                            | JSON object           | {"foo": "bar", "baz": 42}              |
+
+> [!NOTE]
+> For `VARIANT` type, see [Variant Data Type Support](#variant-data-type-support) for more details on the required structure.
 
 #### Import from CSV
 
@@ -1009,6 +1108,10 @@ Schema will output converted type and logical type when they are present in the 
 * convertedtype=MAP
 * repetitiontype=REQUIRED
 * type=STRUCT
+
+**VARIANT Logical Type:**
+
+The `VARIANT` logical type is generated as `any` in the Go struct format. You can also define your own struct to have more control over compression and encoding. See [Variant Data Type Support](#variant-data-type-support) for more details.
 
 **Encoding Tag:**
 
@@ -1422,7 +1525,7 @@ $ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
 
 ```bash
 $ parquet-tools version
-v1.41.0
+v1.45.0
 ```
 
 #### Print All Information
@@ -1431,7 +1534,7 @@ v1.41.0
 
 ```bash
 $ parquet-tools version -a
-v1.41.0
+v1.45.0
 2025-12-14T20:17:50Z
 Homebrew
 ```
@@ -1440,59 +1543,14 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.41.0","BuildTime":"2025-12-14T20:17:50Z"}
+{"Version":"v1.45.0","BuildTime":"2025-12-14T20:17:50Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.41.0"}
-```
-
-### Geo Data Type Support
-
-> [!WARNING]
-> This is an experimental feature that still under development, functionalities may be changed in the future.
-
-`parquet-tools` recognize `GEOGRAPHY` and `GEOMETRY` logical types:
-
-```bash
-$ parquet-tools schema --format go testdata/geospatial.parquet
-type Parquet_go_root struct {
-	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY, encoding=PLAIN"`
-	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, encoding=PLAIN"`
-}
-```
-
-#### GEOGRAPHY/GEOMETRY vs GeoParquet
-`parquet-tool` support `GEOGRAPHY` and `GEOMETRY` logical types, these types were introduced in [Apache Parquet Format 2.11.0](https://github.com/apache/parquet-format/releases/tag/apache-parquet-format-2.11.0). However, `parquet-tools` does not support [GeoParquet format](https://geoparquet.org/) as it does not provide schema information in parquet file itself, those fields in GeoParquet format file are just `BYTE_ARRAY`.
-
-#### Geospatial Format
-
-`parquet-tools` support different output formats for `GEOGRAPHY` and `GEOMETRY` types:
-* `geojson`: output in [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) format
-* `hex`: output raw data in hex format, plus crs/algorithm
-* `base64`: output raw data in base64 format, plus crs/algorithm
-
-You can use `--geo-format` option to change format of `cat` command output, default is `geojson`.
-
-```bash
-$ parquet-tools cat --limit 1 testdata/geospatial.parquet
-[{"Geography":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"algorithm":"SPHERICAL","crs":"OGC:CRS84"},"type":"Feature"},"Geometry":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"crs":"OGC:CRS84"},"type":"Feature"}}]
-
-$ parquet-tools cat --limit 1 --geo-format geojson testdata/geospatial.parquet
-[{"Geography":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"algorithm":"SPHERICAL","crs":"OGC:CRS84"},"type":"Feature"},"Geometry":{"geometry":{"coordinates":[0,0],"type":"Point"},"properties":{"crs":"OGC:CRS84"},"type":"Feature"}}]
-
-$ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
-[{"Geography":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"},"Geometry":{"crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"}}]
-```
-
-`MinValue` and `MaxValue` of geospatial columns will be bounding box value if Geospatial Statistics presents, note that `MinValue` and `MaxValue` of underlying `BYTE_ARRAY` value do not make any sense to these columns.
-
-```bash
-$ parquet-tools meta testdata/geospatial.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":1774,"Columns":[{"PathInSchema":["Geometry"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOMETRY","Encodings":["PLAIN","RLE"],"CompressedSize":422,"UncompressedSize":974,"NumValues":10,"NullCount":0,"MaxValue":[16,11],"MinValue":[-3,-8],"CompressionCodec":"SNAPPY"},{"PathInSchema":["Geography"],"Type":"BYTE_ARRAY","LogicalType":"logicaltype=GEOGRAPHY","Encodings":["PLAIN","RLE"],"CompressedSize":393,"UncompressedSize":800,"NumValues":10,"CompressionCodec":"SNAPPY"}]}]}
+{"Version":"v1.45.0"}
 ```
 
 ## Credit

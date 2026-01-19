@@ -264,7 +264,7 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 		tagMap["inname"] = s.InNamePath[len(s.InNamePath)-1]
 	}
 
-	if tagMap["type"] == "STRUCT" {
+	if tagMap["type"] == "STRUCT" && s.LogicalType == nil && s.ConvertedType == nil {
 		return tagMap
 	}
 
@@ -415,6 +415,17 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 	case s.LogicalType.IsSetVARIANT():
 		// VARIANT is a semi-structured logical type introduced in newer parquet-format
 		tagMap["logicaltype"] = "VARIANT"
+		for _, child := range s.Children {
+			if child.Encoding != "" {
+				tagMap["encoding"] = child.Encoding
+			}
+			if child.CompressionCodec != "" {
+				tagMap["compression"] = child.CompressionCodec
+			}
+			if tagMap["encoding"] != "" && tagMap["compression"] != "" {
+				break
+			}
+		}
 	case s.LogicalType.IsSetSTRING():
 		tagMap["logicaltype"] = "STRING"
 	case s.LogicalType.IsSetTIME():
@@ -444,6 +455,9 @@ func (s *SchemaNode) GetPathMap() map[string]*SchemaNode {
 func typeStr(se parquet.SchemaElement) string {
 	if se.Type != nil {
 		return se.Type.String()
+	}
+	if se.LogicalType != nil && se.LogicalType.IsSetVARIANT() {
+		return "VARIANT"
 	}
 	if se.ConvertedType != nil {
 		return se.ConvertedType.String()

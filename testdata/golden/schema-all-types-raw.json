@@ -170,17 +170,34 @@
       "encoding": "DELTA_BYTE_ARRAY"
     },
     {
-      "type": "BYTE_ARRAY",
-      "type_length": 0,
       "repetition_type": "REQUIRED",
       "name": "Variant",
-      "scale": 0,
-      "precision": 0,
-      "field_id": 0,
+      "num_children": 2,
       "logicalType": {
         "VARIANT": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "children": [
+        {
+          "type": "BYTE_ARRAY",
+          "type_length": 0,
+          "repetition_type": "REQUIRED",
+          "name": "metadata",
+          "scale": 0,
+          "precision": 0,
+          "field_id": 0,
+          "encoding": "RLE_DICTIONARY"
+        },
+        {
+          "type": "BYTE_ARRAY",
+          "type_length": 0,
+          "repetition_type": "REQUIRED",
+          "name": "value",
+          "scale": 0,
+          "precision": 0,
+          "field_id": 0,
+          "encoding": "RLE_DICTIONARY"
+        }
+      ]
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
