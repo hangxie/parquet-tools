@@ -43,7 +43,7 @@ func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
 	defer func() {
 		_ = parquetReader.PFile.Close()
 	}()
-	schemaRoot, err := pschema.NewSchemaTree(parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, ShowCompressionCodec: true})
+	schemaRoot, err := pschema.NewSchemaTree(parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, WithCompressionCodec: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
 	}

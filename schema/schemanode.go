@@ -69,7 +69,7 @@ type SchemaNode struct {
 type SchemaOption struct {
 	FailOnInt96          bool
 	SkipPageEncoding     bool
-	ShowCompressionCodec bool
+	WithCompressionCodec bool
 }
 
 // readFirstDataPageEncoding reads the first data page header to get its encoding.
@@ -182,7 +182,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 
 	// Extract compression codec information if requested
 	var compressionCodecMap map[string]string
-	if option.ShowCompressionCodec {
+	if option.WithCompressionCodec {
 		compressionCodecMap = buildCompressionCodecMap(reader)
 	}
 

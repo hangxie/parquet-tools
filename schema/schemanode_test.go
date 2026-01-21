@@ -76,7 +76,7 @@ func TestNewSchemaTree(t *testing.T) {
 		{
 			name:                  "show-compression-codec",
 			uri:                   "../testdata/good.parquet",
-			option:                SchemaOption{ShowCompressionCodec: true},
+			option:                SchemaOption{WithCompressionCodec: true},
 			checkCompressionCodec: true,
 			expectedChildren:      2,
 		},
@@ -90,7 +90,7 @@ func TestNewSchemaTree(t *testing.T) {
 		{
 			name:                  "both-options",
 			uri:                   "../testdata/all-types.parquet",
-			option:                SchemaOption{SkipPageEncoding: true, ShowCompressionCodec: true},
+			option:                SchemaOption{SkipPageEncoding: true, WithCompressionCodec: true},
 			checkNoEncodings:      true,
 			checkCompressionCodec: true,
 		},
@@ -718,7 +718,7 @@ func TestGetTagMapWithCompression(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{ShowCompressionCodec: true})
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{WithCompressionCodec: true})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 

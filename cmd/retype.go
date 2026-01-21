@@ -49,7 +49,7 @@ func (c RetypeCmd) Run() error {
 	}()
 
 	// Get schema from source
-	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{ShowCompressionCodec: true})
+	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{WithCompressionCodec: true})
 	if err != nil {
 		return err
 	}

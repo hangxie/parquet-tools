@@ -36,7 +36,7 @@ func (c SchemaCmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding, ShowCompressionCodec: c.ShowCompressionCodec})
+	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding, WithCompressionCodec: c.ShowCompressionCodec})
 	if err != nil {
 		return err
 	}
