@@ -159,7 +159,7 @@ func TestGetStatValue(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			result := cmd.getStatValue(tc.value, tc.schemaNode)
 			if tc.wantNil {
-				require.Nil(t, result, "expected nil result")
+				require.Nil(t, result)
 			} else if tc.wantError {
 				require.NotNil(t, result)
 				require.Contains(t, result, "failed to read data")
