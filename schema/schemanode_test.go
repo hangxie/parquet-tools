@@ -19,18 +19,18 @@ func TestNewSchemaTree(t *testing.T) {
 		t.Helper()
 		for _, child := range schemaRoot.Children {
 			if child.Type != nil && checkEncodings {
-				require.NotEmpty(t, child.Encoding, "Encoding should be set for leaf node %s", child.Name)
+				require.NotEmpty(t, child.Encoding)
 			}
 			if child.Type != nil && checkNoCompressionCodec {
-				require.Empty(t, child.CompressionCodec, "CompressionCodec should not be set by default")
+				require.Empty(t, child.CompressionCodec)
 			}
 		}
-		for path, node := range schemaRoot.GetPathMap() {
+		for _, node := range schemaRoot.GetPathMap() {
 			if node.Type != nil && checkNoEncodings {
-				require.Empty(t, node.Encoding, "Encoding should not be set for %s", path)
+				require.Empty(t, node.Encoding)
 			}
 			if node.Type != nil && checkCompressionCodec {
-				require.NotEmpty(t, node.CompressionCodec, "CompressionCodec should be set for %s", path)
+				require.NotEmpty(t, node.CompressionCodec)
 			}
 		}
 	}
@@ -235,9 +235,9 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 
 	for _, path := range expectedPaths {
 		node, found := pathMap[path]
-		require.True(t, found, "Path %s should be found in path map", path)
-		require.NotNil(t, node, "Node for path %s should not be nil", path)
-		require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER), "Path should match node's InNamePath")
+		require.True(t, found)
+		require.NotNil(t, node)
+		require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER))
 	}
 
 	// Test some known nested paths from the debug output
@@ -256,23 +256,23 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 	for _, path := range knownNestedPaths {
 		node, found := pathMap[path]
 		if found { // Only test if it exists (some may not exist in this particular test file)
-			require.NotNil(t, node, "Node for nested path %s should not be nil", path)
-			require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER), "Nested path should match node's InNamePath")
+			require.NotNil(t, node)
+			require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER))
 		}
 	}
 
 	// Test that we have a reasonable number of paths (schema should be complex)
-	require.Greater(t, len(pathMap), 20, "Should have many paths in a complex schema")
+	require.Greater(t, len(pathMap), 20)
 
 	// Test that all nodes in the map have valid InNamePath
 	for path, node := range pathMap {
-		require.NotNil(t, node, "Node should not be nil for path %s", path)
+		require.NotNil(t, node)
 		expectedPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
-		require.Equal(t, path, expectedPath, "Path key should match node's InNamePath for %s", path)
+		require.Equal(t, path, expectedPath)
 
 		// Ensure InNamePath is properly set
-		require.NotEmpty(t, node.InNamePath, "InNamePath should not be empty for path %s", path)
-		require.NotNil(t, node.InNamePath, "InNamePath should not be nil for path %s", path)
+		require.NotEmpty(t, node.InNamePath)
+		require.NotNil(t, node.InNamePath)
 	}
 }
 
@@ -377,7 +377,7 @@ func TestOrderedTags(t *testing.T) {
 	// (i.e., the function returns a copy)
 	actual[0] = "modified"
 	secondCall := OrderedTags()
-	require.Equal(t, "name", secondCall[0], "Modifying returned slice should not affect internal orderedTags")
+	require.Equal(t, "name", secondCall[0])
 	require.Equal(t, expected, secondCall)
 }
 
@@ -398,18 +398,18 @@ func TestUpdateTagFromConvertedType(t *testing.T) {
 	// Find the "value" field which should not have converted type
 	pathMap := schemaRoot.GetPathMap()
 	valueNode, found := pathMap["Value"]
-	require.True(t, found, "Value field should be found")
+	require.True(t, found)
 	require.NotNil(t, valueNode)
 
 	// Verify that ConvertedType is nil
-	require.Nil(t, valueNode.ConvertedType, "nan.parquet should not have converted type")
+	require.Nil(t, valueNode.ConvertedType)
 
 	// Get the tag map
 	tagMap := valueNode.GetTagMap()
 
 	// Verify that convertedtype tag is not set
 	_, hasConvertedType := tagMap["convertedtype"]
-	require.False(t, hasConvertedType, "convertedtype tag should not be present when ConvertedType is nil")
+	require.False(t, hasConvertedType)
 
 	// Verify expected tags are present
 	require.Equal(t, "value", tagMap["name"])
@@ -433,31 +433,31 @@ func TestUpdateTagFromLogicalType(t *testing.T) {
 	// Find the "value" field which should not have logical type
 	pathMap := schemaRoot.GetPathMap()
 	valueNode, found := pathMap["Value"]
-	require.True(t, found, "Value field should be found")
+	require.True(t, found)
 	require.NotNil(t, valueNode)
 
 	// Verify that LogicalType is nil
-	require.Nil(t, valueNode.LogicalType, "nan.parquet should not have logical type")
+	require.Nil(t, valueNode.LogicalType)
 
 	// Get the tag map
 	tagMap := valueNode.GetTagMap()
 
 	// Verify that logicaltype tag is not set
 	_, hasLogicalType := tagMap["logicaltype"]
-	require.False(t, hasLogicalType, "logicaltype tag should not be present when LogicalType is nil")
+	require.False(t, hasLogicalType)
 
 	// Verify that logicaltype.* tags are not set
 	_, hasPrecision := tagMap["logicaltype.precision"]
-	require.False(t, hasPrecision, "logicaltype.precision tag should not be present when LogicalType is nil")
+	require.False(t, hasPrecision)
 
 	_, hasScale := tagMap["logicaltype.scale"]
-	require.False(t, hasScale, "logicaltype.scale tag should not be present when LogicalType is nil")
+	require.False(t, hasScale)
 
 	_, hasIsAdjusted := tagMap["logicaltype.isadjustedtoutc"]
-	require.False(t, hasIsAdjusted, "logicaltype.isadjustedtoutc tag should not be present when LogicalType is nil")
+	require.False(t, hasIsAdjusted)
 
 	_, hasUnit := tagMap["logicaltype.unit"]
-	require.False(t, hasUnit, "logicaltype.unit tag should not be present when LogicalType is nil")
+	require.False(t, hasUnit)
 
 	// Verify expected tags are present
 	require.Equal(t, "value", tagMap["name"])
@@ -479,25 +479,25 @@ func TestUpdateTagFromLogicalType(t *testing.T) {
 
 	// Test GEOMETRY logical type
 	geometryNode, found := pathMap["Geometry"]
-	require.True(t, found, "Geometry field should be found")
+	require.True(t, found)
 	require.NotNil(t, geometryNode)
-	require.NotNil(t, geometryNode.LogicalType, "Geometry field should have logical type")
-	require.True(t, geometryNode.LogicalType.IsSetGEOMETRY(), "Geometry field should be GEOMETRY type")
+	require.NotNil(t, geometryNode.LogicalType)
+	require.True(t, geometryNode.LogicalType.IsSetGEOMETRY())
 
 	geometryTagMap := geometryNode.GetTagMap()
-	require.Equal(t, "GEOMETRY", geometryTagMap["logicaltype"], "logicaltype tag should be GEOMETRY")
+	require.Equal(t, "GEOMETRY", geometryTagMap["logicaltype"])
 	require.Equal(t, "Geometry", geometryTagMap["name"])
 	require.Equal(t, "BYTE_ARRAY", geometryTagMap["type"])
 
 	// Test GEOGRAPHY logical type
 	geographyNode, found := pathMap["Geography"]
-	require.True(t, found, "Geography field should be found")
+	require.True(t, found)
 	require.NotNil(t, geographyNode)
-	require.NotNil(t, geographyNode.LogicalType, "Geography field should have logical type")
-	require.True(t, geographyNode.LogicalType.IsSetGEOGRAPHY(), "Geography field should be GEOGRAPHY type")
+	require.NotNil(t, geographyNode.LogicalType)
+	require.True(t, geographyNode.LogicalType.IsSetGEOGRAPHY())
 
 	geographyTagMap := geographyNode.GetTagMap()
-	require.Equal(t, "GEOGRAPHY", geographyTagMap["logicaltype"], "logicaltype tag should be GEOGRAPHY")
+	require.Equal(t, "GEOGRAPHY", geographyTagMap["logicaltype"])
 	require.Equal(t, "Geography", geographyTagMap["name"])
 	require.Equal(t, "BYTE_ARRAY", geographyTagMap["type"])
 }
@@ -727,7 +727,7 @@ func TestGetTagMapWithCompression(t *testing.T) {
 		if child.Type != nil {
 			tagMap := child.GetTagMap()
 			_, hasCompression := tagMap["compression"]
-			require.True(t, hasCompression, "compression tag should be present in tag map")
+			require.True(t, hasCompression)
 			require.NotEmpty(t, tagMap["compression"])
 			break
 		}

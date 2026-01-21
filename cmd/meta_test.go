@@ -152,10 +152,10 @@ func TestSortingToString(t *testing.T) {
 			result := sortingToString(tc.sortingColumns, tc.columnIndex)
 
 			if tc.expected == nil {
-				require.Nil(t, result, "Expected nil result for %s", name)
+				require.Nil(t, result)
 			} else {
-				require.NotNil(t, result, "Expected non-nil result for %s", name)
-				require.Equal(t, *tc.expected, *result, "Expected %s but got %s", *tc.expected, *result)
+				require.NotNil(t, result)
+				require.Equal(t, *tc.expected, *result)
 			}
 		})
 	}
