@@ -105,7 +105,7 @@ func (c TranscodeCmd) parseFieldCompressions() (map[string]string, error) {
 	return result, nil
 }
 
-func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions map[string]string) error {
+func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions map[string]string, globalCompression string) error {
 	// Add custom parquet-go writer directives (encoding, compression, omitstats)
 	// Only apply to leaf nodes (not struct/group types)
 	if schemaTree.Type != nil {
@@ -124,6 +124,9 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 		// Apply field-specific compression if specified
 		if compression, found := fieldCompressions[fieldPath]; found {
 			schemaTree.CompressionCodec = compression
+		} else if globalCompression != "" {
+			// Apply global compression override
+			schemaTree.CompressionCodec = globalCompression
 		}
 
 		// Apply omit stats if specified
@@ -134,7 +137,7 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 
 	// Recursively process children
 	for _, child := range schemaTree.Children {
-		if err := c.modifySchemaTree(child, fieldEncodings, fieldCompressions); err != nil {
+		if err := c.modifySchemaTree(child, fieldEncodings, fieldCompressions, globalCompression); err != nil {
 			return err
 		}
 	}
@@ -281,17 +284,15 @@ func (c TranscodeCmd) Run() error {
 	}()
 
 	// Get schema from source
-	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, ShowCompressionCodec: true})
 	if err != nil {
 		return err
 	}
 
 	// Modify schema tree: custom writer directives (encoding, compression, omitstats)
 	// Preserve source encodings by default, but allow user-specified values to override
-	if c.OmitStats != "" || len(fieldEncodings) > 0 || len(fieldCompressions) > 0 {
-		if err := c.modifySchemaTree(schemaTree, fieldEncodings, fieldCompressions); err != nil {
-			return err
-		}
+	if err := c.modifySchemaTree(schemaTree, fieldEncodings, fieldCompressions, c.Compression); err != nil {
+		return err
 	}
 
 	// Generate JSON schema from (possibly modified) SchemaTree

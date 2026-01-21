@@ -86,6 +86,8 @@ func TestSplitCmd(t *testing.T) {
 					require.NotNil(t, reader)
 					require.Equal(t, reader.GetNumRows(), rowCount)
 					_ = reader.PFile.Close()
+
+					require.True(t, hasSameSchema(cmd.URI, filepath.Join(tempDir, file.Name()), false, false))
 				}
 			}
 		})

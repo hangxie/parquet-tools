@@ -5,12 +5,48 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
+
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 var stdCaptureMutex sync.Mutex
+
+// hasSameSchema compares the schema of two parquet files
+func hasSameSchema(file1, file2 string, ignoreEncoding, ignoreCompression bool) bool {
+	getSchema := func(file string) string {
+		cmd := SchemaCmd{
+			ReadOption:           pio.ReadOption{},
+			URI:                  file,
+			Format:               "json",
+			ShowCompressionCodec: true,
+		}
+		stdout, _ := captureStdoutStderr(func() {
+			_ = cmd.Run()
+		})
+		return stdout
+	}
+
+	schema1 := getSchema(file1)
+	schema2 := getSchema(file2)
+
+	if ignoreEncoding {
+		re := regexp.MustCompile(`, encoding=[A-Z0-9_]+`)
+		schema1 = re.ReplaceAllString(schema1, "")
+		schema2 = re.ReplaceAllString(schema2, "")
+	}
+
+	if ignoreCompression {
+		re := regexp.MustCompile(`, compression=[A-Z0-9_]+`)
+		schema1 = re.ReplaceAllString(schema1, "")
+		schema2 = re.ReplaceAllString(schema2, "")
+	}
+
+	return schema1 == schema2
+}
 
 // this for unit test only - thread-safe version using mutex
 func captureStdoutStderr(f func()) (string, string) {

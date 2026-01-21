@@ -54,10 +54,11 @@ func TestMergeCmd(t *testing.T) {
 	t.Run("good", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			Compression:     "SNAPPY",
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+			DataPageVersion: 1,
 		}
 		testCases := map[string]struct {
 			cmd      MergeCmd
@@ -83,6 +84,8 @@ func TestMergeCmd(t *testing.T) {
 				rowCount := reader.GetNumRows()
 				_ = reader.PFile.Close()
 				require.Equal(t, tc.rowCount, rowCount)
+
+				require.True(t, hasSameSchema(tc.cmd.Source[0], tc.cmd.URI, false, false))
 			})
 		}
 	})
@@ -90,10 +93,11 @@ func TestMergeCmd(t *testing.T) {
 	t.Run("repeat", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			Compression:     "SNAPPY",
+			PageSize:        1024 * 1024,
+			RowGroupSize:    128 * 1024 * 1024,
+			ParallelNumber:  0,
+			DataPageVersion: 1,
 		}
 		tempDir := t.TempDir()
 		source := "../testdata/all-types.parquet"
@@ -106,6 +110,7 @@ func TestMergeCmd(t *testing.T) {
 		rowCount := reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(20), rowCount)
+		require.True(t, hasSameSchema(source, cmd.URI, false, false))
 
 		cmd.Source = []string{cmd.URI, source}
 		cmd.URI = filepath.Join(tempDir, "2.parquet")
@@ -115,6 +120,7 @@ func TestMergeCmd(t *testing.T) {
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(30), rowCount)
+		require.True(t, hasSameSchema(source, cmd.URI, false, false))
 
 		cmd.Source = []string{cmd.URI, source}
 		cmd.URI = filepath.Join(tempDir, "3.parquet")
@@ -124,6 +130,7 @@ func TestMergeCmd(t *testing.T) {
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(40), rowCount)
+		require.True(t, hasSameSchema(source, cmd.URI, false, false))
 	})
 
 	t.Run("optional-list", func(t *testing.T) {
@@ -144,6 +151,8 @@ func TestMergeCmd(t *testing.T) {
 
 		err := mergeCmd.Run()
 		require.NoError(t, err)
+
+		require.True(t, hasSameSchema("../testdata/optional-fields.parquet", resultFile, false, false))
 
 		catCmd := CatCmd{
 			ReadOption:   pio.ReadOption{},
