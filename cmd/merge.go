@@ -81,9 +81,6 @@ func (c MergeCmd) Run() error {
 		}
 	}()
 
-	// Strip encoding from schema to let the writer choose appropriate encoding
-	schemaJson = regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJson, "")
-
 	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
@@ -153,7 +150,7 @@ func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
 			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
-		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96, ShowCompressionCodec: true})
 		if err != nil {
 			return nil, "", err
 		}

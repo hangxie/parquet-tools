@@ -106,6 +106,9 @@ func TestTranscodeCmd(t *testing.T) {
 				fileInfo, err := os.Stat(cmd.URI)
 				require.NoError(t, err)
 				require.Greater(t, fileInfo.Size(), int64(0))
+
+				// Verify schema structure remains the same
+				require.True(t, hasSameSchema(cmd.Source, cmd.URI, false, true))
 			})
 		}
 	})
@@ -158,6 +161,7 @@ func TestTranscodeCmd(t *testing.T) {
 		})
 
 		require.Equal(t, originalOutput, transcodedOutput)
+		require.True(t, hasSameSchema(cmd.Source, cmd.URI, false, true))
 	})
 
 	t.Run("schema-modification", func(t *testing.T) {
@@ -185,8 +189,11 @@ func TestTranscodeCmd(t *testing.T) {
 		// Verify output file
 		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
 		require.NoError(t, err)
-		require.Greater(t, reader.GetNumRows(), int64(0))
-		_ = reader.PFile.Close()
+		defer func() {
+			_ = reader.PFile.Close()
+		}()
+		require.Equal(t, int64(3), reader.GetNumRows())
+		require.True(t, hasSameSchema(cmd.Source, cmd.URI, false, true))
 	})
 
 	t.Run("page-sizes", func(t *testing.T) {
