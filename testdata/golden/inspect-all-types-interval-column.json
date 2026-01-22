@@ -4,7 +4,7 @@
     "compressedSize": 304,
     "compressionCodec": "GZIP",
     "convertedType": "convertedtype=INTERVAL, length=12",
-    "dataPageOffset": 13459,
+    "dataPageOffset": 13630,
     "encodings": [
       "PLAIN",
       "RLE"
@@ -23,7 +23,7 @@
   "pages": [
     {
       "index": 0,
-      "offset": 13459,
+      "offset": 13630,
       "type": "DATA_PAGE",
       "compressedSize": 61,
       "uncompressedSize": 36,
@@ -37,7 +37,7 @@
     },
     {
       "index": 1,
-      "offset": 13541,
+      "offset": 13712,
       "type": "DATA_PAGE",
       "compressedSize": 61,
       "uncompressedSize": 36,
@@ -51,7 +51,7 @@
     },
     {
       "index": 2,
-      "offset": 13623,
+      "offset": 13794,
       "type": "DATA_PAGE",
       "compressedSize": 61,
       "uncompressedSize": 36,
@@ -65,7 +65,7 @@
     },
     {
       "index": 3,
-      "offset": 13705,
+      "offset": 13876,
       "type": "DATA_PAGE",
       "compressedSize": 37,
       "uncompressedSize": 12,

@@ -3,7 +3,7 @@
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 24167,
+      "TotalByteSize": 24454,
       "Columns": [
         {
           "PathInSchema": [
@@ -11,11 +11,10 @@
           ],
           "Type": "BOOLEAN",
           "Encodings": [
-            "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 136,
-          "UncompressedSize": 136,
+          "CompressedSize": 168,
+          "UncompressedSize": 168,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": true,
@@ -296,8 +295,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 571,
-          "UncompressedSize": 588,
+          "CompressedSize": 573,
+          "UncompressedSize": 589,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": "AgEAAAkYCQAAAAAAAAA=",
@@ -428,10 +427,12 @@
           "ConvertedType": "convertedtype=INT_64",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true",
           "Encodings": [
-            "RLE"
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 329,
-          "UncompressedSize": 350,
+          "CompressedSize": 364,
+          "UncompressedSize": 392,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": 9,
@@ -503,10 +504,12 @@
           "ConvertedType": "convertedtype=UINT_64",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false",
           "Encodings": [
-            "RLE"
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 358,
-          "UncompressedSize": 350,
+          "CompressedSize": 366,
+          "UncompressedSize": 392,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": 9,
@@ -579,10 +582,12 @@
           "ConvertedType": "convertedtype=TIME_MILLIS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
-            "RLE"
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 262,
-          "UncompressedSize": 246,
+          "CompressedSize": 305,
+          "UncompressedSize": 287,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": "00:00:09.009",
@@ -616,10 +621,12 @@
           "ConvertedType": "convertedtype=TIME_MICROS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
           "Encodings": [
-            "RLE"
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 358,
-          "UncompressedSize": 350,
+          "CompressedSize": 382,
+          "UncompressedSize": 392,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": "00:00:09.000009",
@@ -671,10 +678,12 @@
           "ConvertedType": "convertedtype=TIMESTAMP_MILLIS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
-            "RLE"
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 402,
-          "UncompressedSize": 350,
+          "CompressedSize": 417,
+          "UncompressedSize": 392,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.009Z",
@@ -727,10 +736,12 @@
           "Type": "INT64",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
           "Encodings": [
-            "RLE"
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
           ],
-          "CompressedSize": 358,
-          "UncompressedSize": 350,
+          "CompressedSize": 370,
+          "UncompressedSize": 392,
           "NumValues": 10,
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.000000009Z",
@@ -883,8 +894,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 584,
-          "UncompressedSize": 742,
+          "CompressedSize": 592,
+          "UncompressedSize": 733,
           "NumValues": 46,
           "NullCount": 1,
           "MaxValue": "Composite-8",
@@ -902,7 +913,7 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 393,
+          "CompressedSize": 395,
           "UncompressedSize": 436,
           "NumValues": 46,
           "NullCount": 1,
@@ -986,8 +997,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 688,
-          "UncompressedSize": 1150,
+          "CompressedSize": 674,
+          "UncompressedSize": 1169,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -1008,8 +1019,8 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 508,
-          "UncompressedSize": 859,
+          "CompressedSize": 496,
+          "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 7,
@@ -1033,8 +1044,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 561,
-          "UncompressedSize": 789,
+          "CompressedSize": 546,
+          "UncompressedSize": 788,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": 0.44,
@@ -1058,8 +1069,8 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 646,
-          "UncompressedSize": 1169,
+          "CompressedSize": 679,
+          "UncompressedSize": 1159,
           "NumValues": 130,
           "NullCount": 10,
           "MaxValue": "Embedded-7",
@@ -1080,7 +1091,7 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 488,
+          "CompressedSize": 492,
           "UncompressedSize": 863,
           "NumValues": 130,
           "NullCount": 10,
