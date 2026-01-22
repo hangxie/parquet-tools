@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/hangxie/parquet-go/v2/parquet"
@@ -115,7 +114,7 @@ func main() {
 			Int64:             int64(i),
 			Int96:             types.TimeToINT96(ts),
 			Float:             float32(i) * 0.5,
-			Float16Val:        float32ToFloat16(float32(i) + 0.5),
+			Float16Val:        types.Float32ToFloat16(float32(i) * 0.5),
 			Double:            float64(i) * 0.5,
 			ByteArray:         fmt.Sprintf("ByteArray-%d", i),
 			Enum:              fmt.Sprintf("Enum-%d", i),
@@ -193,54 +192,4 @@ func main() {
 		return
 	}
 	_ = fw.Close()
-}
-
-// float32ToFloat16 converts a float32 into IEEE 754 binary16 (big-endian 2 bytes)
-func float32ToFloat16(f float32) string {
-	// Handle NaN/Inf explicitly
-	if f != f { // NaN
-		return string([]byte{0x7e, 0x00})
-	}
-	if f > 65504 { // max half
-		return string([]byte{0x7c, 0x00})
-	}
-	if f < -65504 {
-		return string([]byte{0xfc, 0x00})
-	}
-	bits := math.Float32bits(f)
-	sign := uint16((bits >> 31) & 0x1)
-	exp := int32((bits>>23)&0xff) - 127 + 15 // re-bias
-	mant := uint32(bits & 0x7fffff)
-
-	var half uint16
-	if exp <= 0 {
-		// subnormal or zero in half
-		if exp < -10 {
-			half = sign << 15 // zero
-		} else {
-			// add implicit leading 1 to mantissa
-			mant = (mant | 0x800000) >> uint32(1-exp)
-			// round to nearest
-			mant = (mant + 0x1000) >> 13
-			half = (sign << 15) | uint16(mant)
-		}
-	} else if exp >= 31 {
-		// overflow -> inf
-		half = (sign << 15) | (0x1f << 10)
-	} else {
-		// normalized
-		// round mantissa
-		mant = mant + 0x1000
-		if mant&0x800000 != 0 {
-			// mant overflow -> adjust exp
-			mant = 0
-			exp++
-			if exp >= 31 {
-				half = (sign << 15) | (0x1f << 10)
-				return string([]byte{byte(half >> 8), byte(half)})
-			}
-		}
-		half = (sign << 15) | (uint16(exp) << 10) | uint16(mant>>13)
-	}
-	return string([]byte{byte(half >> 8), byte(half)})
 }
