@@ -548,7 +548,7 @@ Parquet supports various encodings for different data types. Encoding can be spe
 | Encoding                  | Compatible Types                                  | Description                                                         |
 | ------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
 | `PLAIN`                   | All types                                         | Default encoding, no compression                                    |
-| `RLE`                     | BOOLEAN, INT32, INT64                             | Run-length encoding for repeated values                             |
+| `RLE`                     | BOOLEAN                                           | Run-length encoding for repeated values                             |
 | `BIT_PACKED`              | BOOLEAN, INT32, INT64                             | Deprecated, use RLE instead                                         |
 | `DELTA_BINARY_PACKED`     | INT32, INT64                                      | Delta encoding for sorted integers                                  |
 | `DELTA_BYTE_ARRAY`        | BYTE_ARRAY                                        | Delta encoding for strings                                          |
