@@ -1,5 +1,5 @@
 type Parquet_go_root struct {
-	Bool              bool             `parquet:"name=Bool, type=BOOLEAN, encoding=BIT_PACKED"`
+	Bool              bool             `parquet:"name=Bool, type=BOOLEAN, encoding=RLE"`
 	Int32             int32            `parquet:"name=Int32, type=INT32, encoding=DELTA_BINARY_PACKED"`
 	Int64             int64            `parquet:"name=Int64, type=INT64, encoding=DELTA_BINARY_PACKED"`
 	Int96             string           `parquet:"name=Int96, type=INT96, encoding=PLAIN"`
@@ -20,23 +20,23 @@ type Parquet_go_root struct {
 	Int_8             int32            `parquet:"name=Int_8, type=INT32, convertedtype=INT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true, encoding=BIT_PACKED"`
 	Int_16            int32            `parquet:"name=Int_16, type=INT32, convertedtype=INT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true, encoding=PLAIN"`
 	Int_32            int32            `parquet:"name=Int_32, type=INT32, convertedtype=INT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true, encoding=RLE_DICTIONARY"`
-	Int_64            int64            `parquet:"name=Int_64, type=INT64, convertedtype=INT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true, encoding=RLE"`
+	Int_64            int64            `parquet:"name=Int_64, type=INT64, convertedtype=INT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true, encoding=RLE_DICTIONARY"`
 	Uint_8            int32            `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false, encoding=BIT_PACKED"`
 	Uint_16           int32            `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false, encoding=DELTA_BINARY_PACKED"`
 	Uint_32           int32            `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false, encoding=PLAIN"`
-	Uint_64           int64            `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false, encoding=RLE"`
+	Uint_64           int64            `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false, encoding=RLE_DICTIONARY"`
 	Date              int32            `parquet:"name=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=DELTA_BINARY_PACKED"`
 	Date2             int32            `parquet:"name=Date2, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=RLE_DICTIONARY"`
 	TimeMillis        int32            `parquet:"name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"`
-	TimeMillis2       int32            `parquet:"name=TimeMillis2, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"`
+	TimeMillis2       int32            `parquet:"name=TimeMillis2, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY"`
 	TimeMicros        int64            `parquet:"name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"`
-	TimeMicros2       int64            `parquet:"name=TimeMicros2, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE"`
+	TimeMicros2       int64            `parquet:"name=TimeMicros2, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY"`
 	TimeNanos2        int64            `parquet:"name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED"`
 	TimestampMillis   int64            `parquet:"name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED"`
-	TimestampMillis2  int64            `parquet:"name=TimestampMillis2, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE"`
+	TimestampMillis2  int64            `parquet:"name=TimestampMillis2, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY"`
 	TimestampMicros   int64            `parquet:"name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED"`
 	TimestampMicros2  int64            `parquet:"name=TimestampMicros2, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY"`
-	TimestampNanos2   int64            `parquet:"name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE"`
+	TimestampNanos2   int64            `parquet:"name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE_DICTIONARY"`
 	Interval          string           `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN"`
 	Decimal1          int32            `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED"`
 	Decimal2          int64            `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED"`

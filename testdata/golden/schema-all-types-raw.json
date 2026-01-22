@@ -11,7 +11,7 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "BIT_PACKED"
+      "encoding": "RLE"
     },
     {
       "type": "INT32",
@@ -303,7 +303,7 @@
           "isSigned": true
         }
       },
-      "encoding": "RLE"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -371,7 +371,7 @@
           "isSigned": false
         }
       },
-      "encoding": "RLE"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -437,7 +437,7 @@
           }
         }
       },
-      "encoding": "RLE"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -475,7 +475,7 @@
           }
         }
       },
-      "encoding": "RLE"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -531,7 +531,7 @@
           }
         }
       },
-      "encoding": "RLE"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -587,7 +587,7 @@
           }
         }
       },
-      "encoding": "RLE"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
