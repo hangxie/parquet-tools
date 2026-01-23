@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -120,6 +121,18 @@ func TestRetypeCmd(t *testing.T) {
 				},
 				goldenSchema: "../testdata/golden/retype-schema.json",
 				goldenData:   "../testdata/golden/retype-data.json",
+			},
+			"variant-to-string": {
+				cmd: RetypeCmd{
+					VariantToString: true,
+					ReadOption:      rOpt,
+					WriteOption:     wOpt,
+					ReadPageSize:    100,
+					Source:          "../testdata/all-types.parquet",
+					URI:             resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-all-types-variant-to-string-schema.json",
+				goldenData:   "../testdata/golden/retype-all-types-variant-to-string-data.json",
 			},
 		}
 
@@ -285,7 +298,7 @@ func TestConverter(t *testing.T) {
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "unexpected type")
+			require.Contains(t, err.Error(), "expected string for INT96")
 		})
 
 		t.Run("struct-value-not-pointer", func(t *testing.T) {
@@ -427,7 +440,7 @@ func TestConverter(t *testing.T) {
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "unexpected type")
+			require.Contains(t, err.Error(), "expected string for BSON")
 		})
 	})
 
@@ -466,6 +479,72 @@ func TestConverter(t *testing.T) {
 			_, err := conv.Convert(input)
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "float16 requires 2 bytes")
+		})
+	})
+
+	t.Run("variant-conversion", func(t *testing.T) {
+		t.Run("map-input", func(t *testing.T) {
+			type TestStruct struct {
+				Data any
+			}
+			inputData := map[string]any{"key": "value", "num": 123}
+			input := &TestStruct{Data: inputData}
+			rule := RuleRegistry[RuleVariantToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+
+			resultVal := reflect.ValueOf(result).Elem()
+			dataField := resultVal.FieldByName("Data")
+			require.Equal(t, "string", dataField.Type().String())
+
+			// Verify JSON content
+			var decoded map[string]any
+			err = json.Unmarshal([]byte(dataField.String()), &decoded)
+			require.NoError(t, err)
+			require.Equal(t, "value", decoded["key"])
+			require.Equal(t, float64(123), decoded["num"]) // JSON numbers are float64
+		})
+
+		t.Run("slice-input", func(t *testing.T) {
+			type TestStruct struct {
+				Data any
+			}
+			inputData := []any{"item1", 2}
+			input := &TestStruct{Data: inputData}
+			rule := RuleRegistry[RuleVariantToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+
+			resultVal := reflect.ValueOf(result).Elem()
+			dataField := resultVal.FieldByName("Data")
+
+			var decoded []any
+			err = json.Unmarshal([]byte(dataField.String()), &decoded)
+			require.NoError(t, err)
+			require.Equal(t, "item1", decoded[0])
+			require.Equal(t, float64(2), decoded[1])
+		})
+
+		t.Run("primitive-input", func(t *testing.T) {
+			type TestStruct struct {
+				Data any
+			}
+			input := &TestStruct{Data: "simple string"}
+			rule := RuleRegistry[RuleVariantToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+
+			resultVal := reflect.ValueOf(result).Elem()
+			dataField := resultVal.FieldByName("Data")
+			require.Equal(t, `"simple string"`, dataField.String())
 		})
 	})
 
@@ -529,6 +608,22 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		field, ok := targetType.FieldByName("Timestamp")
 		require.True(t, ok)
 		require.Equal(t, "*int64", field.Type.String())
+	})
+
+	t.Run("converts-any-to-string", func(t *testing.T) {
+		type TestStruct struct {
+			Data any
+		}
+
+		rule := RuleRegistry[RuleVariantToString]
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+
+		srcType := reflect.TypeFor[TestStruct]()
+		targetType := conv.getOrCreateTargetType(srcType)
+
+		field, ok := targetType.FieldByName("Data")
+		require.True(t, ok)
+		require.Equal(t, "string", field.Type.String())
 	})
 
 	t.Run("preserves-non-matching-fields", func(t *testing.T) {

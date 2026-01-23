@@ -26,6 +26,7 @@ type RetypeCmd struct {
 	BsonToString     bool   `name:"bson-to-string" help:"Convert BSON columns to plain strings (JSON encoded)." default:"false"`
 	JsonToString     bool   `name:"json-to-string" help:"Remove JSON logical type from columns." default:"false"`
 	Float16ToFloat32 bool   `name:"float16-to-float32" help:"Convert FLOAT16 columns to FLOAT32." default:"false"`
+	VariantToString  bool   `name:"variant-to-string" help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
 	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
 	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
@@ -123,6 +124,8 @@ const (
 	RuleJsonToString
 	// RuleFloat16ToFloat32 converts FLOAT16 columns to FLOAT32.
 	RuleFloat16ToFloat32
+	// RuleVariantToString converts VARIANT columns to plain strings.
+	RuleVariantToString
 )
 
 // getActiveRules returns the list of rules enabled by CLI flags.
@@ -140,6 +143,9 @@ func (c RetypeCmd) getActiveRules() []*RetypeRule {
 	}
 	if c.Float16ToFloat32 {
 		rules = append(rules, RuleRegistry[RuleFloat16ToFloat32])
+	}
+	if c.VariantToString {
+		rules = append(rules, RuleRegistry[RuleVariantToString])
 	}
 
 	return rules
@@ -199,11 +205,16 @@ type RetypeRule struct {
 
 	// ConvertData converts a field value. Returns the converted value.
 	// If nil, no data conversion is performed (schema-only change).
-	ConvertData func(value string) (any, error)
+	ConvertData func(value any) (any, error)
 
 	// TargetType is the Go type for converted fields.
 	// If nil, the type remains unchanged (string to string conversions).
 	TargetType reflect.Type
+
+	// InputKind enforces the input kind for the rule.
+	// If set to reflect.Invalid (default), any input kind is accepted.
+	// Used to filter out false positive name matches in nested structures.
+	InputKind reflect.Kind
 }
 
 // RuleRegistry contains all available retype rules indexed by name.
@@ -225,8 +236,15 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			}
 			node.ConvertedType = nil
 		},
-		ConvertData: int96ToNanos,
-		TargetType:  reflect.TypeFor[int64](),
+		ConvertData: func(value any) (any, error) {
+			s, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string for INT96, got %T", value)
+			}
+			return int96ToNanos(s)
+		},
+		TargetType: reflect.TypeFor[int64](),
+		InputKind:  reflect.String,
 	},
 	RuleBsonToString: {
 		Name: "bson-to-string",
@@ -240,8 +258,15 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			}
 			node.ConvertedType = nil
 		},
-		ConvertData: bsonToJSONString,
-		TargetType:  nil, // string -> string
+		ConvertData: func(value any) (any, error) {
+			s, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string for BSON, got %T", value)
+			}
+			return bsonToJSONString(s)
+		},
+		TargetType: nil, // string -> string
+		InputKind:  reflect.String,
 	},
 	RuleJsonToString: {
 		Name: "json-to-string",
@@ -268,13 +293,40 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			node.LogicalType = nil
 			node.TypeLength = nil
 		},
-		ConvertData: func(value string) (any, error) {
-			if len(value) != 2 {
-				return nil, fmt.Errorf("float16 requires 2 bytes, got %d", len(value))
+		ConvertData: func(value any) (any, error) {
+			s, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string for FLOAT16, got %T", value)
 			}
-			return types.ConvertFloat16LogicalValue(value), nil
+			if len(s) != 2 {
+				return nil, fmt.Errorf("float16 requires 2 bytes, got %d", len(s))
+			}
+			return types.ConvertFloat16LogicalValue(s), nil
 		},
 		TargetType: reflect.TypeFor[float32](),
+		InputKind:  reflect.String,
+	},
+	RuleVariantToString: {
+		Name: "variant-to-string",
+		MatchSchema: func(node *pschema.SchemaNode) bool {
+			return node.LogicalType != nil && node.LogicalType.IsSetVARIANT()
+		},
+		TransformSchema: func(node *pschema.SchemaNode) {
+			// Remove VARIANT logical type, making it a plain BYTE_ARRAY (string)
+			node.Type = common.ToPtr(parquet.Type_BYTE_ARRAY)
+			node.LogicalType = &parquet.LogicalType{
+				STRING: &parquet.StringType{},
+			}
+			node.ConvertedType = common.ToPtr(parquet.ConvertedType_UTF8)
+		},
+		ConvertData: func(value any) (any, error) {
+			jsonData, err := json.Marshal(value)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal VARIANT to JSON: %w", err)
+			}
+			return string(jsonData), nil
+		},
+		TargetType: reflect.TypeFor[string](),
 	},
 }
 
@@ -445,19 +497,14 @@ func (c *Converter) convertStruct(srcVal reflect.Value) (any, error) {
 
 // convertField applies a rule's conversion to a single field.
 func (c *Converter) convertField(srcVal reflect.Value, rule *RetypeRule, fieldName string) (any, error) {
-	if srcVal.Kind() == reflect.String {
-		result, err := rule.ConvertData(srcVal.String())
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert field [%s]: %w", fieldName, err)
-		}
-		return result, nil
-	}
-
 	if srcVal.Kind() == reflect.Pointer {
 		if srcVal.IsNil() {
 			return c.nilPointerForRule(rule), nil
 		}
-		result, err := rule.ConvertData(srcVal.Elem().String())
+		// Dereference pointer for conversion, but note that the rule might expect the value itself
+		// For consistency with how we handle primitives, we pass the element value.
+		// However, since we now accept 'any', we can just pass srcVal.Elem().Interface()
+		result, err := rule.ConvertData(srcVal.Elem().Interface())
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert field [%s]: %w", fieldName, err)
 		}
@@ -468,7 +515,12 @@ func (c *Converter) convertField(srcVal reflect.Value, rule *RetypeRule, fieldNa
 		return ptr.Interface(), nil
 	}
 
-	return nil, fmt.Errorf("unexpected type for field [%s]: %s", fieldName, srcVal.Kind())
+	// Direct value conversion (string, or any other type for VARIANT)
+	result, err := rule.ConvertData(srcVal.Interface())
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert field [%s]: %w", fieldName, err)
+	}
+	return result, nil
 }
 
 // nilPointerForRule returns a nil pointer of the appropriate type.
@@ -497,9 +549,10 @@ func (c *Converter) convertSlice(srcVal reflect.Value) (any, error) {
 	for i := range srcVal.Len() {
 		elem := srcVal.Index(i)
 
-		if converter != nil && elem.Kind() == reflect.String {
-			// Direct string element conversion
-			result, err := converter.Rule.ConvertData(elem.String())
+		if converter != nil && (converter.Rule.InputKind == reflect.Invalid || elem.Kind() == converter.Rule.InputKind) {
+			// Rule application
+			valToConvert := elem.Interface()
+			result, err := converter.Rule.ConvertData(valToConvert)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert list element [%d]: %w", i, err)
 			}
@@ -543,9 +596,10 @@ func (c *Converter) convertMap(srcVal reflect.Value) (any, error) {
 		key := iter.Key()
 		val := iter.Value()
 
-		if converter != nil && val.Kind() == reflect.String {
-			// Direct string value conversion
-			result, err := converter.Rule.ConvertData(val.String())
+		if converter != nil && (converter.Rule.InputKind == reflect.Invalid || val.Kind() == converter.Rule.InputKind) {
+			// Rule application
+			valToConvert := val.Interface()
+			result, err := converter.Rule.ConvertData(valToConvert)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert map value [%v]: %w", key.Interface(), err)
 			}
