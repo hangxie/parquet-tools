@@ -102,6 +102,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Convert BSON to String](#convert-bson-to-string)
       - [Convert VARIANT to String](#convert-variant-to-string)
       - [Convert UUID to String](#convert-uuid-to-string)
+      - [Remove Geospatial Logical Type](#remove-geospatial-logical-type)
       - [Remove JSON Logical Type](#remove-json-logical-type)
       - [Convert FLOAT16 to FLOAT32](#convert-float16-to-float32)
     - [row-count Command](#row-count-command)
@@ -1020,6 +1021,7 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 * `--bson-to-string` - Convert BSON columns to plain strings (JSON encoded)
 * `--variant-to-string` - Convert VARIANT columns to plain strings (JSON encoded)
 * `--uuid-to-string` - Convert UUID columns to plain strings
+* `--geo-to-binary` - Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)
 * `--json-to-string` - Remove JSON logical type from columns (keep as plain BYTE_ARRAY)
 * `--float16-to-float32` - Convert FLOAT16 columns to FLOAT32
 
@@ -1081,6 +1083,14 @@ $ parquet-tools retype --variant-to-string -s testdata/all-types.parquet /tmp/va
 
 ```bash
 $ parquet-tools retype --uuid-to-string -s testdata/all-types.parquet /tmp/uuid-to-string.parquet
+```
+
+#### Remove Geospatial Logical Type
+
+Some tools may not support `GEOMETRY` or `GEOGRAPHY` logical types. You can use `--geo-to-binary` to remove these logical types from columns, keeping them as plain `BYTE_ARRAY` (WKB binary) without the geospatial annotation.
+
+```bash
+$ parquet-tools retype --geo-to-binary -s testdata/geospatial.parquet /tmp/geo-to-binary.parquet
 ```
 
 #### Remove JSON Logical Type
