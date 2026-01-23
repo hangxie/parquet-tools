@@ -475,7 +475,7 @@ This section describes format options for commands that write Parquet files, inc
 The `--compression` / `-z` parameter controls the compression algorithm used for writing Parquet files. This option is available for `import`, `merge`, `split`, and `transcode` commands. Different compression codecs offer different trade-offs between compression ratio, speed, and compatibility.
 
 **Supported compression codecs:**
-* `BROTLI` - Excellent compression ratio with moderate speed
+* `BROTLI` - Excellent compression ratio with moderate speed (Note: not supported by most Java tools)
 * `GZIP` - Better compression ratio, slower than SNAPPY
 * `LZ4_RAW` - LZ4 raw format, fast compression/decompression
 * `SNAPPY` - Fast compression/decompression (default for most commands)
@@ -549,7 +549,7 @@ Parquet supports various encodings for different data types. Encoding can be spe
 | ------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
 | `PLAIN`                   | All types                                         | Default encoding, no compression                                    |
 | `RLE`                     | BOOLEAN                                           | Run-length encoding for repeated values                             |
-| `BIT_PACKED`              | BOOLEAN, INT32, INT64                             | Deprecated, use RLE instead                                         |
+| `BIT_PACKED`              | BOOLEAN, INT32, INT64                             | Deprecated and not widely supported (e.g., DuckDB), use RLE instead |
 | `DELTA_BINARY_PACKED`     | INT32, INT64                                      | Delta encoding for sorted integers                                  |
 | `DELTA_BYTE_ARRAY`        | BYTE_ARRAY                                        | Delta encoding for strings                                          |
 | `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY                                        | Delta encoding for variable-length byte arrays                      |
