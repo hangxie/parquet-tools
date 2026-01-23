@@ -146,6 +146,18 @@ func TestRetypeCmd(t *testing.T) {
 				goldenSchema: "../testdata/golden/retype-all-types-uuid-to-string-schema.json",
 				goldenData:   "../testdata/golden/retype-all-types-uuid-to-string-data.json",
 			},
+			"geo-to-binary": {
+				cmd: RetypeCmd{
+					GeoToBinary:  true,
+					ReadOption:   rOpt,
+					WriteOption:  wOpt,
+					ReadPageSize: 100,
+					Source:       "../testdata/geospatial.parquet",
+					URI:          resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-geospatial-geo-to-binary-schema.json",
+				goldenData:   "../testdata/golden/retype-geospatial-geo-to-binary-data.json",
+			},
 		}
 
 		for name, tc := range testCases {

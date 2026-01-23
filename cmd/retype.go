@@ -28,6 +28,7 @@ type RetypeCmd struct {
 	Float16ToFloat32 bool   `name:"float16-to-float32" help:"Convert FLOAT16 columns to FLOAT32." default:"false"`
 	VariantToString  bool   `name:"variant-to-string" help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
 	UuidToString     bool   `name:"uuid-to-string" help:"Convert UUID columns to plain strings." default:"false"`
+	GeoToBinary      bool   `name:"geo-to-binary" help:"Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)." default:"false"`
 	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
 	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
@@ -129,6 +130,8 @@ const (
 	RuleVariantToString
 	// RuleUuidToString converts UUID columns to plain strings.
 	RuleUuidToString
+	// RuleGeoToBinary removes GEOGRAPHY and GEOMETRY logical types.
+	RuleGeoToBinary
 )
 
 // getActiveRules returns the list of rules enabled by CLI flags.
@@ -152,6 +155,9 @@ func (c RetypeCmd) getActiveRules() []*RetypeRule {
 	}
 	if c.UuidToString {
 		rules = append(rules, RuleRegistry[RuleUuidToString])
+	}
+	if c.GeoToBinary {
+		rules = append(rules, RuleRegistry[RuleGeoToBinary])
 	}
 
 	return rules
@@ -361,6 +367,18 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 		},
 		TargetType: reflect.TypeFor[string](),
 		InputKind:  reflect.String,
+	},
+	RuleGeoToBinary: {
+		Name: "geo-to-binary",
+		MatchSchema: func(node *pschema.SchemaNode) bool {
+			return node.LogicalType != nil && (node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY())
+		},
+		TransformSchema: func(node *pschema.SchemaNode) {
+			node.LogicalType = nil
+			node.ConvertedType = nil
+		},
+		ConvertData: nil,
+		TargetType:  nil,
 	},
 }
 

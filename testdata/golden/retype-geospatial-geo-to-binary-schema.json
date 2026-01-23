@@ -1,0 +1,11 @@
+{
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
+  "Fields": [
+    {
+      "Tag": "name=Geometry, inname=Geometry, type=BYTE_ARRAY, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Geography, inname=Geography, type=BYTE_ARRAY, encoding=PLAIN, compression=SNAPPY"
+    }
+  ]
+}

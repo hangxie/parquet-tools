@@ -305,6 +305,13 @@ $PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-data.json"
 rm -f "$RETYPE_OUTPUT"
 
+# retype-geospatial-geo-to-binary-schema.json and retype-geospatial-geo-to-binary-data.json
+$PT retype --geo-to-binary --source "$TESTDATA_DIR/geospatial.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-geospatial-geo-to-binary-schema.json"
+# use --geo-format hex to avoid json output trying to decode WKB as utf8 string if we just use plain json output for byte array
+$PT cat --format json --geo-format hex "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-geospatial-geo-to-binary-data.json"
+rm -f "$RETYPE_OUTPUT"
+
 # ============================================================================
 # int96-nil-min-max.json (special case from int96 test)
 # ============================================================================
