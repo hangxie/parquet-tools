@@ -134,6 +134,18 @@ func TestRetypeCmd(t *testing.T) {
 				goldenSchema: "../testdata/golden/retype-all-types-variant-to-string-schema.json",
 				goldenData:   "../testdata/golden/retype-all-types-variant-to-string-data.json",
 			},
+			"uuid-to-string": {
+				cmd: RetypeCmd{
+					UuidToString: true,
+					ReadOption:   rOpt,
+					WriteOption:  wOpt,
+					ReadPageSize: 100,
+					Source:       "../testdata/all-types.parquet",
+					URI:          resultFile,
+				},
+				goldenSchema: "../testdata/golden/retype-all-types-uuid-to-string-schema.json",
+				goldenData:   "../testdata/golden/retype-all-types-uuid-to-string-data.json",
+			},
 		}
 
 		for name, tc := range testCases {
@@ -479,6 +491,45 @@ func TestConverter(t *testing.T) {
 			_, err := conv.Convert(input)
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "float16 requires 2 bytes")
+		})
+	})
+
+	t.Run("uuid-conversion", func(t *testing.T) {
+		t.Run("valid-uuid", func(t *testing.T) {
+			// 16 bytes of zeros
+			validUuid := string(make([]byte, 16))
+
+			type TestStruct struct {
+				Value string
+			}
+
+			input := &TestStruct{Value: validUuid}
+			rule := RuleRegistry[RuleUuidToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+
+			result, err := conv.Convert(input)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+
+			resultVal := reflect.ValueOf(result).Elem()
+			valueField := resultVal.FieldByName("Value")
+			require.Equal(t, "00000000-0000-0000-0000-000000000000", valueField.String())
+		})
+
+		t.Run("invalid-uuid-length", func(t *testing.T) {
+			invalidUuid := "too short"
+
+			type TestStruct struct {
+				Value string
+			}
+
+			input := &TestStruct{Value: invalidUuid}
+			rule := RuleRegistry[RuleUuidToString]
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+
+			_, err := conv.Convert(input)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "UUID requires 16 bytes")
 		})
 	})
 

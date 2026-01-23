@@ -293,6 +293,18 @@ $PT retype --json-to-string --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUT
 $PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-json-to-string.json"
 rm -f "$RETYPE_OUTPUT"
 
+# retype-all-types-variant-to-string-schema.json and retype-all-types-variant-to-string-data.json
+$PT retype --variant-to-string --source "$TESTDATA_DIR/all-types.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-variant-to-string-schema.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-variant-to-string-data.json"
+rm -f "$RETYPE_OUTPUT"
+
+# retype-all-types-uuid-to-string-schema.json and retype-all-types-uuid-to-string-data.json
+$PT retype --uuid-to-string --source "$TESTDATA_DIR/all-types.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-schema.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-data.json"
+rm -f "$RETYPE_OUTPUT"
+
 # ============================================================================
 # int96-nil-min-max.json (special case from int96 test)
 # ============================================================================

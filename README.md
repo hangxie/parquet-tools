@@ -101,6 +101,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Convert INT96 to Timestamp](#convert-int96-to-timestamp)
       - [Convert BSON to String](#convert-bson-to-string)
       - [Convert VARIANT to String](#convert-variant-to-string)
+      - [Convert UUID to String](#convert-uuid-to-string)
       - [Remove JSON Logical Type](#remove-json-logical-type)
       - [Convert FLOAT16 to FLOAT32](#convert-float16-to-float32)
     - [row-count Command](#row-count-command)
@@ -1018,6 +1019,7 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 * `--int96-to-timestamp` - Convert INT96 columns to INT64 with TIMESTAMP_NANOS logical type
 * `--bson-to-string` - Convert BSON columns to plain strings (JSON encoded)
 * `--variant-to-string` - Convert VARIANT columns to plain strings (JSON encoded)
+* `--uuid-to-string` - Convert UUID columns to plain strings
 * `--json-to-string` - Remove JSON logical type from columns (keep as plain BYTE_ARRAY)
 * `--float16-to-float32` - Convert FLOAT16 columns to FLOAT32
 
@@ -1071,6 +1073,14 @@ The `VARIANT` logical type is a semi-structured format that many tools may not y
 
 ```bash
 $ parquet-tools retype --variant-to-string -s testdata/all-types.parquet /tmp/variant-to-string.parquet
+```
+
+#### Convert UUID to String
+
+`UUID` logical type is stored as 16-byte `FIXED_LEN_BYTE_ARRAY`. You can use `--uuid-to-string` to convert `UUID` columns to plain strings with `STRING` logical type. The data will be encoded in the standard 8-4-4-4-12 format (e.g., `550e8400-e29b-41d4-a716-446655440000`).
+
+```bash
+$ parquet-tools retype --uuid-to-string -s testdata/all-types.parquet /tmp/uuid-to-string.parquet
 ```
 
 #### Remove JSON Logical Type
