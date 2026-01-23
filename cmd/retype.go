@@ -27,6 +27,7 @@ type RetypeCmd struct {
 	JsonToString     bool   `name:"json-to-string" help:"Remove JSON logical type from columns." default:"false"`
 	Float16ToFloat32 bool   `name:"float16-to-float32" help:"Convert FLOAT16 columns to FLOAT32." default:"false"`
 	VariantToString  bool   `name:"variant-to-string" help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
+	UuidToString     bool   `name:"uuid-to-string" help:"Convert UUID columns to plain strings." default:"false"`
 	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
 	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
@@ -126,6 +127,8 @@ const (
 	RuleFloat16ToFloat32
 	// RuleVariantToString converts VARIANT columns to plain strings.
 	RuleVariantToString
+	// RuleUuidToString converts UUID columns to plain strings.
+	RuleUuidToString
 )
 
 // getActiveRules returns the list of rules enabled by CLI flags.
@@ -146,6 +149,9 @@ func (c RetypeCmd) getActiveRules() []*RetypeRule {
 	}
 	if c.VariantToString {
 		rules = append(rules, RuleRegistry[RuleVariantToString])
+	}
+	if c.UuidToString {
+		rules = append(rules, RuleRegistry[RuleUuidToString])
 	}
 
 	return rules
@@ -327,6 +333,34 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			return string(jsonData), nil
 		},
 		TargetType: reflect.TypeFor[string](),
+	},
+	RuleUuidToString: {
+		Name: "uuid-to-string",
+		MatchSchema: func(node *pschema.SchemaNode) bool {
+			return node.LogicalType != nil && node.LogicalType.IsSetUUID()
+		},
+		TransformSchema: func(node *pschema.SchemaNode) {
+			// Remove UUID logical type, making it a plain BYTE_ARRAY (string)
+			node.Type = common.ToPtr(parquet.Type_BYTE_ARRAY)
+			node.LogicalType = &parquet.LogicalType{
+				STRING: &parquet.StringType{},
+			}
+			node.ConvertedType = common.ToPtr(parquet.ConvertedType_UTF8)
+			node.TypeLength = nil
+		},
+		ConvertData: func(value any) (any, error) {
+			s, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string for UUID, got %T", value)
+			}
+			if len(s) != 16 {
+				return nil, fmt.Errorf("UUID requires 16 bytes, got %d", len(s))
+			}
+			b := []byte(s)
+			return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16]), nil
+		},
+		TargetType: reflect.TypeFor[string](),
+		InputKind:  reflect.String,
 	},
 }
 
