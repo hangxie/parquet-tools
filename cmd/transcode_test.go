@@ -62,12 +62,12 @@ func TestTranscodeCmd(t *testing.T) {
 			"good-uncompressed": {"good.parquet", "UNCOMPRESSED", 1, "", 3},
 			"good-lz4":          {"good.parquet", "LZ4", 1, "", 3},
 			"good-brotli":       {"good.parquet", "BROTLI", 1, "", 3},
-			"all-types-gzip":    {"all-types.parquet", "GZIP", 1, "", 10},
-			"all-types-zstd":    {"all-types.parquet", "ZSTD", 1, "", 10},
-			"all-types-brotli":  {"all-types.parquet", "BROTLI", 1, "", 10},
+			"all-types-gzip":    {"all-types.parquet", "GZIP", 1, "", 5},
+			"all-types-zstd":    {"all-types.parquet", "ZSTD", 1, "", 5},
+			"all-types-brotli":  {"all-types.parquet", "BROTLI", 1, "", 5},
 			"empty-gzip":        {"empty.parquet", "GZIP", 1, "", 0},
 			"good-v2":           {"good.parquet", "SNAPPY", 2, "", 3},
-			"all-types-v2-zstd": {"all-types.parquet", "ZSTD", 2, "", 10},
+			"all-types-v2-zstd": {"all-types.parquet", "ZSTD", 2, "", 5},
 			"good-v2-brotli":    {"good.parquet", "BROTLI", 2, "", 3},
 			"good-stats-true":   {"good.parquet", "SNAPPY", 1, "true", 3},
 			"good-stats-false":  {"good.parquet", "SNAPPY", 1, "false", 3},
@@ -223,7 +223,7 @@ func TestTranscodeCmd(t *testing.T) {
 				// Verify the data is correct
 				reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
 				require.NoError(t, err)
-				require.Equal(t, int64(10), reader.GetNumRows())
+				require.Equal(t, int64(5), reader.GetNumRows())
 				_ = reader.PFile.Close()
 			})
 		}
@@ -720,7 +720,7 @@ func TestTranscodeCmd(t *testing.T) {
 		// Verify file was created and data is correct
 		reader, err := pio.NewParquetFileReader(transcodedFile, rOpt)
 		require.NoError(t, err)
-		require.Equal(t, int64(10), reader.GetNumRows())
+		require.Equal(t, int64(5), reader.GetNumRows())
 		_ = reader.PFile.Close()
 
 		// Note: PLAIN_DICTIONARY should NOT be in v2 files

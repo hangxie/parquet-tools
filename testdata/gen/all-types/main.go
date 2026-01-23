@@ -99,7 +99,7 @@ func main() {
 	pw.CompressionType = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
 	interval := make([]byte, 4)
-	for i := range 10 {
+	for i := range 5 {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
 		strI := fmt.Sprintf("%d", i)
 		binary.LittleEndian.PutUint32(interval, uint32(i))

@@ -65,7 +65,7 @@ func TestMergeCmd(t *testing.T) {
 			rowCount int64
 		}{
 			"good":      {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"good.parquet", "good.parquet"}, URI: ""}, 6},
-			"all-types": {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"all-types.parquet", "all-types.parquet"}, URI: ""}, 20},
+			"all-types": {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"all-types.parquet", "all-types.parquet"}, URI: ""}, 10},
 			"empty":     {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"empty.parquet", "empty.parquet"}, URI: ""}, 0},
 			"top-tag":   {MergeCmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, URI: ""}, 6},
 		}
@@ -109,7 +109,7 @@ func TestMergeCmd(t *testing.T) {
 		reader, _ := pio.NewParquetFileReader(cmd.URI, rOpt)
 		rowCount := reader.GetNumRows()
 		_ = reader.PFile.Close()
-		require.Equal(t, int64(20), rowCount)
+		require.Equal(t, int64(10), rowCount)
 		require.True(t, hasSameSchema(source, cmd.URI, false, false))
 
 		cmd.Source = []string{cmd.URI, source}
@@ -119,7 +119,7 @@ func TestMergeCmd(t *testing.T) {
 		reader, _ = pio.NewParquetFileReader(cmd.URI, rOpt)
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
-		require.Equal(t, int64(30), rowCount)
+		require.Equal(t, int64(15), rowCount)
 		require.True(t, hasSameSchema(source, cmd.URI, false, false))
 
 		cmd.Source = []string{cmd.URI, source}
@@ -129,7 +129,7 @@ func TestMergeCmd(t *testing.T) {
 		reader, _ = pio.NewParquetFileReader(cmd.URI, rOpt)
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
-		require.Equal(t, int64(40), rowCount)
+		require.Equal(t, int64(20), rowCount)
 		require.True(t, hasSameSchema(source, cmd.URI, false, false))
 	})
 

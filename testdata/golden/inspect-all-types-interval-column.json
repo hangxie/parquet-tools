@@ -1,15 +1,15 @@
 {
   "columnChunk": {
     "columnChunkIndex": 39,
-    "compressedSize": 304,
+    "compressedSize": 198,
     "compressionCodec": "GZIP",
     "convertedType": "convertedtype=INTERVAL, length=12",
-    "dataPageOffset": 13630,
+    "dataPageOffset": 9693,
     "encodings": [
       "PLAIN",
       "RLE"
     ],
-    "numValues": 10,
+    "numValues": 5,
     "pathInSchema": [
       "Interval"
     ],
@@ -18,16 +18,16 @@
       "nullCount": 0
     },
     "type": "FIXED_LEN_BYTE_ARRAY",
-    "uncompressedSize": 204
+    "uncompressedSize": 123
   },
   "pages": [
     {
       "index": 0,
-      "offset": 13630,
+      "offset": 9693,
       "type": "DATA_PAGE",
-      "compressedSize": 61,
-      "uncompressedSize": 36,
-      "numValues": 3,
+      "compressedSize": 49,
+      "uncompressedSize": 24,
+      "numValues": 2,
       "encoding": "PLAIN",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
@@ -37,11 +37,11 @@
     },
     {
       "index": 1,
-      "offset": 13712,
+      "offset": 9763,
       "type": "DATA_PAGE",
-      "compressedSize": 61,
-      "uncompressedSize": 36,
-      "numValues": 3,
+      "compressedSize": 49,
+      "uncompressedSize": 24,
+      "numValues": 2,
       "encoding": "PLAIN",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
@@ -51,21 +51,7 @@
     },
     {
       "index": 2,
-      "offset": 13794,
-      "type": "DATA_PAGE",
-      "compressedSize": 61,
-      "uncompressedSize": 36,
-      "numValues": 3,
-      "encoding": "PLAIN",
-      "definitionLevelEncoding": "RLE",
-      "repetitionLevelEncoding": "RLE",
-      "statistics": {
-        "nullCount": 0
-      }
-    },
-    {
-      "index": 3,
-      "offset": 13876,
+      "offset": 9833,
       "type": "DATA_PAGE",
       "compressedSize": 37,
       "uncompressedSize": 12,
