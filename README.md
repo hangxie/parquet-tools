@@ -1028,6 +1028,9 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 > [!NOTE]
 > These options convert all matching fields in the parquet file; there is currently no way to select particular fields for conversion.
 
+> [!TIP]
+> The `retype` command preserves the original column-level encoding and compression settings from the source file by default. These settings take precedence over global writer options (like `--compression`). If you need to change compression codecs or encodings while retyping, use the `transcode` command before or after retyping.
+
 #### Convert INT96 to Timestamp
 
 INT96 is a deprecated timestamp format so lots of tools do not support it, you can use `--int96-to-timestamp` to convert all INT96 columns to INT64 columns with TIMESTAMP (NANOS) logical type.
