@@ -36,20 +36,20 @@ func TestSplitCmd(t *testing.T) {
 		"last-write":  {cmd: SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "s3://target/%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "../testdata/good.parquet", current: tw}, errMsg: "failed to close"},
 		// good cases - URI will be prefixed with "../testdata/"
 		"record-count": {
-			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "all-types.parquet", current: TrunkWriter{}},
-			result: map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 3, "ut-2.parquet": 3, "ut-3.parquet": 1},
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 2, URI: "all-types.parquet", current: TrunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 2, "ut-1.parquet": 2, "ut-2.parquet": 1},
 		},
 		"file-count": {
-			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
-			result: map[string]int64{"ut-0.parquet": 4, "ut-1.parquet": 3, "ut-2.parquet": 3},
+			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 2, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 2},
 		},
 		"one-result-record-count": {
 			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 20, URI: "all-types.parquet", current: TrunkWriter{}},
-			result: map[string]int64{"ut-0.parquet": 10},
+			result: map[string]int64{"ut-0.parquet": 5},
 		},
 		"one-result-filecount": {
 			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 1, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: TrunkWriter{}},
-			result: map[string]int64{"ut-0.parquet": 10},
+			result: map[string]int64{"ut-0.parquet": 5},
 		},
 		"empty-record-count": {
 			cmd:    SplitCmd{ReadOption: rOpt, WriteOption: wOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "empty.parquet", current: TrunkWriter{}},

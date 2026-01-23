@@ -2,8 +2,8 @@
   "NumRowGroups": 1,
   "RowGroups": [
     {
-      "NumRows": 10,
-      "TotalByteSize": 24454,
+      "NumRows": 5,
+      "TotalByteSize": 13530,
       "Columns": [
         {
           "PathInSchema": [
@@ -13,9 +13,9 @@
           "Encodings": [
             "RLE"
           ],
-          "CompressedSize": 168,
-          "UncompressedSize": 168,
-          "NumValues": 10,
+          "CompressedSize": 121,
+          "UncompressedSize": 121,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": true,
           "MinValue": false,
@@ -30,11 +30,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 223,
-          "UncompressedSize": 215,
-          "NumValues": 10,
+          "CompressedSize": 166,
+          "UncompressedSize": 160,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "SNAPPY"
         },
@@ -47,11 +47,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 379,
-          "UncompressedSize": 279,
-          "NumValues": 10,
+          "CompressedSize": 283,
+          "UncompressedSize": 208,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "GZIP"
         },
@@ -64,11 +64,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 422,
-          "UncompressedSize": 428,
-          "NumValues": 10,
+          "CompressedSize": 293,
+          "UncompressedSize": 291,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T09:09:09.009009000Z",
+          "MaxValue": "2022-01-01T04:04:04.004004000Z",
           "MinValue": "2022-01-01T00:00:00.000000000Z",
           "CompressionCodec": "LZ4_RAW"
         },
@@ -81,11 +81,11 @@
             "BYTE_STREAM_SPLIT",
             "RLE"
           ],
-          "CompressedSize": 272,
-          "UncompressedSize": 220,
-          "NumValues": 10,
+          "CompressedSize": 194,
+          "UncompressedSize": 155,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 4.5,
+          "MaxValue": 2,
           "MinValue": 0,
           "CompressionCodec": "ZSTD"
         },
@@ -100,11 +100,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 184,
-          "UncompressedSize": 168,
-          "NumValues": 10,
+          "CompressedSize": 133,
+          "UncompressedSize": 121,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 4.5,
+          "MaxValue": 2,
           "MinValue": 0,
           "CompressionCodec": "BROTLI"
         },
@@ -117,11 +117,11 @@
             "BYTE_STREAM_SPLIT",
             "RLE"
           ],
-          "CompressedSize": 324,
-          "UncompressedSize": 324,
-          "NumValues": 10,
+          "CompressedSize": 223,
+          "UncompressedSize": 223,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 4.5,
+          "MaxValue": 2,
           "MinValue": 0,
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -134,11 +134,11 @@
             "DELTA_LENGTH_BYTE_ARRAY",
             "RLE"
           ],
-          "CompressedSize": 400,
-          "UncompressedSize": 437,
-          "NumValues": 10,
+          "CompressedSize": 289,
+          "UncompressedSize": 299,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "Qnl0ZUFycmF5LTk=",
+          "MaxValue": "Qnl0ZUFycmF5LTQ=",
           "MinValue": "Qnl0ZUFycmF5LTA=",
           "CompressionCodec": "SNAPPY"
         },
@@ -154,11 +154,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 506,
-          "UncompressedSize": 381,
-          "NumValues": 10,
+          "CompressedSize": 351,
+          "UncompressedSize": 251,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "Enum-9",
+          "MaxValue": "Enum-4",
           "MinValue": "Enum-0",
           "CompressionCodec": "GZIP"
         },
@@ -173,11 +173,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 453,
-          "UncompressedSize": 532,
-          "NumValues": 10,
+          "CompressedSize": 331,
+          "UncompressedSize": 359,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "09090909-0909-0909-0909-090909090909",
+          "MaxValue": "04040404-0404-0404-0404-040404040404",
           "MinValue": "00000000-0000-0000-0000-000000000000",
           "CompressionCodec": "LZ4_RAW"
         },
@@ -192,11 +192,11 @@
             "DELTA_BYTE_ARRAY",
             "RLE"
           ],
-          "CompressedSize": 459,
-          "UncompressedSize": 407,
-          "NumValues": 10,
+          "CompressedSize": 291,
+          "UncompressedSize": 252,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "{\"9\":9}",
+          "MaxValue": "{\"4\":4}",
           "MinValue": "{\"0\":0}",
           "CompressionCodec": "ZSTD"
         },
@@ -211,12 +211,12 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 416,
-          "UncompressedSize": 468,
-          "NumValues": 10,
+          "CompressedSize": 299,
+          "UncompressedSize": 311,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": {
-            "9": 9
+            "4": 4
           },
           "MinValue": {
             "0": 0
@@ -234,11 +234,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 338,
-          "UncompressedSize": 338,
-          "NumValues": 10,
+          "CompressedSize": 226,
+          "UncompressedSize": 226,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "{\"9\":9}",
+          "MaxValue": "{\"4\":4}",
           "MinValue": "{\"0\":0}",
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -253,12 +253,12 @@
             "DELTA_BYTE_ARRAY",
             "RLE"
           ],
-          "CompressedSize": 499,
-          "UncompressedSize": 543,
-          "NumValues": 10,
+          "CompressedSize": 337,
+          "UncompressedSize": 331,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": {
-            "9": 9
+            "4": 4
           },
           "MinValue": {
             "0": 0
@@ -276,11 +276,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 480,
-          "UncompressedSize": 355,
-          "NumValues": 10,
+          "CompressedSize": 334,
+          "UncompressedSize": 234,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "EQEAATk=",
+          "MaxValue": "EQEAATQ=",
           "MinValue": "EQEAATA=",
           "CompressionCodec": "GZIP"
         },
@@ -295,11 +295,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 573,
-          "UncompressedSize": 589,
-          "NumValues": 10,
+          "CompressedSize": 430,
+          "UncompressedSize": 387,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "AgEAAAkYCQAAAAAAAAA=",
+          "MaxValue": "AgEAAAkYBAAAAAAAAAA=",
           "MinValue": "AgEAAAkYAAAAAAAAAAA=",
           "CompressionCodec": "GZIP"
         },
@@ -314,11 +314,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 406,
-          "UncompressedSize": 444,
-          "NumValues": 10,
+          "CompressedSize": 286,
+          "UncompressedSize": 298,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "Rml4ZWQtMDAwOQ==",
+          "MaxValue": "Rml4ZWQtMDAwNA==",
           "MinValue": "Rml4ZWQtMDAwMA==",
           "CompressionCodec": "LZ4_RAW"
         },
@@ -334,11 +334,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 381,
-          "UncompressedSize": 380,
-          "NumValues": 10,
+          "CompressedSize": 277,
+          "UncompressedSize": 250,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "UTF8-9",
+          "MaxValue": "UTF8-4",
           "MinValue": "UTF8-0",
           "CompressionCodec": "ZSTD"
         },
@@ -353,11 +353,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 346,
-          "UncompressedSize": 364,
-          "NumValues": 10,
+          "CompressedSize": 252,
+          "UncompressedSize": 243,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "UTF8_2-9",
+          "MaxValue": "UTF8_2-4",
           "MinValue": "UTF8_2-0",
           "CompressionCodec": "BROTLI"
         },
@@ -372,11 +372,11 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 220,
-          "UncompressedSize": 220,
-          "NumValues": 10,
+          "CompressedSize": 155,
+          "UncompressedSize": 155,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -391,11 +391,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 228,
-          "UncompressedSize": 220,
-          "NumValues": 10,
+          "CompressedSize": 161,
+          "UncompressedSize": 155,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "SNAPPY"
         },
@@ -411,11 +411,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 413,
-          "UncompressedSize": 288,
-          "NumValues": 10,
+          "CompressedSize": 296,
+          "UncompressedSize": 196,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "GZIP"
         },
@@ -431,11 +431,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 364,
-          "UncompressedSize": 392,
-          "NumValues": 10,
+          "CompressedSize": 252,
+          "UncompressedSize": 264,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "LZ4_RAW"
         },
@@ -450,11 +450,11 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 272,
-          "UncompressedSize": 220,
-          "NumValues": 10,
+          "CompressedSize": 194,
+          "UncompressedSize": 155,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "ZSTD"
         },
@@ -469,11 +469,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 231,
-          "UncompressedSize": 215,
-          "NumValues": 10,
+          "CompressedSize": 172,
+          "UncompressedSize": 160,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "BROTLI"
         },
@@ -488,11 +488,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 220,
-          "UncompressedSize": 220,
-          "NumValues": 10,
+          "CompressedSize": 155,
+          "UncompressedSize": 155,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -508,11 +508,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 366,
-          "UncompressedSize": 392,
-          "NumValues": 10,
+          "CompressedSize": 256,
+          "UncompressedSize": 264,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": 9,
+          "MaxValue": 4,
           "MinValue": 0,
           "CompressionCodec": "SNAPPY"
         },
@@ -527,12 +527,12 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 322,
-          "UncompressedSize": 222,
-          "NumValues": 10,
+          "CompressedSize": 239,
+          "UncompressedSize": 164,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": "1970-01-01",
-          "MinValue": "1945-05-12",
+          "MinValue": "1959-01-19",
           "CompressionCodec": "GZIP"
         },
         {
@@ -547,11 +547,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 294,
-          "UncompressedSize": 287,
-          "NumValues": 10,
+          "CompressedSize": 201,
+          "UncompressedSize": 196,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "1994-08-23",
+          "MaxValue": "1980-12-14",
           "MinValue": "1970-01-01",
           "CompressionCodec": "LZ4_RAW"
         },
@@ -566,11 +566,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 274,
-          "UncompressedSize": 222,
-          "NumValues": 10,
+          "CompressedSize": 203,
+          "UncompressedSize": 164,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "00:00:09.009",
+          "MaxValue": "00:00:04.004",
           "MinValue": "00:00:00.000",
           "CompressionCodec": "ZSTD"
         },
@@ -586,11 +586,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 305,
-          "UncompressedSize": 287,
-          "NumValues": 10,
+          "CompressedSize": 212,
+          "UncompressedSize": 196,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "00:00:09.009",
+          "MaxValue": "00:00:04.004",
           "MinValue": "00:00:00.000",
           "CompressionCodec": "BROTLI"
         },
@@ -605,11 +605,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 294,
-          "UncompressedSize": 294,
-          "NumValues": 10,
+          "CompressedSize": 218,
+          "UncompressedSize": 218,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "00:00:09.000009",
+          "MaxValue": "00:00:04.000004",
           "MinValue": "00:00:00.000000",
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -625,11 +625,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 382,
-          "UncompressedSize": 392,
-          "NumValues": 10,
+          "CompressedSize": 262,
+          "UncompressedSize": 264,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "00:00:09.000009",
+          "MaxValue": "00:00:04.000004",
           "MinValue": "00:00:00.000000",
           "CompressionCodec": "SNAPPY"
         },
@@ -643,11 +643,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 403,
-          "UncompressedSize": 303,
-          "NumValues": 10,
+          "CompressedSize": 299,
+          "UncompressedSize": 224,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "00:00:09.000000009",
+          "MaxValue": "00:00:04.000000004",
           "MinValue": "00:00:00.000000000",
           "CompressionCodec": "GZIP"
         },
@@ -662,11 +662,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 306,
-          "UncompressedSize": 299,
-          "NumValues": 10,
+          "CompressedSize": 228,
+          "UncompressedSize": 223,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T00:00:00.009Z",
+          "MaxValue": "2022-01-01T00:00:00.004Z",
           "MinValue": "2022-01-01T00:00:00.000Z",
           "CompressionCodec": "LZ4_RAW"
         },
@@ -682,11 +682,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 417,
-          "UncompressedSize": 392,
-          "NumValues": 10,
+          "CompressedSize": 305,
+          "UncompressedSize": 264,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T00:00:00.009Z",
+          "MaxValue": "2022-01-01T00:00:00.004Z",
           "MinValue": "2022-01-01T00:00:00.000Z",
           "CompressionCodec": "ZSTD"
         },
@@ -701,11 +701,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 323,
-          "UncompressedSize": 307,
-          "NumValues": 10,
+          "CompressedSize": 241,
+          "UncompressedSize": 229,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T00:00:00.000009Z",
+          "MaxValue": "2022-01-01T00:00:00.000004Z",
           "MinValue": "2022-01-01T00:00:00.000000Z",
           "CompressionCodec": "BROTLI"
         },
@@ -721,11 +721,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 393,
-          "UncompressedSize": 393,
-          "NumValues": 10,
+          "CompressedSize": 264,
+          "UncompressedSize": 264,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T00:00:00.000009Z",
+          "MaxValue": "2022-01-01T00:00:00.000004Z",
           "MinValue": "2022-01-01T00:00:00.000000Z",
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -740,11 +740,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 370,
-          "UncompressedSize": 392,
-          "NumValues": 10,
+          "CompressedSize": 260,
+          "UncompressedSize": 264,
+          "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "2022-01-01T00:00:00.000000009Z",
+          "MaxValue": "2022-01-01T00:00:00.000000004Z",
           "MinValue": "2022-01-01T00:00:00.000000000Z",
           "CompressionCodec": "SNAPPY"
         },
@@ -758,9 +758,9 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 304,
-          "UncompressedSize": 204,
-          "NumValues": 10,
+          "CompressedSize": 198,
+          "UncompressedSize": 123,
+          "NumValues": 5,
           "NullCount": 0,
           "CompressionCodec": "GZIP"
         },
@@ -775,12 +775,12 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 276,
-          "UncompressedSize": 332,
-          "NumValues": 10,
+          "CompressedSize": 165,
+          "UncompressedSize": 162,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": 44.44,
-          "MinValue": -44.44,
+          "MinValue": 0,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -794,12 +794,12 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 366,
-          "UncompressedSize": 396,
-          "NumValues": 10,
+          "CompressedSize": 249,
+          "UncompressedSize": 210,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": 44.44,
-          "MinValue": -44.44,
+          "MinValue": 0,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -813,12 +813,12 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 363,
-          "UncompressedSize": 428,
-          "NumValues": 10,
+          "CompressedSize": 266,
+          "UncompressedSize": 291,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": 0.44,
-          "MinValue": -0.44,
+          "MinValue": 0,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -832,12 +832,12 @@
             "DELTA_LENGTH_BYTE_ARRAY",
             "RLE"
           ],
-          "CompressedSize": 177,
-          "UncompressedSize": 177,
-          "NumValues": 10,
+          "CompressedSize": 129,
+          "UncompressedSize": 129,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": 0.44,
-          "MinValue": -0.44,
+          "MinValue": 0,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -852,12 +852,12 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 293,
-          "UncompressedSize": 283,
-          "NumValues": 10,
+          "CompressedSize": 204,
+          "UncompressedSize": 196,
+          "NumValues": 5,
           "NullCount": 0,
           "MaxValue": 44.44,
-          "MinValue": -44.44,
+          "MinValue": 0,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -872,12 +872,12 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 547,
-          "UncompressedSize": 422,
-          "NumValues": 10,
-          "NullCount": 5,
+          "CompressedSize": 347,
+          "UncompressedSize": 247,
+          "NumValues": 5,
+          "NullCount": 3,
           "MaxValue": 0.03,
-          "MinValue": -0.44,
+          "MinValue": 0,
           "CompressionCodec": "GZIP"
         },
         {
@@ -894,11 +894,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 592,
-          "UncompressedSize": 733,
-          "NumValues": 46,
+          "CompressedSize": 369,
+          "UncompressedSize": 391,
+          "NumValues": 11,
           "NullCount": 1,
-          "MaxValue": "Composite-8",
+          "MaxValue": "Composite-3",
           "MinValue": "Composite-0",
           "CompressionCodec": "LZ4_RAW"
         },
@@ -913,11 +913,11 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 395,
-          "UncompressedSize": 436,
-          "NumValues": 46,
+          "CompressedSize": 260,
+          "UncompressedSize": 221,
+          "NumValues": 11,
           "NullCount": 1,
-          "MaxValue": 8,
+          "MaxValue": 3,
           "MinValue": 0,
           "CompressionCodec": "ZSTD"
         },
@@ -934,11 +934,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 592,
-          "UncompressedSize": 1047,
-          "NumValues": 46,
+          "CompressedSize": 379,
+          "UncompressedSize": 417,
+          "NumValues": 11,
           "NullCount": 1,
-          "MaxValue": "Composite-8",
+          "MaxValue": "Composite-3",
           "MinValue": "Composite-0",
           "CompressionCodec": "ZSTD"
         },
@@ -951,11 +951,11 @@
             "DELTA_BINARY_PACKED",
             "RLE"
           ],
-          "CompressedSize": 313,
-          "UncompressedSize": 322,
-          "NumValues": 46,
+          "CompressedSize": 209,
+          "UncompressedSize": 214,
+          "NumValues": 11,
           "NullCount": 1,
-          "MaxValue": 8,
+          "MaxValue": 3,
           "MinValue": 0,
           "CompressionCodec": "BROTLI"
         },
@@ -972,11 +972,11 @@
             "PLAIN",
             "RLE"
           ],
-          "CompressedSize": 1047,
-          "UncompressedSize": 1047,
-          "NumValues": 46,
+          "CompressedSize": 419,
+          "UncompressedSize": 419,
+          "NumValues": 11,
           "NullCount": 1,
-          "MaxValue": "Composite-8",
+          "MaxValue": "Composite-3",
           "MinValue": "Composite-0",
           "CompressionCodec": "UNCOMPRESSED"
         },
@@ -997,11 +997,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 674,
-          "UncompressedSize": 1169,
-          "NumValues": 130,
-          "NullCount": 10,
-          "MaxValue": "Embedded-7",
+          "CompressedSize": 293,
+          "UncompressedSize": 314,
+          "NumValues": 15,
+          "NullCount": 5,
+          "MaxValue": "Embedded-2",
           "MinValue": "Embedded-0",
           "CompressionCodec": "SNAPPY"
         },
@@ -1019,11 +1019,11 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 496,
-          "UncompressedSize": 863,
-          "NumValues": 130,
-          "NullCount": 10,
-          "MaxValue": 7,
+          "CompressedSize": 290,
+          "UncompressedSize": 215,
+          "NumValues": 15,
+          "NullCount": 5,
+          "MaxValue": 2,
           "MinValue": 0,
           "CompressionCodec": "GZIP"
         },
@@ -1044,11 +1044,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 546,
-          "UncompressedSize": 788,
-          "NumValues": 130,
-          "NullCount": 10,
-          "MaxValue": 0.44,
+          "CompressedSize": 277,
+          "UncompressedSize": 279,
+          "NumValues": 15,
+          "NullCount": 5,
+          "MaxValue": 0,
           "MinValue": 0,
           "CompressionCodec": "BROTLI"
         },
@@ -1069,11 +1069,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 679,
-          "UncompressedSize": 1159,
-          "NumValues": 130,
-          "NullCount": 10,
-          "MaxValue": "Embedded-7",
+          "CompressedSize": 292,
+          "UncompressedSize": 314,
+          "NumValues": 15,
+          "NullCount": 5,
+          "MaxValue": "Embedded-2",
           "MinValue": "Embedded-0",
           "CompressionCodec": "SNAPPY"
         },
@@ -1091,11 +1091,11 @@
             "BIT_PACKED",
             "RLE"
           ],
-          "CompressedSize": 492,
-          "UncompressedSize": 863,
-          "NumValues": 130,
-          "NullCount": 10,
-          "MaxValue": 7,
+          "CompressedSize": 290,
+          "UncompressedSize": 215,
+          "NumValues": 15,
+          "NullCount": 5,
+          "MaxValue": 2,
           "MinValue": 0,
           "CompressionCodec": "GZIP"
         },
@@ -1116,11 +1116,11 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 542,
-          "UncompressedSize": 788,
-          "NumValues": 130,
-          "NullCount": 10,
-          "MaxValue": 0.44,
+          "CompressedSize": 272,
+          "UncompressedSize": 279,
+          "NumValues": 15,
+          "NullCount": 5,
+          "MaxValue": 0,
           "MinValue": 0,
           "CompressionCodec": "BROTLI"
         }
