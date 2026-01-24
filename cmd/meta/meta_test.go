@@ -1,13 +1,15 @@
-package cmd
+package meta
 
 import (
 	"os"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 
+	"github.com/hangxie/parquet-go/v2/common"
+	"github.com/hangxie/parquet-go/v2/parquet"
+
+	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
@@ -89,6 +91,47 @@ func TestRetrieveValue(t *testing.T) {
 	})
 }
 
+func TestEncodingToString(t *testing.T) {
+	testCases := []struct {
+		name      string
+		encodings []parquet.Encoding
+		expected  []string
+	}{
+		{
+			name:      "nil",
+			encodings: nil,
+			expected:  []string{},
+		},
+		{
+			name:      "empty",
+			encodings: []parquet.Encoding{},
+			expected:  []string{},
+		},
+		{
+			name:      "single",
+			encodings: []parquet.Encoding{parquet.Encoding_PLAIN},
+			expected:  []string{"PLAIN"},
+		},
+		{
+			name:      "multiple-unsorted",
+			encodings: []parquet.Encoding{parquet.Encoding_RLE, parquet.Encoding_PLAIN},
+			expected:  []string{"PLAIN", "RLE"},
+		},
+		{
+			name:      "multiple-sorted",
+			encodings: []parquet.Encoding{parquet.Encoding_PLAIN, parquet.Encoding_RLE},
+			expected:  []string{"PLAIN", "RLE"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := encodingToString(tc.encodings)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestSortingToString(t *testing.T) {
 	testCases := map[string]struct {
 		sortingColumns []*parquet.SortingColumn
@@ -161,25 +204,25 @@ func TestSortingToString(t *testing.T) {
 	}
 }
 
-func TestMetaCmd(t *testing.T) {
+func TestCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
-		cmd    MetaCmd
+		cmd    Cmd
 		golden string
 		errMsg string
 	}{
 		// error cases
-		"non-existent":   {cmd: MetaCmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"no-int96":       {cmd: MetaCmd{ReadOption: rOpt, FailOnInt96: true, URI: "../testdata/all-types.parquet"}, errMsg: "type INT96 which is not supported"},
-		"nan-json-error": {cmd: MetaCmd{ReadOption: rOpt, URI: "../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
-		"arrow-gh-41317": {cmd: MetaCmd{ReadOption: rOpt, URI: "../testdata/ARROW-GH-41317.parquet"}, errMsg: "schema node not found for column path"},
-		// good cases - URI will be prefixed with "../testdata/"
-		"raw":         {cmd: MetaCmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "meta-good-raw.json"},
-		"nil-stat":    {cmd: MetaCmd{ReadOption: rOpt, URI: "nil-statistics.parquet"}, golden: "meta-nil-statistics-raw.json"},
-		"sorting-col": {cmd: MetaCmd{ReadOption: rOpt, URI: "sorting-col.parquet"}, golden: "meta-sorting-col-raw.json"},
-		"all-types":   {cmd: MetaCmd{ReadOption: rOpt, URI: "all-types.parquet"}, golden: "meta-all-types-raw.json"},
-		"geospatial":  {cmd: MetaCmd{ReadOption: rOpt, URI: "geospatial.parquet"}, golden: "meta-geospatial-raw.json"},
-		"row-group":   {cmd: MetaCmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "meta-row-group-raw.json"},
+		"non-existent":   {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"no-int96":       {cmd: Cmd{ReadOption: rOpt, FailOnInt96: true, URI: "../../testdata/all-types.parquet"}, errMsg: "type INT96 which is not supported"},
+		"nan-json-error": {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
+		"arrow-gh-41317": {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/ARROW-GH-41317.parquet"}, errMsg: "schema node not found for column path"},
+		// good cases - URI will be prefixed with "../../testdata/"
+		"raw":         {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "meta-good-raw.json"},
+		"nil-stat":    {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet"}, golden: "meta-nil-statistics-raw.json"},
+		"sorting-col": {cmd: Cmd{ReadOption: rOpt, URI: "sorting-col.parquet"}, golden: "meta-sorting-col-raw.json"},
+		"all-types":   {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet"}, golden: "meta-all-types-raw.json"},
+		"geospatial":  {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet"}, golden: "meta-geospatial-raw.json"},
+		"row-group":   {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "meta-row-group-raw.json"},
 	}
 
 	for name, tc := range testCases {
@@ -189,24 +232,24 @@ func TestMetaCmd(t *testing.T) {
 			}
 			cmd := tc.cmd
 			if tc.golden != "" {
-				cmd.URI = "../testdata/" + tc.cmd.URI
+				cmd.URI = "../../testdata/" + tc.cmd.URI
 			}
 			if tc.errMsg != "" {
 				err := cmd.Run()
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			} else {
-				stdout, stderr := captureStdoutStderr(func() {
+				stdout, stderr := testutils.CaptureStdoutStderr(func() {
 					require.NoError(t, cmd.Run())
 				})
-				require.Equal(t, loadExpected(t, "../testdata/golden/"+tc.golden), stdout)
+				require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
 			}
 		})
 	}
 }
 
-func BenchmarkMetaCmd(b *testing.B) {
+func BenchmarkCmd(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
@@ -218,9 +261,9 @@ func BenchmarkMetaCmd(b *testing.B) {
 		_ = devNull.Close()
 	}()
 
-	cmd := MetaCmd{
+	cmd := Cmd{
 		ReadOption: pio.ReadOption{},
-		URI:        "../build/benchmark.parquet",
+		URI:        "../../build/benchmark.parquet",
 	}
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {

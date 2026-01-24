@@ -1,4 +1,4 @@
-package cmd
+package merge
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-// MergeCmd is a kong command for merge
-type MergeCmd struct {
+// Cmd is a kong command for merge
+type Cmd struct {
 	Concurrent   bool     `help:"enable concurrent processing" default:"false"`
 	FailOnInt96  bool     `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	ReadPageSize int      `help:"Page size to read from Parquet." default:"1000"`
@@ -25,7 +25,7 @@ type MergeCmd struct {
 	pio.WriteOption
 }
 
-func (c MergeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
+func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -42,7 +42,7 @@ func (c MergeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, 
 	}
 }
 
-func (c MergeCmd) reader(ctx context.Context, source string, fileReader *reader.ParquetReader, writerChan chan any) error {
+func (c Cmd) reader(ctx context.Context, source string, fileReader *reader.ParquetReader, writerChan chan any) error {
 	for {
 		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
@@ -63,7 +63,7 @@ func (c MergeCmd) reader(ctx context.Context, source string, fileReader *reader.
 }
 
 // Run does actual merge job
-func (c MergeCmd) Run() error {
+func (c Cmd) Run() error {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -137,7 +137,7 @@ func (c MergeCmd) Run() error {
 	return nil
 }
 
-func (c MergeCmd) openSources() ([]*reader.ParquetReader, string, error) {
+func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 	var schemaJson string
 	var rootExNamePath []string
 	var rootInNamePath []string

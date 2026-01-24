@@ -1,4 +1,4 @@
-package cmd
+package cat
 
 import (
 	"context"
@@ -20,8 +20,8 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-// CatCmd is a kong command for cat
-type CatCmd struct {
+// Cmd is a kong command for cat
+type Cmd struct {
 	Concurrent   bool    `help:"enable concurrent output" default:"false"`
 	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
@@ -48,7 +48,7 @@ var delimiter = map[string]struct {
 }
 
 // Run does actual cat job
-func (c CatCmd) Run() error {
+func (c Cmd) Run() error {
 	switch c.GeoFormat {
 	case "hex":
 		types.SetGeometryJSONMode(types.GeospatialModeHex)
@@ -91,7 +91,7 @@ func (c CatCmd) Run() error {
 	return c.outputRows(fileReader)
 }
 
-func (c *CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
+func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	if c.Format != "csv" && c.Format != "tsv" {
 		// only CSV and TSV need header
 		return nil, nil
@@ -122,7 +122,7 @@ func (c *CatCmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) 
 	return fieldList, nil
 }
 
-func (c *CatCmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
+func (c *Cmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
 	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func mapToStrList(flatValues map[string]any, fieldList []string) []string {
 	return values
 }
 
-func (c CatCmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string) error {
+func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string) error {
 	strBuilder := new(strings.Builder)
 	csvWriter := csv.NewWriter(strBuilder)
 	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
@@ -196,7 +196,7 @@ func (c CatCmd) encoder(ctx context.Context, rowChan chan any, outputChan chan s
 	}
 }
 
-func (c CatCmd) printer(ctx context.Context, outputChan chan string) error {
+func (c Cmd) printer(ctx context.Context, outputChan chan string) error {
 	fmt.Print(delimiter[c.Format].begin)
 	defer func() {
 		fmt.Print(delimiter[c.Format].end + "\n")
@@ -222,7 +222,7 @@ func (c CatCmd) printer(ctx context.Context, outputChan chan string) error {
 	}
 }
 
-func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
+func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 	fieldList, err := c.retrieveFieldDef(fileReader)
 	if err != nil {
 		return err
@@ -309,7 +309,7 @@ func (c CatCmd) outputRows(fileReader *reader.ParquetReader) error {
 	return g.Wait()
 }
 
-func (c *CatCmd) valuesToCSV(values []string, strBuilder *strings.Builder, csvWriter *csv.Writer) (string, error) {
+func (c *Cmd) valuesToCSV(values []string, strBuilder *strings.Builder, csvWriter *csv.Writer) (string, error) {
 	// there is no standard for CSV, use go's CSV module to maintain minimum compatibility
 	strBuilder.Reset()
 	if err := csvWriter.Write(values); err != nil {

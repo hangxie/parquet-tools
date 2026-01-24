@@ -1,4 +1,4 @@
-package cmd
+package schema
 
 import (
 	"encoding/json"
@@ -16,8 +16,8 @@ var (
 	formatCSV  = "csv"
 )
 
-// SchemaCmd is a kong command for schema
-type SchemaCmd struct {
+// Cmd is a kong command for schema
+type Cmd struct {
 	CamelCase            bool   `help:"enforce go struct field name to be CamelCase" default:"false"`
 	Format               string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
 	SkipPageEncoding     bool   `help:"skip reading page encoding information" name:"skip-page-encoding" default:"false"`
@@ -27,7 +27,7 @@ type SchemaCmd struct {
 }
 
 // Run does actual schema job
-func (c SchemaCmd) Run() error {
+func (c Cmd) Run() error {
 	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err

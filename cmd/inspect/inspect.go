@@ -1,9 +1,10 @@
-package cmd
+package inspect
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
@@ -39,8 +40,8 @@ type PageInfo struct {
 	Statistics                 map[string]any    `json:"statistics,omitempty"`
 }
 
-// InspectCmd is a kong command for inspect
-type InspectCmd struct {
+// Cmd is a kong command for inspect
+type Cmd struct {
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	RowGroup    *int   `name:"row-group" help:"Row group index to inspect."`
 	ColumnChunk *int   `name:"column-chunk" help:"Column chunk index to inspect (requires --row-group)."`
@@ -49,7 +50,7 @@ type InspectCmd struct {
 }
 
 // Run does actual inspect job
-func (c InspectCmd) Run() error {
+func (c Cmd) Run() error {
 	// Validate parameter combinations
 	if c.Page != nil && (c.RowGroup == nil || c.ColumnChunk == nil) {
 		return fmt.Errorf("--page requires both --row-group and --column-chunk")
@@ -91,7 +92,7 @@ func (c InspectCmd) Run() error {
 	}
 }
 
-func (c InspectCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
+func (c Cmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
 	inExNameMap := map[string][]string{}
 	queue := []*pschema.SchemaNode{schemaRoot}
 	for len(queue) > 0 {
@@ -105,7 +106,7 @@ func (c InspectCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string]
 }
 
 // Level 1: File info and row groups with brief info
-func (c InspectCmd) inspectFile(reader *reader.ParquetReader) error {
+func (c Cmd) inspectFile(reader *reader.ParquetReader) error {
 	footer := reader.Footer
 
 	// Calculate totals and build row group brief info in a single loop
@@ -152,7 +153,7 @@ func (c InspectCmd) inspectFile(reader *reader.ParquetReader) error {
 }
 
 // Level 2: Row group details and column chunks with brief info
-func (c InspectCmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
+func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -180,7 +181,7 @@ func (c InspectCmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex 
 	return c.printJSON(output)
 }
 
-func (c InspectCmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) map[string]any {
+func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) map[string]any {
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
 	pathInSchema := c.resolvePathInSchema(col.MetaData.PathInSchema, inExNameMap)
 	schemaNode := pathMap[pathKey]
@@ -210,7 +211,7 @@ func (c InspectCmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, i
 }
 
 // Level 3: Column chunk details and pages with brief info
-func (c InspectCmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
+func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -275,7 +276,7 @@ func (c InspectCmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupInd
 }
 
 // Level 4: Page details and values
-func (c InspectCmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex, pageIndex int, pathMap map[string]*pschema.SchemaNode) error {
+func (c Cmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex, pageIndex int, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -315,7 +316,7 @@ func (c InspectCmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, col
 	return c.printJSON(output)
 }
 
-func (c InspectCmd) getConvertedType(schemaNode *pschema.SchemaNode) string {
+func (c Cmd) getConvertedType(schemaNode *pschema.SchemaNode) string {
 	tagMap := schemaNode.GetTagMap()
 	orderedTags := pschema.OrderedTags()
 
@@ -339,7 +340,7 @@ func (c InspectCmd) getConvertedType(schemaNode *pschema.SchemaNode) string {
 	return strings.Join(convertedTypeParts, ", ")
 }
 
-func (c InspectCmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
+func (c Cmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
 	tagMap := schemaNode.GetTagMap()
 	orderedTags := pschema.OrderedTags()
 
@@ -356,7 +357,7 @@ func (c InspectCmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
 	return strings.Join(logicalTypeParts, ", ")
 }
 
-func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) any {
+func (c Cmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) any {
 	if len(value) == 0 {
 		return nil
 	}
@@ -391,7 +392,7 @@ func (c InspectCmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) a
 		int(schemaNode.GetPrecision()), int(schemaNode.GetScale()))
 }
 
-func (c InspectCmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
+func (c Cmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
 	pageHeaders, err := pr.GetAllPageHeaders(rowGroupIndex, columnChunkIndex)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read page headers: %w", err)
@@ -407,7 +408,7 @@ func (c InspectCmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChu
 }
 
 // convertPageHeaderInfo converts PageHeaderInfo from parquet-go to our JSON output format
-func (c InspectCmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode *pschema.SchemaNode) PageInfo {
+func (c Cmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode *pschema.SchemaNode) PageInfo {
 	pageInfo := PageInfo{
 		Index:            headerInfo.Index,
 		Offset:           headerInfo.Offset,
@@ -457,7 +458,7 @@ func (c InspectCmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, sche
 	return pageInfo
 }
 
-func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pages []PageInfo, pageIndex int) ([]any, error) {
+func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pages []PageInfo, pageIndex int) ([]any, error) {
 	meta := col.MetaData
 
 	if pageIndex < 0 || pageIndex >= len(pages) {
@@ -536,7 +537,7 @@ func (c InspectCmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, colu
 	return c.convertValuesToJSON(pageValues, schemaNode), nil
 }
 
-func (c InspectCmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo PageInfo) ([]any, error) {
+func (c Cmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo PageInfo) ([]any, error) {
 	meta := col.MetaData
 
 	values, err := pr.ReadDictionaryPageValues(pageInfo.Offset, meta.Codec, meta.Type)
@@ -550,7 +551,7 @@ func (c InspectCmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parq
 // Helper functions
 
 // printJSON marshals data to JSON and prints it
-func (c InspectCmd) printJSON(data any) error {
+func (c Cmd) printJSON(data any) error {
 	buf, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -560,7 +561,7 @@ func (c InspectCmd) printJSON(data any) error {
 }
 
 // convertValuesToJSON converts raw parquet values to JSON-friendly types
-func (c InspectCmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) []any {
+func (c Cmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) []any {
 	result := make([]any, len(values))
 	precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
 	for i, val := range values {
@@ -573,7 +574,7 @@ func (c InspectCmd) convertValuesToJSON(values []any, schemaNode *pschema.Schema
 }
 
 // resolvePathInSchema resolves internal path to external path using the schema map
-func (c InspectCmd) resolvePathInSchema(pathInSchema []string, inExNameMap map[string][]string) []string {
+func (c Cmd) resolvePathInSchema(pathInSchema []string, inExNameMap map[string][]string) []string {
 	pathKey := strings.Join(pathInSchema, common.PAR_GO_PATH_DELIMITER)
 	if exPath, found := inExNameMap[pathKey]; found {
 		return exPath
@@ -582,7 +583,7 @@ func (c InspectCmd) resolvePathInSchema(pathInSchema []string, inExNameMap map[s
 }
 
 // addTypeInformation adds converted and logical type information to the output map
-func (c InspectCmd) addTypeInformation(output map[string]any, schemaNode *pschema.SchemaNode) {
+func (c Cmd) addTypeInformation(output map[string]any, schemaNode *pschema.SchemaNode) {
 	if schemaNode == nil {
 		return
 	}
@@ -595,7 +596,7 @@ func (c InspectCmd) addTypeInformation(output map[string]any, schemaNode *pschem
 }
 
 // buildStatistics creates a statistics map from parquet statistics
-func (c InspectCmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) map[string]any {
+func (c Cmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) map[string]any {
 	stats := map[string]any{}
 
 	if statistics.NullCount != nil {
@@ -615,4 +616,13 @@ func (c InspectCmd) buildStatistics(statistics *parquet.Statistics, schemaNode *
 	}
 
 	return stats
+}
+
+func encodingToString(encodings []parquet.Encoding) []string {
+	ret := make([]string, len(encodings))
+	for i := range encodings {
+		ret[i] = encodings[i].String()
+	}
+	sort.Strings(ret)
+	return ret
 }

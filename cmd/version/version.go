@@ -1,4 +1,4 @@
-package cmd
+package version
 
 import (
 	"encoding/json"
@@ -19,8 +19,8 @@ var (
 	source string
 )
 
-// VersionCmd is a kong command for version
-type VersionCmd struct {
+// Cmd is a kong command for version
+type Cmd struct {
 	JSON      bool `short:"j" help:"Output in JSON format." default:"false"`
 	All       bool `short:"a" help:"Output all version details." default:"false"`
 	BuildTime bool `short:"b" help:"Output build time." default:"false"`
@@ -29,7 +29,7 @@ type VersionCmd struct {
 }
 
 // Run does actual version job
-func (c VersionCmd) Run() error {
+func (c Cmd) Run() error {
 	if c.All {
 		c.BuildTime = true
 		c.Source = true
