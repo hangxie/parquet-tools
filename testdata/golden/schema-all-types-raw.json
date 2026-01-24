@@ -21,7 +21,7 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -31,7 +31,7 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT96",
@@ -84,7 +84,7 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "DELTA_LENGTH_BYTE_ARRAY"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -125,7 +125,7 @@
       "logicalType": {
         "JSON": {}
       },
-      "encoding": "DELTA_BYTE_ARRAY"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -139,7 +139,7 @@
       "logicalType": {
         "BSON": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -153,7 +153,7 @@
       "logicalType": {
         "JSON": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -167,7 +167,7 @@
       "logicalType": {
         "BSON": {}
       },
-      "encoding": "DELTA_BYTE_ARRAY"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "repetition_type": "REQUIRED",
@@ -252,7 +252,7 @@
           "isSigned": true
         }
       },
-      "encoding": "BIT_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -269,7 +269,7 @@
           "isSigned": true
         }
       },
-      "encoding": "PLAIN"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -320,7 +320,7 @@
           "isSigned": false
         }
       },
-      "encoding": "BIT_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -337,7 +337,7 @@
           "isSigned": false
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -385,7 +385,7 @@
       "logicalType": {
         "DATE": {}
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -418,7 +418,7 @@
           }
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -456,7 +456,7 @@
           }
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -493,7 +493,7 @@
           }
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -512,7 +512,7 @@
           }
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -550,7 +550,7 @@
           }
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -615,7 +615,7 @@
           "precision": 9
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT64",
@@ -632,7 +632,7 @@
           "precision": 18
         }
       },
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -666,7 +666,7 @@
           "precision": 20
         }
       },
-      "encoding": "DELTA_LENGTH_BYTE_ARRAY"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "type": "INT32",
@@ -736,7 +736,7 @@
               "scale": 0,
               "precision": 0,
               "field_id": 0,
-              "encoding": "BIT_PACKED"
+              "encoding": "RLE_DICTIONARY"
             }
           ]
         }
@@ -779,7 +779,7 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "DELTA_BINARY_PACKED"
+      "encoding": "RLE_DICTIONARY"
     },
     {
       "repetition_type": "REQUIRED",
@@ -846,7 +846,7 @@
                           "scale": 0,
                           "precision": 0,
                           "field_id": 0,
-                          "encoding": "BIT_PACKED"
+                          "encoding": "RLE_DICTIONARY"
                         }
                       ]
                     }
@@ -940,7 +940,7 @@
                           "scale": 0,
                           "precision": 0,
                           "field_id": 0,
-                          "encoding": "BIT_PACKED"
+                          "encoding": "RLE_DICTIONARY"
                         }
                       ]
                     }
