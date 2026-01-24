@@ -1,4 +1,4 @@
-package cmd
+package importcmd
 
 import (
 	"bufio"
@@ -15,8 +15,8 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-// ImportCmd is a kong command for import
-type ImportCmd struct {
+// Cmd is a kong command for import
+type Cmd struct {
 	Format     string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
 	Schema     string `required:"" short:"m" predictor:"file" help:"Schema file name."`
 	SkipHeader bool   `help:"Skip first line of CSV files" default:"false"`
@@ -26,7 +26,7 @@ type ImportCmd struct {
 }
 
 // Run does actual import job
-func (c ImportCmd) Run() error {
+func (c Cmd) Run() error {
 	switch c.Format {
 	case "csv":
 		return c.importCSV()
@@ -38,7 +38,7 @@ func (c ImportCmd) Run() error {
 	return fmt.Errorf("[%s] is not a recognized source format", c.Format)
 }
 
-func (c ImportCmd) closeWriter(pf parquetSource.ParquetFileWriter) error {
+func (c Cmd) closeWriter(pf parquetSource.ParquetFileWriter) error {
 	// retry on particular errors according to https://github.com/colinmarc/hdfs/blob/v2.4.0/file_writer.go#L220-L226
 	var err error
 	for range 10 {
@@ -52,7 +52,7 @@ func (c ImportCmd) closeWriter(pf parquetSource.ParquetFileWriter) error {
 	return err
 }
 
-func (c ImportCmd) importCSV() error {
+func (c Cmd) importCSV() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
@@ -108,7 +108,7 @@ func (c ImportCmd) importCSV() error {
 	return nil
 }
 
-func (c ImportCmd) importJSON() error {
+func (c Cmd) importJSON() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
@@ -146,7 +146,7 @@ func (c ImportCmd) importJSON() error {
 	return nil
 }
 
-func (c ImportCmd) importJSONL() error {
+func (c Cmd) importJSONL() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)

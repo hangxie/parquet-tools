@@ -1,4 +1,4 @@
-package cmd
+package split
 
 import (
 	"fmt"
@@ -21,8 +21,8 @@ type TrunkWriter struct {
 	schemaJSON   string
 }
 
-// SplitCmd is a kong command for split
-type SplitCmd struct {
+// Cmd is a kong command for split
+type Cmd struct {
 	FailOnInt96  bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	FileCount    int64  `xor:"RecordCount" help:"Generate this number of result files with potential empty ones"`
 	NameFormat   string `help:"Format to populate target file names" default:"result-%06d.parquet"`
@@ -35,7 +35,7 @@ type SplitCmd struct {
 	current TrunkWriter
 }
 
-func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
+func (c *Cmd) openReader() (*reader.ParquetReader, error) {
 	parquetReader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
@@ -61,7 +61,7 @@ func (c *SplitCmd) openReader() (*reader.ParquetReader, error) {
 	return parquetReader, nil
 }
 
-func (c *SplitCmd) switchWriter() error {
+func (c *Cmd) switchWriter() error {
 	if c.current.writer != nil {
 		if err := c.current.writer.WriteStop(); err != nil {
 			return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
@@ -90,7 +90,7 @@ func (c *SplitCmd) switchWriter() error {
 }
 
 // Run does actual split job
-func (c SplitCmd) Run() error {
+func (c Cmd) Run() error {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}

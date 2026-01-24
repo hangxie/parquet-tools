@@ -1,4 +1,4 @@
-package cmd
+package meta
 
 import (
 	"bytes"
@@ -16,8 +16,8 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-// MetaCmd is a kong command for meta
-type MetaCmd struct {
+// Cmd is a kong command for meta
+type Cmd struct {
 	FailOnInt96 bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
@@ -52,7 +52,7 @@ type parquetMeta struct {
 }
 
 // Run does actual meta job
-func (c MetaCmd) Run() error {
+func (c Cmd) Run() error {
 	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (c MetaCmd) Run() error {
 	return nil
 }
 
-func (c MetaCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
+func (c Cmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
 	inExNameMap := map[string][]string{}
 	queue := []*pschema.SchemaNode{schemaRoot}
 	for len(queue) > 0 {
@@ -96,7 +96,7 @@ func (c MetaCmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]s
 	return inExNameMap, pathMap
 }
 
-func (c MetaCmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]rowGroupMeta, error) {
+func (c Cmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]rowGroupMeta, error) {
 	result := make([]rowGroupMeta, len(rowGroups))
 	for i, rg := range rowGroups {
 		columns, err := c.buildColumns(rg, inExNameMap, pathMap)
@@ -112,7 +112,7 @@ func (c MetaCmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[s
 	return result, nil
 }
 
-func (c MetaCmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]columnMeta, error) {
+func (c Cmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]columnMeta, error) {
 	columns := make([]columnMeta, len(rg.Columns))
 	for i, col := range rg.Columns {
 		column, err := c.buildColumnMeta(col, rg.SortingColumns, i, inExNameMap, pathMap)
@@ -124,7 +124,7 @@ func (c MetaCmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]str
 	return columns, nil
 }
 
-func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) (columnMeta, error) {
+func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) (columnMeta, error) {
 	column := columnMeta{
 		PathInSchema:     col.MetaData.PathInSchema,
 		Type:             col.MetaData.Type.String(),
@@ -175,7 +175,7 @@ func (c MetaCmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*par
 	return column, nil
 }
 
-func (c MetaCmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNode) {
+func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNode) {
 	tagMap := schemaNode.GetTagMap()
 	orderedTags := pschema.OrderedTags()
 
@@ -206,7 +206,7 @@ func (c MetaCmd) addTypeInformation(column *columnMeta, schemaNode *pschema.Sche
 	}
 }
 
-func (c MetaCmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
+func (c Cmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
 	column.NullCount = statistics.NullCount
 	column.DistinctCount = statistics.DistinctCount
 

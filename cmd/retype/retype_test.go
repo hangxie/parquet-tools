@@ -1,4 +1,4 @@
-package cmd
+package retype
 
 import (
 	"encoding/json"
@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson"
 
+	"github.com/hangxie/parquet-tools/cmd/cat"
+	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
+	"github.com/hangxie/parquet-tools/cmd/schema"
+
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-func TestRetypeCmd(t *testing.T) {
+func TestCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
@@ -24,18 +28,18 @@ func TestRetypeCmd(t *testing.T) {
 		tempDir := t.TempDir()
 
 		testCases := map[string]struct {
-			cmd    RetypeCmd
+			cmd    Cmd
 			errMsg string
 		}{
-			"pagesize-too-small":  {RetypeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 0, Source: "../testdata/good.parquet", URI: "dummy"}, "invalid read page size"},
-			"source-non-existent": {RetypeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
-			"source-not-parquet":  {RetypeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
-			"target-file":         {RetypeCmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
-			"target-compression": {RetypeCmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
+			"pagesize-too-small":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"}, "invalid read page size"},
+			"source-non-existent": {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
+			"source-not-parquet":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
+			"target-file":         {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
+			"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
 				PageSize:       1024 * 1024,
 				RowGroupSize:   128 * 1024 * 1024,
 				ParallelNumber: 0,
-			}, ReadPageSize: 10, Source: "../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
+			}, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 		}
 
 		for name, tc := range testCases {
@@ -58,105 +62,105 @@ func TestRetypeCmd(t *testing.T) {
 		tempDir := t.TempDir()
 		resultFile := filepath.Join(tempDir, "retyped.parquet")
 		testCases := map[string]struct {
-			cmd          RetypeCmd
+			cmd          Cmd
 			goldenSchema string
 			goldenData   string
 		}{
 			"int96-to-timestamp": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					Int96ToTimestamp: true,
 					ReadOption:       rOpt,
 					WriteOption:      wOpt,
 					ReadPageSize:     100,
-					Source:           "../testdata/retype.parquet",
+					Source:           "../../testdata/retype.parquet",
 					URI:              resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-schema-int96-to-timestamp.json",
-				goldenData:   "../testdata/golden/retype-data.json",
+				goldenSchema: "../../testdata/golden/retype-schema-int96-to-timestamp.json",
+				goldenData:   "../../testdata/golden/retype-data.json",
 			},
 			"bson-to-string": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					BsonToString: true,
 					ReadOption:   rOpt,
 					WriteOption:  wOpt,
 					ReadPageSize: 100,
-					Source:       "../testdata/retype.parquet",
+					Source:       "../../testdata/retype.parquet",
 					URI:          resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-schema-bson-to-string.json",
-				goldenData:   "../testdata/golden/retype-data-bson-to-string.json",
+				goldenSchema: "../../testdata/golden/retype-schema-bson-to-string.json",
+				goldenData:   "../../testdata/golden/retype-data-bson-to-string.json",
 			},
 			"float16-to-float32": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					Float16ToFloat32: true,
 					ReadOption:       rOpt,
 					WriteOption:      wOpt,
 					ReadPageSize:     100,
-					Source:           "../testdata/retype.parquet",
+					Source:           "../../testdata/retype.parquet",
 					URI:              resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-schema-float16-to-float32.json",
-				goldenData:   "../testdata/golden/retype-data.json",
+				goldenSchema: "../../testdata/golden/retype-schema-float16-to-float32.json",
+				goldenData:   "../../testdata/golden/retype-data.json",
 			},
 			"json-to-string": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					JsonToString: true,
 					ReadOption:   rOpt,
 					WriteOption:  wOpt,
 					ReadPageSize: 100,
-					Source:       "../testdata/retype.parquet",
+					Source:       "../../testdata/retype.parquet",
 					URI:          resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-schema-json-to-string.json",
-				goldenData:   "../testdata/golden/retype-data.json",
+				goldenSchema: "../../testdata/golden/retype-schema-json-to-string.json",
+				goldenData:   "../../testdata/golden/retype-data.json",
 			},
 			"no-retype": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					Int96ToTimestamp: false,
 					ReadOption:       rOpt,
 					WriteOption:      wOpt,
 					ReadPageSize:     100,
-					Source:           "../testdata/retype.parquet",
+					Source:           "../../testdata/retype.parquet",
 					URI:              resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-schema.json",
-				goldenData:   "../testdata/golden/retype-data.json",
+				goldenSchema: "../../testdata/golden/retype-schema.json",
+				goldenData:   "../../testdata/golden/retype-data.json",
 			},
 			"variant-to-string": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					VariantToString: true,
 					ReadOption:      rOpt,
 					WriteOption:     wOpt,
 					ReadPageSize:    100,
-					Source:          "../testdata/all-types.parquet",
+					Source:          "../../testdata/all-types.parquet",
 					URI:             resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-all-types-variant-to-string-schema.json",
-				goldenData:   "../testdata/golden/retype-all-types-variant-to-string-data.json",
+				goldenSchema: "../../testdata/golden/retype-all-types-variant-to-string-schema.json",
+				goldenData:   "../../testdata/golden/retype-all-types-variant-to-string-data.json",
 			},
 			"uuid-to-string": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					UuidToString: true,
 					ReadOption:   rOpt,
 					WriteOption:  wOpt,
 					ReadPageSize: 100,
-					Source:       "../testdata/all-types.parquet",
+					Source:       "../../testdata/all-types.parquet",
 					URI:          resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-all-types-uuid-to-string-schema.json",
-				goldenData:   "../testdata/golden/retype-all-types-uuid-to-string-data.json",
+				goldenSchema: "../../testdata/golden/retype-all-types-uuid-to-string-schema.json",
+				goldenData:   "../../testdata/golden/retype-all-types-uuid-to-string-data.json",
 			},
 			"geo-to-binary": {
-				cmd: RetypeCmd{
+				cmd: Cmd{
 					GeoToBinary:  true,
 					ReadOption:   rOpt,
 					WriteOption:  wOpt,
 					ReadPageSize: 100,
-					Source:       "../testdata/geospatial.parquet",
+					Source:       "../../testdata/geospatial.parquet",
 					URI:          resultFile,
 				},
-				goldenSchema: "../testdata/golden/retype-geospatial-geo-to-binary-schema.json",
-				goldenData:   "../testdata/golden/retype-geospatial-geo-to-binary-data.json",
+				goldenSchema: "../../testdata/golden/retype-geospatial-geo-to-binary-schema.json",
+				goldenData:   "../../testdata/golden/retype-geospatial-geo-to-binary-data.json",
 			},
 		}
 
@@ -165,8 +169,8 @@ func TestRetypeCmd(t *testing.T) {
 				err := tc.cmd.Run()
 				require.NoError(t, err)
 
-				stdout, stderr := captureStdoutStderr(func() {
-					cmd := CatCmd{
+				stdout, stderr := testutils.CaptureStdoutStderr(func() {
+					cmd := cat.Cmd{
 						ReadOption:   rOpt,
 						ReadPageSize: 1000,
 						SampleRatio:  1.0,
@@ -175,11 +179,11 @@ func TestRetypeCmd(t *testing.T) {
 					}
 					require.NoError(t, cmd.Run())
 				})
-				require.Equal(t, loadExpected(t, tc.goldenData), stdout)
+				require.Equal(t, testutils.LoadExpected(t, tc.goldenData), stdout)
 				require.Equal(t, "", stderr)
 
-				stdout, stderr = captureStdoutStderr(func() {
-					cmd := SchemaCmd{
+				stdout, stderr = testutils.CaptureStdoutStderr(func() {
+					cmd := schema.Cmd{
 						ReadOption:           rOpt,
 						Format:               "json",
 						ShowCompressionCodec: true,
@@ -187,7 +191,7 @@ func TestRetypeCmd(t *testing.T) {
 					}
 					require.NoError(t, cmd.Run())
 				})
-				require.Equal(t, loadExpected(t, tc.goldenSchema), stdout)
+				require.Equal(t, testutils.LoadExpected(t, tc.goldenSchema), stdout)
 				require.Equal(t, "", stderr)
 			})
 		}

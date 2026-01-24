@@ -1,4 +1,4 @@
-package cmd
+package rowcount
 
 import (
 	"os"
@@ -6,12 +6,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
+
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-func TestRowCountCmd(t *testing.T) {
+func TestCmd(t *testing.T) {
 	t.Run("non-existent", func(t *testing.T) {
-		cmd := &RowCountCmd{}
+		cmd := &Cmd{}
 		cmd.URI = "file/does/not/exist"
 
 		err := cmd.Run()
@@ -20,10 +22,10 @@ func TestRowCountCmd(t *testing.T) {
 	})
 
 	t.Run("good", func(t *testing.T) {
-		cmd := &RowCountCmd{}
-		cmd.URI = "../testdata/good.parquet"
+		cmd := &Cmd{}
+		cmd.URI = "../../testdata/good.parquet"
 
-		stdout, stderr := captureStdoutStderr(func() {
+		stdout, stderr := testutils.CaptureStdoutStderr(func() {
 			require.Nil(t, cmd.Run())
 		})
 		require.Equal(t, "3\n", stdout)
@@ -31,7 +33,7 @@ func TestRowCountCmd(t *testing.T) {
 	})
 }
 
-func BenchmarkRowCountCmd(b *testing.B) {
+func BenchmarkCmd(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
@@ -43,9 +45,9 @@ func BenchmarkRowCountCmd(b *testing.B) {
 		_ = devNull.Close()
 	}()
 
-	cmd := RowCountCmd{
+	cmd := Cmd{
 		ReadOption: pio.ReadOption{},
-		URI:        "../build/benchmark.parquet",
+		URI:        "../../build/benchmark.parquet",
 	}
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {

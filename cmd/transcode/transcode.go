@@ -1,4 +1,4 @@
-package cmd
+package transcode
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-// TranscodeCmd is a kong command for transcode
-type TranscodeCmd struct {
+// Cmd is a kong command for transcode
+type Cmd struct {
 	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
 	FieldCompression []string `help:"Field-specific compression in 'field.path=CODEC' format. Can be specified multiple times."`
 	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
@@ -29,7 +29,7 @@ type TranscodeCmd struct {
 
 // parseFieldEncodings parses field-specific encoding specifications from "field.path=ENCODING" format
 // and returns a map from field path to encoding. Field paths use "." as delimiter.
-func (c TranscodeCmd) parseFieldEncodings() (map[string]string, error) {
+func (c Cmd) parseFieldEncodings() (map[string]string, error) {
 	result := make(map[string]string)
 	for _, spec := range c.FieldEncoding {
 		parts := strings.SplitN(spec, "=", 2)
@@ -67,7 +67,7 @@ func (c TranscodeCmd) parseFieldEncodings() (map[string]string, error) {
 
 // parseFieldCompressions parses field-specific compression specifications from "field.path=CODEC" format
 // and returns a map from field path to compression codec. Field paths use "." as delimiter.
-func (c TranscodeCmd) parseFieldCompressions() (map[string]string, error) {
+func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 	result := make(map[string]string)
 	validCodecs := []string{
 		"UNCOMPRESSED", "SNAPPY", "GZIP", "LZ4", "LZ4_RAW", "ZSTD", "BROTLI",
@@ -105,7 +105,7 @@ func (c TranscodeCmd) parseFieldCompressions() (map[string]string, error) {
 	return result, nil
 }
 
-func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions map[string]string, globalCompression string) error {
+func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions map[string]string, globalCompression string) error {
 	// Add custom parquet-go writer directives (encoding, compression, omitstats)
 	// Only apply to leaf nodes (not struct/group types)
 	if schemaTree.Type != nil {
@@ -144,7 +144,7 @@ func (c TranscodeCmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEnco
 	return nil
 }
 
-func (c TranscodeCmd) getAllowedEncodings(dataType string) []string {
+func (c Cmd) getAllowedEncodings(dataType string) []string {
 	dataType = strings.ToUpper(dataType)
 
 	// Encoding compatibility matrix: maps data type to compatible encodings
@@ -173,7 +173,7 @@ func (c TranscodeCmd) getAllowedEncodings(dataType string) []string {
 	return append([]string{"PLAIN"}, allowed...)
 }
 
-func (c TranscodeCmd) isEncodingCompatible(encoding, dataType string) bool {
+func (c Cmd) isEncodingCompatible(encoding, dataType string) bool {
 	// If no type specified, it's a struct/group, skip encoding
 	if dataType == "" {
 		return false
@@ -218,7 +218,7 @@ func (c TranscodeCmd) isEncodingCompatible(encoding, dataType string) bool {
 	return false
 }
 
-func (c TranscodeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
+func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -236,7 +236,7 @@ func (c TranscodeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWrit
 	}
 }
 
-func (c TranscodeCmd) reader(ctx context.Context, fileReader *reader.ParquetReader, writerChan chan any) error {
+func (c Cmd) reader(ctx context.Context, fileReader *reader.ParquetReader, writerChan chan any) error {
 	for {
 		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
@@ -257,7 +257,7 @@ func (c TranscodeCmd) reader(ctx context.Context, fileReader *reader.ParquetRead
 }
 
 // Run does actual transcode job
-func (c TranscodeCmd) Run() error {
+func (c Cmd) Run() error {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}

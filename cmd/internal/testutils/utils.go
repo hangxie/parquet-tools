@@ -1,4 +1,4 @@
-package cmd
+package testutils
 
 import (
 	"bytes"
@@ -10,21 +10,22 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/hangxie/parquet-tools/cmd/schema"
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
 var stdCaptureMutex sync.Mutex
 
-// hasSameSchema compares the schema of two parquet files
-func hasSameSchema(file1, file2 string, ignoreEncoding, ignoreCompression bool) bool {
+// HasSameSchema compares the schema of two parquet files
+func HasSameSchema(file1, file2 string, ignoreEncoding, ignoreCompression bool) bool {
 	getSchema := func(file string) string {
-		cmd := SchemaCmd{
+		cmd := schema.Cmd{
 			ReadOption:           pio.ReadOption{},
 			URI:                  file,
 			Format:               "json",
 			ShowCompressionCodec: true,
 		}
-		stdout, _ := captureStdoutStderr(func() {
+		stdout, _ := CaptureStdoutStderr(func() {
 			_ = cmd.Run()
 		})
 		return stdout
@@ -48,8 +49,8 @@ func hasSameSchema(file1, file2 string, ignoreEncoding, ignoreCompression bool) 
 	return schema1 == schema2
 }
 
-// this for unit test only - thread-safe version using mutex
-func captureStdoutStderr(f func()) (string, string) {
+// CaptureStdoutStderr - thread-safe version using mutex
+func CaptureStdoutStderr(f func()) (string, string) {
 	stdCaptureMutex.Lock()
 	defer stdCaptureMutex.Unlock()
 
@@ -74,8 +75,8 @@ func captureStdoutStderr(f func()) (string, string) {
 	return string(stdout), string(stderr)
 }
 
-// this for unit test only
-func loadExpected(t *testing.T, fileName string) string {
+// LoadExpected
+func LoadExpected(t *testing.T, fileName string) string {
 	buf, err := os.ReadFile(fileName)
 	if err != nil {
 		t.Fatal("cannot load golden file:", fileName, "because of:", err.Error())

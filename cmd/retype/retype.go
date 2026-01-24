@@ -1,4 +1,4 @@
-package cmd
+package retype
 
 import (
 	"context"
@@ -20,8 +20,8 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-// RetypeCmd is a kong command for retype
-type RetypeCmd struct {
+// Cmd is a kong command for retype
+type Cmd struct {
 	Int96ToTimestamp bool   `name:"int96-to-timestamp" help:"Convert INT96 columns to TIMESTAMP_NANOS." default:"false"`
 	BsonToString     bool   `name:"bson-to-string" help:"Convert BSON columns to plain strings (JSON encoded)." default:"false"`
 	JsonToString     bool   `name:"json-to-string" help:"Remove JSON logical type from columns." default:"false"`
@@ -37,7 +37,7 @@ type RetypeCmd struct {
 }
 
 // Run does actual retype job
-func (c RetypeCmd) Run() error {
+func (c Cmd) Run() error {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -135,7 +135,7 @@ const (
 )
 
 // getActiveRules returns the list of rules enabled by CLI flags.
-func (c RetypeCmd) getActiveRules() []*RetypeRule {
+func (c Cmd) getActiveRules() []*RetypeRule {
 	var rules []*RetypeRule
 
 	if c.Int96ToTimestamp {
@@ -163,7 +163,7 @@ func (c RetypeCmd) getActiveRules() []*RetypeRule {
 	return rules
 }
 
-func (c RetypeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
+func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -180,7 +180,7 @@ func (c RetypeCmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter,
 	}
 }
 
-func (c RetypeCmd) reader(ctx context.Context, fileReader *reader.ParquetReader, converter *Converter, writerChan chan any) error {
+func (c Cmd) reader(ctx context.Context, fileReader *reader.ParquetReader, converter *Converter, writerChan chan any) error {
 	for {
 		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
 		if err != nil {
