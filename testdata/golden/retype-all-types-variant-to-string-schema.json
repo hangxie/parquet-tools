@@ -5,10 +5,10 @@
       "Tag": "name=Bool, inname=Bool, type=BOOLEAN, encoding=RLE, compression=UNCOMPRESSED"
     },
     {
-      "Tag": "name=Int32, inname=Int32, type=INT32, encoding=DELTA_BINARY_PACKED, compression=SNAPPY"
+      "Tag": "name=Int32, inname=Int32, type=INT32, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
-      "Tag": "name=Int64, inname=Int64, type=INT64, encoding=DELTA_BINARY_PACKED, compression=GZIP"
+      "Tag": "name=Int64, inname=Int64, type=INT64, encoding=RLE_DICTIONARY, compression=GZIP"
     },
     {
       "Tag": "name=Int96, inname=Int96, type=INT96, encoding=PLAIN, compression=LZ4_RAW"
@@ -23,7 +23,7 @@
       "Tag": "name=Double, inname=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT, compression=UNCOMPRESSED"
     },
     {
-      "Tag": "name=ByteArray, inname=ByteArray, type=BYTE_ARRAY, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=SNAPPY"
+      "Tag": "name=ByteArray, inname=ByteArray, type=BYTE_ARRAY, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
       "Tag": "name=Enum, inname=Enum, type=BYTE_ARRAY, convertedtype=ENUM, logicaltype=ENUM, encoding=RLE_DICTIONARY, compression=GZIP"
@@ -32,16 +32,16 @@
       "Tag": "name=Uuid, inname=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN, compression=LZ4_RAW"
     },
     {
-      "Tag": "name=Json, inname=Json, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=DELTA_BYTE_ARRAY, compression=ZSTD"
+      "Tag": "name=Json, inname=Json, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=RLE_DICTIONARY, compression=ZSTD"
     },
     {
-      "Tag": "name=Bson, inname=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=PLAIN, compression=BROTLI"
+      "Tag": "name=Bson, inname=Bson, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=RLE_DICTIONARY, compression=BROTLI"
     },
     {
-      "Tag": "name=Json2, inname=Json2, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=PLAIN, compression=UNCOMPRESSED"
+      "Tag": "name=Json2, inname=Json2, type=BYTE_ARRAY, convertedtype=JSON, logicaltype=JSON, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"
     },
     {
-      "Tag": "name=Bson2, inname=Bson2, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=SNAPPY"
+      "Tag": "name=Bson2, inname=Bson2, type=BYTE_ARRAY, convertedtype=BSON, logicaltype=BSON, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
       "Tag": "name=Variant, inname=Variant, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
@@ -56,10 +56,10 @@
       "Tag": "name=Utf8_2, inname=Utf8_2, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=BROTLI"
     },
     {
-      "Tag": "name=Int_8, inname=Int_8, type=INT32, convertedtype=INT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true, encoding=BIT_PACKED, compression=UNCOMPRESSED"
+      "Tag": "name=Int_8, inname=Int_8, type=INT32, convertedtype=INT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"
     },
     {
-      "Tag": "name=Int_16, inname=Int_16, type=INT32, convertedtype=INT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true, encoding=PLAIN, compression=SNAPPY"
+      "Tag": "name=Int_16, inname=Int_16, type=INT32, convertedtype=INT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
       "Tag": "name=Int_32, inname=Int_32, type=INT32, convertedtype=INT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true, encoding=RLE_DICTIONARY, compression=GZIP"
@@ -68,10 +68,10 @@
       "Tag": "name=Int_64, inname=Int_64, type=INT64, convertedtype=INT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true, encoding=RLE_DICTIONARY, compression=LZ4_RAW"
     },
     {
-      "Tag": "name=Uint_8, inname=Uint_8, type=INT32, convertedtype=UINT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false, encoding=BIT_PACKED, compression=ZSTD"
+      "Tag": "name=Uint_8, inname=Uint_8, type=INT32, convertedtype=UINT_8, logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false, encoding=RLE_DICTIONARY, compression=ZSTD"
     },
     {
-      "Tag": "name=Uint_16, inname=Uint_16, type=INT32, convertedtype=UINT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false, encoding=DELTA_BINARY_PACKED, compression=BROTLI"
+      "Tag": "name=Uint_16, inname=Uint_16, type=INT32, convertedtype=UINT_16, logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false, encoding=RLE_DICTIONARY, compression=BROTLI"
     },
     {
       "Tag": "name=Uint_32, inname=Uint_32, type=INT32, convertedtype=UINT_32, logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false, encoding=PLAIN, compression=UNCOMPRESSED"
@@ -80,34 +80,34 @@
       "Tag": "name=Uint_64, inname=Uint_64, type=INT64, convertedtype=UINT_64, logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
-      "Tag": "name=Date, inname=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=DELTA_BINARY_PACKED, compression=GZIP"
+      "Tag": "name=Date, inname=Date, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=RLE_DICTIONARY, compression=GZIP"
     },
     {
       "Tag": "name=Date2, inname=Date2, type=INT32, convertedtype=DATE, logicaltype=DATE, encoding=RLE_DICTIONARY, compression=LZ4_RAW"
     },
     {
-      "Tag": "name=TimeMillis, inname=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED, compression=ZSTD"
+      "Tag": "name=TimeMillis, inname=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=ZSTD"
     },
     {
       "Tag": "name=TimeMillis2, inname=TimeMillis2, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=BROTLI"
     },
     {
-      "Tag": "name=TimeMicros, inname=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED, compression=UNCOMPRESSED"
+      "Tag": "name=TimeMicros, inname=TimeMicros, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"
     },
     {
       "Tag": "name=TimeMicros2, inname=TimeMicros2, type=INT64, convertedtype=TIME_MICROS, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
-      "Tag": "name=TimeNanos2, inname=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED, compression=GZIP"
+      "Tag": "name=TimeNanos2, inname=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE_DICTIONARY, compression=GZIP"
     },
     {
-      "Tag": "name=TimestampMillis, inname=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=DELTA_BINARY_PACKED, compression=LZ4_RAW"
+      "Tag": "name=TimestampMillis, inname=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=LZ4_RAW"
     },
     {
       "Tag": "name=TimestampMillis2, inname=TimestampMillis2, type=INT64, convertedtype=TIMESTAMP_MILLIS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=ZSTD"
     },
     {
-      "Tag": "name=TimestampMicros, inname=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=DELTA_BINARY_PACKED, compression=BROTLI"
+      "Tag": "name=TimestampMicros, inname=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=BROTLI"
     },
     {
       "Tag": "name=TimestampMicros2, inname=TimestampMicros2, type=INT64, convertedtype=TIMESTAMP_MICROS, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"
@@ -119,16 +119,16 @@
       "Tag": "name=Interval, inname=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN, compression=GZIP"
     },
     {
-      "Tag": "name=Decimal1, inname=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED, compression=LZ4_RAW"
+      "Tag": "name=Decimal1, inname=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY, compression=LZ4_RAW"
     },
     {
-      "Tag": "name=Decimal2, inname=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2, encoding=DELTA_BINARY_PACKED, compression=ZSTD"
+      "Tag": "name=Decimal2, inname=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2, encoding=RLE_DICTIONARY, compression=ZSTD"
     },
     {
       "Tag": "name=Decimal3, inname=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2, encoding=PLAIN, compression=BROTLI"
     },
     {
-      "Tag": "name=Decimal4, inname=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=UNCOMPRESSED"
+      "Tag": "name=Decimal4, inname=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"
     },
     {
       "Tag": "name=decimal5, inname=Decimal5, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY, compression=SNAPPY"
@@ -143,7 +143,7 @@
           "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY, compression=LZ4_RAW"
         },
         {
-          "Tag": "name=value, inname=Value, type=INT32, encoding=BIT_PACKED, compression=ZSTD"
+          "Tag": "name=value, inname=Value, type=INT32, encoding=RLE_DICTIONARY, compression=ZSTD"
         }
       ]
     },
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "Tag": "name=Repeated, inname=Repeated, type=INT32, repetitiontype=REPEATED, encoding=DELTA_BINARY_PACKED, compression=BROTLI"
+      "Tag": "name=Repeated, inname=Repeated, type=INT32, repetitiontype=REPEATED, encoding=RLE_DICTIONARY, compression=BROTLI"
     },
     {
       "Tag": "name=NestedMap, inname=NestedMap, type=MAP",
@@ -174,7 +174,7 @@
                   "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY, compression=SNAPPY"
                 },
                 {
-                  "Tag": "name=value, inname=Value, type=INT32, encoding=BIT_PACKED, compression=GZIP"
+                  "Tag": "name=value, inname=Value, type=INT32, encoding=RLE_DICTIONARY, compression=GZIP"
                 }
               ]
             },
@@ -203,7 +203,7 @@
                   "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=RLE_DICTIONARY, compression=SNAPPY"
                 },
                 {
-                  "Tag": "name=value, inname=Value, type=INT32, encoding=BIT_PACKED, compression=GZIP"
+                  "Tag": "name=value, inname=Value, type=INT32, encoding=RLE_DICTIONARY, compression=GZIP"
                 }
               ]
             },

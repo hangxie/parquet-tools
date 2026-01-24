@@ -15,7 +15,7 @@ import (
 )
 
 type InnerMap struct {
-	Map  map[string]int32 `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keyencoding=RLE_DICTIONARY, keycompression=SNAPPY, valuetype=INT32, valueencoding=BIT_PACKED, valuecompression=GZIP"`
+	Map  map[string]int32 `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keyencoding=RLE_DICTIONARY, keycompression=SNAPPY, valuetype=INT32, valueencoding=RLE_DICTIONARY, valuecompression=GZIP"`
 	List []string         `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=DECIMAL, valuescale=2, valueprecision=10, valueencoding=RLE_DICTIONARY, valuecompression=BROTLI"`
 }
 
@@ -30,53 +30,53 @@ type InnerMap struct {
 // - FIXED_LEN_BYTE_ARRAY: BYTE_STREAM_SPLIT, RLE_DICTIONARY
 type AllTypes struct {
 	Bool              bool                `parquet:"name=Bool, type=BOOLEAN, encoding=RLE, compression=UNCOMPRESSED"`
-	Int32             int32               `parquet:"name=Int32, type=INT32, encoding=DELTA_BINARY_PACKED, compression=SNAPPY"`
-	Int64             int64               `parquet:"name=Int64, type=INT64, encoding=DELTA_BINARY_PACKED, compression=GZIP"`
+	Int32             int32               `parquet:"name=Int32, type=INT32, encoding=RLE_DICTIONARY, compression=SNAPPY"`
+	Int64             int64               `parquet:"name=Int64, type=INT64, encoding=RLE_DICTIONARY, compression=GZIP"`
 	Int96             string              `parquet:"name=Int96, type=INT96, compression=LZ4_RAW"`
 	Float             float32             `parquet:"name=Float, type=FLOAT, encoding=BYTE_STREAM_SPLIT, compression=ZSTD"`
 	Float16Val        string              `parquet:"name=Float16Val, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16, encoding=PLAIN, compression=BROTLI"`
 	Double            float64             `parquet:"name=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT, compression=UNCOMPRESSED"`
-	ByteArray         string              `parquet:"name=ByteArray, type=BYTE_ARRAY, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=SNAPPY"`
+	ByteArray         string              `parquet:"name=ByteArray, type=BYTE_ARRAY, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	Enum              string              `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM, encoding=RLE_DICTIONARY, compression=GZIP"`
 	Uuid              string              `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN, compression=LZ4_RAW"`
-	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON, encoding=DELTA_BYTE_ARRAY, compression=ZSTD"`
-	Bson              string              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, compression=BROTLI"`
-	Json2             string              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=PLAIN, compression=UNCOMPRESSED"`
-	Bson2             string              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=SNAPPY"`
+	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON, encoding=RLE_DICTIONARY, compression=ZSTD"`
+	Bson              string              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, encoding=RLE_DICTIONARY, compression=BROTLI"`
+	Json2             string              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
+	Bson2             string              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	Variant           any                 `parquet:"name=Variant, type=VARIANT, logicaltype=VARIANT, encoding=RLE_DICTIONARY, compression=GZIP"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=RLE_DICTIONARY, compression=ZSTD"`
 	Utf82             string              `parquet:"name=Utf8_2, type=BYTE_ARRAY, logicaltype=STRING, encoding=PLAIN, compression=BROTLI"`
-	ConvertedInt8     int32               `parquet:"name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8, encoding=BIT_PACKED, compression=UNCOMPRESSED"`
-	ConvertedInt16    int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16, encoding=PLAIN, compression=SNAPPY"`
+	ConvertedInt8     int32               `parquet:"name=Int_8, type=INT32, convertedtype=INT32, convertedtype=INT_8, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
+	ConvertedInt16    int32               `parquet:"name=Int_16, type=INT32, convertedtype=INT_16, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	ConvertedInt32    int32               `parquet:"name=Int_32, type=INT32, convertedtype=INT_32, encoding=RLE_DICTIONARY, compression=GZIP"`
 	ConvertedInt64    int64               `parquet:"name=Int_64, type=INT64, convertedtype=INT_64, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
-	ConvertedUint8    int32               `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8, encoding=BIT_PACKED, compression=ZSTD"`
-	ConvertedUint16   int32               `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16, encoding=DELTA_BINARY_PACKED, compression=BROTLI"`
+	ConvertedUint8    int32               `parquet:"name=Uint_8, type=INT32, convertedtype=UINT_8, encoding=RLE_DICTIONARY, compression=ZSTD"`
+	ConvertedUint16   int32               `parquet:"name=Uint_16, type=INT32, convertedtype=UINT_16, encoding=RLE_DICTIONARY, compression=BROTLI"`
 	ConvertedUint32   int32               `parquet:"name=Uint_32, type=INT32, convertedtype=UINT_32, compression=UNCOMPRESSED"`
 	ConvertedUint64   int64               `parquet:"name=Uint_64, type=INT64, convertedtype=UINT_64, encoding=RLE_DICTIONARY, compression=SNAPPY"`
-	Date              int32               `parquet:"name=Date, type=INT32, convertedtype=DATE, encoding=DELTA_BINARY_PACKED, compression=GZIP"`
+	Date              int32               `parquet:"name=Date, type=INT32, convertedtype=DATE, encoding=RLE_DICTIONARY, compression=GZIP"`
 	Date2             int32               `parquet:"name=Date2, type=INT32, logicaltype=DATE, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
-	TimeMillis        int32               `parquet:"name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, encoding=DELTA_BINARY_PACKED, compression=ZSTD"`
+	TimeMillis        int32               `parquet:"name=TimeMillis, type=INT32, convertedtype=TIME_MILLIS, encoding=RLE_DICTIONARY, compression=ZSTD"`
 	TimeMillis2       int32               `parquet:"name=TimeMillis2, type=INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=BROTLI"`
-	TimeMicros        int64               `parquet:"name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, encoding=DELTA_BINARY_PACKED, compression=UNCOMPRESSED"`
+	TimeMicros        int64               `parquet:"name=TimeMicros, type=INT64, convertedtype=TIME_MICROS, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
 	TimeMicros2       int64               `parquet:"name=TimeMicros2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=SNAPPY"`
-	TimeNanos2        int64               `parquet:"name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=DELTA_BINARY_PACKED, compression=GZIP"`
-	TimestampMillis   int64               `parquet:"name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, encoding=DELTA_BINARY_PACKED, compression=LZ4_RAW"`
+	TimeNanos2        int64               `parquet:"name=TimeNanos2, type=INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE_DICTIONARY, compression=GZIP"`
+	TimestampMillis   int64               `parquet:"name=TimestampMillis, type=INT64, convertedtype=TIMESTAMP_MILLIS, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
 	TimestampMillis2  int64               `parquet:"name=TimestampMillis2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=ZSTD"`
-	TimestampMicros   int64               `parquet:"name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, encoding=DELTA_BINARY_PACKED, compression=BROTLI"`
+	TimestampMicros   int64               `parquet:"name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, encoding=RLE_DICTIONARY, compression=BROTLI"`
 	TimestampMicros2  int64               `parquet:"name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
 	TimestampNanos2   int64               `parquet:"name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	Interval          string              `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN, compression=GZIP"`
-	Decimal1          int32               `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, encoding=DELTA_BINARY_PACKED, compression=LZ4_RAW"`
-	Decimal2          int64               `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, encoding=DELTA_BINARY_PACKED, compression=ZSTD"`
+	Decimal1          int32               `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
+	Decimal2          int64               `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, encoding=RLE_DICTIONARY, compression=ZSTD"`
 	Decimal3          string              `parquet:"name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, encoding=PLAIN, compression=BROTLI"`
-	Decimal4          string              `parquet:"name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=UNCOMPRESSED"`
+	Decimal4          string              `parquet:"name=Decimal4, type=BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
 	Decimal5          int32               `parquet:"name=decimal5, type=INT32, scale=2, precision=9, logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	DecimalPointer    *string             `parquet:"name=DecimalPointer, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY, compression=GZIP"`
-	Map               map[string]int32    `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, keyencoding=RLE_DICTIONARY, valueencoding=BIT_PACKED, keycompression=LZ4_RAW, valuecompression=ZSTD"`
+	Map               map[string]int32    `parquet:"name=Map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32, keyencoding=RLE_DICTIONARY, valueencoding=RLE_DICTIONARY, keycompression=LZ4_RAW, valuecompression=ZSTD"`
 	List              []string            `parquet:"name=List, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8, valuecompression=ZSTD"`
-	Repeated          []int32             `parquet:"name=Repeated, type=INT32, repetitiontype=REPEATED, encoding=DELTA_BINARY_PACKED, compression=BROTLI"`
+	Repeated          []int32             `parquet:"name=Repeated, type=INT32, repetitiontype=REPEATED, encoding=RLE_DICTIONARY, compression=BROTLI"`
 	NestedMap         map[string]InnerMap `parquet:"name=NestedMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keycompression=UNCOMPRESSED, valuetype=STRUCT"`
 	NestedList        []InnerMap          `parquet:"name=NestedList, type=LIST, valuetype=STRUCT"`
 }
