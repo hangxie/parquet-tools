@@ -10,6 +10,9 @@
     "Int96Field2": "2022-01-01T00:00:00.000000000Z",
     "JsonField": "{\"id\":0,\"value\":\"item-0\"}",
     "JsonField2": "{\"id\":0,\"value\":\"item-0\"}",
+    "LegacyRepeated": [
+      0
+    ],
     "ListOfStructs": [],
     "MapOfStructs": {},
     "Name": "record-0",
@@ -32,6 +35,10 @@
     "Int96Field2": null,
     "JsonField": "{\"id\":1,\"value\":\"item-1\"}",
     "JsonField2": "{\"id\":1,\"value\":\"item-1\"}",
+    "LegacyRepeated": [
+      1,
+      11
+    ],
     "ListOfStructs": [
       {
         "ElemBson": "{\"elem\":0,\"parent\":1}",
@@ -70,6 +77,11 @@
     "Int96Field2": "2022-01-01T02:02:02.002002000Z",
     "JsonField": "{\"id\":2,\"value\":\"item-2\"}",
     "JsonField2": "{\"id\":2,\"value\":\"item-2\"}",
+    "LegacyRepeated": [
+      2,
+      12,
+      22
+    ],
     "ListOfStructs": [
       {
         "ElemBson": "{\"elem\":0,\"parent\":2}",

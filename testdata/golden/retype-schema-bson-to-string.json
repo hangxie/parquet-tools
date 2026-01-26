@@ -100,6 +100,9 @@
           "Tag": "name=value, inname=Value, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
         }
       ]
+    },
+    {
+      "Tag": "name=LegacyRepeated, inname=LegacyRepeated, type=INT32, repetitiontype=REPEATED, encoding=PLAIN, compression=SNAPPY"
     }
   ]
 }

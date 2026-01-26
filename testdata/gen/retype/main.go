@@ -77,6 +77,9 @@ type RetypeTest struct {
 
 	// Map with BSON values directly (tests map with BSON values)
 	BsonMap map[string]string `parquet:"name=BsonMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
+
+	// Legacy repeated primitive (non-standard LIST)
+	LegacyRepeated []int32 `parquet:"name=LegacyRepeated, type=INT32, repetitiontype=REPEATED"`
 }
 
 func main() {
@@ -95,6 +98,7 @@ func main() {
 	pw.RowGroupSize = 128 * 1024 * 1024
 	pw.PageSize = 8 * 1024
 	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+	pw.DataPageVersion = 2
 
 	for i := range 3 {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
@@ -157,15 +161,21 @@ func main() {
 			Nested: NestedContainer{
 				ContainerBson: string(nestedBsonStr),
 			},
-			ListOfStructs: []ListElementStruct{},
-			MapOfStructs:  map[string]MapValueStruct{},
-			BsonList:      []string{},
-			BsonMap:       map[string]string{},
+			ListOfStructs:  []ListElementStruct{},
+			MapOfStructs:   map[string]MapValueStruct{},
+			BsonList:       []string{},
+			BsonMap:        map[string]string{},
+			LegacyRepeated: []int32{},
 		}
 
 		// Set optional INT96 field for even rows
 		if i%2 == 0 {
 			value.Int96Field2 = &int96Str
+		}
+
+		// Populate LegacyRepeated
+		for k := 0; k < i+1; k++ {
+			value.LegacyRepeated = append(value.LegacyRepeated, int32(k*10+i))
 		}
 
 		// Add elements to list of structs (variable number based on i)

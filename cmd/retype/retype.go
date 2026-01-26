@@ -28,6 +28,7 @@ type Cmd struct {
 	Float16ToFloat32 bool   `name:"float16-to-float32" help:"Convert FLOAT16 columns to FLOAT32." default:"false"`
 	VariantToString  bool   `name:"variant-to-string" help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
 	UuidToString     bool   `name:"uuid-to-string" help:"Convert UUID columns to plain strings." default:"false"`
+	RepeatedToList   bool   `name:"repeated-to-list" help:"Convert legacy repeated primitive columns to LIST format." default:"false"`
 	GeoToBinary      bool   `name:"geo-to-binary" help:"Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)." default:"false"`
 	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
@@ -61,7 +62,7 @@ func (c Cmd) Run() error {
 	activeRules := c.getActiveRules()
 	matchedFields := make([]map[string]struct{}, len(activeRules))
 	for i, rule := range activeRules {
-		matchedFields[i] = applyRule(schemaTree, rule.MatchSchema, rule.TransformSchema)
+		matchedFields[i] = applyRule(schemaTree, nil, rule.MatchSchema, rule.TransformSchema)
 	}
 
 	// Create converter for data transformation
@@ -130,6 +131,8 @@ const (
 	RuleVariantToString
 	// RuleUuidToString converts UUID columns to plain strings.
 	RuleUuidToString
+	// RuleRepeatedToList converts legacy repeated primitives to LIST format.
+	RuleRepeatedToList
 	// RuleGeoToBinary removes GEOGRAPHY and GEOMETRY logical types.
 	RuleGeoToBinary
 )
@@ -155,6 +158,9 @@ func (c Cmd) getActiveRules() []*RetypeRule {
 	}
 	if c.UuidToString {
 		rules = append(rules, RuleRegistry[RuleUuidToString])
+	}
+	if c.RepeatedToList {
+		rules = append(rules, RuleRegistry[RuleRepeatedToList])
 	}
 	if c.GeoToBinary {
 		rules = append(rules, RuleRegistry[RuleGeoToBinary])
@@ -210,7 +216,7 @@ type RetypeRule struct {
 	Name string
 
 	// MatchSchema returns true if the schema node should be transformed by this rule
-	MatchSchema func(*pschema.SchemaNode) bool
+	MatchSchema func(node, parent *pschema.SchemaNode) bool
 
 	// TransformSchema modifies the schema node in place
 	TransformSchema func(*pschema.SchemaNode)
@@ -229,11 +235,21 @@ type RetypeRule struct {
 	InputKind reflect.Kind
 }
 
+// listElementWrapper wraps a primitive value for 3-level LIST structure.
+type listElementWrapper struct {
+	Element any `parquet:"element"`
+}
+
+// listWrapper wraps the list for 3-level LIST structure.
+type listWrapper struct {
+	List []listElementWrapper `parquet:"list"`
+}
+
 // RuleRegistry contains all available retype rules indexed by name.
 var RuleRegistry = map[RuleID]*RetypeRule{
 	RuleInt96ToTimestamp: {
 		Name: "int96-to-timestamp",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.Type != nil && *node.Type == parquet.Type_INT96
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -260,7 +276,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 	},
 	RuleBsonToString: {
 		Name: "bson-to-string",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.LogicalType != nil && node.LogicalType.IsSetBSON()
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -282,7 +298,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 	},
 	RuleJsonToString: {
 		Name: "json-to-string",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.LogicalType != nil && node.LogicalType.IsSetJSON()
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -297,7 +313,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 	},
 	RuleFloat16ToFloat32: {
 		Name: "float16-to-float32",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.LogicalType != nil && node.LogicalType.IsSetFLOAT16()
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -320,7 +336,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 	},
 	RuleVariantToString: {
 		Name: "variant-to-string",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.LogicalType != nil && node.LogicalType.IsSetVARIANT()
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -342,7 +358,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 	},
 	RuleUuidToString: {
 		Name: "uuid-to-string",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.LogicalType != nil && node.LogicalType.IsSetUUID()
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -368,9 +384,107 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 		TargetType: reflect.TypeFor[string](),
 		InputKind:  reflect.String,
 	},
+	RuleRepeatedToList: {
+		Name: "repeated-to-list",
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
+			// Check if parent is MAP or LIST
+			if parent != nil {
+				if parent.LogicalType != nil && (parent.LogicalType.IsSetMAP() || parent.LogicalType.IsSetLIST()) {
+					return false
+				}
+				if parent.ConvertedType != nil && (*parent.ConvertedType == parquet.ConvertedType_MAP || *parent.ConvertedType == parquet.ConvertedType_LIST) {
+					return false
+				}
+			}
+
+			return node.RepetitionType != nil && *node.RepetitionType == parquet.FieldRepetitionType_REPEATED &&
+				(node.ConvertedType == nil || *node.ConvertedType != parquet.ConvertedType_LIST) &&
+				(node.LogicalType == nil || !node.LogicalType.IsSetLIST()) &&
+				(node.LogicalType == nil || !node.LogicalType.IsSetMAP())
+		},
+		TransformSchema: func(node *pschema.SchemaNode) {
+			// Force copy to avoid aliasing when appending
+			inPath := node.InNamePath[:len(node.InNamePath):len(node.InNamePath)]
+			exPath := node.ExNamePath[:len(node.ExNamePath):len(node.ExNamePath)]
+
+			// Create element node (copy of original primitive)
+			// Element is REQUIRED (not OPTIONAL) to match parquet-go's expected LIST structure
+			element := &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Name:           "element",
+					Type:           node.Type,
+					TypeLength:     node.TypeLength,
+					RepetitionType: common.ToPtr(parquet.FieldRepetitionType_REQUIRED),
+					ConvertedType:  node.ConvertedType,
+					Scale:          node.Scale,
+					Precision:      node.Precision,
+					FieldID:        nil, // Clear FieldID to avoid conflicts
+					LogicalType:    node.LogicalType,
+				},
+				// Children should be nil for primitive
+				InNamePath:       append(inPath, "List", "Element"),
+				ExNamePath:       append(exPath, "list", "element"),
+				Encoding:         node.Encoding,
+				CompressionCodec: node.CompressionCodec,
+				OmitStats:        node.OmitStats,
+			}
+
+			// Create list node (repeated group)
+			list := &pschema.SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Name:           "list",
+					RepetitionType: common.ToPtr(parquet.FieldRepetitionType_REPEATED),
+				},
+				Children:   []*pschema.SchemaNode{element},
+				InNamePath: append(inPath, "List"),
+				ExNamePath: append(exPath, "list"),
+			}
+
+			// Transform original node to LIST Group
+			node.Type = nil
+			node.TypeLength = nil
+			node.RepetitionType = common.ToPtr(parquet.FieldRepetitionType_REQUIRED)
+			node.ConvertedType = common.ToPtr(parquet.ConvertedType_LIST)
+			node.LogicalType = &parquet.LogicalType{LIST: &parquet.ListType{}}
+			node.Children = []*pschema.SchemaNode{list}
+
+			// Clear leaf properties from the group node
+			node.Scale = nil
+			node.Precision = nil
+			node.FieldID = nil
+			node.Encoding = ""
+			node.CompressionCodec = ""
+			node.OmitStats = ""
+		},
+		// ConvertData is needed to restructure the data into 3-level LIST format.
+		ConvertData: func(value any) (any, error) {
+			val := reflect.ValueOf(value)
+			if val.Kind() != reflect.Slice {
+				return nil, fmt.Errorf("expected slice for repeated field, got %T", value)
+			}
+			if val.IsNil() {
+				return nil, nil
+			}
+
+			// Create slice of elements
+			list := make([]listElementWrapper, val.Len())
+			for i := 0; i < val.Len(); i++ {
+				list[i] = listElementWrapper{
+					Element: val.Index(i).Interface(),
+				}
+			}
+
+			// Wrap in 3-level structure: Field -> List -> Element
+			return listWrapper{
+				List: list,
+			}, nil
+		},
+		TargetType: reflect.TypeFor[listWrapper](),
+	},
 	RuleGeoToBinary: {
 		Name: "geo-to-binary",
-		MatchSchema: func(node *pschema.SchemaNode) bool {
+
+		MatchSchema: func(node, parent *pschema.SchemaNode) bool {
 			return node.LogicalType != nil && (node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY())
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
@@ -384,11 +498,11 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 
 // applyRule recursively applies a transformation rule to matching schema nodes.
 // Returns a set of field names (external names) that were matched for O(1) lookup during data conversion.
-func applyRule(s *pschema.SchemaNode, match func(*pschema.SchemaNode) bool, transform func(*pschema.SchemaNode)) map[string]struct{} {
+func applyRule(s, parent *pschema.SchemaNode, match func(node, parent *pschema.SchemaNode) bool, transform func(*pschema.SchemaNode)) map[string]struct{} {
 	matchedFields := make(map[string]struct{})
 
 	// Process this node if it matches
-	if match(s) {
+	if match(s, parent) {
 		transform(s)
 		// Record the field name for data conversion
 		if len(s.ExNamePath) > 0 {
@@ -398,7 +512,7 @@ func applyRule(s *pschema.SchemaNode, match func(*pschema.SchemaNode) bool, tran
 
 	// Recursively process children
 	for _, child := range s.Children {
-		maps.Copy(matchedFields, applyRule(child, match, transform))
+		maps.Copy(matchedFields, applyRule(child, s, match, transform))
 	}
 
 	return matchedFields
@@ -693,6 +807,8 @@ func (c *Converter) getOrCreateTargetType(srcType reflect.Type) reflect.Type {
 			} else {
 				fields[i].Type = targetType
 			}
+			// Clear tag to avoid conflicting repetition information (e.g. repetition=repeated on a struct field)
+			fields[i].Tag = ""
 		} else {
 			fields[i].Type = c.getOrCreateTargetTypeForField(srcField.Type)
 		}

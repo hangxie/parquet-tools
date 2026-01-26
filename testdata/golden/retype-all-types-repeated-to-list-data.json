@@ -1,0 +1,486 @@
+[
+  {
+    "Bool": true,
+    "Bson": {
+      "0": 0
+    },
+    "Bson2": {
+      "0": 0
+    },
+    "ByteArray": "Qnl0ZUFycmF5LTA=",
+    "Date": "1970-01-01",
+    "Date2": "1970-01-01",
+    "Decimal1": 0,
+    "Decimal2": 0,
+    "Decimal3": 0,
+    "Decimal4": 0,
+    "DecimalPointer": null,
+    "Double": 0,
+    "Enum": "Enum-0",
+    "FixedLenByteArray": "Rml4ZWQtMDAwMA==",
+    "Float": 0,
+    "Float16Val": 0,
+    "Int32": 0,
+    "Int64": 0,
+    "Int96": "2022-01-01T00:00:00.000000000Z",
+    "Int_16": 0,
+    "Int_32": 0,
+    "Int_64": 0,
+    "Int_8": 0,
+    "Interval": "0.000 sec",
+    "Json": "{\"0\":0}",
+    "Json2": "{\"0\":0}",
+    "List": [],
+    "Map": {},
+    "NestedList": [],
+    "NestedMap": {},
+    "Repeated": [],
+    "TimeMicros": "00:00:00.000000",
+    "TimeMicros2": "00:00:00.000000",
+    "TimeMillis": "00:00:00.000",
+    "TimeMillis2": "00:00:00.000",
+    "TimeNanos2": "00:00:00.000000000",
+    "TimestampMicros": "2022-01-01T00:00:00.000000Z",
+    "TimestampMicros2": "2022-01-01T00:00:00.000000Z",
+    "TimestampMillis": "2022-01-01T00:00:00.000Z",
+    "TimestampMillis2": "2022-01-01T00:00:00.000Z",
+    "TimestampNanos2": "2022-01-01T00:00:00.000000000Z",
+    "Uint_16": 0,
+    "Uint_32": 0,
+    "Uint_64": 0,
+    "Uint_8": 0,
+    "Utf8": "UTF8-0",
+    "Utf8_2": "UTF8_2-0",
+    "Uuid": "00000000-0000-0000-0000-000000000000",
+    "Variant": {
+      "0": 0
+    },
+    "decimal5": 0
+  },
+  {
+    "Bool": false,
+    "Bson": {
+      "1": 1
+    },
+    "Bson2": {
+      "1": 1
+    },
+    "ByteArray": "Qnl0ZUFycmF5LTE=",
+    "Date": "1967-04-07",
+    "Date2": "1972-09-27",
+    "Decimal1": 0.01,
+    "Decimal2": 0.01,
+    "Decimal3": 0,
+    "Decimal4": 0,
+    "DecimalPointer": 0,
+    "Double": 0.5,
+    "Enum": "Enum-1",
+    "FixedLenByteArray": "Rml4ZWQtMDAwMQ==",
+    "Float": 0.5,
+    "Float16Val": 0.5,
+    "Int32": 1,
+    "Int64": 1,
+    "Int96": "2022-01-01T01:01:01.001001000Z",
+    "Int_16": 1,
+    "Int_32": 1,
+    "Int_64": 1,
+    "Int_8": 1,
+    "Interval": "1 mon 1 day 0.001 sec",
+    "Json": "{\"1\":1}",
+    "Json2": "{\"1\":1}",
+    "List": [
+      "Composite-0"
+    ],
+    "Map": {
+      "Composite-0": 0
+    },
+    "NestedList": [
+      {
+        "List": [],
+        "Map": {}
+      }
+    ],
+    "NestedMap": {
+      "Composite-0": {
+        "List": [],
+        "Map": {}
+      }
+    },
+    "Repeated": [
+      0
+    ],
+    "TimeMicros": "00:00:01.000001",
+    "TimeMicros2": "00:00:01.000001",
+    "TimeMillis": "00:00:01.001",
+    "TimeMillis2": "00:00:01.001",
+    "TimeNanos2": "00:00:01.000000001",
+    "TimestampMicros": "2022-01-01T00:00:00.000001Z",
+    "TimestampMicros2": "2022-01-01T00:00:00.000001Z",
+    "TimestampMillis": "2022-01-01T00:00:00.001Z",
+    "TimestampMillis2": "2022-01-01T00:00:00.001Z",
+    "TimestampNanos2": "2022-01-01T00:00:00.000000001Z",
+    "Uint_16": 1,
+    "Uint_32": 1,
+    "Uint_64": 1,
+    "Uint_8": 1,
+    "Utf8": "UTF8-1",
+    "Utf8_2": "UTF8_2-1",
+    "Uuid": "01010101-0101-0101-0101-010101010101",
+    "Variant": {
+      "1": 1
+    },
+    "decimal5": 0.01
+  },
+  {
+    "Bool": true,
+    "Bson": {
+      "2": 2
+    },
+    "Bson2": {
+      "2": 2
+    },
+    "ByteArray": "Qnl0ZUFycmF5LTI=",
+    "Date": "1964-07-11",
+    "Date2": "1975-06-24",
+    "Decimal1": 0.22,
+    "Decimal2": 0.22,
+    "Decimal3": 0,
+    "Decimal4": 0,
+    "DecimalPointer": null,
+    "Double": 1,
+    "Enum": "Enum-2",
+    "FixedLenByteArray": "Rml4ZWQtMDAwMg==",
+    "Float": 1,
+    "Float16Val": 1,
+    "Int32": 2,
+    "Int64": 2,
+    "Int96": "2022-01-01T02:02:02.002002000Z",
+    "Int_16": 2,
+    "Int_32": 2,
+    "Int_64": 2,
+    "Int_8": 2,
+    "Interval": "2 mon 2 day 0.002 sec",
+    "Json": "{\"2\":2}",
+    "Json2": "{\"2\":2}",
+    "List": [
+      "Composite-0",
+      "Composite-1"
+    ],
+    "Map": {
+      "Composite-0": 0,
+      "Composite-1": 1
+    },
+    "NestedList": [
+      {
+        "List": [],
+        "Map": {}
+      },
+      {
+        "List": [
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0
+        }
+      }
+    ],
+    "NestedMap": {
+      "Composite-0": {
+        "List": [],
+        "Map": {}
+      },
+      "Composite-1": {
+        "List": [
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0
+        }
+      }
+    },
+    "Repeated": [
+      0,
+      1
+    ],
+    "TimeMicros": "00:00:02.000002",
+    "TimeMicros2": "00:00:02.000002",
+    "TimeMillis": "00:00:02.002",
+    "TimeMillis2": "00:00:02.002",
+    "TimeNanos2": "00:00:02.000000002",
+    "TimestampMicros": "2022-01-01T00:00:00.000002Z",
+    "TimestampMicros2": "2022-01-01T00:00:00.000002Z",
+    "TimestampMillis": "2022-01-01T00:00:00.002Z",
+    "TimestampMillis2": "2022-01-01T00:00:00.002Z",
+    "TimestampNanos2": "2022-01-01T00:00:00.000000002Z",
+    "Uint_16": 2,
+    "Uint_32": 2,
+    "Uint_64": 2,
+    "Uint_8": 2,
+    "Utf8": "UTF8-2",
+    "Utf8_2": "UTF8_2-2",
+    "Uuid": "02020202-0202-0202-0202-020202020202",
+    "Variant": {
+      "2": 2
+    },
+    "decimal5": 0.22
+  },
+  {
+    "Bool": false,
+    "Bson": {
+      "3": 3
+    },
+    "Bson2": {
+      "3": 3
+    },
+    "ByteArray": "Qnl0ZUFycmF5LTM=",
+    "Date": "1961-10-15",
+    "Date2": "1978-03-20",
+    "Decimal1": 3.33,
+    "Decimal2": 3.33,
+    "Decimal3": 0.03,
+    "Decimal4": 0.03,
+    "DecimalPointer": 0.03,
+    "Double": 1.5,
+    "Enum": "Enum-3",
+    "FixedLenByteArray": "Rml4ZWQtMDAwMw==",
+    "Float": 1.5,
+    "Float16Val": 1.5,
+    "Int32": 3,
+    "Int64": 3,
+    "Int96": "2022-01-01T03:03:03.003003000Z",
+    "Int_16": 3,
+    "Int_32": 3,
+    "Int_64": 3,
+    "Int_8": 3,
+    "Interval": "3 mon 3 day 0.003 sec",
+    "Json": "{\"3\":3}",
+    "Json2": "{\"3\":3}",
+    "List": [
+      "Composite-0",
+      "Composite-1",
+      "Composite-2"
+    ],
+    "Map": {
+      "Composite-0": 0,
+      "Composite-1": 1,
+      "Composite-2": 2
+    },
+    "NestedList": [
+      {
+        "List": [],
+        "Map": {}
+      },
+      {
+        "List": [
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0
+        }
+      },
+      {
+        "List": [
+          0,
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0,
+          "Embedded-1": 1
+        }
+      }
+    ],
+    "NestedMap": {
+      "Composite-0": {
+        "List": [],
+        "Map": {}
+      },
+      "Composite-1": {
+        "List": [
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0
+        }
+      },
+      "Composite-2": {
+        "List": [
+          0,
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0,
+          "Embedded-1": 1
+        }
+      }
+    },
+    "Repeated": [
+      0,
+      1,
+      2
+    ],
+    "TimeMicros": "00:00:03.000003",
+    "TimeMicros2": "00:00:03.000003",
+    "TimeMillis": "00:00:03.003",
+    "TimeMillis2": "00:00:03.003",
+    "TimeNanos2": "00:00:03.000000003",
+    "TimestampMicros": "2022-01-01T00:00:00.000003Z",
+    "TimestampMicros2": "2022-01-01T00:00:00.000003Z",
+    "TimestampMillis": "2022-01-01T00:00:00.003Z",
+    "TimestampMillis2": "2022-01-01T00:00:00.003Z",
+    "TimestampNanos2": "2022-01-01T00:00:00.000000003Z",
+    "Uint_16": 3,
+    "Uint_32": 3,
+    "Uint_64": 3,
+    "Uint_8": 3,
+    "Utf8": "UTF8-3",
+    "Utf8_2": "UTF8_2-3",
+    "Uuid": "03030303-0303-0303-0303-030303030303",
+    "Variant": {
+      "3": 3
+    },
+    "decimal5": 3.33
+  },
+  {
+    "Bool": true,
+    "Bson": {
+      "4": 4
+    },
+    "Bson2": {
+      "4": 4
+    },
+    "ByteArray": "Qnl0ZUFycmF5LTQ=",
+    "Date": "1959-01-19",
+    "Date2": "1980-12-14",
+    "Decimal1": 44.44,
+    "Decimal2": 44.44,
+    "Decimal3": 0.44,
+    "Decimal4": 0.44,
+    "DecimalPointer": null,
+    "Double": 2,
+    "Enum": "Enum-4",
+    "FixedLenByteArray": "Rml4ZWQtMDAwNA==",
+    "Float": 2,
+    "Float16Val": 2,
+    "Int32": 4,
+    "Int64": 4,
+    "Int96": "2022-01-01T04:04:04.004004000Z",
+    "Int_16": 4,
+    "Int_32": 4,
+    "Int_64": 4,
+    "Int_8": 4,
+    "Interval": "4 mon 4 day 0.004 sec",
+    "Json": "{\"4\":4}",
+    "Json2": "{\"4\":4}",
+    "List": [
+      "Composite-0",
+      "Composite-1",
+      "Composite-2",
+      "Composite-3"
+    ],
+    "Map": {
+      "Composite-0": 0,
+      "Composite-1": 1,
+      "Composite-2": 2,
+      "Composite-3": 3
+    },
+    "NestedList": [
+      {
+        "List": [],
+        "Map": {}
+      },
+      {
+        "List": [
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0
+        }
+      },
+      {
+        "List": [
+          0,
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0,
+          "Embedded-1": 1
+        }
+      },
+      {
+        "List": [
+          0,
+          0,
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0,
+          "Embedded-1": 1,
+          "Embedded-2": 2
+        }
+      }
+    ],
+    "NestedMap": {
+      "Composite-0": {
+        "List": [],
+        "Map": {}
+      },
+      "Composite-1": {
+        "List": [
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0
+        }
+      },
+      "Composite-2": {
+        "List": [
+          0,
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0,
+          "Embedded-1": 1
+        }
+      },
+      "Composite-3": {
+        "List": [
+          0,
+          0,
+          0
+        ],
+        "Map": {
+          "Embedded-0": 0,
+          "Embedded-1": 1,
+          "Embedded-2": 2
+        }
+      }
+    },
+    "Repeated": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "TimeMicros": "00:00:04.000004",
+    "TimeMicros2": "00:00:04.000004",
+    "TimeMillis": "00:00:04.004",
+    "TimeMillis2": "00:00:04.004",
+    "TimeNanos2": "00:00:04.000000004",
+    "TimestampMicros": "2022-01-01T00:00:00.000004Z",
+    "TimestampMicros2": "2022-01-01T00:00:00.000004Z",
+    "TimestampMillis": "2022-01-01T00:00:00.004Z",
+    "TimestampMillis2": "2022-01-01T00:00:00.004Z",
+    "TimestampNanos2": "2022-01-01T00:00:00.000000004Z",
+    "Uint_16": 4,
+    "Uint_32": 4,
+    "Uint_64": 4,
+    "Uint_8": 4,
+    "Utf8": "UTF8-4",
+    "Utf8_2": "UTF8_2-4",
+    "Uuid": "04040404-0404-0404-0404-040404040404",
+    "Variant": {
+      "4": 4
+    },
+    "decimal5": 44.44
+  }
+]

@@ -138,6 +138,18 @@ func TestCmd(t *testing.T) {
 				goldenSchema: "../../testdata/golden/retype-all-types-variant-to-string-schema.json",
 				goldenData:   "../../testdata/golden/retype-all-types-variant-to-string-data.json",
 			},
+			"repeated-to-list": {
+				cmd: Cmd{
+					RepeatedToList: true,
+					ReadOption:     rOpt,
+					WriteOption:    wOpt,
+					ReadPageSize:   100,
+					Source:         "../../testdata/all-types.parquet",
+					URI:            resultFile,
+				},
+				goldenSchema: "../../testdata/golden/retype-all-types-repeated-to-list-schema.json",
+				goldenData:   "../../testdata/golden/retype-all-types-repeated-to-list-data.json",
+			},
 			"uuid-to-string": {
 				cmd: Cmd{
 					UuidToString: true,
