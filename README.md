@@ -102,6 +102,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Convert BSON to String](#convert-bson-to-string)
       - [Convert VARIANT to String](#convert-variant-to-string)
       - [Convert UUID to String](#convert-uuid-to-string)
+      - [Convert Repeated Primitive to LIST](#convert-repeated-primitive-to-list)
       - [Remove Geospatial Logical Type](#remove-geospatial-logical-type)
       - [Remove JSON Logical Type](#remove-json-logical-type)
       - [Convert FLOAT16 to FLOAT32](#convert-float16-to-float32)
@@ -1021,6 +1022,7 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 * `--bson-to-string` - Convert BSON columns to plain strings (JSON encoded)
 * `--variant-to-string` - Convert VARIANT columns to plain strings (JSON encoded)
 * `--uuid-to-string` - Convert UUID columns to plain strings
+* `--repeated-to-list` - Convert legacy "repeated primitive" columns to standard 3-level LIST structure
 * `--geo-to-binary` - Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)
 * `--json-to-string` - Remove JSON logical type from columns (keep as plain BYTE_ARRAY)
 * `--float16-to-float32` - Convert FLOAT16 columns to FLOAT32
@@ -1086,6 +1088,14 @@ $ parquet-tools retype --variant-to-string -s testdata/all-types.parquet /tmp/va
 
 ```bash
 $ parquet-tools retype --uuid-to-string -s testdata/all-types.parquet /tmp/uuid-to-string.parquet
+```
+
+#### Convert Repeated Primitive to LIST
+
+Legacy Parquet files sometimes use "repeated primitive" columns instead of the standard 3-level LIST structure. Many modern tools (including Apache parquet-cli) expect the 3-level structure. You can use `--repeated-to-list` to convert these legacy columns to the standard format.
+
+```bash
+$ parquet-tools retype --repeated-to-list -s legacy.parquet output.parquet
 ```
 
 #### Remove Geospatial Logical Type
