@@ -1168,7 +1168,7 @@ func TestCmdParseFieldCompressions(t *testing.T) {
 	}
 }
 
-func BenchmarkCmd(b *testing.B) {
+func BenchmarkTranscodeCmd(b *testing.B) {
 	savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
