@@ -53,10 +53,10 @@ func main() {
 	pw.CompressionType = parquet.CompressionCodec_LZ4
 	for i := range 5 {
 		rec := RecordType{
-			Lol: make([][]string, i+1),
+			Lol: make([][]string, i),
 		}
 		for j := range i {
-			rec.Lol[j] = make([]string, j+1)
+			rec.Lol[j] = make([]string, j)
 			for k := range j {
 				rec.Lol[j][k] = fmt.Sprintf("%d-%d-%d", i+1, j+1, k+1)
 			}
