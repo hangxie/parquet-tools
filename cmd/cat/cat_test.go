@@ -222,7 +222,7 @@ func TestCmdEncoderInvalidFormat(t *testing.T) {
 	require.Contains(t, err.Error(), "unsupported format: xml")
 }
 
-func BenchmarkCmd(b *testing.B) {
+func BenchmarkCatCmd(b *testing.B) {
 	// savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
