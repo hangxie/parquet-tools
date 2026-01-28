@@ -196,6 +196,12 @@ func BenchmarkMergeCmd(b *testing.B) {
 		Source:       slices.Repeat([]string{"../../build/benchmark.parquet"}, 3),
 		URI:          "../../build/merged.parquet",
 	}
+
+	// Warm up the Go runtime before actual benchmark
+	for range 10 {
+		_ = cmd.Run()
+	}
+
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
 			require.NoError(b, cmd.Run())
