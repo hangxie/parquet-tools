@@ -1194,6 +1194,12 @@ func BenchmarkTranscodeCmd(b *testing.B) {
 		Source:       "../../build/benchmark.parquet",
 		URI:          filepath.Join(tempDir, "transcoded.parquet"),
 	}
+
+	// Warm up the Go runtime before actual benchmark
+	for range 10 {
+		_ = cmd.Run()
+	}
+
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
 			require.NoError(b, cmd.Run())

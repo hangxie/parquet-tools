@@ -69,6 +69,12 @@ func BenchmarkSizeCmd(b *testing.B) {
 		Query:      "all",
 		URI:        "../../build/benchmark.parquet",
 	}
+
+	// Warm up the Go runtime before actual benchmark
+	for range 10 {
+		_ = cmd.Run()
+	}
+
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
 			require.NoError(b, cmd.Run())
