@@ -12,7 +12,8 @@
 
 | **Tag** | **cat** | **merge** | **meta** | **row-count** | **schema** | **size** | **version** |
 | -------: | -------------------------------------------------------------------------: | -------------------------------------------------------------------------: | -------: | ------------: | ---------: | -------: | ----------: |
-| HEAD | 664 | 1349 | 1.876<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 2.211<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 2.963<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 1.874<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 0.004 |
+| HEAD | 664 | 1349 | 1.876 | 2.211 | 2.963 | 1.874 | 0.004 |
+| v1.46.2 | 664 | 1349 | 1.876<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 2.211<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 2.963<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 1.874<sup>[note](https://github.com/hangxie/parquet-tools/issues/887) | 0.004 |
 | v1.46.1 | 641 | 1339 | 3.153<sup>[note](https://github.com/hangxie/parquet-tools/issues/881) | 4.667<sup>[note](https://github.com/hangxie/parquet-tools/issues/881) | 8.033<sup>[note](https://github.com/hangxie/parquet-tools/issues/881) | 5.172<sup>[note](https://github.com/hangxie/parquet-tools/issues/881) | 0.004 |
 | v1.46.0 | N/A | N/A | N/A | N/A | N/A | N/A | N/A |
 | v1.45.0 | 650 | 1332 | 1.349 | 1.138 | 2.069 | 1.149 | 0.006 |
