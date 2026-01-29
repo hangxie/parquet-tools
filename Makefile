@@ -21,9 +21,9 @@ GOFLAGS		:= -trimpath
 GOSOURCES	:= $(shell find . -type f -name '*.go')
 LDFLAGS		:= -w -s \
 				-extldflags "-static" \
-				-X $(PKG_PREFIX)/cmd.version=$(VERSION) \
-				-X $(PKG_PREFIX)/cmd.build=$(BUILD_TIME) \
-				-X $(PKG_PREFIX)/cmd.source=Makefile
+				-X $(PKG_PREFIX)/cmd/version.version=$(VERSION) \
+				-X $(PKG_PREFIX)/cmd/version.build=$(BUILD_TIME) \
+				-X $(PKG_PREFIX)/cmd/version.source=Makefile
 
 .EXPORT_ALL_VARIABLES:
 
