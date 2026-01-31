@@ -47,6 +47,9 @@ func TestCmd(t *testing.T) {
 		"show-compression":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", ShowCompressionCodec: true, URI: "good.parquet"}, golden: "schema-good-show-compression-codec.json"},
 		"show-compression-raw":   {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", ShowCompressionCodec: true, URI: "good.parquet"}, golden: "schema-good-show-compression-codec-raw.json"},
 		"show-compression-go":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", ShowCompressionCodec: true, URI: "good.parquet"}, golden: "schema-good-show-compression-codec-go.txt"},
+		"unknown-type-raw":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-raw.json"},
+		"unknown-type-json":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-json.json"},
+		"unknown-type-go":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-go.txt"},
 	}
 
 	for name, tc := range testCases {

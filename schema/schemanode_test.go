@@ -94,6 +94,12 @@ func TestNewSchemaTree(t *testing.T) {
 			checkNoEncodings:      true,
 			checkCompressionCodec: true,
 		},
+		{
+			name:       "unknown type with golden file",
+			uri:        "../testdata/unknown-type.parquet",
+			option:     SchemaOption{},
+			goldenFile: "../testdata/golden/schema-unknown-type-raw.json",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -546,6 +552,12 @@ func TestGoStruct(t *testing.T) {
 			camelCase: false,
 			errMsg:    "go struct does not support LIST of LIST",
 		},
+		{
+			name:       "unknown type",
+			uri:        "../testdata/unknown-type.parquet",
+			camelCase:  false,
+			goldenFile: "../testdata/golden/schema-unknown-type-go.txt",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -579,25 +591,45 @@ func TestGoStruct(t *testing.T) {
 }
 
 func TestJSONSchema(t *testing.T) {
-	option := pio.ReadOption{}
-	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
-	require.NoError(t, err)
-	defer func() {
-		_ = pr.PFile.Close()
-	}()
+	testCases := []struct {
+		name       string
+		uri        string
+		goldenFile string
+	}{
+		{
+			name:       "all types",
+			uri:        "../testdata/all-types.parquet",
+			goldenFile: "../testdata/golden/schema-all-types-json.json",
+		},
+		{
+			name:       "unknown type",
+			uri:        "../testdata/unknown-type.parquet",
+			goldenFile: "../testdata/golden/schema-unknown-type-json.json",
+		},
+	}
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
-	require.NoError(t, err)
-	require.NotNil(t, schemaRoot)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := pio.ReadOption{}
+			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
 
-	actual := schemaRoot.JSONSchema()
+			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			require.NoError(t, err)
+			require.NotNil(t, schemaRoot)
 
-	raw, _ := os.ReadFile("../testdata/golden/schema-all-types-json.json")
-	temp := JSONSchema{}
-	_ = json.Unmarshal(raw, &temp)
-	expected, _ := json.Marshal(temp)
-	require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
+			actual := schemaRoot.JSONSchema()
+
+			raw, _ := os.ReadFile(tc.goldenFile)
+			temp := JSONSchema{}
+			_ = json.Unmarshal(raw, &temp)
+			expected, _ := json.Marshal(temp)
+			require.Equal(t, strings.TrimRight(string(expected), "\n"), actual)
+		})
+	}
 }
 
 func TestCSVSchema(t *testing.T) {

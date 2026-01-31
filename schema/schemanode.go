@@ -438,6 +438,8 @@ func (s *SchemaNode) updateTagFromLogicalType(tagMap map[string]string) {
 		tagMap["logicaltype.unit"] = timeUnitToTag(s.LogicalType.TIMESTAMP.Unit)
 	case s.LogicalType.IsSetUUID():
 		tagMap["logicaltype"] = "UUID"
+	case s.LogicalType.IsSetUNKNOWN():
+		tagMap["logicaltype"] = "UNKNOWN"
 	}
 }
 
