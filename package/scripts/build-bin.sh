@@ -9,7 +9,7 @@ for TARGET in ${REL_TARGET}; do
         export GOOS=$(echo ${TARGET} | cut -f 1 -d \-)
         export GOARCH=$(echo ${TARGET} | cut -f 2 -d \-)
         ${GO} build ${GOFLAGS} \
-            -ldflags "${LDFLAGS} -X ${PKG_PREFIX}/cmd.source=github" \
+            -ldflags "${LDFLAGS} -X ${PKG_PREFIX}/cmd/version.source=github" \
             -o ${BINARY} ./
         if [ ${GOOS} == "windows" ]; then
             (cd $(dirname ${BINARY});
