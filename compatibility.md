@@ -5,12 +5,12 @@ This document tracks known compatibility issues between parquet-tools and other 
 ## Table of Contents
 
 - [Apache parquet-cli / PySpark](#apache-parquet-cli--pyspark)
-- [pqrs](#pqrs)
-- [Python parquet-tools](#python-parquet-tools)
+- [arrow-rs/parquet](#arrow-rsparquet)
 - [DuckDB](#duckdb)
-- [PyArrow](#pyarrow)
 - [pandas](#pandas)
 - [Polars](#polars)
+- [PyArrow](#pyarrow)
+- [Python parquet-tools](#python-parquet-tools)
 
 ## Overview
 
@@ -70,28 +70,17 @@ incompatible types: required group Repeated (LIST) {
 
 **Workaround:** Use `parquet-tools retype --repeated-to-list` to convert legacy repeated primitive columns to the standard 3-level LIST structure for better compatibility.
 
-## pqrs
+## arrow-rs/parquet
 
-[pqrs](https://github.com/manojkarthick/pqrs) is a Rust-based Parquet file reader.
+[arrow-rs](https://github.com/apache/arrow-rs) is the official Rust implementation of Apache Arrow and Parquet.
 
-**Known Issues:**
-- TBD
-
-## Python parquet-tools
-
-[parquet-tools](https://pypi.org/project/parquet-tools/) is a Python CLI for inspecting Parquet files.
+As of version 57.2.0, `arrow-rs` supports all primitive, logical, and converted types that `parquet-tools` supports.
 
 **Known Issues:**
 
-#### 1. Nanosecond Timestamp Precision
+#### 1. Outdated Downstream Tools (pqrs)
 
-Python parquet-tools uses pandas internally and inherits the same nanosecond timestamp precision issue.
-
-```
-pyarrow.lib.ArrowInvalid: Value 1000000001 has non-zero nanoseconds
-```
-
-**Workaround:** None available within the tool. Use PyArrow directly or pandas with `dtype_backend='pyarrow'` instead.
+Tools built on `arrow-rs`, such as [pqrs](https://github.com/manojkarthick/pqrs), may use older versions of the library. For example, `pqrs` is built on a 2-year old version of `arrow` (51.0.0), which misses many new Parquet features.
 
 ## DuckDB
 
@@ -109,22 +98,6 @@ Unsupported converted type (20)
 ```
 
 **Workaround:** Use `parquet-tools retype --bson-to-string` to convert BSON columns to string representation before reading with DuckDB.
-
-## PyArrow
-
-[PyArrow](https://arrow.apache.org/docs/python/) is the Python binding for Apache Arrow, commonly used for Parquet I/O.
-
-**Known Issues:** None. PyArrow reads parquet-tools files without issues.
-
-```python
-import pyarrow.parquet as pq
-
-table = pq.read_table("file.parquet")
-data = table.to_pylist()
-
-for row in data:
-    print(row)
-```
 
 ## pandas
 
@@ -153,6 +126,38 @@ df = pd.read_parquet('file.parquet', dtype_backend='pyarrow')
 
 **Known Issues:**
 - TBD
+
+## PyArrow
+
+[PyArrow](https://arrow.apache.org/docs/python/) is the Python binding for Apache Arrow, commonly used for Parquet I/O.
+
+**Known Issues:** None. PyArrow reads parquet-tools files without issues.
+
+```python
+import pyarrow.parquet as pq
+
+table = pq.read_table("file.parquet")
+data = table.to_pylist()
+
+for row in data:
+    print(row)
+```
+
+## Python parquet-tools
+
+[parquet-tools](https://pypi.org/project/parquet-tools/) is a Python CLI for inspecting Parquet files.
+
+**Known Issues:**
+
+#### 1. Nanosecond Timestamp Precision
+
+Python parquet-tools uses pandas internally and inherits the same nanosecond timestamp precision issue.
+
+```
+pyarrow.lib.ArrowInvalid: Value 1000000001 has non-zero nanoseconds
+```
+
+**Workaround:** None available within the tool. Use PyArrow directly or pandas with `dtype_backend='pyarrow'` instead.
 
 ## General Notes
 
