@@ -1,0 +1,32 @@
+{
+  "repetition_type": "REQUIRED",
+  "name": "schema",
+  "num_children": 3,
+  "children": [
+    {
+      "type": "INT32",
+      "repetition_type": "OPTIONAL",
+      "name": "id",
+      "encoding": "RLE_DICTIONARY"
+    },
+    {
+      "type": "INT32",
+      "repetition_type": "OPTIONAL",
+      "name": "unknown_col",
+      "logicalType": {
+        "UNKNOWN": {}
+      },
+      "encoding": "RLE_DICTIONARY"
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "repetition_type": "OPTIONAL",
+      "name": "name",
+      "converted_type": "UTF8",
+      "logicalType": {
+        "STRING": {}
+      },
+      "encoding": "RLE_DICTIONARY"
+    }
+  ]
+}

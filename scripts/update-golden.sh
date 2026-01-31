@@ -148,6 +148,15 @@ $PT schema --format go --camel-case "$TESTDATA_DIR/good.parquet" > "$GOLDEN_DIR/
 # schema-gostruct-list-go.txt
 $PT schema --format go "$TESTDATA_DIR/gostruct-list.parquet" > "$GOLDEN_DIR/schema-gostruct-list-go.txt"
 
+# schema-unknown-type-raw.json
+$PT schema --format raw "$TESTDATA_DIR/unknown-type.parquet" | format_json > "$GOLDEN_DIR/schema-unknown-type-raw.json"
+
+# schema-unknown-type-json.json
+$PT schema --format json "$TESTDATA_DIR/unknown-type.parquet" | format_json > "$GOLDEN_DIR/schema-unknown-type-json.json"
+
+# schema-unknown-type-go.txt
+$PT schema --format go "$TESTDATA_DIR/unknown-type.parquet" > "$GOLDEN_DIR/schema-unknown-type-go.txt"
+
 # NOTE: schema-list-variants-*.json files are manually maintained test fixtures
 # (not generated from a parquet file). They are used to test JSON schema parsing.
 
