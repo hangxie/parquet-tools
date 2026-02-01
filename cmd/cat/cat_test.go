@@ -226,7 +226,7 @@ func BenchmarkCatCmd(b *testing.B) {
 	// savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 	os.Stdout = devNull
 	defer func() {
