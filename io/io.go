@@ -82,7 +82,7 @@ func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
 		return s3.NewFromConfig(aws.Config{Region: region}), nil
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithDefaultRegion("us-east-1"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config to determine bucket region: %w", err)
