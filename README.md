@@ -191,9 +191,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.45.0
+v1.46.4
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.45.0
+v1.46.4
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -203,20 +203,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.45.0_amd64.deb
-Preparing to unpack parquet-tools_1.45.0_amd64.deb ...
-Unpacking parquet-tools (1.45.0) ...
-Setting up parquet-tools (1.45.0) ...
+$ sudo dpkg -i parquet-tools_1.46.4_amd64.deb
+Preparing to unpack parquet-tools_1.46.4_amd64.deb ...
+Unpacking parquet-tools (1.46.4) ...
+Setting up parquet-tools (1.46.4) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.45.0-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.46.4-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.45.0-1          ################################# [100%]
+   1:parquet-tools-1.46.4-1          ################################# [100%]
 ```
 
 ## Usage
@@ -1339,39 +1339,33 @@ parquet-tools: error: invalid name format [file.parquet]: lack of usable verb
 You can specify width and leading zeros:
 
 ```bash
-$ parquet-tools split --name-format file-%04b.parquet --file-count 3 testdata/all-types.parquet
+$ parquet-tools split --name-format file-%04b.parquet --file-count 2 testdata/all-types.parquet
 $ ls file-*
-file-0000.parquet file-0001.parquet file-0010.parquet
+file-0000.parquet file-0001.parquet
 ```
 
 #### Exact number of output files
 
 ```bash
 $ parquet-tools row-count testdata/all-types.parquet
-10
-$ parquet-tools split --file-count 3 testdata/all-types.parquet
+5
+$ parquet-tools split --file-count 2 testdata/all-types.parquet
 $ parquet-tools row-count result-000000.parquet
-4
+3
 $ parquet-tools row-count result-000001.parquet
-3
-$ parquet-tools row-count result-000002.parquet
-3
+2
 ```
 
 #### Maximum records in a file
 
 ```bash
 $ parquet-tools row-count testdata/all-types.parquet
-10
+5
 $ parquet-tools split --record-count 3 --name-format %d.parquet testdata/all-types.parquet
 $ parquet-tools row-count 0.parquet
 3
 $ parquet-tools row-count 1.parquet
-3
-$ parquet-tools row-count 2.parquet
-3
-$ parquet-tools row-count 3.parquet
-1
+2
 ```
 
 ### transcode Command
@@ -1568,7 +1562,7 @@ $ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
 
 ```bash
 $ parquet-tools version
-v1.45.0
+v1.46.4
 ```
 
 #### Print All Information
@@ -1577,7 +1571,7 @@ v1.45.0
 
 ```bash
 $ parquet-tools version -a
-v1.45.0
+v1.46.4
 2025-12-14T20:17:50Z
 Homebrew
 ```
@@ -1586,14 +1580,14 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.45.0","BuildTime":"2025-12-14T20:17:50Z"}
+{"Version":"v1.46.4","BuildTime":"2025-12-14T20:17:50Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.45.0"}
+{"Version":"v1.46.4"}
 ```
 
 ## Credit
