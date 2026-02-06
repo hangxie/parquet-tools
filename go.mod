@@ -16,7 +16,7 @@ require (
 	github.com/willabides/kongplete v0.4.0
 	go.mongodb.org/mongo-driver v1.17.7
 	golang.org/x/sync v0.19.0
-	google.golang.org/api v0.264.0
+	google.golang.org/api v0.265.0
 )
 
 require (
