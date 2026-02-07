@@ -159,7 +159,7 @@ func (c Cmd) importJSONL() error {
 
 	jsonlFile, err := os.Open(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to open source file %s", c.Source)
+		return fmt.Errorf("failed to open source file %s: %w", c.Source, err)
 	}
 	defer func() {
 		_ = jsonlFile.Close()
