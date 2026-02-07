@@ -64,14 +64,23 @@ func TestCmd(t *testing.T) {
 			RowGroupSize:   128 * 1024 * 1024,
 			ParallelNumber: 0,
 		}
+		pOpt := pio.WriteOption{
+			Compression:    "SNAPPY",
+			PageSize:       1024 * 1024,
+			RowGroupSize:   128 * 1024 * 1024,
+			ParallelNumber: 2,
+		}
 		testCases := map[string]struct {
 			cmd      Cmd
 			rowCount int64
 		}{
-			"csv-wo-header": {Cmd{WriteOption: wOpt, Source: "csv.source", Format: "csv", Schema: "csv.schema", SkipHeader: false, URI: ""}, 10},
-			"csv-w-header":  {Cmd{WriteOption: wOpt, Source: "csv-with-header.source", Format: "csv", Schema: "csv.schema", SkipHeader: true, URI: ""}, 10},
-			"json":          {Cmd{WriteOption: wOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""}, 1},
-			"jsonl":         {Cmd{WriteOption: wOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""}, 10},
+			"csv-wo-header":  {Cmd{WriteOption: wOpt, Source: "csv.source", Format: "csv", Schema: "csv.schema", SkipHeader: false, URI: ""}, 10},
+			"csv-w-header":   {Cmd{WriteOption: wOpt, Source: "csv-with-header.source", Format: "csv", Schema: "csv.schema", SkipHeader: true, URI: ""}, 10},
+			"json":           {Cmd{WriteOption: wOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""}, 1},
+			"jsonl":          {Cmd{WriteOption: wOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""}, 10},
+			"csv-parallel":   {Cmd{WriteOption: pOpt, Source: "csv.source", Format: "csv", Schema: "csv.schema", SkipHeader: false, URI: ""}, 10},
+			"json-parallel":  {Cmd{WriteOption: pOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""}, 1},
+			"jsonl-parallel": {Cmd{WriteOption: pOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""}, 10},
 		}
 
 		tempDir := t.TempDir()
