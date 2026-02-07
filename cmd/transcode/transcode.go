@@ -156,8 +156,7 @@ func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, write
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		default:
-			row, more := <-writerChan
+		case row, more := <-writerChan:
 			if !more {
 				return nil
 			}
