@@ -134,11 +134,14 @@ func TestCmd(t *testing.T) {
 func TestCheckNameFormat(t *testing.T) {
 	testCases := map[string]error{
 		// good
-		"%b":   nil,
-		"%3d":  nil,
-		"%03o": nil,
-		"%x":   nil,
-		"%3X":  nil,
+		"%b":    nil,
+		"%3d":   nil,
+		"%03o":  nil,
+		"%x":    nil,
+		"%3X":   nil,
+		"%05d":  nil,
+		"%08x":  nil,
+		"%012o": nil,
 		// bad
 		"foobar":  fmt.Errorf("lack of useable ver"),
 		"%%":      fmt.Errorf("lack of useable ver"),
