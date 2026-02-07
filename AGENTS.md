@@ -59,3 +59,15 @@ to the parquet-tools Go CLI project.
 - Test coverage must be maintained or improved on significant logic changes.
 - Code must pass formatting, linting, testing, and build checks (`make all`) before merging.
 - Refactoring and cleanup must preserve behavior and pass validation.
+
+---
+
+## Task Tracking Process
+
+When working on improvements or fixes from a review:
+
+1. **Prepare `TODO.md`** - Create or update `TODO.md` with numbered, categorized items. Use checkboxes (`- [ ]`) to track completion.
+2. **Make changes** - Implement the fix or improvement for the selected item(s).
+3. **Validate** - Run `make all` and ensure format, lint, test, and build all pass.
+4. **Commit** - Commit only the source code changes. Do **not** commit `TODO.md`.
+5. **Mark complete** - Update `TODO.md` to check off the completed item(s) (`- [x]`).
