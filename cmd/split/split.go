@@ -40,11 +40,9 @@ func (c *Cmd) openReader() (*reader.ParquetReader, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
 	}
-	defer func() {
-		_ = parquetReader.PFile.Close()
-	}()
 	schemaRoot, err := pschema.NewSchemaTree(parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, WithCompressionCodec: true})
 	if err != nil {
+		_ = parquetReader.PFile.Close()
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
 	}
 	c.current.schemaJSON = schemaRoot.JSONSchema()
@@ -105,6 +103,9 @@ func (c Cmd) Run() error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		_ = parquetReader.PFile.Close()
+	}()
 
 	c.current.fileIndex = 0
 	c.current.targetFile = ""
