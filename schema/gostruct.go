@@ -168,14 +168,14 @@ func (n goStructNode) getStructTags() (string, error) {
 
 	if tag, found := tagMap["type"]; found && tag == "LIST" {
 		if tag, found = tagMap["valuetype"]; found && (tag == "LIST" || tag == "MAP") {
-			return "", fmt.Errorf("go struct does not support LIST of %s in %s", tag, strings.Join(n.InNamePath, "."))
+			return "", fmt.Errorf("go struct does not support LIST of %s in [%s]", tag, strings.Join(n.InNamePath, "."))
 		}
 	} else if found && tag == "MAP" {
 		if tag, found = tagMap["keytype"]; found && (tag == "LIST" || tag == "MAP") {
-			return "", fmt.Errorf("go struct does not support %s as MAP key in %s", tag, strings.Join(n.InNamePath, "."))
+			return "", fmt.Errorf("go struct does not support %s as MAP key in [%s]", tag, strings.Join(n.InNamePath, "."))
 		}
 		if tag, found = tagMap["valuetype"]; found && (tag == "LIST" || tag == "MAP") {
-			return "", fmt.Errorf("go struct does not support %s as MAP value in %s", tag, strings.Join(n.InNamePath, "."))
+			return "", fmt.Errorf("go struct does not support %s as MAP value in [%s]", tag, strings.Join(n.InNamePath, "."))
 		}
 	}
 

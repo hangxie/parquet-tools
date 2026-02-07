@@ -60,7 +60,7 @@ func (c Cmd) Run() error {
 		types.SetGeometryJSONMode(types.GeospatialModeGeoJSON)
 		types.SetGeographyJSONMode(types.GeospatialModeGeoJSON)
 	default:
-		return fmt.Errorf("unknown geo format: %s", c.GeoFormat)
+		return fmt.Errorf("unknown geo format: [%s]", c.GeoFormat)
 	}
 
 	if c.ReadPageSize < 1 {
@@ -77,7 +77,7 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("invalid sampling %f, needs to be between 0.0 and 1.0", c.SampleRatio)
 	}
 	if _, ok := delimiter[c.Format]; !ok {
-		return fmt.Errorf("unknown format: %s", c.Format)
+		return fmt.Errorf("unknown format: [%s]", c.Format)
 	}
 
 	fileReader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
@@ -184,7 +184,7 @@ func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan stri
 				}
 				formattedRow = strings.TrimRight(line, "\n")
 			default:
-				return fmt.Errorf("unsupported format: %s", c.Format)
+				return fmt.Errorf("unsupported format: [%s]", c.Format)
 			}
 
 			select {

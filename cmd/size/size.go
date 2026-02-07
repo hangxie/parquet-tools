@@ -83,7 +83,7 @@ func (c Cmd) Run() error {
 		size.Raw = &rawSize
 		size.Uncompressed = &uncompressedSize
 	default:
-		return fmt.Errorf("unknown query type: %s", c.Query)
+		return fmt.Errorf("unknown query type: [%s]", c.Query)
 	}
 
 	buf, _ := json.Marshal(size)
