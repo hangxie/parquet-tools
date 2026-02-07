@@ -71,7 +71,7 @@ func newAzureStorageBlobWriter(u *url.URL) (source.ParquetFileWriter, error) {
 }
 
 func newHTTPWriter(u *url.URL) (source.ParquetFileWriter, error) {
-	return nil, fmt.Errorf("writing to %s endpoint is not currently supported", u.Scheme)
+	return nil, fmt.Errorf("writing to [%s] endpoint is not currently supported", u.Scheme)
 }
 
 func newHDFSWriter(u *url.URL) (source.ParquetFileWriter, error) {

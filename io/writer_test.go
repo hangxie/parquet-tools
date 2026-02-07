@@ -27,7 +27,7 @@ func TestNewParquetFileWriter(t *testing.T) {
 		"azblob-invalid-uri1":  {"wasbs://bad/url", "azure blob URI format:"},
 		"azblob-invalid-uri2":  {"wasbs://storageaccount.blob.core.windows.net//aa", "azure blob URI format:"},
 		"azblob-good":          {"wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/will-not-create-till-close", ""},
-		"http-not-support":     {"https://domain.tld/path/to/file", "writing to https endpoint is not currently supported"},
+		"http-not-support":     {"https://domain.tld/path/to/file", "writing to [https] endpoint is not currently supported"},
 	}
 
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")

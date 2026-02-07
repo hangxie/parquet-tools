@@ -27,7 +27,7 @@ func TestCmd(t *testing.T) {
 		"invalid-skip-size":      {cmd: Cmd{ReadOption: rOpt, Skip: -10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid skip -10"},
 		"sampling-too-high":      {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 2.0, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid sampling"},
 		"sampling-too-low":       {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: -0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid sampling"},
-		"invalid-format":         {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "foobar", NoHeader: false, URI: "does/not/matter"}, errMsg: "unknown format: foobar"},
+		"invalid-format":         {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "foobar", NoHeader: false, URI: "does/not/matter"}, errMsg: "unknown format: [foobar]"},
 		"fail-on-int96":          {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
 		"nested-schema-csv":      {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
 		"nested-schema-tsv":      {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
@@ -219,7 +219,7 @@ func TestCmdEncoderInvalidFormat(t *testing.T) {
 	err = cmd.encoder(ctx, rowChan, outputChan, fileReader.SchemaHandler, nil)
 
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "unsupported format: xml")
+	require.Contains(t, err.Error(), "unsupported format: [xml]")
 }
 
 func BenchmarkCatCmd(b *testing.B) {

@@ -55,7 +55,7 @@ func (c Cmd) closeWriter(pf parquetSource.ParquetFileWriter) error {
 func (c Cmd) importCSV() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
-		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
+		return fmt.Errorf("failed to load schema from [%s]: %w", c.Schema, err)
 	}
 
 	var schema []string
@@ -69,7 +69,7 @@ func (c Cmd) importCSV() error {
 
 	csvFile, err := os.Open(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to open CSV file %s: %w", c.Source, err)
+		return fmt.Errorf("failed to open CSV file [%s]: %w", c.Source, err)
 	}
 	defer func() {
 		_ = csvFile.Close()
@@ -98,11 +98,11 @@ func (c Cmd) importCSV() error {
 		}
 	}
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
+		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
+		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
 	}
 
 	return nil
@@ -111,17 +111,17 @@ func (c Cmd) importCSV() error {
 func (c Cmd) importJSON() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
-		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
+		return fmt.Errorf("failed to load schema from [%s]: %w", c.Schema, err)
 	}
 
 	jsonData, err := os.ReadFile(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to load source from %s: %w", c.Source, err)
+		return fmt.Errorf("failed to load source from [%s]: %w", c.Source, err)
 	}
 
 	var dummy map[string]any
 	if err := json.Unmarshal(schemaData, &dummy); err != nil {
-		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
+		return fmt.Errorf("content of [%s] is not a valid schema JSON", c.Schema)
 	}
 	if err := json.Unmarshal(jsonData, &dummy); err != nil {
 		return fmt.Errorf("invalid JSON string: %s", string(jsonData))
@@ -137,10 +137,10 @@ func (c Cmd) importJSON() error {
 	}
 
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
+		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
+		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
 	}
 
 	return nil
@@ -149,17 +149,17 @@ func (c Cmd) importJSON() error {
 func (c Cmd) importJSONL() error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
-		return fmt.Errorf("failed to load schema from %s: %w", c.Schema, err)
+		return fmt.Errorf("failed to load schema from [%s]: %w", c.Schema, err)
 	}
 
 	var dummy map[string]any
 	if err := json.Unmarshal(schemaData, &dummy); err != nil {
-		return fmt.Errorf("content of %s is not a valid schema JSON", c.Schema)
+		return fmt.Errorf("content of [%s] is not a valid schema JSON", c.Schema)
 	}
 
 	jsonlFile, err := os.Open(c.Source)
 	if err != nil {
-		return fmt.Errorf("failed to open source file %s: %w", c.Source, err)
+		return fmt.Errorf("failed to open source file [%s]: %w", c.Source, err)
 	}
 	defer func() {
 		_ = jsonlFile.Close()
@@ -183,10 +183,10 @@ func (c Cmd) importJSONL() error {
 		}
 	}
 	if err := parquetWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to close Parquet writer %s: %w", c.URI, err)
+		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
-		return fmt.Errorf("failed to close Parquet file %s: %w", c.URI, err)
+		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
 	}
 
 	return nil

@@ -21,9 +21,9 @@ func TestCmd(t *testing.T) {
 		// error cases
 		"invalid-uri":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, errMsg: "unknown location scheme"},
 		"invalid-format":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "foobar", URI: "../../testdata/good.parquet"}, errMsg: "unknown schema format"},
-		"go-map-value":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/map-composite-value.parquet"}, errMsg: "go struct does not support LIST as MAP value in Parquet_go_root.Scores"},
-		"go-list-value":     {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/list-of-list.parquet"}, errMsg: "go struct does not support LIST of LIST in Parquet_go_root.Lol"},
-		"go-old-style-list": {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/old-style-list.parquet"}, errMsg: "go struct does not support LIST of LIST in My_record.First.Second.A"},
+		"go-map-value":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/map-composite-value.parquet"}, errMsg: "go struct does not support LIST as MAP value in [Parquet_go_root.Scores]"},
+		"go-list-value":     {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/list-of-list.parquet"}, errMsg: "go struct does not support LIST of LIST in [Parquet_go_root.Lol]"},
+		"go-old-style-list": {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/old-style-list.parquet"}, errMsg: "go struct does not support LIST of LIST in [My_record.First.Second.A]"},
 		"csv-nested":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-nested.parquet"}, errMsg: "CSV supports flat schema only"},
 		"csv-optional":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-optional.parquet"}, errMsg: "CSV does not support optional column"},
 		"csv-repeated":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-repeated.parquet"}, errMsg: "CSV does not support column in LIST type"},
