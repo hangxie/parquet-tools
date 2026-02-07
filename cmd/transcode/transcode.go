@@ -229,10 +229,10 @@ func (c Cmd) Run() error {
 	}
 
 	// Generate JSON schema from (possibly modified) SchemaTree
-	schemaJson := schemaTree.JSONSchema()
+	schemaJSON := schemaTree.JSONSchema()
 
 	// Create output file with new settings
-	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
+	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
