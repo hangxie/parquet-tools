@@ -72,7 +72,8 @@ func (c Cmd) Run() error {
 	}
 
 	// Build schema maps for name resolution
-	inExNameMap, pathMap := c.buildSchemaMaps(schemaRoot)
+	inExNameMap := schemaRoot.GetInExNameMap()
+	pathMap := schemaRoot.GetPathMap()
 
 	// Determine which level to inspect
 	switch {
@@ -89,19 +90,6 @@ func (c Cmd) Run() error {
 		// Level 1: Show file info and row groups
 		return c.inspectFile(reader)
 	}
-}
-
-func (c Cmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
-	inExNameMap := map[string][]string{}
-	queue := []*pschema.SchemaNode{schemaRoot}
-	for len(queue) > 0 {
-		node := queue[0]
-		queue = append(queue[1:], node.Children...)
-		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
-		inExNameMap[inPath] = node.ExNamePath[1:]
-	}
-	pathMap := schemaRoot.GetPathMap()
-	return inExNameMap, pathMap
 }
 
 // Level 1: File info and row groups with brief info

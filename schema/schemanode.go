@@ -455,6 +455,20 @@ func (s *SchemaNode) GetPathMap() map[string]*SchemaNode {
 	return retVal
 }
 
+// GetInExNameMap returns a map from internal name path to external name path
+// for all nodes in the schema tree via BFS traversal.
+func (s *SchemaNode) GetInExNameMap() map[string][]string {
+	retVal := map[string][]string{}
+	queue := []*SchemaNode{s}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = append(queue[1:], node.Children...)
+		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+		retVal[inPath] = node.ExNamePath[1:]
+	}
+	return retVal
+}
+
 func typeStr(se parquet.SchemaElement) string {
 	if se.Type != nil {
 		return se.Type.String()
