@@ -189,7 +189,7 @@ func (c Cmd) reader(ctx context.Context, fileReader *reader.ParquetReader, write
 }
 
 // Run does actual transcode job
-func (c Cmd) Run() error {
+func (c Cmd) Run() (retErr error) {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -236,8 +236,12 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
 	defer func() {
-		_ = fileWriter.WriteStop()
-		_ = fileWriter.PFile.Close()
+		if err := fileWriter.WriteStop(); err != nil && retErr == nil {
+			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
+		}
+		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
+			retErr = fmt.Errorf("failed to close [%s]: %w", c.URI, err)
+		}
 	}()
 
 	// Dedicated goroutine for output to ensure output integrity
@@ -262,13 +266,6 @@ func (c Cmd) Run() error {
 
 	if err := writerGroup.Wait(); err != nil {
 		return err
-	}
-
-	if err := fileWriter.WriteStop(); err != nil {
-		return fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
-	}
-	if err := fileWriter.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close [%s]: %w", c.URI, err)
 	}
 
 	return nil
