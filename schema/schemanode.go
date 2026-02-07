@@ -252,7 +252,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 
 func (s *SchemaNode) GetTagMap() map[string]string {
 	tagMap := map[string]string{
-		"repetitiontype": repetitionTyeStr(s.SchemaElement),
+		"repetitiontype": repetitionTypeStr(s.SchemaElement),
 		"type":           typeStr(s.SchemaElement),
 		"name":           s.Name,
 	}
@@ -482,7 +482,7 @@ func typeStr(se parquet.SchemaElement) string {
 	return "STRUCT"
 }
 
-func repetitionTyeStr(se parquet.SchemaElement) string {
+func repetitionTypeStr(se parquet.SchemaElement) string {
 	if se.RepetitionType == nil {
 		return "REQUIRED"
 	}

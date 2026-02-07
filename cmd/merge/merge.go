@@ -71,7 +71,7 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("needs at least 2 source files")
 	}
 
-	fileReaders, schemaJson, err := c.openSources()
+	fileReaders, schemaJSON, err := c.openSources()
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (c Cmd) Run() error {
 		}
 	}()
 
-	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJson)
+	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
@@ -138,7 +138,7 @@ func (c Cmd) Run() error {
 }
 
 func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
-	var schemaJson string
+	var schemaJSON string
 	var rootExNamePath []string
 	var rootInNamePath []string
 	var rootName string
@@ -155,9 +155,9 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 			return nil, "", err
 		}
 
-		if schemaJson == "" {
+		if schemaJSON == "" {
 			// Use schema from the first file (including its encodings)
-			schemaJson = currSchema.JSONSchema()
+			schemaJSON = currSchema.JSONSchema()
 			rootName = currSchema.Name
 			rootExNamePath = currSchema.ExNamePath
 			rootInNamePath = currSchema.InNamePath
@@ -169,12 +169,12 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 		currSchema.InNamePath = rootInNamePath
 		newSchema := currSchema.JSONSchema()
 		// Strip encoding from both schemas for comparison as files may have different encodings
-		schemaJsonWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJson, "")
+		schemaJSONWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJSON, "")
 		newSchemaWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(newSchema, "")
-		if newSchemaWithoutEncoding != schemaJsonWithoutEncoding {
+		if newSchemaWithoutEncoding != schemaJSONWithoutEncoding {
 			return nil, "", fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}
 
-	return fileReaders, schemaJson, nil
+	return fileReaders, schemaJSON, nil
 }
