@@ -1,6 +1,7 @@
 package retype
 
 import (
+	"context"
 	"encoding/json"
 	"path/filepath"
 	"reflect"
@@ -740,4 +741,31 @@ func TestGetOrCreateTargetType(t *testing.T) {
 
 		require.Equal(t, targetType1, targetType2)
 	})
+}
+
+func TestWriterContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	cmd := Cmd{ReadPageSize: 10}
+	writerChan := make(chan any)
+
+	err := cmd.writer(ctx, nil, writerChan)
+	require.ErrorIs(t, err, context.Canceled)
+}
+
+func TestReaderContextCancellation(t *testing.T) {
+	fileReader, err := pio.NewParquetFileReader("../../testdata/good.parquet", pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { _ = fileReader.PFile.Close() }()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	cmd := Cmd{ReadPageSize: 10, Source: "test"}
+	converter := NewConverter(nil, nil)
+	writerChan := make(chan any) // unbuffered, no receiver
+
+	err = cmd.reader(ctx, fileReader, converter, writerChan)
+	require.ErrorIs(t, err, context.Canceled)
 }
