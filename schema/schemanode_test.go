@@ -282,6 +282,55 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 	}
 }
 
+func TestSchemaNodeGetInExNameMap(t *testing.T) {
+	option := pio.ReadOption{}
+	uri := "../testdata/all-types.parquet"
+	pr, err := pio.NewParquetFileReader(uri, option)
+	require.NoError(t, err)
+	defer func() {
+		_ = pr.PFile.Close()
+	}()
+
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	require.NoError(t, err)
+	require.NotNil(t, schemaRoot)
+
+	inExNameMap := schemaRoot.GetInExNameMap()
+	require.NotNil(t, inExNameMap)
+
+	// Root node should map to empty external path
+	rootExPath, found := inExNameMap[""]
+	require.True(t, found)
+	require.Empty(t, rootExPath)
+
+	// Test some expected top-level fields
+	expectedFields := []string{
+		"Bool",
+		"Int32",
+		"Int64",
+		"Float",
+		"Double",
+		"ByteArray",
+		"FixedLenByteArray",
+	}
+
+	for _, field := range expectedFields {
+		exPath, found := inExNameMap[field]
+		require.True(t, found, "expected field %q in inExNameMap", field)
+		require.NotEmpty(t, exPath, "expected non-empty external path for %q", field)
+	}
+
+	// Verify consistency with GetPathMap: every key in pathMap should also be in inExNameMap
+	pathMap := schemaRoot.GetPathMap()
+	for path := range pathMap {
+		_, found := inExNameMap[path]
+		require.True(t, found, "path %q in GetPathMap but not in GetInExNameMap", path)
+	}
+
+	// Verify reasonable size
+	require.Greater(t, len(inExNameMap), 20)
+}
+
 func TestTypeStr(t *testing.T) {
 	// all nil
 	se := parquet.SchemaElement{}
