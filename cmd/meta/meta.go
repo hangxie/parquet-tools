@@ -62,7 +62,8 @@ func (c Cmd) Run() error {
 		return err
 	}
 
-	inExNameMap, pathMap := c.buildSchemaMaps(schemaRoot)
+	inExNameMap := schemaRoot.GetInExNameMap()
+	pathMap := schemaRoot.GetPathMap()
 
 	rowGroups, err := c.buildRowGroups(reader.Footer.RowGroups, inExNameMap, pathMap)
 	if err != nil {
@@ -80,19 +81,6 @@ func (c Cmd) Run() error {
 	fmt.Println(string(buf))
 
 	return nil
-}
-
-func (c Cmd) buildSchemaMaps(schemaRoot *pschema.SchemaNode) (map[string][]string, map[string]*pschema.SchemaNode) {
-	inExNameMap := map[string][]string{}
-	queue := []*pschema.SchemaNode{schemaRoot}
-	for len(queue) > 0 {
-		node := queue[0]
-		queue = append(queue[1:], node.Children...)
-		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
-		inExNameMap[inPath] = node.ExNamePath[1:]
-	}
-	pathMap := schemaRoot.GetPathMap()
-	return inExNameMap, pathMap
 }
 
 func (c Cmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]rowGroupMeta, error) {
