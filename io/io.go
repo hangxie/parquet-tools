@@ -131,7 +131,7 @@ func compressionCodec(codecName string) (parquet.CompressionCodec, error) {
 	// Check for unsupported codecs
 	switch codec {
 	case parquet.CompressionCodec_LZO:
-		return parquet.CompressionCodec_UNCOMPRESSED, fmt.Errorf("%s compression is not supported at this moment", codec.String())
+		return parquet.CompressionCodec_UNCOMPRESSED, fmt.Errorf("[%s] compression is not supported at this moment", codec.String())
 	}
 
 	return codec, nil

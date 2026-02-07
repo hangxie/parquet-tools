@@ -199,7 +199,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 	for pos := 1; len(stack) > 0; {
 		node := stack[len(stack)-1]
 		if option.FailOnInt96 && node.Type != nil && *node.Type == parquet.Type_INT96 {
-			return nil, fmt.Errorf("field %s has type INT96 which is not supported", node.Name)
+			return nil, fmt.Errorf("field [%s] has type INT96 which is not supported", node.Name)
 		}
 		if len(node.Children) < int(node.GetNumChildren()) {
 			childNode := &SchemaNode{

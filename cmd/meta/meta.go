@@ -136,7 +136,7 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 
 	schemaNode := pathMap[pathKey]
 	if schemaNode == nil {
-		return columnMeta{}, fmt.Errorf("schema node not found for column path: %s", pathKey)
+		return columnMeta{}, fmt.Errorf("schema node not found for column path: [%s]", pathKey)
 	}
 
 	c.addTypeInformation(&column, schemaNode)

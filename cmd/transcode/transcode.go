@@ -64,7 +64,7 @@ func (c Cmd) parseFieldEncodings() (map[string]string, error) {
 		if (strings.ToUpper(encoding) == "DELTA_BINARY_PACKED" ||
 			strings.ToUpper(encoding) == "DELTA_BYTE_ARRAY" ||
 			strings.ToUpper(encoding) == "DELTA_LENGTH_BYTE_ARRAY") && c.DataPageVersion != 2 {
-			return nil, fmt.Errorf("%s encoding is only allowed with data page version 2 for field [%s]", encoding, fieldPath)
+			return nil, fmt.Errorf("[%s] encoding is only allowed with data page version 2 for field [%s]", encoding, fieldPath)
 		}
 
 		result[fieldPath] = strings.ToUpper(encoding)
@@ -123,7 +123,7 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 		if encoding, found := fieldEncodings[fieldPath]; found {
 			allowed := pschema.GetAllowedEncodings(schemaTree.Type.String())
 			if !pschema.IsEncodingCompatible(encoding, schemaTree.Type.String()) {
-				return fmt.Errorf("encoding %s is not compatible with field [%s] of type %s, allowed encodings: %s", encoding, fieldPath, schemaTree.Type.String(), strings.Join(allowed, ", "))
+				return fmt.Errorf("encoding [%s] is not compatible with field [%s] of type [%s], allowed encodings: %s", encoding, fieldPath, schemaTree.Type.String(), strings.Join(allowed, ", "))
 			}
 			schemaTree.Encoding = encoding
 		}

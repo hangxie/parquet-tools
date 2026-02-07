@@ -57,7 +57,7 @@ func TestGoStructNode(t *testing.T) {
 		schemaRoot.Children[1].Children[0].Children[0].ConvertedType = &mapType
 		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "go struct does not support MAP as MAP value in Parquet_go_root.Scores")
+		require.Contains(t, err.Error(), "go struct does not support MAP as MAP value in [Parquet_go_root.Scores]")
 	})
 
 	t.Run("composite-map-value", func(t *testing.T) {
@@ -75,7 +75,7 @@ func TestGoStructNode(t *testing.T) {
 
 		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "go struct does not support LIST as MAP value in Parquet_go_root.Scores")
+		require.Contains(t, err.Error(), "go struct does not support LIST as MAP value in [Parquet_go_root.Scores]")
 	})
 
 	t.Run("invalid-scalar", func(t *testing.T) {
@@ -176,7 +176,7 @@ func TestGoStructNode(t *testing.T) {
 
 		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "go struct does not support LIST of LIST in Parquet_go_root.Lol")
+		require.Contains(t, err.Error(), "go struct does not support LIST of LIST in [Parquet_go_root.Lol]")
 	})
 
 	t.Run("as-list", func(t *testing.T) {
