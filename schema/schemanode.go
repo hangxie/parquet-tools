@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 
@@ -539,4 +540,14 @@ func removeTagFromString(tagString, tagName string) string {
 		}
 	}
 	return strings.Join(filtered, ", ")
+}
+
+// EncodingToString converts a slice of parquet encodings to sorted strings.
+func EncodingToString(encodings []parquet.Encoding) []string {
+	ret := make([]string, len(encodings))
+	for i := range encodings {
+		ret[i] = encodings[i].String()
+	}
+	sort.Strings(ret)
+	return ret
 }

@@ -14,47 +14,6 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-func TestEncodingToString(t *testing.T) {
-	testCases := []struct {
-		name      string
-		encodings []parquet.Encoding
-		expected  []string
-	}{
-		{
-			name:      "nil",
-			encodings: nil,
-			expected:  []string{},
-		},
-		{
-			name:      "empty",
-			encodings: []parquet.Encoding{},
-			expected:  []string{},
-		},
-		{
-			name:      "single",
-			encodings: []parquet.Encoding{parquet.Encoding_PLAIN},
-			expected:  []string{"PLAIN"},
-		},
-		{
-			name:      "multiple-unsorted",
-			encodings: []parquet.Encoding{parquet.Encoding_RLE, parquet.Encoding_PLAIN},
-			expected:  []string{"PLAIN", "RLE"},
-		},
-		{
-			name:      "multiple-sorted",
-			encodings: []parquet.Encoding{parquet.Encoding_PLAIN, parquet.Encoding_RLE},
-			expected:  []string{"PLAIN", "RLE"},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := encodingToString(tc.encodings)
-			require.Equal(t, tc.expected, result)
-		})
-	}
-}
-
 func TestInspect(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {

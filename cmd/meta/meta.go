@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
@@ -130,7 +129,7 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 		Type:             col.MetaData.Type.String(),
 		ConvertedType:    nil,
 		LogicalType:      nil,
-		Encodings:        encodingToString(col.MetaData.Encodings),
+		Encodings:        pschema.EncodingToString(col.MetaData.Encodings),
 		CompressedSize:   col.MetaData.TotalCompressedSize,
 		UncompressedSize: col.MetaData.TotalUncompressedSize,
 		NumValues:        col.MetaData.NumValues,
@@ -254,15 +253,6 @@ func retrieveValue(value []byte, parquetType parquet.Type) any {
 		return nil
 	}
 	return vals[0]
-}
-
-func encodingToString(encodings []parquet.Encoding) []string {
-	ret := make([]string, len(encodings))
-	for i := range encodings {
-		ret[i] = encodings[i].String()
-	}
-	sort.Strings(ret)
-	return ret
 }
 
 func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {
