@@ -352,7 +352,7 @@ func TestTypeStr(t *testing.T) {
 }
 
 func TestRepetitionTypeStr(t *testing.T) {
-	require.Equal(t, "REQUIRED", repetitionTyeStr(parquet.SchemaElement{RepetitionType: nil}))
+	require.Equal(t, "REQUIRED", repetitionTypeStr(parquet.SchemaElement{RepetitionType: nil}))
 
 	testCases := map[string]parquet.FieldRepetitionType{
 		"OPTIONAL": parquet.FieldRepetitionType_OPTIONAL,
@@ -362,7 +362,7 @@ func TestRepetitionTypeStr(t *testing.T) {
 
 	for expected, repetitionType := range testCases {
 		t.Run(expected, func(t *testing.T) {
-			require.Equal(t, expected, repetitionTyeStr(parquet.SchemaElement{RepetitionType: &repetitionType}))
+			require.Equal(t, expected, repetitionTypeStr(parquet.SchemaElement{RepetitionType: &repetitionType}))
 		})
 	}
 }

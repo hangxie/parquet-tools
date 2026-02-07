@@ -12,7 +12,7 @@ import (
 )
 
 // current writer state
-type TrunkWriter struct {
+type trunkWriter struct {
 	fileIndex    int64
 	targetFile   string
 	writer       *writer.ParquetWriter
@@ -32,7 +32,7 @@ type Cmd struct {
 	pio.ReadOption
 	pio.WriteOption
 
-	current TrunkWriter
+	current trunkWriter
 }
 
 func (c *Cmd) openReader() (*reader.ParquetReader, error) {

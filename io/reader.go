@@ -41,7 +41,7 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFileReader, er
 		return nil, err
 	}
 
-	var objVersion *string = nil
+	var objVersion *string
 	if option.ObjectVersion != "" {
 		objVersion = &option.ObjectVersion
 	}
