@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
@@ -190,7 +189,7 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 		"index":            index,
 		"pathInSchema":     pathInSchema,
 		"type":             col.MetaData.Type.String(),
-		"encodings":        encodingToString(col.MetaData.Encodings),
+		"encodings":        pschema.EncodingToString(col.MetaData.Encodings),
 		"compressionCodec": col.MetaData.Codec.String(),
 		"numValues":        col.MetaData.NumValues,
 		"compressedSize":   col.MetaData.TotalCompressedSize,
@@ -235,7 +234,7 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 		"columnChunkIndex": columnChunkIndex,
 		"pathInSchema":     pathInSchema,
 		"type":             col.MetaData.Type.String(),
-		"encodings":        encodingToString(col.MetaData.Encodings),
+		"encodings":        pschema.EncodingToString(col.MetaData.Encodings),
 		"compressionCodec": col.MetaData.Codec.String(),
 		"numValues":        col.MetaData.NumValues,
 		"compressedSize":   col.MetaData.TotalCompressedSize,
@@ -616,13 +615,4 @@ func (c Cmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema
 	}
 
 	return stats
-}
-
-func encodingToString(encodings []parquet.Encoding) []string {
-	ret := make([]string, len(encodings))
-	for i := range encodings {
-		ret[i] = encodings[i].String()
-	}
-	sort.Strings(ret)
-	return ret
 }
