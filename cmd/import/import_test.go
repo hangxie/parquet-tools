@@ -1,13 +1,25 @@
 package importcmd
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 
+	parquetSource "github.com/hangxie/parquet-go/v2/source"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/io"
 )
+
+type mockParquetFileWriter struct {
+	closeFunc func() error
+}
+
+func (m *mockParquetFileWriter) Write(p []byte) (int, error) { return len(p), nil }
+func (m *mockParquetFileWriter) Close() error                { return m.closeFunc() }
+func (m *mockParquetFileWriter) Create(_ string) (parquetSource.ParquetFileWriter, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 
 func TestCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
@@ -99,5 +111,38 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, tc.rowCount, reader.GetNumRows())
 			})
 		}
+	})
+}
+
+func TestCloseWriter(t *testing.T) {
+	cmd := Cmd{}
+
+	t.Run("success", func(t *testing.T) {
+		mock := &mockParquetFileWriter{closeFunc: func() error { return nil }}
+		err := cmd.closeWriter(mock)
+		require.NoError(t, err)
+	})
+
+	t.Run("non-retryable-error", func(t *testing.T) {
+		mock := &mockParquetFileWriter{closeFunc: func() error { return fmt.Errorf("some other error") }}
+		err := cmd.closeWriter(mock)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "some other error")
+	})
+
+	t.Run("retry-then-success", func(t *testing.T) {
+		callCount := 0
+		mock := &mockParquetFileWriter{
+			closeFunc: func() error {
+				callCount++
+				if callCount <= 1 {
+					return fmt.Errorf("replication in progress")
+				}
+				return nil
+			},
+		}
+		err := cmd.closeWriter(mock)
+		require.NoError(t, err)
+		require.Equal(t, 2, callCount)
 	})
 }

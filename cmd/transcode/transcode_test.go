@@ -1,6 +1,7 @@
 package transcode
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -1163,6 +1164,17 @@ func TestCmdParseFieldCompressions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestWriterContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	cmd := Cmd{ReadPageSize: 10}
+	writerChan := make(chan any)
+
+	err := cmd.writer(ctx, nil, writerChan)
+	require.ErrorIs(t, err, context.Canceled)
 }
 
 func BenchmarkTranscodeCmd(b *testing.B) {

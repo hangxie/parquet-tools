@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hangxie/parquet-go/v2/common"
@@ -486,4 +487,45 @@ func TestPrintJSON(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReadPageValuesEdgeCases(t *testing.T) {
+	cmd := Cmd{}
+
+	t.Run("index-page-returns-empty", func(t *testing.T) {
+		col := &parquet.ColumnChunk{MetaData: &parquet.ColumnMetaData{}}
+		pages := []PageInfo{{Type: parquet.PageType_INDEX_PAGE}}
+
+		values, err := cmd.readPageValues(nil, 0, 0, col, nil, pages, 0)
+		require.NoError(t, err)
+		require.Equal(t, []any{}, values)
+	})
+
+	t.Run("page-index-out-of-range", func(t *testing.T) {
+		col := &parquet.ColumnChunk{MetaData: &parquet.ColumnMetaData{}}
+		pages := []PageInfo{{Type: parquet.PageType_DATA_PAGE}}
+
+		_, err := cmd.readPageValues(nil, 0, 0, col, nil, pages, 5)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "page index 5 out of range")
+	})
+
+	t.Run("nil-num-values-error", func(t *testing.T) {
+		fileReader, err := pio.NewParquetFileReader("../../testdata/good.parquet", pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() { _ = fileReader.PFile.Close() }()
+
+		col := fileReader.Footer.RowGroups[0].Columns[0]
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+
+		schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{})
+		require.NoError(t, err)
+		schemaNode := schemaRoot.GetPathMap()[pathKey]
+
+		pages := []PageInfo{{Type: parquet.PageType_DATA_PAGE, NumValues: nil}}
+
+		_, err = cmd.readPageValues(fileReader, 0, 0, col, schemaNode, pages, 0)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "unable to get numValues for page")
+	})
 }

@@ -1,6 +1,7 @@
 package merge
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -170,6 +171,17 @@ func TestCmd(t *testing.T) {
 		})
 		require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/merge-optional-fields-json.json"), stdout)
 	})
+}
+
+func TestWriterContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	cmd := Cmd{ReadPageSize: 10}
+	writerChan := make(chan any)
+
+	err := cmd.writer(ctx, nil, writerChan)
+	require.ErrorIs(t, err, context.Canceled)
 }
 
 func BenchmarkMergeCmd(b *testing.B) {
