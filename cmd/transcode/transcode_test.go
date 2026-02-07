@@ -13,6 +13,7 @@ import (
 	"github.com/hangxie/parquet-tools/cmd/schema"
 
 	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 func TestCmd(t *testing.T) {
@@ -788,8 +789,6 @@ func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
 }
 
 func TestCmdIsEncodingCompatible(t *testing.T) {
-	cmd := Cmd{}
-
 	testCases := []struct {
 		encoding string
 		dataType string
@@ -879,7 +878,7 @@ func TestCmdIsEncodingCompatible(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.encoding+"-"+tc.dataType, func(t *testing.T) {
-			result := cmd.isEncodingCompatible(tc.encoding, tc.dataType)
+			result := pschema.IsEncodingCompatible(tc.encoding, tc.dataType)
 			require.Equal(t, tc.expected, result, "encoding=%s, type=%s", tc.encoding, tc.dataType)
 		})
 	}
@@ -993,8 +992,6 @@ func TestCmdParseFieldEncodings(t *testing.T) {
 }
 
 func TestCmd_getAllowedEncodings(t *testing.T) {
-	cmd := Cmd{}
-
 	testCases := []struct {
 		name              string
 		dataType          string
@@ -1067,7 +1064,7 @@ func TestCmd_getAllowedEncodings(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := cmd.getAllowedEncodings(tc.dataType)
+			result := pschema.GetAllowedEncodings(tc.dataType)
 			require.Equal(t, tc.expectedEncodings, result)
 		})
 	}

@@ -832,6 +832,134 @@ func TestEncodingToString(t *testing.T) {
 	}
 }
 
+func TestIsEncodingCompatible(t *testing.T) {
+	testCases := []struct {
+		encoding string
+		dataType string
+		expected bool
+	}{
+		// PLAIN works with all types
+		{"PLAIN", "INT32", true},
+		{"PLAIN", "INT64", true},
+		{"PLAIN", "FLOAT", true},
+		{"PLAIN", "DOUBLE", true},
+		{"PLAIN", "BOOLEAN", true},
+		{"PLAIN", "BYTE_ARRAY", true},
+		{"PLAIN", "FIXED_LEN_BYTE_ARRAY", true},
+
+		// Empty data type (struct/group) should return false
+		{"PLAIN", "", false},
+		{"RLE", "", false},
+
+		// Integer encodings
+		{"DELTA_BINARY_PACKED", "INT32", true},
+		{"DELTA_BINARY_PACKED", "INT64", true},
+		{"DELTA_BINARY_PACKED", "FLOAT", false},
+
+		// Byte array encodings
+		{"DELTA_LENGTH_BYTE_ARRAY", "BYTE_ARRAY", true},
+		{"DELTA_LENGTH_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", false},
+		{"DELTA_BYTE_ARRAY", "BYTE_ARRAY", true},
+		{"DELTA_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", true},
+
+		// Boolean encodings
+		{"RLE", "BOOLEAN", true},
+		{"BIT_PACKED", "BOOLEAN", true},
+
+		// Float/Double encodings
+		{"BYTE_STREAM_SPLIT", "FLOAT", true},
+		{"BYTE_STREAM_SPLIT", "DOUBLE", true},
+		{"BYTE_STREAM_SPLIT", "INT32", true},
+		{"BYTE_STREAM_SPLIT", "INT64", true},
+		{"BYTE_STREAM_SPLIT", "FIXED_LEN_BYTE_ARRAY", true},
+		{"BYTE_STREAM_SPLIT", "BYTE_ARRAY", false},
+		{"BYTE_STREAM_SPLIT", "BOOLEAN", false},
+
+		// Dictionary encodings
+		{"PLAIN_DICTIONARY", "INT32", true},
+		{"PLAIN_DICTIONARY", "BOOLEAN", true},
+		{"RLE_DICTIONARY", "FLOAT", true},
+		{"RLE_DICTIONARY", "BYTE_ARRAY", true},
+
+		// Case insensitivity
+		{"plain", "int32", true},
+		{"rle", "boolean", true},
+
+		// Unknown
+		{"UNKNOWN_ENCODING", "INT32", false},
+		{"PLAIN", "UNKNOWN_TYPE", true},
+		{"RLE", "INT96", false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.encoding+"-"+tc.dataType, func(t *testing.T) {
+			result := IsEncodingCompatible(tc.encoding, tc.dataType)
+			require.Equal(t, tc.expected, result, "encoding=%s, type=%s", tc.encoding, tc.dataType)
+		})
+	}
+}
+
+func TestGetAllowedEncodings(t *testing.T) {
+	testCases := []struct {
+		name              string
+		dataType          string
+		expectedEncodings []string
+	}{
+		{
+			name:              "BOOLEAN",
+			dataType:          "BOOLEAN",
+			expectedEncodings: []string{"PLAIN", "BIT_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "BYTE_ARRAY",
+			dataType:          "BYTE_ARRAY",
+			expectedEncodings: []string{"PLAIN", "DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "INT32",
+			dataType:          "INT32",
+			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "INT64",
+			dataType:          "INT64",
+			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "FLOAT",
+			dataType:          "FLOAT",
+			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "DOUBLE",
+			dataType:          "DOUBLE",
+			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "FIXED_LEN_BYTE_ARRAY",
+			dataType:          "FIXED_LEN_BYTE_ARRAY",
+			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "DELTA_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+		{
+			name:              "unknown type",
+			dataType:          "UNKNOWN_TYPE",
+			expectedEncodings: []string{"PLAIN"},
+		},
+		{
+			name:              "lowercase input",
+			dataType:          "byte_array",
+			expectedEncodings: []string{"PLAIN", "DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := GetAllowedEncodings(tc.dataType)
+			require.Equal(t, tc.expectedEncodings, result)
+		})
+	}
+}
+
 func TestGetTagMapWithCompression(t *testing.T) {
 	option := pio.ReadOption{}
 	pr, err := pio.NewParquetFileReader("../testdata/good.parquet", option)
