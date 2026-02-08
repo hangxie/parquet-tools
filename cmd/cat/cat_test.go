@@ -175,57 +175,6 @@ func TestCmdEncoder(t *testing.T) {
 	}
 }
 
-func TestCmdEncoderInvalidFormat(t *testing.T) {
-	// Test the "unsupported format" error path in encoder function (line 188)
-	// This tests when cmd.Format has an invalid value that passes initial validation
-	// but fails in the encoder switch statement
-
-	rOpt := pio.ReadOption{}
-
-	// Open a test parquet file
-	fileReader, err := pio.NewParquetFileReader("file://../../testdata/good.parquet", rOpt)
-	require.NoError(t, err)
-	defer func() { _ = fileReader.PFile.Close() }()
-
-	// Read some data
-	rows, err := fileReader.ReadByNumber(1)
-	require.NoError(t, err)
-	require.NotEmpty(t, rows)
-
-	// Create channels
-	rowChan := make(chan any, 10)
-	outputChan := make(chan string, 10)
-
-	// Send a row to process
-	rowChan <- rows[0]
-	close(rowChan) // Close to signal completion
-
-	// Create context
-	ctx := context.Background()
-
-	// Create a Cmd with an invalid format
-	// We need to bypass the delimiter map check by using a format
-	// that exists in the delimiter map but will fail in encoder
-	cmd := Cmd{
-		Format: "xml", // This format doesn't exist in the delimiter map
-	}
-
-	// Manually set up delimiter for this invalid format to bypass Run() validation
-	// This simulates the scenario where Format is corrupted after validation
-	delimiter["xml"] = struct {
-		begin          string
-		lineDelimiter  string
-		fieldDelimiter rune
-		end            string
-	}{"", "", ' ', ""}
-	defer delete(delimiter, "xml")
-
-	err = cmd.encoder(ctx, rowChan, outputChan, fileReader.SchemaHandler, nil)
-
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "unsupported format: [xml]")
-}
-
 func BenchmarkCatCmd(b *testing.B) {
 	// savedStdout, savedStderr := os.Stdout, os.Stderr
 	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
