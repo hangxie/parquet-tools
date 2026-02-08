@@ -26,7 +26,7 @@ import (
 type ReadOption struct {
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
-	HTTPIgnoreTLSError     bool              `help:"(HTTP URI only) ignore TLS error." default:"false"`
+	HTTPIgnoreTLSError     bool              `help:"(HTTP and S3 URI) ignore TLS error." default:"false"`
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
 }
@@ -36,7 +36,7 @@ func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFileReader, er
 }
 
 func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
-	s3Client, err := getS3Client(u.Host, option.Anonymous)
+	s3Client, err := getS3Client(u.Host, option.Anonymous, option.HTTPIgnoreTLSError)
 	if err != nil {
 		return nil, err
 	}

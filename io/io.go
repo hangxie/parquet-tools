@@ -45,12 +45,23 @@ func parseURI(uri string) (*url.URL, error) {
 	return u, nil
 }
 
-func getS3BucketRegion(bucket string, isPublic bool) (string, error) {
-	if strings.Contains(bucket, ".") {
-		// AWS' wildcard cert covers *.s3.amazonaws.com, so if the bucket name contains dot the cert will be invalid
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+func newTLSInsecureHTTPClient() *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 	}
-	resp, err := http.Get(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
+}
+
+func getS3BucketRegion(bucket string, isPublic, ignoreTLS bool) (string, error) {
+	client := http.DefaultClient
+	if strings.Contains(bucket, ".") && ignoreTLS {
+		// AWS' wildcard cert covers *.s3.amazonaws.com, so if the bucket name
+		// contains a dot the cert will be invalid. Use a dedicated client with
+		// TLS verification disabled instead of mutating http.DefaultTransport.
+		client = newTLSInsecureHTTPClient()
+	}
+	resp, err := client.Get(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
 	if err != nil {
 		return "", fmt.Errorf("unable to get region for S3 bucket %s: %w", bucket, err)
 	}
@@ -73,17 +84,27 @@ func getS3BucketRegion(bucket string, isPublic bool) (string, error) {
 	}
 }
 
-func getS3Client(bucket string, isPublic bool) (*s3.Client, error) {
-	region, err := getS3BucketRegion(bucket, isPublic)
+func getS3Client(bucket string, isPublic, ignoreTLS bool) (*s3.Client, error) {
+	region, err := getS3BucketRegion(bucket, isPublic, ignoreTLS)
 	if err != nil {
 		return nil, fmt.Errorf("unable to access to [%s]: %w", bucket, err)
 	}
+
+	needCustomHTTP := strings.Contains(bucket, ".") && ignoreTLS
 	if isPublic {
-		return s3.NewFromConfig(aws.Config{Region: region}), nil
+		cfg := aws.Config{Region: region}
+		if needCustomHTTP {
+			cfg.HTTPClient = newTLSInsecureHTTPClient()
+		}
+		return s3.NewFromConfig(cfg), nil
 	}
 
 	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithDefaultRegion("us-east-1"))
+	opts := []func(*config.LoadOptions) error{config.WithDefaultRegion("us-east-1")}
+	if needCustomHTTP {
+		opts = append(opts, config.WithHTTPClient(newTLSInsecureHTTPClient()))
+	}
+	cfg, err := config.LoadDefaultConfig(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config to determine bucket region: %w", err)
 	}
