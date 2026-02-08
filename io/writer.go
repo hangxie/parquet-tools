@@ -110,6 +110,23 @@ func NewParquetFileWriter(uri string) (source.ParquetFileWriter, error) {
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
+func configureWriter(pw *writer.ParquetWriter, option WriteOption) error {
+	codec, err := compressionCodec(option.Compression)
+	if err != nil {
+		return err
+	}
+	pw.CompressionType = codec
+	pw.DataPageVersion = option.DataPageVersion
+	pw.PageSize = option.PageSize
+	pw.RowGroupSize = option.RowGroupSize
+	if option.ParallelNumber == 0 {
+		pw.NP = int64(runtime.NumCPU())
+	} else {
+		pw.NP = option.ParallelNumber
+	}
+	return nil
+}
+
 func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVWriter, error) {
 	fileWriter, err := NewParquetFileWriter(uri)
 	if err != nil {
@@ -121,19 +138,9 @@ func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVW
 		_ = fileWriter.Close()
 		return nil, err
 	}
-	codec, err := compressionCodec(option.Compression)
-	if err != nil {
+	if err := configureWriter(&pw.ParquetWriter, option); err != nil {
 		_ = fileWriter.Close()
 		return nil, err
-	}
-	pw.CompressionType = codec
-	pw.DataPageVersion = option.DataPageVersion
-	pw.PageSize = option.PageSize
-	pw.RowGroupSize = option.RowGroupSize
-	if option.ParallelNumber == 0 {
-		pw.NP = int64(runtime.NumCPU())
-	} else {
-		pw.NP = option.ParallelNumber
 	}
 	return pw, nil
 }
@@ -149,19 +156,9 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 		_ = fileWriter.Close()
 		return nil, err
 	}
-	codec, err := compressionCodec(option.Compression)
-	if err != nil {
+	if err := configureWriter(&pw.ParquetWriter, option); err != nil {
 		_ = fileWriter.Close()
 		return nil, err
-	}
-	pw.CompressionType = codec
-	pw.DataPageVersion = option.DataPageVersion
-	pw.PageSize = option.PageSize
-	pw.RowGroupSize = option.RowGroupSize
-	if option.ParallelNumber == 0 {
-		pw.NP = int64(runtime.NumCPU())
-	} else {
-		pw.NP = option.ParallelNumber
 	}
 	return pw, nil
 }
@@ -177,19 +174,9 @@ func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.Pa
 		_ = fileWriter.Close()
 		return nil, err
 	}
-	codec, err := compressionCodec(option.Compression)
-	if err != nil {
+	if err := configureWriter(pw, option); err != nil {
 		_ = fileWriter.Close()
 		return nil, err
-	}
-	pw.CompressionType = codec
-	pw.DataPageVersion = option.DataPageVersion
-	pw.PageSize = option.PageSize
-	pw.RowGroupSize = option.RowGroupSize
-	if option.ParallelNumber == 0 {
-		pw.NP = int64(runtime.NumCPU())
-	} else {
-		pw.NP = option.ParallelNumber
 	}
 	return pw, nil
 }
