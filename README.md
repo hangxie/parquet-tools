@@ -318,7 +318,7 @@ parquet-tools: error: failed to open S3 object [s3://daylight-openstreetmap/parq
 > [!NOTE]
 > S3 bucket names containing dots (e.g., `my.bucket.name`) cause TLS certificate validation failures when accessed via [virtual-hosted style URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html) because AWS's wildcard certificate `*.s3.amazonaws.com` does not cover multi-level subdomains. Use the `--http-ignore-tls-error` flag to access such buckets. AWS has [postponed deprecation of path-style access](https://aws.amazon.com/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story/) multiple times, but virtual-hosted style remains the default for newer buckets.
 
-Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
+`parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much faster than downloading the file from S3 bucket and running `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 
 #### GCS Bucket
 
@@ -1142,7 +1142,7 @@ $ parquet-tools row-count testdata/good.parquet
 
 #### JSON Format
 
-JSON format schema can be used directly in parquet-go based golang program like [this example](https://github.com/xitongsys/parquet-go/blob/master/example/json_schema.go):
+JSON format schema can be used directly in [parquet-go](https://github.com/hangxie/parquet-go) based Go programs:
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
@@ -1605,7 +1605,6 @@ This project is inspired by:
 Some test cases are from:
 
 * https://registry.opendata.aws/binding-db/
-* https://github.com/xitongsys/parquet-go/tree/master/example/
 * https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet
 * https://azure.microsoft.com/en-us/services/open-datasets/catalog/
 * https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
