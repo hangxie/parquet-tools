@@ -3,9 +3,12 @@ package io
 import (
 	"encoding/base64"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v2/writer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -169,6 +172,58 @@ func TestNewGenericWriter(t *testing.T) {
 			require.Error(t, err)
 			require.Nil(t, pw)
 			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
+}
+
+func TestConfigureWriter(t *testing.T) {
+	testCases := map[string]struct {
+		option       WriteOption
+		errMsg       string
+		expectedNP   int64
+		expectedComp parquet.CompressionCodec
+	}{
+		"valid-snappy": {
+			option:       WriteOption{Compression: "SNAPPY", DataPageVersion: 2, PageSize: 2048, RowGroupSize: 4096, ParallelNumber: 4},
+			expectedNP:   4,
+			expectedComp: parquet.CompressionCodec_SNAPPY,
+		},
+		"valid-gzip": {
+			option:       WriteOption{Compression: "GZIP", DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048, ParallelNumber: 2},
+			expectedNP:   2,
+			expectedComp: parquet.CompressionCodec_GZIP,
+		},
+		"parallel-zero-defaults-to-numcpu": {
+			option:       WriteOption{Compression: "SNAPPY", ParallelNumber: 0},
+			expectedNP:   int64(runtime.NumCPU()),
+			expectedComp: parquet.CompressionCodec_SNAPPY,
+		},
+		"invalid-compression": {
+			option: WriteOption{Compression: "INVALID"},
+			errMsg: "not a valid CompressionCodec",
+		},
+		"unsupported-lzo": {
+			option: WriteOption{Compression: "LZO"},
+			errMsg: "compression is not supported at this moment",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			pw := &writer.ParquetWriter{}
+			err := configureWriter(pw, tc.option)
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedComp, pw.CompressionType)
+			require.Equal(t, tc.option.DataPageVersion, pw.DataPageVersion)
+			require.Equal(t, tc.option.PageSize, pw.PageSize)
+			require.Equal(t, tc.option.RowGroupSize, pw.RowGroupSize)
+			require.Equal(t, tc.expectedNP, pw.NP)
 		})
 	}
 }
