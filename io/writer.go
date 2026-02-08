@@ -36,7 +36,7 @@ func newLocalWriter(u *url.URL) (source.ParquetFileWriter, error) {
 }
 
 func newAWSS3Writer(u *url.URL) (source.ParquetFileWriter, error) {
-	s3Client, err := getS3Client(u.Host, false)
+	s3Client, err := getS3Client(u.Host, false, false)
 	if err != nil {
 		return nil, err
 	}
