@@ -8,9 +8,7 @@ import (
 	"reflect"
 
 	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/hangxie/parquet-go/v2/types"
-	"github.com/hangxie/parquet-go/v2/writer"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/sync/errgroup"
 
@@ -91,13 +89,13 @@ func (c Cmd) Run() (retErr error) {
 	writerGroup, _ := errgroup.WithContext(ctx)
 	writerChan := make(chan any, c.ReadPageSize)
 	writerGroup.Go(func() error {
-		return c.writer(ctx, fileWriter, writerChan)
+		return pio.PipelineWriter(ctx, fileWriter, writerChan, c.URI)
 	})
 
 	// Single reader goroutine
 	readerGroup, _ := errgroup.WithContext(ctx)
 	readerGroup.Go(func() error {
-		return c.reader(ctx, fileReader, converter, writerChan)
+		return pio.PipelineReader(ctx, fileReader, writerChan, c.Source, c.ReadPageSize, converter.Convert)
 	})
 
 	if err := readerGroup.Wait(); err != nil {
@@ -164,46 +162,6 @@ func (c Cmd) getActiveRules() []*RetypeRule {
 	}
 
 	return rules
-}
-
-func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case row, more := <-writerChan:
-			if !more {
-				return nil
-			}
-
-			if err := fileWriter.Write(row); err != nil {
-				return fmt.Errorf("failed to write data to [%s]: %w", c.URI, err)
-			}
-		}
-	}
-}
-
-func (c Cmd) reader(ctx context.Context, fileReader *reader.ParquetReader, converter *Converter, writerChan chan any) error {
-	for {
-		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
-		if err != nil {
-			return fmt.Errorf("failed to read from [%s]: %w", c.Source, err)
-		}
-		if len(rows) == 0 {
-			return nil
-		}
-		for _, row := range rows {
-			row, err = converter.Convert(row)
-			if err != nil {
-				return fmt.Errorf("failed to convert row: %w", err)
-			}
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case writerChan <- row:
-			}
-		}
-	}
 }
 
 // RetypeRule defines a transformation rule for converting Parquet column types.

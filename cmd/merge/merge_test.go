@@ -177,10 +177,9 @@ func TestWriterContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	cmd := Cmd{ReadPageSize: 10}
 	writerChan := make(chan any)
 
-	err := cmd.writer(ctx, nil, writerChan)
+	err := pio.PipelineWriter(ctx, nil, writerChan, "test-target")
 	require.ErrorIs(t, err, context.Canceled)
 }
 

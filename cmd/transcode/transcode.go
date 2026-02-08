@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/writer"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -151,43 +149,6 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 	return nil
 }
 
-func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case row, more := <-writerChan:
-			if !more {
-				return nil
-			}
-
-			if err := fileWriter.Write(row); err != nil {
-				return fmt.Errorf("failed to write data to [%s]: %w", c.URI, err)
-			}
-		}
-	}
-}
-
-func (c Cmd) reader(ctx context.Context, fileReader *reader.ParquetReader, writerChan chan any) error {
-	for {
-		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
-		if err != nil {
-			return fmt.Errorf("failed to read from [%s]: %w", c.Source, err)
-		}
-		if len(rows) == 0 {
-			return nil
-		}
-		for _, row := range rows {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				writerChan <- row
-			}
-		}
-	}
-}
-
 // Run does actual transcode job
 func (c Cmd) Run() (retErr error) {
 	if c.ReadPageSize < 1 {
@@ -250,13 +211,13 @@ func (c Cmd) Run() (retErr error) {
 	writerGroup, _ := errgroup.WithContext(ctx)
 	writerChan := make(chan any, c.ReadPageSize)
 	writerGroup.Go(func() error {
-		return c.writer(ctx, fileWriter, writerChan)
+		return pio.PipelineWriter(ctx, fileWriter, writerChan, c.URI)
 	})
 
 	// Single reader goroutine
 	readerGroup, _ := errgroup.WithContext(ctx)
 	readerGroup.Go(func() error {
-		return c.reader(ctx, fileReader, writerChan)
+		return pio.PipelineReader(ctx, fileReader, writerChan, c.Source, c.ReadPageSize, nil)
 	})
 
 	if err := readerGroup.Wait(); err != nil {

@@ -7,7 +7,6 @@ import (
 	"runtime"
 
 	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/writer"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -23,42 +22,6 @@ type Cmd struct {
 	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
-}
-
-func (c Cmd) writer(ctx context.Context, fileWriter *writer.ParquetWriter, writerChan chan any) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case row, more := <-writerChan:
-			if !more {
-				return nil
-			}
-			if err := fileWriter.Write(row); err != nil {
-				return fmt.Errorf("failed to write data from to [%s]: %w", c.URI, err)
-			}
-		}
-	}
-}
-
-func (c Cmd) reader(ctx context.Context, source string, fileReader *reader.ParquetReader, writerChan chan any) error {
-	for {
-		rows, err := fileReader.ReadByNumber(c.ReadPageSize)
-		if err != nil {
-			return fmt.Errorf("failed to read from [%s]: %w", source, err)
-		}
-		if len(rows) == 0 {
-			return nil
-		}
-		for _, row := range rows {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				writerChan <- row
-			}
-		}
-	}
 }
 
 // Run does actual merge job
@@ -99,7 +62,7 @@ func (c Cmd) Run() (retErr error) {
 	writerGroup, _ := errgroup.WithContext(ctx)
 	writerChan := make(chan any)
 	writerGroup.Go(func() error {
-		return c.writer(ctx, fileWriter, writerChan)
+		return pio.PipelineWriter(ctx, fileWriter, writerChan, c.URI)
 	})
 
 	var concurrencyChan chan struct{}
@@ -117,7 +80,7 @@ func (c Cmd) Run() (retErr error) {
 			defer func() {
 				<-concurrencyChan
 			}()
-			return c.reader(ctx, c.Source[i], fileReaders[i], writerChan)
+			return pio.PipelineReader(ctx, fileReaders[i], writerChan, c.Source[i], c.ReadPageSize, nil)
 		})
 	}
 

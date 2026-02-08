@@ -747,10 +747,9 @@ func TestWriterContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	cmd := Cmd{ReadPageSize: 10}
 	writerChan := make(chan any)
 
-	err := cmd.writer(ctx, nil, writerChan)
+	err := pio.PipelineWriter(ctx, nil, writerChan, "test-target")
 	require.ErrorIs(t, err, context.Canceled)
 }
 
@@ -762,10 +761,9 @@ func TestReaderContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	cmd := Cmd{ReadPageSize: 10, Source: "test"}
 	converter := NewConverter(nil, nil)
 	writerChan := make(chan any) // unbuffered, no receiver
 
-	err = cmd.reader(ctx, fileReader, converter, writerChan)
+	err = pio.PipelineReader(ctx, fileReader, writerChan, "test", 10, converter.Convert)
 	require.ErrorIs(t, err, context.Canceled)
 }
