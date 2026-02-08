@@ -48,6 +48,7 @@ to the parquet-tools Go CLI project.
 
 ## Contribution Workflow Norms
 
+- **Always commit after completing a task.** Once `make all` passes, create a commit immediately — do not wait to be asked.
 - Commit messages should follow **Conventional Commits**.
 - Avoid breaking backward compatibility without clear migration notes.
 - Maintain high-quality, reviewable commits after completing each logical phase (plan, test, implement, document).
