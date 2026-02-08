@@ -315,6 +315,9 @@ parquet-tools: error: failed to open S3 object [s3://daylight-openstreetmap/parq
 > [!TIP]
 > According to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), status code for non-existent object or version will be 403 instead of 404 if the caller does not have permission to `ListBucket`, or return 400 if bucket does not have version enabled.
 
+> [!NOTE]
+> S3 bucket names containing dots (e.g., `my.bucket.name`) cause TLS certificate validation failures when accessed via [virtual-hosted style URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html) because AWS's wildcard certificate `*.s3.amazonaws.com` does not cover multi-level subdomains. Use the `--http-ignore-tls-error` flag to access such buckets. AWS has [postponed deprecation of path-style access](https://aws.amazon.com/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story/) multiple times, but virtual-hosted style remains the default for newer buckets.
+
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 
 #### GCS Bucket
