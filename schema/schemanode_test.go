@@ -391,6 +391,8 @@ func TestOrderedTags(t *testing.T) {
 		"encoding",
 		"compression",
 		"omitstats",
+		"bloomfilter",
+		"bloomfiltersize",
 	}
 
 	// Get the ordered tags
