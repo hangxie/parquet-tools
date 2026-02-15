@@ -157,6 +157,15 @@ $PT schema --format json "$TESTDATA_DIR/unknown-type.parquet" | format_json > "$
 # schema-unknown-type-go.txt
 $PT schema --format go "$TESTDATA_DIR/unknown-type.parquet" > "$GOLDEN_DIR/schema-unknown-type-go.txt"
 
+# schema-bloom-filter-raw.json
+$PT schema --format raw "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/schema-bloom-filter-raw.json"
+
+# schema-bloom-filter-json.json
+$PT schema --format json "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/schema-bloom-filter-json.json"
+
+# schema-bloom-filter-go.txt
+$PT schema --format go "$TESTDATA_DIR/bloom-filter.parquet" > "$GOLDEN_DIR/schema-bloom-filter-go.txt"
+
 # NOTE: schema-list-variants-*.json files are manually maintained test fixtures
 # (not generated from a parquet file). They are used to test JSON schema parsing.
 
@@ -182,6 +191,9 @@ $PT meta "$TESTDATA_DIR/geospatial.parquet" | format_json > "$GOLDEN_DIR/meta-ge
 
 # meta-row-group-raw.json
 $PT meta "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/meta-row-group-raw.json"
+
+# meta-bloom-filter-raw.json
+$PT meta "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/meta-bloom-filter-raw.json"
 
 # ============================================================================
 # inspect command golden files
@@ -241,6 +253,12 @@ $PT inspect --row-group 0 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GO
 
 # inspect-all-types-interval-column.json
 $PT inspect --row-group 0 --column-chunk 39 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-interval-column.json"
+
+# inspect-bloom-filter-row-group-0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-row-group-0.json"
+
+# inspect-bloom-filter-column-chunk-0.json
+$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-column-chunk-0.json"
 
 # ============================================================================
 # split/merge command golden files (these use cat to verify output)
