@@ -3,8 +3,10 @@ package transcode
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/hangxie/parquet-go/v2/bloomfilter"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"golang.org/x/sync/errgroup"
 
@@ -15,6 +17,7 @@ import (
 // Cmd is a kong command for transcode
 type Cmd struct {
 	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
+	FieldBloomFilter []string `help:"Field-specific bloom filter in 'field.path=true/false/<size>' format. Can be specified multiple times." name:"field-bloom-filter"`
 	FieldCompression []string `help:"Field-specific compression in 'field.path=CODEC' format. Can be specified multiple times."`
 	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
 	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
@@ -110,8 +113,44 @@ func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 	return result, nil
 }
 
-func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions map[string]string, globalCompression string) error {
-	// Add custom parquet-go writer directives (encoding, compression, omitstats)
+// parseFieldBloomFilters parses field-specific bloom filter specifications from "field.path=VALUE" format.
+// VALUE can be: "false" (disable), "true" (enable with default size), or a number (enable with size in bytes).
+func (c Cmd) parseFieldBloomFilters() (map[string]string, error) {
+	result := make(map[string]string)
+	for _, spec := range c.FieldBloomFilter {
+		parts := strings.SplitN(spec, "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid field bloom filter format [%s], expected 'field.path=VALUE'", spec)
+		}
+		fieldPath := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		if fieldPath == "" {
+			return nil, fmt.Errorf("empty field path in [%s]", spec)
+		}
+		if value == "" {
+			return nil, fmt.Errorf("empty value in [%s]", spec)
+		}
+
+		value = strings.ToLower(value)
+		if value != "true" && value != "false" {
+			// Must be a numeric size that is a power of 2 and at least MinBytes
+			size, err := strconv.Atoi(value)
+			if err != nil || size < bloomfilter.MinBytes {
+				return nil, fmt.Errorf("invalid bloom filter value [%s] for field [%s]: must be true, false, or a power of 2 (minimum %d)", value, fieldPath, bloomfilter.MinBytes)
+			}
+			if size&(size-1) != 0 {
+				return nil, fmt.Errorf("invalid bloom filter size [%s] for field [%s]: must be a power of 2", value, fieldPath)
+			}
+		}
+
+		result[fieldPath] = value
+	}
+	return result, nil
+}
+
+func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fieldCompressions, fieldBloomFilters map[string]string, globalCompression string) error {
+	// Add custom parquet-go writer directives (encoding, compression, omitstats, bloom filter)
 	// Only apply to leaf nodes (not struct/group types)
 	if schemaTree.Type != nil {
 		// Build field path from ExNamePath (skip root element)
@@ -138,11 +177,26 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 		if c.OmitStats != "" {
 			schemaTree.OmitStats = c.OmitStats
 		}
+
+		// Apply field-specific bloom filter if specified
+		if bloomFilter, found := fieldBloomFilters[fieldPath]; found {
+			if bloomFilter == "false" {
+				schemaTree.BloomFilter = ""
+				schemaTree.BloomFilterSize = ""
+			} else if bloomFilter == "true" {
+				schemaTree.BloomFilter = "true"
+				schemaTree.BloomFilterSize = ""
+			} else {
+				// Numeric size value
+				schemaTree.BloomFilter = "true"
+				schemaTree.BloomFilterSize = bloomFilter
+			}
+		}
 	}
 
 	// Recursively process children
 	for _, child := range schemaTree.Children {
-		if err := c.modifySchemaTree(child, fieldEncodings, fieldCompressions, globalCompression); err != nil {
+		if err := c.modifySchemaTree(child, fieldEncodings, fieldCompressions, fieldBloomFilters, globalCompression); err != nil {
 			return err
 		}
 	}
@@ -167,6 +221,12 @@ func (c Cmd) Run() (retErr error) {
 		return err
 	}
 
+	// Parse and validate field-specific bloom filters
+	fieldBloomFilters, err := c.parseFieldBloomFilters()
+	if err != nil {
+		return err
+	}
+
 	// Open source file
 	fileReader, err := pio.NewParquetFileReader(c.Source, c.ReadOption)
 	if err != nil {
@@ -184,7 +244,7 @@ func (c Cmd) Run() (retErr error) {
 
 	// Modify schema tree: custom writer directives (encoding, compression, omitstats)
 	// Preserve source encodings by default, but allow user-specified values to override
-	if err := c.modifySchemaTree(schemaTree, fieldEncodings, fieldCompressions, c.Compression); err != nil {
+	if err := c.modifySchemaTree(schemaTree, fieldEncodings, fieldCompressions, fieldBloomFilters, c.Compression); err != nil {
 		return err
 	}
 
