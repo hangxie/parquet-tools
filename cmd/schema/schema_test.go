@@ -47,6 +47,9 @@ func TestCmd(t *testing.T) {
 		"unknown-type-raw":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-raw.json"},
 		"unknown-type-json":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-json.json"},
 		"unknown-type-go":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-go.txt"},
+		"bloom-filter-raw":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "bloom-filter.parquet"}, golden: "schema-bloom-filter-raw.json"},
+		"bloom-filter-json":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "bloom-filter.parquet"}, golden: "schema-bloom-filter-json.json"},
+		"bloom-filter-go":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "bloom-filter.parquet"}, golden: "schema-bloom-filter-go.txt"},
 	}
 
 	for name, tc := range testCases {
