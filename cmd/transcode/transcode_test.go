@@ -34,6 +34,7 @@ func TestCmd(t *testing.T) {
 	t.Run("overrides-encoding-when-specified", testCmdOverridesEncodingWhenSpecified)
 	t.Run("preserves-encodings-with-compression-change", testCmdPreservesEncodingsWithCompressionChange)
 	t.Run("preserves-encodings-with-data-page-version-change", testCmdPreservesEncodingsWithDataPageVersionChange)
+	t.Run("field-bloom-filter", testCmdFieldBloomFilter)
 }
 
 func testCmdError(t *testing.T) {
@@ -1074,6 +1075,202 @@ func TestCmd_getAllowedEncodings(t *testing.T) {
 			require.Equal(t, tc.expectedEncodings, result)
 		})
 	}
+}
+
+func TestCmdParseFieldBloomFilters(t *testing.T) {
+	testCases := []struct {
+		name             string
+		fieldBloomFilter []string
+		expected         map[string]string
+		errMsg           string
+	}{
+		{
+			name:             "empty input",
+			fieldBloomFilter: []string{},
+			expected:         map[string]string{},
+		},
+		{
+			name:             "enable bloom filter",
+			fieldBloomFilter: []string{"ID=true"},
+			expected:         map[string]string{"ID": "true"},
+		},
+		{
+			name:             "disable bloom filter",
+			fieldBloomFilter: []string{"ID=false"},
+			expected:         map[string]string{"ID": "false"},
+		},
+		{
+			name:             "enable with size",
+			fieldBloomFilter: []string{"ID=2048"},
+			expected:         map[string]string{"ID": "2048"},
+		},
+		{
+			name:             "multiple fields",
+			fieldBloomFilter: []string{"ID=true", "Name=4096", "Age=false"},
+			expected:         map[string]string{"ID": "true", "Name": "4096", "Age": "false"},
+		},
+		{
+			name:             "missing equals sign",
+			fieldBloomFilter: []string{"IDtrue"},
+			errMsg:           "invalid field bloom filter format",
+		},
+		{
+			name:             "empty field path",
+			fieldBloomFilter: []string{"=true"},
+			errMsg:           "empty field path",
+		},
+		{
+			name:             "empty value",
+			fieldBloomFilter: []string{"ID="},
+			errMsg:           "empty value",
+		},
+		{
+			name:             "invalid value",
+			fieldBloomFilter: []string{"ID=maybe"},
+			errMsg:           "invalid bloom filter value",
+		},
+		{
+			name:             "not power of 2",
+			fieldBloomFilter: []string{"ID=3000"},
+			errMsg:           "must be a power of 2",
+		},
+		{
+			name:             "zero size",
+			fieldBloomFilter: []string{"ID=0"},
+			errMsg:           "invalid bloom filter value",
+		},
+		{
+			name:             "negative size",
+			fieldBloomFilter: []string{"ID=-1"},
+			errMsg:           "invalid bloom filter value",
+		},
+		{
+			name:             "below minimum size",
+			fieldBloomFilter: []string{"ID=16"},
+			errMsg:           "invalid bloom filter value",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := Cmd{FieldBloomFilter: tc.fieldBloomFilter}
+			result, err := cmd.parseFieldBloomFilters()
+
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expected, result)
+			}
+		})
+	}
+}
+
+func testCmdFieldBloomFilter(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	wOpt := pio.WriteOption{
+		Compression:     "SNAPPY",
+		DataPageVersion: 1,
+		PageSize:        1024 * 1024,
+		RowGroupSize:    128 * 1024 * 1024,
+		ParallelNumber:  0,
+	}
+	tempDir := t.TempDir()
+
+	t.Run("add bloom filter", func(t *testing.T) {
+		cmd := Cmd{
+			FieldBloomFilter: []string{"shoe_brand=true"},
+			ReadOption:       rOpt,
+			WriteOption:      wOpt,
+			ReadPageSize:     10,
+			Source:           filepath.Join("..", "..", "testdata", "good.parquet"),
+			URI:              filepath.Join(tempDir, "add-bloom.parquet"),
+		}
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify bloom filter was added
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		defer func() { _ = reader.PFile.Close() }()
+		require.Equal(t, int64(3), reader.GetNumRows())
+
+		// Check that bloom filter offset is set for the first column
+		col := reader.Footer.RowGroups[0].Columns[0]
+		require.True(t, col.MetaData.IsSetBloomFilterOffset())
+	})
+
+	t.Run("remove bloom filter", func(t *testing.T) {
+		cmd := Cmd{
+			FieldBloomFilter: []string{"ID=false"},
+			ReadOption:       rOpt,
+			WriteOption:      wOpt,
+			ReadPageSize:     10,
+			Source:           filepath.Join("..", "..", "testdata", "bloom-filter.parquet"),
+			URI:              filepath.Join(tempDir, "remove-bloom.parquet"),
+		}
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		// Verify bloom filter was removed for ID but preserved for Name and Score
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		defer func() { _ = reader.PFile.Close() }()
+		require.Equal(t, int64(10), reader.GetNumRows())
+
+		// ID should not have bloom filter
+		col := reader.Footer.RowGroups[0].Columns[0]
+		require.False(t, col.MetaData.IsSetBloomFilterOffset(), "ID should not have bloom filter")
+
+		// Name should still have bloom filter
+		col = reader.Footer.RowGroups[0].Columns[1]
+		require.True(t, col.MetaData.IsSetBloomFilterOffset(), "Name should still have bloom filter")
+	})
+
+	t.Run("add bloom filter with custom size", func(t *testing.T) {
+		cmd := Cmd{
+			FieldBloomFilter: []string{"shoe_brand=2048"},
+			ReadOption:       rOpt,
+			WriteOption:      wOpt,
+			ReadPageSize:     10,
+			Source:           filepath.Join("..", "..", "testdata", "good.parquet"),
+			URI:              filepath.Join(tempDir, "add-bloom-size.parquet"),
+		}
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		defer func() { _ = reader.PFile.Close() }()
+
+		col := reader.Footer.RowGroups[0].Columns[0]
+		require.True(t, col.MetaData.IsSetBloomFilterOffset())
+	})
+
+	t.Run("preserve bloom filter by default", func(t *testing.T) {
+		cmd := Cmd{
+			ReadOption:   rOpt,
+			WriteOption:  wOpt,
+			ReadPageSize: 10,
+			Source:       filepath.Join("..", "..", "testdata", "bloom-filter.parquet"),
+			URI:          filepath.Join(tempDir, "preserve-bloom.parquet"),
+		}
+		err := cmd.Run()
+		require.NoError(t, err)
+
+		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		require.NoError(t, err)
+		defer func() { _ = reader.PFile.Close() }()
+
+		// ID should still have bloom filter (preserved from source)
+		col := reader.Footer.RowGroups[0].Columns[0]
+		require.True(t, col.MetaData.IsSetBloomFilterOffset(), "ID bloom filter should be preserved")
+
+		// Age should not have bloom filter (was not in source)
+		col = reader.Footer.RowGroups[0].Columns[2]
+		require.False(t, col.MetaData.IsSetBloomFilterOffset(), "Age should not have bloom filter")
+	})
 }
 
 func TestCmdParseFieldCompressions(t *testing.T) {
