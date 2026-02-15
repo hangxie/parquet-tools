@@ -127,9 +127,11 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 		currSchema.ExNamePath = rootExNamePath
 		currSchema.InNamePath = rootInNamePath
 		newSchema := currSchema.JSONSchema()
-		// Strip encoding from both schemas for comparison as files may have different encodings
-		schemaJSONWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(schemaJSON, "")
-		newSchemaWithoutEncoding := regexp.MustCompile(`, encoding=[A-Z_]+`).ReplaceAllString(newSchema, "")
+		// Strip encoding and bloom filter tags from both schemas for comparison
+		// as files may have different encodings or bloom filter settings
+		stripTags := regexp.MustCompile(`, (encoding=[A-Z_]+|bloomfilter=(true|false)|bloomfiltersize=[0-9]+)`)
+		schemaJSONWithoutEncoding := stripTags.ReplaceAllString(schemaJSON, "")
+		newSchemaWithoutEncoding := stripTags.ReplaceAllString(newSchema, "")
 		if newSchemaWithoutEncoding != schemaJSONWithoutEncoding {
 			return nil, "", fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
