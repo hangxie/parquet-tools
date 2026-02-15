@@ -7,7 +7,8 @@
       "type": "INT32",
       "repetition_type": "OPTIONAL",
       "name": "id",
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT32",
@@ -16,7 +17,8 @@
       "logicalType": {
         "UNKNOWN": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -26,7 +28,8 @@
       "logicalType": {
         "STRING": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     }
   ]
 }

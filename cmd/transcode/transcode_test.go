@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,6 +17,8 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
+
+var stripCompressionRe = regexp.MustCompile(`, (compression|keycompression|valuecompression)=[A-Z0-9_]+`)
 
 func TestCmd(t *testing.T) {
 	t.Run("error", testCmdError)
@@ -593,8 +596,9 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 		require.NoError(t, schemaCmd.Run())
 	})
 
-	// Schemas should match (encodings preserved)
-	require.Equal(t, originalSchema, transcodedSchema,
+	// Encodings should be preserved (strip compression since it may differ)
+	require.Equal(t, stripCompressionRe.ReplaceAllString(originalSchema, ""),
+		stripCompressionRe.ReplaceAllString(transcodedSchema, ""),
 		"Encodings should be preserved when transcoding without field-encoding overrides")
 
 	// Verify data integrity
@@ -743,8 +747,9 @@ func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {
 		require.NoError(t, schemaCmd.Run())
 	})
 
-	// Encodings should be preserved even with different compression
-	require.Equal(t, originalSchema, transcodedSchema)
+	// Encodings should be preserved even with different compression (strip compression since it differs)
+	require.Equal(t, stripCompressionRe.ReplaceAllString(originalSchema, ""),
+		stripCompressionRe.ReplaceAllString(transcodedSchema, ""))
 }
 
 func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {

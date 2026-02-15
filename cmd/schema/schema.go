@@ -21,7 +21,7 @@ type Cmd struct {
 	CamelCase            bool   `help:"enforce go struct field name to be CamelCase" default:"false"`
 	Format               string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
 	SkipPageEncoding     bool   `help:"skip reading page encoding information" name:"skip-page-encoding" default:"false"`
-	ShowCompressionCodec bool   `help:"show compression codec for each column" name:"show-compression-codec" default:"false"`
+	ShowCompressionCodec bool   `help:"(deprecated, no effect, will be removed) compression codec is always shown" name:"show-compression-codec" default:"false"`
 	URI                  string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }
@@ -36,7 +36,7 @@ func (c Cmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding, WithCompressionCodec: c.ShowCompressionCodec})
+	schemaRoot, err := pschema.NewSchemaTree(reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding})
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "RLE"
+      "encoding": "RLE",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "INT32",
@@ -21,7 +22,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT64",
@@ -31,7 +33,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "GZIP"
     },
     {
       "type": "INT96",
@@ -41,7 +44,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "FLOAT",
@@ -51,7 +55,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "BYTE_STREAM_SPLIT"
+      "encoding": "BYTE_STREAM_SPLIT",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -64,7 +69,8 @@
       "logicalType": {
         "FLOAT16": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "DOUBLE",
@@ -74,7 +80,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "BYTE_STREAM_SPLIT"
+      "encoding": "BYTE_STREAM_SPLIT",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "BYTE_ARRAY",
@@ -84,7 +91,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -98,7 +106,8 @@
       "logicalType": {
         "ENUM": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "GZIP"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -111,7 +120,8 @@
       "logicalType": {
         "UUID": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "BYTE_ARRAY",
@@ -125,7 +135,8 @@
       "logicalType": {
         "JSON": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "BYTE_ARRAY",
@@ -139,7 +150,8 @@
       "logicalType": {
         "BSON": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "BYTE_ARRAY",
@@ -153,7 +165,8 @@
       "logicalType": {
         "JSON": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "BYTE_ARRAY",
@@ -167,7 +180,8 @@
       "logicalType": {
         "BSON": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "repetition_type": "REQUIRED",
@@ -185,7 +199,8 @@
           "scale": 0,
           "precision": 0,
           "field_id": 0,
-          "encoding": "RLE_DICTIONARY"
+          "encoding": "RLE_DICTIONARY",
+          "compression_codec": "GZIP"
         },
         {
           "type": "BYTE_ARRAY",
@@ -195,7 +210,8 @@
           "scale": 0,
           "precision": 0,
           "field_id": 0,
-          "encoding": "RLE_DICTIONARY"
+          "encoding": "RLE_DICTIONARY",
+          "compression_codec": "GZIP"
         }
       ]
     },
@@ -207,7 +223,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "BYTE_ARRAY",
@@ -221,7 +238,8 @@
       "logicalType": {
         "STRING": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "BYTE_ARRAY",
@@ -235,7 +253,8 @@
       "logicalType": {
         "STRING": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "INT32",
@@ -252,7 +271,8 @@
           "isSigned": true
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "INT32",
@@ -269,7 +289,8 @@
           "isSigned": true
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT32",
@@ -286,7 +307,8 @@
           "isSigned": true
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "GZIP"
     },
     {
       "type": "INT64",
@@ -303,7 +325,8 @@
           "isSigned": true
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "INT32",
@@ -320,7 +343,8 @@
           "isSigned": false
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "INT32",
@@ -337,7 +361,8 @@
           "isSigned": false
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "INT32",
@@ -354,7 +379,8 @@
           "isSigned": false
         }
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "INT64",
@@ -371,7 +397,8 @@
           "isSigned": false
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT32",
@@ -385,7 +412,8 @@
       "logicalType": {
         "DATE": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "GZIP"
     },
     {
       "type": "INT32",
@@ -399,7 +427,8 @@
       "logicalType": {
         "DATE": {}
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "INT32",
@@ -418,7 +447,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "INT32",
@@ -437,7 +467,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "INT64",
@@ -456,7 +487,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "INT64",
@@ -475,7 +507,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT64",
@@ -493,7 +526,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "GZIP"
     },
     {
       "type": "INT64",
@@ -512,7 +546,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "INT64",
@@ -531,7 +566,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "INT64",
@@ -550,7 +586,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "INT64",
@@ -569,7 +606,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "INT64",
@@ -587,7 +625,8 @@
           }
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -598,7 +637,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "GZIP"
     },
     {
       "type": "INT32",
@@ -615,7 +655,8 @@
           "precision": 9
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "LZ4_RAW"
     },
     {
       "type": "INT64",
@@ -632,7 +673,8 @@
           "precision": 18
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "ZSTD"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -649,7 +691,8 @@
           "precision": 10
         }
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "BROTLI"
     },
     {
       "type": "BYTE_ARRAY",
@@ -666,7 +709,8 @@
           "precision": 20
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "UNCOMPRESSED"
     },
     {
       "type": "INT32",
@@ -683,7 +727,8 @@
           "precision": 9
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -700,7 +745,8 @@
           "precision": 10
         }
       },
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "GZIP"
     },
     {
       "repetition_type": "REQUIRED",
@@ -726,7 +772,8 @@
               "logicalType": {
                 "STRING": {}
               },
-              "encoding": "RLE_DICTIONARY"
+              "encoding": "RLE_DICTIONARY",
+              "compression_codec": "LZ4_RAW"
             },
             {
               "type": "INT32",
@@ -736,7 +783,8 @@
               "scale": 0,
               "precision": 0,
               "field_id": 0,
-              "encoding": "RLE_DICTIONARY"
+              "encoding": "RLE_DICTIONARY",
+              "compression_codec": "ZSTD"
             }
           ]
         }
@@ -765,7 +813,8 @@
               "logicalType": {
                 "STRING": {}
               },
-              "encoding": "PLAIN"
+              "encoding": "PLAIN",
+              "compression_codec": "ZSTD"
             }
           ]
         }
@@ -779,7 +828,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "RLE_DICTIONARY"
+      "encoding": "RLE_DICTIONARY",
+      "compression_codec": "BROTLI"
     },
     {
       "repetition_type": "REQUIRED",
@@ -805,7 +855,8 @@
               "logicalType": {
                 "STRING": {}
               },
-              "encoding": "PLAIN"
+              "encoding": "PLAIN",
+              "compression_codec": "UNCOMPRESSED"
             },
             {
               "repetition_type": "REQUIRED",
@@ -836,7 +887,8 @@
                           "logicalType": {
                             "STRING": {}
                           },
-                          "encoding": "RLE_DICTIONARY"
+                          "encoding": "RLE_DICTIONARY",
+                          "compression_codec": "SNAPPY"
                         },
                         {
                           "type": "INT32",
@@ -846,7 +898,8 @@
                           "scale": 0,
                           "precision": 0,
                           "field_id": 0,
-                          "encoding": "RLE_DICTIONARY"
+                          "encoding": "RLE_DICTIONARY",
+                          "compression_codec": "GZIP"
                         }
                       ]
                     }
@@ -878,7 +931,8 @@
                               "precision": 10
                             }
                           },
-                          "encoding": "RLE_DICTIONARY"
+                          "encoding": "RLE_DICTIONARY",
+                          "compression_codec": "BROTLI"
                         }
                       ]
                     }
@@ -930,7 +984,8 @@
                           "logicalType": {
                             "STRING": {}
                           },
-                          "encoding": "RLE_DICTIONARY"
+                          "encoding": "RLE_DICTIONARY",
+                          "compression_codec": "SNAPPY"
                         },
                         {
                           "type": "INT32",
@@ -940,7 +995,8 @@
                           "scale": 0,
                           "precision": 0,
                           "field_id": 0,
-                          "encoding": "RLE_DICTIONARY"
+                          "encoding": "RLE_DICTIONARY",
+                          "compression_codec": "GZIP"
                         }
                       ]
                     }
@@ -972,7 +1028,8 @@
                               "precision": 10
                             }
                           },
-                          "encoding": "RLE_DICTIONARY"
+                          "encoding": "RLE_DICTIONARY",
+                          "compression_codec": "BROTLI"
                         }
                       ]
                     }

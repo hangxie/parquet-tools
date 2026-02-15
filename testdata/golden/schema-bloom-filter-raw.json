@@ -1,0 +1,70 @@
+{
+  "repetition_type": "REQUIRED",
+  "name": "parquet_go_root",
+  "num_children": 5,
+  "children": [
+    {
+      "type": "INT64",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "ID",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Name",
+      "converted_type": "UTF8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "STRING": {}
+      },
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
+    },
+    {
+      "type": "INT32",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Age",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
+    },
+    {
+      "type": "DOUBLE",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Score",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
+    },
+    {
+      "type": "BYTE_ARRAY",
+      "type_length": 0,
+      "repetition_type": "REQUIRED",
+      "name": "Category",
+      "converted_type": "UTF8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "logicalType": {
+        "STRING": {}
+      },
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
+    }
+  ]
+}

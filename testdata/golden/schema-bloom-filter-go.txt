@@ -1,0 +1,7 @@
+type Parquet_go_root struct {
+	ID       int64   `parquet:"name=ID, type=INT64, encoding=PLAIN, compression=SNAPPY, bloomfilter=true, bloomfiltersize=1040"`
+	Name     string  `parquet:"name=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY, bloomfilter=true, bloomfiltersize=4112"`
+	Age      int32   `parquet:"name=Age, type=INT32, encoding=PLAIN, compression=SNAPPY"`
+	Score    float64 `parquet:"name=Score, type=DOUBLE, encoding=PLAIN, compression=SNAPPY, bloomfilter=true, bloomfiltersize=1040"`
+	Category string  `parquet:"name=Category, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"`
+}

@@ -20,10 +20,9 @@ var stdCaptureMutex sync.Mutex
 func HasSameSchema(file1, file2 string, ignoreEncoding, ignoreCompression bool) bool {
 	getSchema := func(file string) string {
 		cmd := schema.Cmd{
-			ReadOption:           pio.ReadOption{},
-			URI:                  file,
-			Format:               "json",
-			ShowCompressionCodec: true,
+			ReadOption: pio.ReadOption{},
+			URI:        file,
+			Format:     "json",
 		}
 		stdout, _ := CaptureStdoutStderr(func() {
 			_ = cmd.Run()

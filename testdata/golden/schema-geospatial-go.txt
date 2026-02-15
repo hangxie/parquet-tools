@@ -1,4 +1,4 @@
 type Parquet_go_root struct {
-	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY, encoding=PLAIN"`
-	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, encoding=PLAIN"`
+	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY, encoding=PLAIN, compression=SNAPPY"`
+	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, encoding=PLAIN, compression=SNAPPY"`
 }
