@@ -197,10 +197,9 @@ func TestCmd(t *testing.T) {
 
 				stdout, stderr = testutils.CaptureStdoutStderr(func() {
 					cmd := schema.Cmd{
-						ReadOption:           rOpt,
-						Format:               "json",
-						ShowCompressionCodec: true,
-						URI:                  resultFile,
+						ReadOption: rOpt,
+						Format:     "json",
+						URI:        resultFile,
 					}
 					require.NoError(t, cmd.Run())
 				})

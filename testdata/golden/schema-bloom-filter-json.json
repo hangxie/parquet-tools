@@ -1,0 +1,20 @@
+{
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
+  "Fields": [
+    {
+      "Tag": "name=ID, inname=ID, type=INT64, encoding=PLAIN, compression=SNAPPY, bloomfilter=true, bloomfiltersize=1040"
+    },
+    {
+      "Tag": "name=Name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY, bloomfilter=true, bloomfiltersize=4112"
+    },
+    {
+      "Tag": "name=Age, inname=Age, type=INT32, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=Score, inname=Score, type=DOUBLE, encoding=PLAIN, compression=SNAPPY, bloomfilter=true, bloomfiltersize=1040"
+    },
+    {
+      "Tag": "name=Category, inname=Category, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+    }
+  ]
+}

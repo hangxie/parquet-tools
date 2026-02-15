@@ -273,7 +273,7 @@ RETYPE_OUTPUT="$TEMP_DIR/retype-output.parquet"
 
 # retype-schema.json (no retype, original schema)
 $PT retype --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema.json"
 
 # retype-data.json (no retype, original data)
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data.json"
@@ -281,42 +281,42 @@ rm -f "$RETYPE_OUTPUT"
 
 # retype-schema-int96-to-timestamp.json and retype-data-int96-to-timestamp.json
 $PT retype --int96-to-timestamp --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-int96-to-timestamp.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-int96-to-timestamp.json"
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data-int96-to-timestamp.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-schema-bson-to-string.json and retype-data-bson-to-string.json
 $PT retype --bson-to-string --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-bson-to-string.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-bson-to-string.json"
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data-bson-to-string.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-schema-float16-to-float32.json and retype-data-float16-to-float32.json
 $PT retype --float16-to-float32 --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-float16-to-float32.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-float16-to-float32.json"
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-data-float16-to-float32.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-schema-json-to-string.json
 $PT retype --json-to-string --source "$TESTDATA_DIR/retype.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-json-to-string.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-schema-json-to-string.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-all-types-variant-to-string-schema.json and retype-all-types-variant-to-string-data.json
 $PT retype --variant-to-string --source "$TESTDATA_DIR/all-types.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-variant-to-string-schema.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-variant-to-string-schema.json"
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-variant-to-string-data.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-all-types-uuid-to-string-schema.json and retype-all-types-uuid-to-string-data.json
 $PT retype --uuid-to-string --source "$TESTDATA_DIR/all-types.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-schema.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-schema.json"
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-data.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-geospatial-geo-to-binary-schema.json and retype-geospatial-geo-to-binary-data.json
 $PT retype --geo-to-binary --source "$TESTDATA_DIR/geospatial.parquet" "$RETYPE_OUTPUT"
-$PT schema --format json --show-compression-codec "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-geospatial-geo-to-binary-schema.json"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-geospatial-geo-to-binary-schema.json"
 # use --geo-format hex to avoid json output trying to decode WKB as utf8 string if we just use plain json output for byte array
 $PT cat --format json --geo-format hex "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-geospatial-geo-to-binary-data.json"
 rm -f "$RETYPE_OUTPUT"

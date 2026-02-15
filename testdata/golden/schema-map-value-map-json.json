@@ -2,22 +2,22 @@
   "Tag": "name=parquet_go_root, inname=Parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=LZ4_RAW"
     },
     {
       "Tag": "name=scores, inname=Scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=LZ4_RAW"
         },
         {
           "Tag": "name=value, inname=Value, type=MAP",
           "Fields": [
             {
-              "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+              "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=LZ4_RAW"
             },
             {
-              "Tag": "name=value, inname=Value, type=FLOAT, encoding=PLAIN"
+              "Tag": "name=value, inname=Value, type=FLOAT, encoding=PLAIN, compression=LZ4_RAW"
             }
           ]
         }

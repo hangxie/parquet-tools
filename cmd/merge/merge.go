@@ -109,7 +109,7 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
-		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96, WithCompressionCodec: true})
+		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 		if err != nil {
 			return nil, "", err
 		}

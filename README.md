@@ -1146,7 +1146,7 @@ JSON format schema can be used directly in [parquet-go](https://github.com/hangx
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
-{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"}]}
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"}]}
 ```
 
 Schema will output converted type and logical type when they are present in the parquet file, however, default settings will be ignored to make output shorter, e.g.,
@@ -1166,29 +1166,18 @@ The schema command now includes the `encoding` tag which shows the encoding used
 > [!NOTE]
 > If you need to verify encodings for each column across different row groups, use the [`inspect` command](#inspect-command) which provides detailed encoding information at the row group and page level.
 
-Use `--show-compression-codec` to include the `compression` tag in the schema output, showing the compression codec used for each column (e.g., SNAPPY, GZIP, ZSTD). This option works with both JSON and Go struct formats. Default is not to show compression codec so JSON schema and Go struct can be used by codes that utilize old version of parquet-go codes.
-
-```bash
-$ parquet-tools schema --show-compression-codec testdata/good.parquet
-{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"}]}
-
-$ parquet-tools schema --format go --show-compression-codec testdata/good.parquet
-type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
-	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
-}
-```
+The `compression` tag is always included in the schema output, showing the compression codec used for each column (e.g., SNAPPY, GZIP, ZSTD). The deprecated `--show-compression-codec` flag is accepted but has no effect.
 
 Use `--skip-page-encoding` to skip reading page encoding information. This can significantly speed up the command for remote files (S3, GCS, HTTP) as it avoids reading page headers. When this flag is set, the `encoding` tag will not be included in the output. This option works with both JSON and Go struct formats.
 
 ```bash
 $ parquet-tools schema --skip-page-encoding testdata/good.parquet
-{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"}]}
+{"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, compression=GZIP"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, compression=GZIP"}]}
 
 $ parquet-tools schema --format go --skip-page-encoding testdata/good.parquet
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
-	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING"`
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, compression=GZIP"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, compression=GZIP"`
 }
 ```
 
@@ -1196,11 +1185,11 @@ Schema does not output `omitstats` tag as there is no reliable way to determine 
 
 #### Raw Format
 
-Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format. The `--skip-page-encoding` and `--show-compression-codec` options also apply to raw format output.
+Raw format is the schema directly dumped from parquet file, all other formats are derived from raw format. The `--skip-page-encoding` option also applies to raw format output.
 
 ```bash
 $ parquet-tools schema --format raw testdata/good.parquet
-{"repetition_type":"REQUIRED","name":"parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}},"encoding":"PLAIN"},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}},"encoding":"PLAIN"}]}
+{"repetition_type":"REQUIRED","name":"parquet_go_root","num_children":2,"children":[{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_brand","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}},"encoding":"PLAIN","compression":"GZIP"},{"type":"BYTE_ARRAY","type_length":0,"repetition_type":"REQUIRED","name":"shoe_name","converted_type":"UTF8","scale":0,"precision":0,"field_id":0,"logicalType":{"STRING":{}},"encoding":"PLAIN","compression":"GZIP"}]}
 ```
 
 #### Go Struct Format
@@ -1210,8 +1199,8 @@ go struct format generates go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
-	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
+	Shoe_brand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
+	Shoe_name  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
 }
 ```
 
@@ -1220,8 +1209,8 @@ You can turn on `--camel-case` to convert field names from snake_case_name to Ca
 ```bash
 $ parquet-tools schema --format go --camel-case testdata/good.parquet
 type Parquet_go_root struct {
-	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
-	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"`
+	ShoeBrand string `parquet:"name=shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
+	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"`
 }
 ```
 
@@ -1482,7 +1471,7 @@ Apply different compression codecs to different fields:
 
 ```bash
 $ parquet-tools transcode -s testdata/good.parquet --field-compression shoe_brand=ZSTD --field-compression shoe_name=GZIP /tmp/field-compression.parquet
-$ parquet-tools schema --show-compression-codec /tmp/field-compression.parquet
+$ parquet-tools schema /tmp/field-compression.parquet
 {"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=ZSTD"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=GZIP"}]}
 ```
 
@@ -1502,7 +1491,7 @@ When both file-level (`-z`/`--compression`) and field-level (`--field-compressio
 
 ```bash
 $ parquet-tools transcode -s testdata/good.parquet --field-compression shoe_brand=ZSTD -z SNAPPY /tmp/mixed-compression.parquet
-$ parquet-tools schema --show-compression-codec /tmp/mixed-compression.parquet
+$ parquet-tools schema /tmp/mixed-compression.parquet
 {"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=ZSTD"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"}]}
 ```
 
@@ -1518,7 +1507,7 @@ $ parquet-tools schema --show-compression-codec /tmp/mixed-compression.parquet
 See [Compression Codecs](#compression-codecs) for more details.
 
 > [!TIP]
-> Use `parquet-tools schema --show-compression-codec` to see the current compression codec for each field.
+> Use `parquet-tools schema` to see the current compression codec for each field.
 
 #### Combine Multiple Options
 
@@ -1526,7 +1515,7 @@ You can combine multiple transcode options in a single command:
 
 ```bash
 $ parquet-tools transcode -s testdata/good.parquet --data-page-version=2 --field-encoding shoe_brand=DELTA_BYTE_ARRAY --field-compression shoe_brand=ZSTD --omit-stats false -z SNAPPY /tmp/transcode-combined.parquet
-$ parquet-tools schema --show-compression-codec /tmp/transcode-combined.parquet
+$ parquet-tools schema /tmp/transcode-combined.parquet
 {"Tag":"name=parquet_go_root, inname=Parquet_go_root","Fields":[{"Tag":"name=shoe_brand, inname=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=DELTA_BYTE_ARRAY, compression=ZSTD"},{"Tag":"name=shoe_name, inname=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"}]}
 ```
 

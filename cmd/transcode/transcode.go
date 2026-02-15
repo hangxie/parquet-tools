@@ -177,7 +177,7 @@ func (c Cmd) Run() (retErr error) {
 	}()
 
 	// Get schema from source
-	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, WithCompressionCodec: true})
+	schemaTree, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return err
 	}

@@ -15,37 +15,29 @@ import (
 )
 
 func TestNewSchemaTree(t *testing.T) {
-	verifySchemaNode := func(t *testing.T, schemaRoot *SchemaNode, checkEncodings, checkNoEncodings, checkCompressionCodec, checkNoCompressionCodec bool) {
+	verifySchemaNode := func(t *testing.T, schemaRoot *SchemaNode, checkEncodings, checkNoEncodings bool) {
 		t.Helper()
 		for _, child := range schemaRoot.Children {
 			if child.Type != nil && checkEncodings {
 				require.NotEmpty(t, child.Encoding)
-			}
-			if child.Type != nil && checkNoCompressionCodec {
-				require.Empty(t, child.CompressionCodec)
 			}
 		}
 		for _, node := range schemaRoot.GetPathMap() {
 			if node.Type != nil && checkNoEncodings {
 				require.Empty(t, node.Encoding)
 			}
-			if node.Type != nil && checkCompressionCodec {
-				require.NotEmpty(t, node.CompressionCodec)
-			}
 		}
 	}
 
 	testCases := []struct {
-		name                    string
-		uri                     string
-		option                  SchemaOption
-		goldenFile              string
-		errMsg                  string
-		checkEncodings          bool
-		checkNoEncodings        bool
-		checkCompressionCodec   bool
-		checkNoCompressionCodec bool
-		expectedChildren        int
+		name             string
+		uri              string
+		option           SchemaOption
+		goldenFile       string
+		errMsg           string
+		checkEncodings   bool
+		checkNoEncodings bool
+		expectedChildren int
 	}{
 		{
 			name:   "fail on int96",
@@ -72,27 +64,6 @@ func TestNewSchemaTree(t *testing.T) {
 			option:           SchemaOption{SkipPageEncoding: true},
 			checkNoEncodings: true,
 			expectedChildren: 2,
-		},
-		{
-			name:                  "show-compression-codec",
-			uri:                   "../testdata/good.parquet",
-			option:                SchemaOption{WithCompressionCodec: true},
-			checkCompressionCodec: true,
-			expectedChildren:      2,
-		},
-		{
-			name:                    "compression-codec-not-set-by-default",
-			uri:                     "../testdata/good.parquet",
-			option:                  SchemaOption{},
-			checkNoCompressionCodec: true,
-			expectedChildren:        2,
-		},
-		{
-			name:                  "both-options",
-			uri:                   "../testdata/all-types.parquet",
-			option:                SchemaOption{SkipPageEncoding: true, WithCompressionCodec: true},
-			checkNoEncodings:      true,
-			checkCompressionCodec: true,
 		},
 		{
 			name:       "unknown type with golden file",
@@ -132,7 +103,7 @@ func TestNewSchemaTree(t *testing.T) {
 				require.Len(t, schemaRoot.Children, tc.expectedChildren)
 			}
 
-			verifySchemaNode(t, schemaRoot, tc.checkEncodings, tc.checkNoEncodings, tc.checkCompressionCodec, tc.checkNoCompressionCodec)
+			verifySchemaNode(t, schemaRoot, tc.checkEncodings, tc.checkNoEncodings)
 		})
 	}
 }
@@ -968,7 +939,7 @@ func TestGetTagMapWithCompression(t *testing.T) {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{WithCompressionCodec: true})
+	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 

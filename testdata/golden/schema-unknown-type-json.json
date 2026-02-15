@@ -2,13 +2,13 @@
   "Tag": "name=schema, inname=Schema",
   "Fields": [
     {
-      "Tag": "name=id, inname=Id, type=INT32, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY"
+      "Tag": "name=id, inname=Id, type=INT32, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
-      "Tag": "name=unknown_col, inname=Unknown_col, type=INT32, logicaltype=UNKNOWN, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY"
+      "Tag": "name=unknown_col, inname=Unknown_col, type=INT32, logicaltype=UNKNOWN, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY, compression=SNAPPY"
     },
     {
-      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY"
+      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY, compression=SNAPPY"
     }
   ]
 }

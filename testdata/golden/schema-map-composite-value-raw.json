@@ -15,7 +15,8 @@
       "logicalType": {
         "STRING": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT32",
@@ -25,7 +26,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "INT64",
@@ -35,7 +37,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "FLOAT",
@@ -45,7 +48,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "BOOLEAN",
@@ -55,7 +59,8 @@
       "scale": 0,
       "precision": 0,
       "field_id": 0,
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     },
     {
       "repetition_type": "REQUIRED",
@@ -80,7 +85,8 @@
               "logicalType": {
                 "STRING": {}
               },
-              "encoding": "PLAIN"
+              "encoding": "PLAIN",
+              "compression_codec": "SNAPPY"
             }
           ]
         }
@@ -110,7 +116,8 @@
               "logicalType": {
                 "STRING": {}
               },
-              "encoding": "PLAIN"
+              "encoding": "PLAIN",
+              "compression_codec": "SNAPPY"
             },
             {
               "repetition_type": "REQUIRED",
@@ -131,7 +138,8 @@
                       "scale": 0,
                       "precision": 0,
                       "field_id": 0,
-                      "encoding": "PLAIN"
+                      "encoding": "PLAIN",
+                      "compression_codec": "SNAPPY"
                     }
                   ]
                 }
@@ -169,7 +177,8 @@
                   "logicalType": {
                     "STRING": {}
                   },
-                  "encoding": "PLAIN"
+                  "encoding": "PLAIN",
+                  "compression_codec": "SNAPPY"
                 },
                 {
                   "type": "INT64",
@@ -179,7 +188,8 @@
                   "scale": 0,
                   "precision": 0,
                   "field_id": 0,
-                  "encoding": "PLAIN"
+                  "encoding": "PLAIN",
+                  "compression_codec": "SNAPPY"
                 }
               ]
             }
@@ -204,7 +214,8 @@
           "logicalType": {
             "STRING": {}
           },
-          "encoding": "PLAIN"
+          "encoding": "PLAIN",
+          "compression_codec": "SNAPPY"
         },
         {
           "type": "INT64",
@@ -214,7 +225,8 @@
           "scale": 0,
           "precision": 0,
           "field_id": 0,
-          "encoding": "PLAIN"
+          "encoding": "PLAIN",
+          "compression_codec": "SNAPPY"
         }
       ]
     }

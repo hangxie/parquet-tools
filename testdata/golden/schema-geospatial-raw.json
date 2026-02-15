@@ -14,7 +14,8 @@
       "logicalType": {
         "GEOMETRY": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     },
     {
       "type": "BYTE_ARRAY",
@@ -27,7 +28,8 @@
       "logicalType": {
         "GEOGRAPHY": {}
       },
-      "encoding": "PLAIN"
+      "encoding": "PLAIN",
+      "compression_codec": "SNAPPY"
     }
   ]
 }

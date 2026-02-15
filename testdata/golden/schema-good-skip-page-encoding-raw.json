@@ -14,7 +14,8 @@
       "field_id": 0,
       "logicalType": {
         "STRING": {}
-      }
+      },
+      "compression_codec": "GZIP"
     },
     {
       "type": "BYTE_ARRAY",
@@ -27,7 +28,8 @@
       "field_id": 0,
       "logicalType": {
         "STRING": {}
-      }
+      },
+      "compression_codec": "GZIP"
     }
   ]
 }

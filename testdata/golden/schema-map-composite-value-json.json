@@ -2,25 +2,25 @@
   "Tag": "name=parquet_go_root, inname=Parquet_go_root",
   "Fields": [
     {
-      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+      "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
     },
     {
-      "Tag": "name=age, inname=Age, type=INT32, encoding=PLAIN"
+      "Tag": "name=age, inname=Age, type=INT32, encoding=PLAIN, compression=SNAPPY"
     },
     {
-      "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN"
+      "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN, compression=SNAPPY"
     },
     {
-      "Tag": "name=weight, inname=Weight, type=FLOAT, encoding=PLAIN"
+      "Tag": "name=weight, inname=Weight, type=FLOAT, encoding=PLAIN, compression=SNAPPY"
     },
     {
-      "Tag": "name=sex, inname=Sex, type=BOOLEAN, encoding=PLAIN"
+      "Tag": "name=sex, inname=Sex, type=BOOLEAN, encoding=PLAIN, compression=SNAPPY"
     },
     {
       "Tag": "name=classes, inname=Classes, type=LIST",
       "Fields": [
         {
-          "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=element, inname=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
         }
       ]
     },
@@ -28,13 +28,13 @@
       "Tag": "name=scores, inname=Scores, type=MAP",
       "Fields": [
         {
-          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
         },
         {
           "Tag": "name=value, inname=Value, type=LIST",
           "Fields": [
             {
-              "Tag": "name=element, inname=Element, type=FLOAT, encoding=PLAIN"
+              "Tag": "name=element, inname=Element, type=FLOAT, encoding=PLAIN, compression=SNAPPY"
             }
           ]
         }
@@ -47,10 +47,10 @@
           "Tag": "name=element, inname=Element",
           "Fields": [
             {
-              "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+              "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
             },
             {
-              "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN"
+              "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN, compression=SNAPPY"
             }
           ]
         }
@@ -60,10 +60,10 @@
       "Tag": "name=teachers, inname=Teachers, repetitiontype=REPEATED",
       "Fields": [
         {
-          "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN"
+          "Tag": "name=name, inname=Name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
         },
         {
-          "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN"
+          "Tag": "name=id, inname=Id, type=INT64, encoding=PLAIN, compression=SNAPPY"
         }
       ]
     }

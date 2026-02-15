@@ -40,7 +40,7 @@ func (c *Cmd) openReader() (*reader.ParquetReader, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
 	}
-	schemaRoot, err := pschema.NewSchemaTree(parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, WithCompressionCodec: true})
+	schemaRoot, err := pschema.NewSchemaTree(parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		_ = parquetReader.PFile.Close()
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
