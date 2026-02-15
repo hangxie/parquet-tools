@@ -47,6 +47,8 @@ var orderedTags = []string{
 	"encoding",
 	"compression",
 	"omitstats",
+	"bloomfilter",
+	"bloomfiltersize",
 }
 
 // OrderedTags returns a copy of the ordered tags list for external use
@@ -65,6 +67,8 @@ type SchemaNode struct {
 	Encoding         string `json:"encoding,omitempty"`          // Data page encoding (PLAIN, RLE, etc)
 	OmitStats        string `json:"-"`                           // Control statistics generation (true/false)
 	CompressionCodec string `json:"compression_codec,omitempty"` // Compression codec (SNAPPY, GZIP, etc)
+	BloomFilter      string `json:"-"`                           // Enable bloom filter (true/false)
+	BloomFilterSize  string `json:"-"`                           // Bloom filter size in bytes
 }
 
 type SchemaOption struct {
@@ -173,6 +177,36 @@ func buildCompressionCodecMap(pr *reader.ParquetReader) map[string]string {
 	return result
 }
 
+// bloomFilterInfo holds bloom filter metadata for a column.
+type bloomFilterInfo struct {
+	Enabled bool
+	Size    int32
+}
+
+// buildBloomFilterMap extracts bloom filter information from the footer metadata.
+// For each column, it checks whether a bloom filter offset is set.
+func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
+	result := make(map[string]bloomFilterInfo)
+
+	if len(pr.Footer.RowGroups) == 0 {
+		return result
+	}
+
+	columns := pr.Footer.RowGroups[0].Columns
+	for _, col := range columns {
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		if col.MetaData.IsSetBloomFilterOffset() {
+			info := bloomFilterInfo{Enabled: true}
+			if col.MetaData.IsSetBloomFilterLength() {
+				info.Size = col.MetaData.GetBloomFilterLength()
+			}
+			result[pathKey] = info
+		}
+	}
+
+	return result
+}
+
 func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	// Extract encoding information from the parquet file unless SkipPageEncoding is set
 	var encodingMap map[string]string
@@ -181,6 +215,9 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 	}
 
 	compressionCodecMap := buildCompressionCodecMap(reader)
+
+	// Always extract bloom filter information from footer metadata
+	bloomFilterMap := buildBloomFilterMap(reader)
 
 	schemas := reader.SchemaHandler.SchemaElements
 	root := &SchemaNode{
@@ -221,13 +258,17 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		}
 	}
 
+	populateLeafMetadata(root, encodingMap, compressionCodecMap, bloomFilterMap)
+	return root, nil
+}
+
+func populateLeafMetadata(root *SchemaNode, encodingMap, compressionCodecMap map[string]string, bloomFilterMap map[string]bloomFilterInfo) {
 	queue := []*SchemaNode{root}
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = append(queue[1:], node.Children...)
 		node.Name = node.ExNamePath[len(node.ExNamePath)-1]
 
-		// Populate encoding and compression codec information for leaf nodes
 		if node.Type != nil {
 			pathKey := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
 			if encodingMap != nil {
@@ -240,9 +281,14 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 					node.CompressionCodec = codec
 				}
 			}
+			if info, found := bloomFilterMap[pathKey]; found && info.Enabled {
+				node.BloomFilter = "true"
+				if info.Size > 0 {
+					node.BloomFilterSize = fmt.Sprint(info.Size)
+				}
+			}
 		}
 	}
-	return root, nil
 }
 
 func (s *SchemaNode) GetTagMap() map[string]string {
@@ -282,6 +328,12 @@ func (s *SchemaNode) GetTagMap() map[string]string {
 	}
 	if s.OmitStats != "" {
 		tagMap["omitstats"] = s.OmitStats
+	}
+	if s.BloomFilter != "" {
+		tagMap["bloomfilter"] = s.BloomFilter
+	}
+	if s.BloomFilterSize != "" {
+		tagMap["bloomfiltersize"] = s.BloomFilterSize
 	}
 
 	if s.ConvertedType != nil {
