@@ -9,7 +9,7 @@ import (
 	"github.com/hangxie/parquet-go/v2/source/local"
 	"github.com/hangxie/parquet-go/v2/types"
 	"github.com/hangxie/parquet-go/v2/writer"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // DeepNestedBson is nested inside MapValueStruct to test deep conversion
