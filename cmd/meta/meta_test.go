@@ -176,12 +176,13 @@ func TestCmd(t *testing.T) {
 		"nan-json-error": {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
 		"arrow-gh-41317": {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/ARROW-GH-41317.parquet"}, errMsg: "schema node not found for column path"},
 		// good cases - URI will be prefixed with "../../testdata/"
-		"raw":         {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "meta-good-raw.json"},
-		"nil-stat":    {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet"}, golden: "meta-nil-statistics-raw.json"},
-		"sorting-col": {cmd: Cmd{ReadOption: rOpt, URI: "sorting-col.parquet"}, golden: "meta-sorting-col-raw.json"},
-		"all-types":   {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet"}, golden: "meta-all-types-raw.json"},
-		"geospatial":  {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet"}, golden: "meta-geospatial-raw.json"},
-		"row-group":   {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "meta-row-group-raw.json"},
+		"raw":          {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "meta-good-raw.json"},
+		"nil-stat":     {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet"}, golden: "meta-nil-statistics-raw.json"},
+		"sorting-col":  {cmd: Cmd{ReadOption: rOpt, URI: "sorting-col.parquet"}, golden: "meta-sorting-col-raw.json"},
+		"all-types":    {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet"}, golden: "meta-all-types-raw.json"},
+		"geospatial":   {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet"}, golden: "meta-geospatial-raw.json"},
+		"row-group":    {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "meta-row-group-raw.json"},
+		"bloom-filter": {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet"}, golden: "meta-bloom-filter-raw.json"},
 	}
 
 	for name, tc := range testCases {
