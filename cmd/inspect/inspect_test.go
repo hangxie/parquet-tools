@@ -36,10 +36,12 @@ func TestInspect(t *testing.T) {
 		"row-group/geospatial":     {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-geospatial-row-group-0.json"},
 		"row-group/nil-statistics": {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-nil-statistics-row-group-0.json"},
 		"row-group/all-types":      {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-all-types-row-group-0.json"},
+		"row-group/bloom-filter":   {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: common.ToPtr(0)}, golden: "inspect-bloom-filter-row-group-0.json"},
 		// column chunk level
 		"column-chunk/good-col-0":             {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-good-column-chunk-0.json"},
 		"column-chunk/dict-page-col-0":        {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-dict-page-column-chunk-0.json"},
 		"column-chunk/all-types-interval":     {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(39)}, golden: "inspect-all-types-interval-column.json"},
+		"column-chunk/bloom-filter-col-0":     {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(0)}, golden: "inspect-bloom-filter-column-chunk-0.json"},
 		"column-chunk/negative-column-index":  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(-1)}, errMsg: "column chunk index -1 out of range"},
 		"column-chunk/out-of-range-column":    {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: common.ToPtr(0), ColumnChunk: common.ToPtr(999)}, errMsg: "column chunk index 999 out of range"},
 		"column-chunk/without-row-group":      {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", ColumnChunk: common.ToPtr(0)}, errMsg: "--column-chunk requires --row-group"},

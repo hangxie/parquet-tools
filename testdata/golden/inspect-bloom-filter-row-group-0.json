@@ -1,0 +1,120 @@
+{
+  "columnChunks": [
+    {
+      "bloomFilterLength": 1040,
+      "bloomFilterOffset": 2082,
+      "compressedSize": 332,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 0,
+      "numValues": 10,
+      "pathInSchema": [
+        "ID"
+      ],
+      "statistics": {
+        "maxValue": 9,
+        "minValue": 0,
+        "nullCount": 0
+      },
+      "type": "INT64",
+      "uncompressedSize": 324
+    },
+    {
+      "bloomFilterLength": 4112,
+      "bloomFilterOffset": 3122,
+      "compressedSize": 320,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=UTF8",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 1,
+      "logicalType": "logicaltype=STRING",
+      "numValues": 10,
+      "pathInSchema": [
+        "Name"
+      ],
+      "statistics": {
+        "maxValue": "name-9",
+        "minValue": "name-0",
+        "nullCount": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressedSize": 312
+    },
+    {
+      "compressedSize": 228,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 2,
+      "numValues": 10,
+      "pathInSchema": [
+        "Age"
+      ],
+      "statistics": {
+        "maxValue": 29,
+        "minValue": 20,
+        "nullCount": 0
+      },
+      "type": "INT32",
+      "uncompressedSize": 220
+    },
+    {
+      "bloomFilterLength": 1040,
+      "bloomFilterOffset": 7234,
+      "compressedSize": 332,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 3,
+      "numValues": 10,
+      "pathInSchema": [
+        "Score"
+      ],
+      "statistics": {
+        "maxValue": 13.5,
+        "minValue": 0,
+        "nullCount": 0
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 324
+    },
+    {
+      "compressedSize": 294,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=UTF8",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 4,
+      "logicalType": "logicaltype=STRING",
+      "numValues": 10,
+      "pathInSchema": [
+        "Category"
+      ],
+      "statistics": {
+        "maxValue": "cat-2",
+        "minValue": "cat-0",
+        "nullCount": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressedSize": 286
+    }
+  ],
+  "rowGroup": {
+    "index": 0,
+    "numColumns": 5,
+    "numRows": 10,
+    "totalByteSize": 1466
+  }
+}
