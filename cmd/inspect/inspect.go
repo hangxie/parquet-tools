@@ -186,6 +186,14 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 
 	c.addTypeInformation(columnChunk, schemaNode)
 
+	// Add bloom filter info if available
+	if col.MetaData.IsSetBloomFilterOffset() {
+		columnChunk["bloomFilterOffset"] = col.MetaData.GetBloomFilterOffset()
+		if col.MetaData.IsSetBloomFilterLength() {
+			columnChunk["bloomFilterLength"] = col.MetaData.GetBloomFilterLength()
+		}
+	}
+
 	// Add statistics if available
 	if col.MetaData.Statistics != nil {
 		stats := c.buildStatistics(col.MetaData.Statistics, schemaNode)
@@ -236,6 +244,13 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 
 	if col.MetaData.IndexPageOffset != nil {
 		columnChunkDetails["indexPageOffset"] = *col.MetaData.IndexPageOffset
+	}
+
+	if col.MetaData.IsSetBloomFilterOffset() {
+		columnChunkDetails["bloomFilterOffset"] = col.MetaData.GetBloomFilterOffset()
+		if col.MetaData.IsSetBloomFilterLength() {
+			columnChunkDetails["bloomFilterLength"] = col.MetaData.GetBloomFilterLength()
+		}
 	}
 
 	c.addTypeInformation(columnChunkDetails, schemaNode)

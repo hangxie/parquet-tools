@@ -1,0 +1,92 @@
+{
+  "columnChunk": {
+    "bloomFilterLength": 1040,
+    "bloomFilterOffset": 2082,
+    "columnChunkIndex": 0,
+    "compressedSize": 332,
+    "compressionCodec": "SNAPPY",
+    "dataPageOffset": 4,
+    "encodings": [
+      "PLAIN",
+      "RLE"
+    ],
+    "numValues": 10,
+    "pathInSchema": [
+      "ID"
+    ],
+    "rowGroupIndex": 0,
+    "statistics": {
+      "maxValue": 9,
+      "minValue": 0,
+      "nullCount": 0
+    },
+    "type": "INT64",
+    "uncompressedSize": 324
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 4,
+      "type": "DATA_PAGE",
+      "compressedSize": 26,
+      "uncompressedSize": 24,
+      "numValues": 3,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": 2,
+        "minValue": 0,
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 1,
+      "offset": 91,
+      "type": "DATA_PAGE",
+      "compressedSize": 26,
+      "uncompressedSize": 24,
+      "numValues": 3,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": 5,
+        "minValue": 3,
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 2,
+      "offset": 178,
+      "type": "DATA_PAGE",
+      "compressedSize": 26,
+      "uncompressedSize": 24,
+      "numValues": 3,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": 8,
+        "minValue": 6,
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 3,
+      "offset": 265,
+      "type": "DATA_PAGE",
+      "compressedSize": 10,
+      "uncompressedSize": 8,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "maxValue": 9,
+        "minValue": 9,
+        "nullCount": 0
+      }
+    }
+  ]
+}
