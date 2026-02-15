@@ -23,20 +23,22 @@ type Cmd struct {
 }
 
 type columnMeta struct {
-	PathInSchema     []string
-	Type             string
-	ConvertedType    *string `json:",omitempty"`
-	LogicalType      *string `json:",omitempty"`
-	Encodings        []string
-	CompressedSize   int64
-	UncompressedSize int64
-	NumValues        int64
-	NullCount        *int64  `json:",omitempty"`
-	DistinctCount    *int64  `json:",omitempty"`
-	MaxValue         any     `json:",omitempty"`
-	MinValue         any     `json:",omitempty"`
-	Index            *string `json:",omitempty"`
-	CompressionCodec string
+	PathInSchema      []string
+	Type              string
+	ConvertedType     *string `json:",omitempty"`
+	LogicalType       *string `json:",omitempty"`
+	Encodings         []string
+	CompressedSize    int64
+	UncompressedSize  int64
+	NumValues         int64
+	NullCount         *int64  `json:",omitempty"`
+	DistinctCount     *int64  `json:",omitempty"`
+	MaxValue          any     `json:",omitempty"`
+	MinValue          any     `json:",omitempty"`
+	Index             *string `json:",omitempty"`
+	BloomFilterOffset *int64  `json:",omitempty"`
+	BloomFilterLength *int32  `json:",omitempty"`
+	CompressionCodec  string
 }
 
 type rowGroupMeta struct {
@@ -113,20 +115,22 @@ func (c Cmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string,
 
 func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) (columnMeta, error) {
 	column := columnMeta{
-		PathInSchema:     col.MetaData.PathInSchema,
-		Type:             col.MetaData.Type.String(),
-		ConvertedType:    nil,
-		LogicalType:      nil,
-		Encodings:        pschema.EncodingToString(col.MetaData.Encodings),
-		CompressedSize:   col.MetaData.TotalCompressedSize,
-		UncompressedSize: col.MetaData.TotalUncompressedSize,
-		NumValues:        col.MetaData.NumValues,
-		MaxValue:         nil,
-		MinValue:         nil,
-		NullCount:        nil,
-		DistinctCount:    nil,
-		Index:            sortingToString(sortingColumns, colIndex),
-		CompressionCodec: col.MetaData.Codec.String(),
+		PathInSchema:      col.MetaData.PathInSchema,
+		Type:              col.MetaData.Type.String(),
+		ConvertedType:     nil,
+		LogicalType:       nil,
+		Encodings:         pschema.EncodingToString(col.MetaData.Encodings),
+		CompressedSize:    col.MetaData.TotalCompressedSize,
+		UncompressedSize:  col.MetaData.TotalUncompressedSize,
+		NumValues:         col.MetaData.NumValues,
+		MaxValue:          nil,
+		MinValue:          nil,
+		NullCount:         nil,
+		DistinctCount:     nil,
+		Index:             sortingToString(sortingColumns, colIndex),
+		BloomFilterOffset: col.MetaData.BloomFilterOffset,
+		BloomFilterLength: col.MetaData.BloomFilterLength,
+		CompressionCodec:  col.MetaData.Codec.String(),
 	}
 
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
