@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"github.com/hangxie/parquet-tools/cmd/cat"
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
