@@ -77,9 +77,6 @@ func (c Cmd) parseFieldEncodings() (map[string]string, error) {
 // and returns a map from field path to compression codec. Field paths use "." as delimiter.
 func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 	result := make(map[string]string)
-	validCodecs := []string{
-		"UNCOMPRESSED", "SNAPPY", "GZIP", "LZ4", "LZ4_RAW", "ZSTD", "BROTLI",
-	}
 	for _, spec := range c.FieldCompression {
 		parts := strings.SplitN(spec, "=", 2)
 		if len(parts) != 2 {
@@ -98,14 +95,14 @@ func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 		// Validate compression codec
 		codec = strings.ToUpper(codec)
 		isValid := false
-		for _, validCodec := range validCodecs {
+		for _, validCodec := range pio.ValidCompressionCodecs {
 			if codec == validCodec {
 				isValid = true
 				break
 			}
 		}
 		if !isValid {
-			return nil, fmt.Errorf("invalid compression codec [%s] for field [%s], valid codecs: %s", codec, fieldPath, strings.Join(validCodecs, ", "))
+			return nil, fmt.Errorf("invalid compression codec [%s] for field [%s], valid codecs: %s", codec, fieldPath, strings.Join(pio.ValidCompressionCodecs, ", "))
 		}
 
 		result[fieldPath] = codec

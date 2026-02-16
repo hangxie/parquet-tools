@@ -136,6 +136,11 @@ func azureAccessDetail(azURL url.URL, anonymous bool, versionId string) (string,
 	return httpURL, credential, nil
 }
 
+// ValidCompressionCodecs lists the compression codecs supported for writing.
+var ValidCompressionCodecs = []string{
+	"UNCOMPRESSED", "SNAPPY", "GZIP", "LZ4", "LZ4_RAW", "ZSTD", "BROTLI",
+}
+
 func compressionCodec(codecName string) (parquet.CompressionCodec, error) {
 	// Normalize the codec name to uppercase
 	codecName = strings.ToUpper(codecName)
@@ -143,10 +148,7 @@ func compressionCodec(codecName string) (parquet.CompressionCodec, error) {
 	// Validate the codec name
 	codec, err := parquet.CompressionCodecFromString(codecName)
 	if err != nil {
-		validCodecs := []string{
-			"UNCOMPRESSED", "SNAPPY", "GZIP", "LZ4", "LZ4_RAW", "ZSTD", "BROTLI",
-		}
-		return parquet.CompressionCodec_UNCOMPRESSED, fmt.Errorf("invalid compression codec [%s]: %w, valid codecs: %s", codecName, err, strings.Join(validCodecs, ", "))
+		return parquet.CompressionCodec_UNCOMPRESSED, fmt.Errorf("invalid compression codec [%s]: %w, valid codecs: %s", codecName, err, strings.Join(ValidCompressionCodecs, ", "))
 	}
 
 	// Check for unsupported codecs
