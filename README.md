@@ -1366,6 +1366,9 @@ $ parquet-tools row-count 1.parquet
 
 The command reads data from a source Parquet file and writes it to a new output file with the specified encoding parameters. All data is preserved exactly - only the storage encoding changes.
 
+> [!NOTE]
+> `transcode` reads page-level encoding information from the source file to preserve encodings accurately. For remote files (S3, GCS, HTTP), this requires additional I/O to read page headers for each column. If you only need to inspect the schema structure, use `schema --skip-page-encoding` instead for faster results.
+
 #### Change Compression Codec
 
 Use the `--compression` / `-z` parameter to change the compression algorithm. This allows you to optimize file size, improve read/write performance, or ensure compatibility with systems that support specific compression codecs. See [Compression Codecs](#compression-codecs) for the complete list of available options.
@@ -1508,6 +1511,46 @@ See [Compression Codecs](#compression-codecs) for more details.
 
 > [!TIP]
 > Use `parquet-tools schema` to see the current compression codec for each field.
+
+#### Field-Specific Bloom Filters
+
+Use the `--field-bloom-filter` parameter to add, remove, or configure bloom filters on specific fields. Bloom filters are probabilistic data structures that enable query engines to quickly skip row groups that definitely don't contain a queried value.
+
+The format is `field.path=VALUE`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`) and `VALUE` is one of:
+
+* `true` - Enable bloom filter with default size (1024 bytes)
+* `false` - Remove bloom filter from the field
+* A power-of-2 number (minimum 32) - Enable bloom filter with the specified size in bytes
+
+By default, existing bloom filters from the source file are preserved during transcode.
+
+Add a bloom filter to a field:
+
+```bash
+$ parquet-tools transcode -s testdata/good.parquet --field-bloom-filter shoe_brand=true /tmp/bloom.parquet
+```
+
+Remove a bloom filter from a specific field (other fields' bloom filters are preserved):
+
+```bash
+$ parquet-tools transcode -s testdata/bloom-filter.parquet --field-bloom-filter ID=false /tmp/no-bloom-id.parquet
+```
+
+Add a bloom filter with a custom size (must be a power of 2, minimum 32 bytes):
+
+```bash
+$ parquet-tools transcode -s testdata/good.parquet --field-bloom-filter shoe_brand=2048 /tmp/bloom-custom.parquet
+```
+
+Configure bloom filters for multiple fields in a single command:
+
+```bash
+$ parquet-tools transcode -s input.parquet \
+  --field-bloom-filter "id=true" \       # enable with default size
+  --field-bloom-filter "name=4096" \     # enable with 4096-byte filter
+  --field-bloom-filter "status=false" \  # disable bloom filter
+  output.parquet
+```
 
 #### Combine Multiple Options
 
