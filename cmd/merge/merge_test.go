@@ -11,7 +11,6 @@ import (
 
 	"github.com/hangxie/parquet-tools/cmd/cat"
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
-
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
@@ -89,7 +88,7 @@ func TestCmd(t *testing.T) {
 				_ = reader.PFile.Close()
 				require.Equal(t, tc.rowCount, rowCount)
 
-				require.True(t, testutils.HasSameSchema(tc.cmd.Source[0], tc.cmd.URI, false, false))
+				require.True(t, testutils.HasSameSchema(tc.cmd.Source[0], tc.cmd.URI))
 			})
 		}
 	})
@@ -114,7 +113,7 @@ func TestCmd(t *testing.T) {
 		rowCount := reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(10), rowCount)
-		require.True(t, testutils.HasSameSchema(source, cmd.URI, false, false))
+		require.True(t, testutils.HasSameSchema(source, cmd.URI))
 
 		cmd.Source = []string{cmd.URI, source}
 		cmd.URI = filepath.Join(tempDir, "2.parquet")
@@ -124,7 +123,7 @@ func TestCmd(t *testing.T) {
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(15), rowCount)
-		require.True(t, testutils.HasSameSchema(source, cmd.URI, false, false))
+		require.True(t, testutils.HasSameSchema(source, cmd.URI))
 
 		cmd.Source = []string{cmd.URI, source}
 		cmd.URI = filepath.Join(tempDir, "3.parquet")
@@ -134,7 +133,36 @@ func TestCmd(t *testing.T) {
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(20), rowCount)
-		require.True(t, testutils.HasSameSchema(source, cmd.URI, false, false))
+		require.True(t, testutils.HasSameSchema(source, cmd.URI))
+	})
+
+	t.Run("different-compression", func(t *testing.T) {
+		tempDir := t.TempDir()
+		sourceGZIP := "../../testdata/good.parquet"
+		sourceSnappy := "../../testdata/good-snappy.parquet"
+
+		mergedFile := filepath.Join(tempDir, "merged.parquet")
+		mergeCmd := Cmd{
+			ReadOption: pio.ReadOption{},
+			WriteOption: pio.WriteOption{
+				Compression:     "SNAPPY",
+				PageSize:        1024 * 1024,
+				RowGroupSize:    128 * 1024 * 1024,
+				ParallelNumber:  0,
+				DataPageVersion: 1,
+			},
+			ReadPageSize: 10,
+			Source:       []string{sourceGZIP, sourceSnappy},
+			URI:          mergedFile,
+		}
+		require.NoError(t, mergeCmd.Run())
+
+		reader, _ := pio.NewParquetFileReader(mergedFile, pio.ReadOption{})
+		rowCount := reader.GetNumRows()
+		_ = reader.PFile.Close()
+		require.Equal(t, int64(6), rowCount)
+
+		require.True(t, testutils.HasSameSchema(sourceGZIP, mergedFile))
 	})
 
 	t.Run("optional-list", func(t *testing.T) {
@@ -156,7 +184,7 @@ func TestCmd(t *testing.T) {
 		err := mergeCmd.Run()
 		require.NoError(t, err)
 
-		require.True(t, testutils.HasSameSchema("../../testdata/optional-fields.parquet", resultFile, false, false))
+		require.True(t, testutils.HasSameSchema("../../testdata/optional-fields.parquet", resultFile))
 
 		catCmd := cat.Cmd{
 			ReadOption:   pio.ReadOption{},

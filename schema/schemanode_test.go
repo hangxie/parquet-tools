@@ -933,6 +933,259 @@ func TestGetAllowedEncodings(t *testing.T) {
 	}
 }
 
+func TestIsCompatible(t *testing.T) {
+	int32Type := common.ToPtr(parquet.Type_INT32)
+	fixed := common.ToPtr(parquet.Type_FIXED_LEN_BYTE_ARRAY)
+	ba := common.ToPtr(parquet.Type_BYTE_ARRAY)
+	decimal := common.ToPtr(parquet.ConvertedType_DECIMAL)
+	stringLT := &parquet.LogicalType{STRING: &parquet.StringType{}}
+
+	tests := []struct {
+		name   string
+		a, b   *SchemaNode
+		option CompareOption
+		expect bool
+	}{
+		// nil handling
+		{"both nil", nil, nil, CompareOption{}, true},
+		{"a nil b non-nil", nil, &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}}, CompareOption{}, false},
+		{"a non-nil b nil", &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}}, nil, CompareOption{}, false},
+
+		// schema element fields
+		{
+			"identical nodes",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
+			CompareOption{},
+			true,
+		},
+		{
+			"different Type",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: common.ToPtr(parquet.Type_FLOAT)}},
+			CompareOption{},
+			false,
+		},
+		{
+			"nil vs non-nil Type",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f"}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
+			CompareOption{},
+			false,
+		},
+		{
+			"different TypeLength for FIXED_LEN_BYTE_ARRAY",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: fixed, TypeLength: common.ToPtr(int32(12))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: fixed, TypeLength: common.ToPtr(int32(16))}},
+			CompareOption{},
+			false,
+		},
+		{
+			"TypeLength ignored for non-FIXED_LEN_BYTE_ARRAY",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba, TypeLength: common.ToPtr(int32(0))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba}},
+			CompareOption{},
+			true,
+		},
+		{
+			"different RepetitionType",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, RepetitionType: common.ToPtr(parquet.FieldRepetitionType_OPTIONAL)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, RepetitionType: common.ToPtr(parquet.FieldRepetitionType_REQUIRED)}},
+			CompareOption{},
+			false,
+		},
+		{
+			"different ConvertedType",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", ConvertedType: common.ToPtr(parquet.ConvertedType_LIST)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", ConvertedType: common.ToPtr(parquet.ConvertedType_DECIMAL)}},
+			CompareOption{},
+			false,
+		},
+		{
+			"different Scale for DECIMAL",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Scale: common.ToPtr(int32(5))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Scale: common.ToPtr(int32(10))}},
+			CompareOption{},
+			false,
+		},
+		{
+			"different Precision for DECIMAL",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Precision: common.ToPtr(int32(10))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Precision: common.ToPtr(int32(20))}},
+			CompareOption{},
+			false,
+		},
+		{
+			"Scale ignored for non-DECIMAL",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, Scale: common.ToPtr(int32(0))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
+			CompareOption{},
+			true,
+		},
+		{
+			"different LogicalType",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba, LogicalType: stringLT}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba, LogicalType: &parquet.LogicalType{DATE: &parquet.DateType{}}}},
+			CompareOption{},
+			false,
+		},
+		{
+			"nil vs non-nil LogicalType",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba, LogicalType: stringLT}},
+			CompareOption{},
+			false,
+		},
+
+		// root name handling
+		{
+			"different Name with CompareRootName",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "alpha", Type: int32Type}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "beta", Type: int32Type}},
+			CompareOption{CompareRootName: true},
+			false,
+		},
+		{
+			"same Name with CompareRootName",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "alpha", Type: int32Type}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "alpha", Type: int32Type}},
+			CompareOption{CompareRootName: true},
+			true,
+		},
+		{
+			"different root Name ignored by default",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root1"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "field", Type: int32Type}}}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root2"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "field", Type: int32Type}}}},
+			CompareOption{},
+			true,
+		},
+		{
+			"different root Name fails with CompareRootName",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root1"}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root2"}},
+			CompareOption{CompareRootName: true},
+			false,
+		},
+		{
+			"child name difference detected even without CompareRootName",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root1"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "field", Type: int32Type}}}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root2"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "other", Type: int32Type}}}},
+			CompareOption{},
+			false,
+		},
+
+		// children
+		{
+			"different child count",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: int32Type}}}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: int32Type}}, {SchemaElement: parquet.SchemaElement{Name: "b", Type: int32Type}}}},
+			CompareOption{},
+			false,
+		},
+		{
+			"different child at leaf",
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: int32Type}}}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: common.ToPtr(parquet.Type_INT64)}}}},
+			CompareOption{},
+			false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expect, tc.a.IsCompatible(tc.b, tc.option))
+		})
+	}
+
+	// Writer directive tests need field mutation after construction
+	t.Run("different writer directives ignored by default", func(t *testing.T) {
+		a := &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}}
+		a.Encoding = "PLAIN"
+		a.CompressionCodec = "SNAPPY"
+		a.BloomFilter = "true"
+		a.BloomFilterSize = "1024"
+		a.OmitStats = "true"
+
+		b := &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}}
+		b.Encoding = "RLE"
+		b.CompressionCodec = "GZIP"
+		b.BloomFilter = "false"
+		b.OmitStats = "false"
+
+		require.True(t, a.IsCompatible(b, CompareOption{}))
+	})
+
+	directiveTests := []struct {
+		name   string
+		fieldA func(*SchemaNode)
+		fieldB func(*SchemaNode)
+		option CompareOption
+		expect bool
+	}{
+		{"CompareEncoding same", func(n *SchemaNode) { n.Encoding = "PLAIN" }, func(n *SchemaNode) { n.Encoding = "PLAIN" }, CompareOption{CompareEncoding: true}, true},
+		{"CompareEncoding different", func(n *SchemaNode) { n.Encoding = "PLAIN" }, func(n *SchemaNode) { n.Encoding = "RLE" }, CompareOption{CompareEncoding: true}, false},
+		{"CompareCompression same", func(n *SchemaNode) { n.CompressionCodec = "SNAPPY" }, func(n *SchemaNode) { n.CompressionCodec = "SNAPPY" }, CompareOption{CompareCompression: true}, true},
+		{"CompareCompression different", func(n *SchemaNode) { n.CompressionCodec = "SNAPPY" }, func(n *SchemaNode) { n.CompressionCodec = "GZIP" }, CompareOption{CompareCompression: true}, false},
+		{
+			"CompareBloomFilter same",
+			func(n *SchemaNode) { n.BloomFilter = "true"; n.BloomFilterSize = "1024" },
+			func(n *SchemaNode) { n.BloomFilter = "true"; n.BloomFilterSize = "1024" },
+			CompareOption{CompareBloomFilter: true},
+			true,
+		},
+		{
+			"CompareBloomFilter different",
+			func(n *SchemaNode) { n.BloomFilter = "true"; n.BloomFilterSize = "1024" },
+			func(n *SchemaNode) { n.BloomFilter = "false" },
+			CompareOption{CompareBloomFilter: true},
+			false,
+		},
+		{"CompareOmitStats same", func(n *SchemaNode) { n.OmitStats = "true" }, func(n *SchemaNode) { n.OmitStats = "true" }, CompareOption{CompareOmitStats: true}, true},
+		{"CompareOmitStats different", func(n *SchemaNode) { n.OmitStats = "true" }, func(n *SchemaNode) { n.OmitStats = "false" }, CompareOption{CompareOmitStats: true}, false},
+	}
+
+	for _, tc := range directiveTests {
+		t.Run(tc.name, func(t *testing.T) {
+			a := &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}}
+			tc.fieldA(a)
+			b := &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}}
+			tc.fieldB(b)
+			require.Equal(t, tc.expect, a.IsCompatible(b, tc.option))
+		})
+	}
+
+	// Integration tests with real files
+	integrationTests := []struct {
+		name   string
+		file1  string
+		file2  string
+		option CompareOption
+		expect bool
+	}{
+		{"same file", "../testdata/good.parquet", "../testdata/good.parquet", CompareOption{}, true},
+		{"same file with encoding+compression", "../testdata/good.parquet", "../testdata/good.parquet", CompareOption{CompareEncoding: true, CompareCompression: true}, true},
+		{"different schemas", "../testdata/good.parquet", "../testdata/all-types.parquet", CompareOption{}, false},
+	}
+	for _, tc := range integrationTests {
+		t.Run(tc.name, func(t *testing.T) {
+			pr1, err := pio.NewParquetFileReader(tc.file1, pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { _ = pr1.PFile.Close() }()
+
+			pr2, err := pio.NewParquetFileReader(tc.file2, pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { _ = pr2.PFile.Close() }()
+
+			tree1, err := NewSchemaTree(pr1, SchemaOption{})
+			require.NoError(t, err)
+			tree2, err := NewSchemaTree(pr2, SchemaOption{})
+			require.NoError(t, err)
+
+			require.Equal(t, tc.expect, tree1.IsCompatible(tree2, tc.option))
+		})
+	}
+}
+
 func TestGetTagMapWithCompression(t *testing.T) {
 	option := pio.ReadOption{}
 	pr, err := pio.NewParquetFileReader("../testdata/good.parquet", option)
