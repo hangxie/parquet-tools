@@ -90,7 +90,7 @@ func TestCmd(t *testing.T) {
 					require.Equal(t, reader.GetNumRows(), rowCount)
 					_ = reader.PFile.Close()
 
-					require.True(t, testutils.HasSameSchema(cmd.URI, filepath.Join(tempDir, file.Name()), false, false))
+					require.True(t, testutils.HasSameSchema(cmd.URI, filepath.Join(tempDir, file.Name())))
 				}
 			}
 		})

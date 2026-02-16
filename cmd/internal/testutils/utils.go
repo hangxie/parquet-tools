@@ -5,47 +5,44 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 	"sync"
 	"testing"
 
-	"github.com/hangxie/parquet-tools/cmd/schema"
 	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 var stdCaptureMutex sync.Mutex
 
-// HasSameSchema compares the schema of two parquet files
-func HasSameSchema(file1, file2 string, ignoreEncoding, ignoreCompression bool) bool {
-	getSchema := func(file string) string {
-		cmd := schema.Cmd{
-			ReadOption: pio.ReadOption{},
-			URI:        file,
-			Format:     "json",
+// HasSameSchema compares the logical schema of two parquet files using structural
+// tree comparison. An optional CompareOption can be provided to control which
+// writer directives (encoding, compression, etc.) are included in the comparison;
+// by default all directives are ignored.
+func HasSameSchema(file1, file2 string, opts ...pschema.CompareOption) bool {
+	var option pschema.CompareOption
+	if len(opts) > 0 {
+		option = opts[0]
+	}
+	buildTree := func(file string) *pschema.SchemaNode {
+		pr, err := pio.NewParquetFileReader(file, pio.ReadOption{})
+		if err != nil {
+			return nil
 		}
-		stdout, _ := CaptureStdoutStderr(func() {
-			_ = cmd.Run()
-		})
-		return stdout
+		defer func() { _ = pr.PFile.Close() }()
+		tree, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{})
+		if err != nil {
+			return nil
+		}
+		return tree
 	}
 
-	schema1 := getSchema(file1)
-	schema2 := getSchema(file2)
-
-	if ignoreEncoding {
-		re := regexp.MustCompile(`, encoding=[A-Z0-9_]+`)
-		schema1 = re.ReplaceAllString(schema1, "")
-		schema2 = re.ReplaceAllString(schema2, "")
+	tree1 := buildTree(file1)
+	tree2 := buildTree(file2)
+	if tree1 == nil || tree2 == nil {
+		return false
 	}
-
-	if ignoreCompression {
-		re := regexp.MustCompile(`, compression=[A-Z0-9_]+`)
-		schema1 = re.ReplaceAllString(schema1, "")
-		schema2 = re.ReplaceAllString(schema2, "")
-	}
-
-	return schema1 == schema2
+	return tree1.IsCompatible(tree2, option)
 }
 
 // CaptureStdoutStderr - thread-safe version using mutex

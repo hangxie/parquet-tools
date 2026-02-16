@@ -3,7 +3,6 @@ package merge
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"runtime"
 
 	"github.com/hangxie/parquet-go/v2/reader"
@@ -98,9 +97,7 @@ func (c Cmd) Run() (retErr error) {
 
 func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 	var schemaJSON string
-	var rootExNamePath []string
-	var rootInNamePath []string
-	var rootName string
+	var rootSchema *pschema.SchemaNode
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Source))
 	for i, source := range c.Source {
@@ -114,25 +111,18 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 			return nil, "", err
 		}
 
-		if schemaJSON == "" {
-			// Use schema from the first file (including its encodings)
-			schemaJSON = currSchema.JSONSchema()
-			rootName = currSchema.Name
-			rootExNamePath = currSchema.ExNamePath
-			rootInNamePath = currSchema.InNamePath
+		if rootSchema == nil {
+			rootSchema = currSchema
+			// Build a separate tree for JSON since JSONSchema() mutates the tree
+			jsonTree, jsonErr := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+			if jsonErr != nil {
+				return nil, "", jsonErr
+			}
+			schemaJSON = jsonTree.JSONSchema()
 			continue
 		}
 
-		currSchema.Name = rootName
-		currSchema.ExNamePath = rootExNamePath
-		currSchema.InNamePath = rootInNamePath
-		newSchema := currSchema.JSONSchema()
-		// Strip encoding and bloom filter tags from both schemas for comparison
-		// as files may have different encodings or bloom filter settings
-		stripTags := regexp.MustCompile(`, (encoding=[A-Z_]+|bloomfilter=(true|false)|bloomfiltersize=[0-9]+)`)
-		schemaJSONWithoutEncoding := stripTags.ReplaceAllString(schemaJSON, "")
-		newSchemaWithoutEncoding := stripTags.ReplaceAllString(newSchema, "")
-		if newSchemaWithoutEncoding != schemaJSONWithoutEncoding {
+		if !rootSchema.IsCompatible(currSchema, pschema.CompareOption{}) {
 			return nil, "", fmt.Errorf("[%s] does not have same schema as previous files", source)
 		}
 	}

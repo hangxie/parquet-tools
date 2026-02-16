@@ -13,26 +13,48 @@ type Shoe struct {
 	ShoeName  string `parquet:"name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
 }
 
-func main() {
-	fw, err := local.NewLocalFileWriter("good.parquet")
+var shoes = []Shoe{
+	{"nike", "air_griffey"},
+	{"fila", "grant_hill_2"},
+	{"steph_curry", "curry7"},
+}
+
+func writeFile(filename string, codec parquet.CompressionCodec) error {
+	fw, err := local.NewLocalFileWriter(filename)
 	if err != nil {
-		fmt.Println("Can't create local file", err)
-		return
+		return fmt.Errorf("can't create local file %s: %w", filename, err)
 	}
 
 	pw, err := writer.NewParquetWriter(fw, new(Shoe), 4)
 	if err != nil {
-		fmt.Println("Can't create parquet writer", err)
-		return
+		_ = fw.Close()
+		return fmt.Errorf("can't create parquet writer for %s: %w", filename, err)
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Shoe{"nike", "air_griffey"})
-	_ = pw.Write(Shoe{"fila", "grant_hill_2"})
-	_ = pw.Write(Shoe{"steph_curry", "curry7"})
+	pw.CompressionType = codec
+	for _, s := range shoes {
+		_ = pw.Write(s)
+	}
 	if err = pw.WriteStop(); err != nil {
-		fmt.Println("WriteStop error", err)
-		return
+		return fmt.Errorf("WriteStop error for %s: %w", filename, err)
 	}
 	_ = fw.Close()
+	return nil
+}
+
+func main() {
+	files := []struct {
+		name  string
+		codec parquet.CompressionCodec
+	}{
+		{"good.parquet", parquet.CompressionCodec_GZIP},
+		{"good-snappy.parquet", parquet.CompressionCodec_SNAPPY},
+	}
+
+	for _, f := range files {
+		if err := writeFile(f.name, f.codec); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 }

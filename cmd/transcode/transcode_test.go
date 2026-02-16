@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,8 +16,6 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
-
-var stripCompressionRe = regexp.MustCompile(`, (compression|keycompression|valuecompression)=[A-Z0-9_]+`)
 
 func TestCmd(t *testing.T) {
 	t.Run("error", testCmdError)
@@ -133,7 +130,7 @@ func testCmdGood(t *testing.T) {
 			require.Greater(t, fileInfo.Size(), int64(0))
 
 			// Verify schema structure remains the same
-			require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI, false, true))
+			require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
 		})
 	}
 }
@@ -186,7 +183,7 @@ func testCmdVerifyData(t *testing.T) {
 	})
 
 	require.Equal(t, originalOutput, transcodedOutput)
-	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI, false, true))
+	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
 }
 
 func testCmdSchemaModification(t *testing.T) {
@@ -218,7 +215,7 @@ func testCmdSchemaModification(t *testing.T) {
 		_ = reader.PFile.Close()
 	}()
 	require.Equal(t, int64(3), reader.GetNumRows())
-	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI, false, true))
+	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
 }
 
 func testCmdPageSizes(t *testing.T) {
@@ -556,18 +553,7 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	tempDir := t.TempDir()
 
-	// First, create a test file with specific encodings
 	testFile := "../../testdata/all-types.parquet"
-
-	// Get the schema from the source file
-	schemaCmd := schema.Cmd{
-		Format:     "go",
-		ReadOption: rOpt,
-		URI:        testFile,
-	}
-	originalSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run())
-	})
 
 	// Transcode without specifying field encodings
 	transcodedFile := filepath.Join(tempDir, "transcoded-preserved.parquet")
@@ -587,19 +573,9 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 	err := cmd.Run()
 	require.NoError(t, err)
 
-	// Get schema from transcoded file
-	schemaCmd = schema.Cmd{
-		Format:     "go",
-		ReadOption: rOpt,
-		URI:        transcodedFile,
-	}
-	transcodedSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run())
-	})
-
-	// Encodings should be preserved (strip compression since it may differ)
-	require.Equal(t, stripCompressionRe.ReplaceAllString(originalSchema, ""),
-		stripCompressionRe.ReplaceAllString(transcodedSchema, ""),
+	// Encodings should be preserved (compare with encoding but not compression)
+	require.True(t, testutils.HasSameSchema(testFile, transcodedFile,
+		pschema.CompareOption{CompareEncoding: true}),
 		"Encodings should be preserved when transcoding without field-encoding overrides")
 
 	// Verify data integrity
@@ -707,18 +683,7 @@ func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	tempDir := t.TempDir()
 
-	// First, create a test file with specific encodings
 	testFile := "../../testdata/all-types.parquet"
-
-	// Get the schema from the source file
-	schemaCmd := schema.Cmd{
-		Format:     "go",
-		ReadOption: rOpt,
-		URI:        testFile,
-	}
-	originalSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run())
-	})
 
 	// Transcode with different compression but preserve encodings
 	transcodedFile := filepath.Join(tempDir, "transcoded-gzip.parquet")
@@ -738,19 +703,9 @@ func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {
 	err := cmd.Run()
 	require.NoError(t, err)
 
-	// Get schemas
-	schemaCmd = schema.Cmd{
-		Format:     "go",
-		ReadOption: rOpt,
-		URI:        transcodedFile,
-	}
-	transcodedSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run())
-	})
-
-	// Encodings should be preserved even with different compression (strip compression since it differs)
-	require.Equal(t, stripCompressionRe.ReplaceAllString(originalSchema, ""),
-		stripCompressionRe.ReplaceAllString(transcodedSchema, ""))
+	// Encodings should be preserved even with different compression
+	require.True(t, testutils.HasSameSchema(testFile, transcodedFile,
+		pschema.CompareOption{CompareEncoding: true}))
 }
 
 func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
