@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 )
 
@@ -142,6 +143,17 @@ func TestGetBucketRegion(t *testing.T) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			}
+		})
+	}
+}
+
+func TestValidCompressionCodecs(t *testing.T) {
+	require.NotEmpty(t, ValidCompressionCodecs)
+	for _, codec := range ValidCompressionCodecs {
+		t.Run(codec, func(t *testing.T) {
+			t.Parallel()
+			_, err := parquet.CompressionCodecFromString(codec)
+			require.NoError(t, err, "codec %s should be recognized by parquet library", codec)
 		})
 	}
 }
