@@ -107,24 +107,26 @@ fi
 echo ""
 echo "Detected core suffix: $CORE_SUFFIX"
 
-# Define benchmark mappings
-declare -A BENCHMARKS=(
-    ["cat"]="BenchmarkCatCmd/concurrent-${CORE_SUFFIX}"
-    ["merge"]="BenchmarkMergeCmd/concurrent-${CORE_SUFFIX}"
-    ["meta"]="BenchmarkMetaCmd/default-${CORE_SUFFIX}"
-    ["row-count"]="BenchmarkRowCountCmd/default-${CORE_SUFFIX}"
-    ["schema"]="BenchmarkSchemaCmd/default-${CORE_SUFFIX}"
-    ["size"]="BenchmarkSizeCmd/default-${CORE_SUFFIX}"
-    ["version"]="BenchmarkVersionCmd/default-${CORE_SUFFIX}"
+# Define benchmark mappings using parallel arrays (bash 3.2 compatible)
+BENCH_KEYS=(cat merge meta row-count schema size version)
+BENCH_NAMES=(
+    "BenchmarkCatCmd/concurrent-${CORE_SUFFIX}"
+    "BenchmarkMergeCmd/concurrent-${CORE_SUFFIX}"
+    "BenchmarkMetaCmd/default-${CORE_SUFFIX}"
+    "BenchmarkRowCountCmd/default-${CORE_SUFFIX}"
+    "BenchmarkSchemaCmd/default-${CORE_SUFFIX}"
+    "BenchmarkSizeCmd/default-${CORE_SUFFIX}"
+    "BenchmarkVersionCmd/default-${CORE_SUFFIX}"
 )
 
 # Extract values and calculate medians
 echo ""
 echo "Calculating median values..."
-declare -A MEDIAN_VALUES
+MEDIAN_VALUES=()
 
-for key in "${!BENCHMARKS[@]}"; do
-    benchmark_name="${BENCHMARKS[$key]}"
+for idx in "${!BENCH_KEYS[@]}"; do
+    key="${BENCH_KEYS[$idx]}"
+    benchmark_name="${BENCH_NAMES[$idx]}"
     values=()
 
     for i in 1 2 3; do
@@ -137,11 +139,11 @@ for key in "${!BENCHMARKS[@]}"; do
     if [ ${#values[@]} -gt 0 ]; then
         median_ns=$(calculate_median "${values[@]}")
         median_ms=$(ns_to_ms "$median_ns" "$key")
-        MEDIAN_VALUES[$key]="$median_ms"
+        MEDIAN_VALUES[$idx]="$median_ms"
         echo "  $key: $median_ms ms (from ${values[*]} ns)"
     else
         echo "  Warning: No values found for $key"
-        MEDIAN_VALUES[$key]="N/A"
+        MEDIAN_VALUES[$idx]="N/A"
     fi
 done
 
@@ -173,14 +175,15 @@ if grep -q "^|[[:space:]]*${ESCAPED_VERSION}[[:space:]]*|" "$BENCHMARKS_FILE"; t
 
     # Update existing line
     # Use awk variables instead of embedding version in regex to handle "/" in version names
+    # BENCH_KEYS order: 0=cat 1=merge 2=meta 3=row-count 4=schema 5=size 6=version
     awk -v version="$VERSION" \
-        -v cat="${MEDIAN_VALUES[cat]}" \
-        -v merge="${MEDIAN_VALUES[merge]}" \
-        -v meta="${MEDIAN_VALUES[meta]}" \
-        -v rowcount="${MEDIAN_VALUES[row-count]}" \
-        -v schema="${MEDIAN_VALUES[schema]}" \
-        -v size="${MEDIAN_VALUES[size]}" \
-        -v ver="${MEDIAN_VALUES[version]}" \
+        -v cat="${MEDIAN_VALUES[0]}" \
+        -v merge="${MEDIAN_VALUES[1]}" \
+        -v meta="${MEDIAN_VALUES[2]}" \
+        -v rowcount="${MEDIAN_VALUES[3]}" \
+        -v schema="${MEDIAN_VALUES[4]}" \
+        -v size="${MEDIAN_VALUES[5]}" \
+        -v ver="${MEDIAN_VALUES[6]}" \
         'BEGIN {FS=OFS="|"}
          {
              # Strip leading/trailing whitespace from field 2 for comparison
@@ -206,14 +209,15 @@ else
 
     # Find the line with the header separator (the line with "|----:")
     # Insert new row after the separator line
+    # BENCH_KEYS order: 0=cat 1=merge 2=meta 3=row-count 4=schema 5=size 6=version
     awk -v version="$VERSION" \
-        -v cat="${MEDIAN_VALUES[cat]}" \
-        -v merge="${MEDIAN_VALUES[merge]}" \
-        -v meta="${MEDIAN_VALUES[meta]}" \
-        -v rowcount="${MEDIAN_VALUES[row-count]}" \
-        -v schema="${MEDIAN_VALUES[schema]}" \
-        -v size="${MEDIAN_VALUES[size]}" \
-        -v ver="${MEDIAN_VALUES[version]}" \
+        -v cat="${MEDIAN_VALUES[0]}" \
+        -v merge="${MEDIAN_VALUES[1]}" \
+        -v meta="${MEDIAN_VALUES[2]}" \
+        -v rowcount="${MEDIAN_VALUES[3]}" \
+        -v schema="${MEDIAN_VALUES[4]}" \
+        -v size="${MEDIAN_VALUES[5]}" \
+        -v ver="${MEDIAN_VALUES[6]}" \
         'BEGIN {done=0}
          /^\|[[:space:]]*-------:/ && done==0 {
              print $0
@@ -229,12 +233,12 @@ mv "$TEMP_BENCHMARKS" "$BENCHMARKS_FILE"
 
 echo ""
 echo "Summary for $VERSION:"
-echo "  cat:       ${MEDIAN_VALUES[cat]} ms"
-echo "  merge:     ${MEDIAN_VALUES[merge]} ms"
-echo "  meta:      ${MEDIAN_VALUES[meta]} ms"
-echo "  row-count: ${MEDIAN_VALUES[row-count]} ms"
-echo "  schema:    ${MEDIAN_VALUES[schema]} ms"
-echo "  size:      ${MEDIAN_VALUES[size]} ms"
-echo "  version:   ${MEDIAN_VALUES[version]} ms"
+echo "  cat:       ${MEDIAN_VALUES[0]} ms"
+echo "  merge:     ${MEDIAN_VALUES[1]} ms"
+echo "  meta:      ${MEDIAN_VALUES[2]} ms"
+echo "  row-count: ${MEDIAN_VALUES[3]} ms"
+echo "  schema:    ${MEDIAN_VALUES[4]} ms"
+echo "  size:      ${MEDIAN_VALUES[5]} ms"
+echo "  version:   ${MEDIAN_VALUES[6]} ms"
 echo ""
 echo "benchmarks.md has been updated successfully!"
