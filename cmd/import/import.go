@@ -123,8 +123,10 @@ func (c Cmd) importJSON() error {
 	if err := json.Unmarshal(schemaData, &dummy); err != nil {
 		return fmt.Errorf("content of [%s] is not a valid schema JSON", c.Schema)
 	}
-	if err := json.Unmarshal(jsonData, &dummy); err != nil {
-		return fmt.Errorf("invalid JSON string: %s", string(jsonData))
+
+	var records []json.RawMessage
+	if err := json.Unmarshal(jsonData, &records); err != nil {
+		return fmt.Errorf("content of [%s] is not a valid JSON array: %w", c.Source, err)
 	}
 
 	parquetWriter, err := pio.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
@@ -132,8 +134,10 @@ func (c Cmd) importJSON() error {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
 
-	if err := parquetWriter.Write(string(jsonData)); err != nil {
-		return fmt.Errorf("failed to write to parquet file: %w", err)
+	for _, record := range records {
+		if err := parquetWriter.Write(string(record)); err != nil {
+			return fmt.Errorf("failed to write to parquet file: %w", err)
+		}
 	}
 
 	if err := parquetWriter.WriteStop(); err != nil {
