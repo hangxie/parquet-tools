@@ -1,7 +1,6 @@
 package retype
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -10,7 +9,6 @@ import (
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/types"
 	"go.mongodb.org/mongo-driver/v2/bson"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/hangxie/parquet-go/v2/common"
 
@@ -83,31 +81,7 @@ func (c Cmd) Run() (retErr error) {
 		}
 	}()
 
-	// Dedicated goroutine for output to ensure output integrity
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	writerGroup, _ := errgroup.WithContext(ctx)
-	writerChan := make(chan any, c.ReadPageSize)
-	writerGroup.Go(func() error {
-		return pio.PipelineWriter(ctx, fileWriter, writerChan, c.URI)
-	})
-
-	// Single reader goroutine
-	readerGroup, _ := errgroup.WithContext(ctx)
-	readerGroup.Go(func() error {
-		return pio.PipelineReader(ctx, fileReader, writerChan, c.Source, c.ReadPageSize, converter.Convert)
-	})
-
-	if err := readerGroup.Wait(); err != nil {
-		return err
-	}
-	close(writerChan)
-
-	if err := writerGroup.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return pio.RunPipeline(fileReader, fileWriter, c.Source, c.URI, c.ReadPageSize, converter.Convert)
 }
 
 // RuleID identifies a retype rule.
