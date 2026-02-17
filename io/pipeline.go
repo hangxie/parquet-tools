@@ -6,6 +6,7 @@ import (
 
 	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/hangxie/parquet-go/v2/writer"
+	"golang.org/x/sync/errgroup"
 )
 
 // PipelineWriter reads rows from writerChan and writes them to fileWriter.
@@ -23,6 +24,32 @@ func PipelineWriter(ctx context.Context, fileWriter *writer.ParquetWriter, write
 			}
 		}
 	}
+}
+
+// RunPipeline runs a reader and writer in parallel using errgroup. The reader sends rows
+// through an internal channel to the writer. If either side fails, the shared context is
+// cancelled so the other side exits promptly.
+func RunPipeline(fileReader *reader.ParquetReader, fileWriter *writer.ParquetWriter, source, target string, pageSize int, transform func(any) (any, error)) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	writerGroup, _ := errgroup.WithContext(ctx)
+	writerChan := make(chan any)
+
+	writerGroup.Go(func() error {
+		return PipelineWriter(ctx, fileWriter, writerChan, target)
+	})
+
+	readerGroup, _ := errgroup.WithContext(ctx)
+	readerGroup.Go(func() error {
+		return PipelineReader(ctx, fileReader, writerChan, source, pageSize, transform)
+	})
+
+	if err := readerGroup.Wait(); err != nil {
+		return err
+	}
+	close(writerChan)
+	return writerGroup.Wait()
 }
 
 // PipelineReader reads rows from fileReader in batches, optionally transforms each row,

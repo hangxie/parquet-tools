@@ -149,3 +149,32 @@ func TestPipelineReader(t *testing.T) {
 		require.ErrorIs(t, err, context.Canceled)
 	})
 }
+
+func TestRunPipeline(t *testing.T) {
+	goodParquet := filepath.Join("..", "testdata", "good.parquet")
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=INT64"}]}`
+
+	t.Run("writer-failure", func(t *testing.T) {
+		pr := newTestReader(t, goodParquet)
+		tempDir := t.TempDir()
+		pw := newTestWriter(t, filepath.Join(tempDir, "out.parquet"), schema)
+		// Stop the writer so writes fail immediately.
+		_ = pw.WriteStop()
+
+		err := RunPipeline(pr, pw, "good.parquet", "test-target", 1, nil)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to write data to [test-target]")
+	})
+
+	t.Run("reader-failure", func(t *testing.T) {
+		pr := newTestReader(t, goodParquet)
+		tempDir := t.TempDir()
+		pw := newTestWriter(t, filepath.Join(tempDir, "out.parquet"), schema)
+
+		err := RunPipeline(pr, pw, "good.parquet", "test-target", 1, func(any) (any, error) {
+			return nil, fmt.Errorf("injected reader failure")
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "injected reader failure")
+	})
+}
