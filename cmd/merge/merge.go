@@ -55,44 +55,34 @@ func (c Cmd) Run() (retErr error) {
 		}
 	}()
 
-	// dedicated goroutine for output to ensure output integrity
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	writerGroup, _ := errgroup.WithContext(ctx)
+	// Single errgroup so all goroutines share one derived context —
+	// if either writer or any reader fails, gctx is cancelled and the other
+	// side's select on ctx.Done() fires, preventing deadlock.
+	g, gctx := errgroup.WithContext(context.Background())
 	writerChan := make(chan any)
-	writerGroup.Go(func() error {
-		return pio.PipelineWriter(ctx, fileWriter, writerChan, c.URI)
+
+	g.Go(func() error {
+		return pio.PipelineWriter(gctx, fileWriter, writerChan, c.URI)
 	})
 
-	var concurrencyChan chan struct{}
-	if c.Concurrent {
-		concurrencyChan = make(chan struct{}, runtime.NumCPU())
-	} else {
-		concurrencyChan = make(chan struct{}, 1)
-	}
+	g.Go(func() error {
+		defer close(writerChan)
+		readerGroup := new(errgroup.Group)
+		if c.Concurrent {
+			readerGroup.SetLimit(runtime.NumCPU())
+		} else {
+			readerGroup.SetLimit(1)
+		}
+		for i := range fileReaders {
+			i := i
+			readerGroup.Go(func() error {
+				return pio.PipelineReader(gctx, fileReaders[i], writerChan, c.Source[i], c.ReadPageSize, nil)
+			})
+		}
+		return readerGroup.Wait()
+	})
 
-	readerGroup, _ := errgroup.WithContext(ctx)
-	for i := range fileReaders {
-		i := i
-		concurrencyChan <- struct{}{}
-		readerGroup.Go(func() error {
-			defer func() {
-				<-concurrencyChan
-			}()
-			return pio.PipelineReader(ctx, fileReaders[i], writerChan, c.Source[i], c.ReadPageSize, nil)
-		})
-	}
-
-	if err := readerGroup.Wait(); err != nil {
-		return err
-	}
-	close(writerChan)
-
-	if err := writerGroup.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return g.Wait()
 }
 
 func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
