@@ -74,6 +74,7 @@ func (c Cmd) Run() error {
 	// Build schema maps for name resolution
 	inExNameMap := schemaRoot.GetInExNameMap()
 	pathMap := schemaRoot.GetPathMap()
+	bloomSizeMap := pschema.BloomFilterSizeMap(reader)
 
 	// Determine which level to inspect
 	switch {
@@ -82,10 +83,10 @@ func (c Cmd) Run() error {
 		return c.inspectPage(reader, *c.RowGroup, *c.ColumnChunk, *c.Page, pathMap)
 	case c.ColumnChunk != nil:
 		// Level 3: Show column chunk details and pages
-		return c.inspectColumnChunk(reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap)
+		return c.inspectColumnChunk(reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap, bloomSizeMap)
 	case c.RowGroup != nil:
 		// Level 2: Show row group details and column chunks
-		return c.inspectRowGroup(reader, *c.RowGroup, inExNameMap, pathMap)
+		return c.inspectRowGroup(reader, *c.RowGroup, inExNameMap, pathMap, bloomSizeMap)
 	default:
 		// Level 1: Show file info and row groups
 		return c.inspectFile(reader)
@@ -140,7 +141,7 @@ func (c Cmd) inspectFile(reader *reader.ParquetReader) error {
 }
 
 // Level 2: Row group details and column chunks with brief info
-func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
+func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -152,7 +153,7 @@ func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, in
 	// Build column chunks brief info
 	columnChunksBrief := make([]map[string]any, len(rg.Columns))
 	for i, col := range rg.Columns {
-		columnChunksBrief[i] = c.buildColumnChunkBrief(i, col, inExNameMap, pathMap)
+		columnChunksBrief[i] = c.buildColumnChunkBrief(i, col, inExNameMap, pathMap, bloomSizeMap)
 	}
 
 	output := map[string]any{
@@ -168,7 +169,7 @@ func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, in
 	return c.printJSON(output)
 }
 
-func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) map[string]any {
+func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) map[string]any {
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
 	pathInSchema := c.resolvePathInSchema(col.MetaData.PathInSchema, inExNameMap)
 	schemaNode := pathMap[pathKey]
@@ -186,11 +187,11 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 
 	c.addTypeInformation(columnChunk, schemaNode)
 
-	// Add bloom filter info if available
+	// Add bloom filter info if available, using correct bitset-only size
 	if col.MetaData.IsSetBloomFilterOffset() {
 		columnChunk["bloomFilterOffset"] = col.MetaData.GetBloomFilterOffset()
-		if col.MetaData.IsSetBloomFilterLength() {
-			columnChunk["bloomFilterLength"] = col.MetaData.GetBloomFilterLength()
+		if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
+			columnChunk["bloomFilterLength"] = size
 		}
 	}
 
@@ -206,7 +207,7 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 }
 
 // Level 3: Column chunk details and pages with brief info
-func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
+func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -248,8 +249,8 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 
 	if col.MetaData.IsSetBloomFilterOffset() {
 		columnChunkDetails["bloomFilterOffset"] = col.MetaData.GetBloomFilterOffset()
-		if col.MetaData.IsSetBloomFilterLength() {
-			columnChunkDetails["bloomFilterLength"] = col.MetaData.GetBloomFilterLength()
+		if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
+			columnChunkDetails["bloomFilterLength"] = size
 		}
 	}
 

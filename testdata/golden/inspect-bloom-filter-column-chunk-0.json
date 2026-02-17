@@ -1,6 +1,6 @@
 {
   "columnChunk": {
-    "bloomFilterLength": 1040,
+    "bloomFilterLength": 1024,
     "bloomFilterOffset": 2082,
     "columnChunkIndex": 0,
     "compressedSize": 332,

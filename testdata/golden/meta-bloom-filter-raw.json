@@ -21,7 +21,7 @@
           "MaxValue": 9,
           "MinValue": 0,
           "BloomFilterOffset": 2082,
-          "BloomFilterLength": 1040,
+          "BloomFilterLength": 1024,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -42,7 +42,7 @@
           "MaxValue": "name-9",
           "MinValue": "name-0",
           "BloomFilterOffset": 3122,
-          "BloomFilterLength": 4112,
+          "BloomFilterLength": 4096,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -78,7 +78,7 @@
           "MaxValue": 13.5,
           "MinValue": 0,
           "BloomFilterOffset": 7234,
-          "BloomFilterLength": 1040,
+          "BloomFilterLength": 1024,
           "CompressionCodec": "SNAPPY"
         },
         {
