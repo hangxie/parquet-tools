@@ -1,7 +1,7 @@
 {
   "columnChunks": [
     {
-      "bloomFilterLength": 1040,
+      "bloomFilterLength": 1024,
       "bloomFilterOffset": 2082,
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",
@@ -23,7 +23,7 @@
       "uncompressedSize": 324
     },
     {
-      "bloomFilterLength": 4112,
+      "bloomFilterLength": 4096,
       "bloomFilterOffset": 3122,
       "compressedSize": 320,
       "compressionCodec": "SNAPPY",
@@ -67,7 +67,7 @@
       "uncompressedSize": 220
     },
     {
-      "bloomFilterLength": 1040,
+      "bloomFilterLength": 1024,
       "bloomFilterOffset": 7234,
       "compressedSize": 332,
       "compressionCodec": "SNAPPY",

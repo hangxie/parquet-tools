@@ -183,8 +183,9 @@ type bloomFilterInfo struct {
 	Size    int32
 }
 
-// buildBloomFilterMap extracts bloom filter information from the footer metadata.
-// For each column, it checks whether a bloom filter offset is set.
+// buildBloomFilterMap extracts bloom filter information using the correct bitset-only
+// size from SchemaHandler.Infos (populated by the library's detectBloomFilters), rather
+// than raw metadata which includes Thrift header overhead.
 func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
 	result := make(map[string]bloomFilterInfo)
 
@@ -192,15 +193,44 @@ func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
 		return result
 	}
 
+	rootName := pr.SchemaHandler.GetRootInName()
 	columns := pr.Footer.RowGroups[0].Columns
 	for _, col := range columns {
+		if !col.MetaData.IsSetBloomFilterOffset() {
+			continue
+		}
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
-		if col.MetaData.IsSetBloomFilterOffset() {
-			info := bloomFilterInfo{Enabled: true}
-			if col.MetaData.IsSetBloomFilterLength() {
-				info.Size = col.MetaData.GetBloomFilterLength()
-			}
-			result[pathKey] = info
+		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
+		info := bloomFilterInfo{Enabled: true}
+		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
+			info.Size = pr.SchemaHandler.Infos[idx].BloomFilterSize
+		}
+		result[pathKey] = info
+	}
+
+	return result
+}
+
+// BloomFilterSizeMap returns a map from column path (PathInSchema joined) to the correct
+// bloom filter bitset size in bytes, as detected by the parquet-go library from the actual
+// file header (not from metadata which includes Thrift header overhead).
+func BloomFilterSizeMap(pr *reader.ParquetReader) map[string]int32 {
+	result := make(map[string]int32)
+
+	if len(pr.Footer.RowGroups) == 0 {
+		return result
+	}
+
+	rootName := pr.SchemaHandler.GetRootInName()
+	columns := pr.Footer.RowGroups[0].Columns
+	for _, col := range columns {
+		if !col.MetaData.IsSetBloomFilterOffset() {
+			continue
+		}
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
+		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
+			result[pathKey] = pr.SchemaHandler.Infos[idx].BloomFilterSize
 		}
 	}
 
