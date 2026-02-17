@@ -30,26 +30,19 @@ func PipelineWriter(ctx context.Context, fileWriter *writer.ParquetWriter, write
 // through an internal channel to the writer. If either side fails, the shared context is
 // cancelled so the other side exits promptly.
 func RunPipeline(fileReader *reader.ParquetReader, fileWriter *writer.ParquetWriter, source, target string, pageSize int, transform func(any) (any, error)) error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	writerGroup, _ := errgroup.WithContext(ctx)
+	g, gctx := errgroup.WithContext(context.Background())
 	writerChan := make(chan any)
 
-	writerGroup.Go(func() error {
-		return PipelineWriter(ctx, fileWriter, writerChan, target)
+	g.Go(func() error {
+		return PipelineWriter(gctx, fileWriter, writerChan, target)
 	})
 
-	readerGroup, _ := errgroup.WithContext(ctx)
-	readerGroup.Go(func() error {
-		return PipelineReader(ctx, fileReader, writerChan, source, pageSize, transform)
+	g.Go(func() error {
+		defer close(writerChan)
+		return PipelineReader(gctx, fileReader, writerChan, source, pageSize, transform)
 	})
 
-	if err := readerGroup.Wait(); err != nil {
-		return err
-	}
-	close(writerChan)
-	return writerGroup.Wait()
+	return g.Wait()
 }
 
 // PipelineReader reads rows from fileReader in batches, optionally transforms each row,
