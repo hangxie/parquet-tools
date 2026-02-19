@@ -482,7 +482,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	}
 
 	// Calculate total values before this row group and in this row group
-	var valuesBeforeRG int64 = 0
+	var valuesBeforeRG int64
 	for i := range rowGroupIndex {
 		valuesBeforeRG += pr.Footer.RowGroups[i].NumRows
 	}
@@ -513,7 +513,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	allValues := allValuesInFile[rgStartIdx:rgEndIdx]
 
 	// Calculate the start index for this page
-	var startIdx int64 = 0
+	var startIdx int64
 	for i := range pageIndex {
 		if pages[i].Type != parquet.PageType_DATA_PAGE && pages[i].Type != parquet.PageType_DATA_PAGE_V2 {
 			continue

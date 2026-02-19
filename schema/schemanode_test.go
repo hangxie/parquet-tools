@@ -308,13 +308,11 @@ func TestTypeStr(t *testing.T) {
 	require.Equal(t, "STRUCT", typeStr(se))
 
 	// Type only
-	se.Type = new(parquet.Type)
-	*se.Type = parquet.Type_FLOAT
+	se.Type = new(parquet.Type_FLOAT)
 	require.Equal(t, "FLOAT", typeStr(se))
 
 	// both Type and ConvertedType
-	se.ConvertedType = new(parquet.ConvertedType)
-	*se.ConvertedType = parquet.ConvertedType_DECIMAL
+	se.ConvertedType = new(parquet.ConvertedType_DECIMAL)
 	require.Equal(t, "FLOAT", typeStr(se))
 
 	// ConvertedType only
