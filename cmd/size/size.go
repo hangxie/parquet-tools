@@ -7,7 +7,7 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-var (
+const (
 	queryRaw          = "raw"
 	queryUncompressed = "uncompressed"
 	queryFooter       = "footer"
