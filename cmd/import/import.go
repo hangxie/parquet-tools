@@ -90,6 +90,9 @@ func (c Cmd) importCSV() error {
 		if errors.Is(err, io.EOF) {
 			break
 		}
+		if err != nil {
+			return fmt.Errorf("failed to read CSV record from [%s]: %w", c.Source, err)
+		}
 		parquetFields := make([]*string, len(fields))
 		for i := range fields {
 			parquetFields[i] = &fields[i]
