@@ -59,7 +59,7 @@ func (c Cmd) importCSV() error {
 	}
 
 	var schema []string
-	for _, line := range strings.Split(string(schemaData), "\n") {
+	for line := range strings.SplitSeq(string(schemaData), "\n") {
 		line = strings.Trim(line, "\r\n\t ")
 		if line == "" {
 			continue
@@ -90,7 +90,7 @@ func (c Cmd) importCSV() error {
 			break
 		}
 		parquetFields := make([]*string, len(fields))
-		for i := 0; i < len(fields); i++ {
+		for i := range fields {
 			parquetFields[i] = &fields[i]
 		}
 		if err = parquetWriter.WriteString(parquetFields); err != nil {

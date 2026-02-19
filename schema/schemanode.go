@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -114,7 +115,6 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 	g.SetLimit(runtime.NumCPU())
 
 	for colIndex, col := range columns {
-		colIndex, col := colIndex, col // capture loop variables
 		g.Go(func() error {
 			pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
 
@@ -815,11 +815,5 @@ func IsEncodingCompatible(encoding, dataType string) bool {
 		return false
 	}
 
-	for _, compatibleEncoding := range compatibleEncodings {
-		if encoding == compatibleEncoding {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(compatibleEncodings, encoding)
 }

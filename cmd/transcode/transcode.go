@@ -2,6 +2,7 @@ package transcode
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -92,13 +93,7 @@ func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 
 		// Validate compression codec
 		codec = strings.ToUpper(codec)
-		isValid := false
-		for _, validCodec := range pio.ValidCompressionCodecs {
-			if codec == validCodec {
-				isValid = true
-				break
-			}
-		}
+		isValid := slices.Contains(pio.ValidCompressionCodecs, codec)
 		if !isValid {
 			return nil, fmt.Errorf("invalid compression codec [%s] for field [%s], valid codecs: %s", codec, fieldPath, strings.Join(pio.ValidCompressionCodecs, ", "))
 		}
