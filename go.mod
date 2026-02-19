@@ -1,6 +1,6 @@
 module github.com/hangxie/parquet-tools
 
-go 1.24.11
+go 1.26
 
 require (
 	cloud.google.com/go/storage v1.60.0

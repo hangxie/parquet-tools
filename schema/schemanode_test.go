@@ -934,10 +934,10 @@ func TestGetAllowedEncodings(t *testing.T) {
 }
 
 func TestIsCompatible(t *testing.T) {
-	int32Type := common.ToPtr(parquet.Type_INT32)
-	fixed := common.ToPtr(parquet.Type_FIXED_LEN_BYTE_ARRAY)
-	ba := common.ToPtr(parquet.Type_BYTE_ARRAY)
-	decimal := common.ToPtr(parquet.ConvertedType_DECIMAL)
+	int32Type := new(parquet.Type_INT32)
+	fixed := new(parquet.Type_FIXED_LEN_BYTE_ARRAY)
+	ba := new(parquet.Type_BYTE_ARRAY)
+	decimal := new(parquet.ConvertedType_DECIMAL)
 	stringLT := &parquet.LogicalType{STRING: &parquet.StringType{}}
 
 	tests := []struct {
@@ -962,7 +962,7 @@ func TestIsCompatible(t *testing.T) {
 		{
 			"different Type",
 			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: common.ToPtr(parquet.Type_FLOAT)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: new(parquet.Type_FLOAT)}},
 			CompareOption{},
 			false,
 		},
@@ -975,49 +975,49 @@ func TestIsCompatible(t *testing.T) {
 		},
 		{
 			"different TypeLength for FIXED_LEN_BYTE_ARRAY",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: fixed, TypeLength: common.ToPtr(int32(12))}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: fixed, TypeLength: common.ToPtr(int32(16))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: fixed, TypeLength: new(int32(12))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: fixed, TypeLength: new(int32(16))}},
 			CompareOption{},
 			false,
 		},
 		{
 			"TypeLength ignored for non-FIXED_LEN_BYTE_ARRAY",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba, TypeLength: common.ToPtr(int32(0))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba, TypeLength: new(int32(0))}},
 			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: ba}},
 			CompareOption{},
 			true,
 		},
 		{
 			"different RepetitionType",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, RepetitionType: common.ToPtr(parquet.FieldRepetitionType_OPTIONAL)}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, RepetitionType: common.ToPtr(parquet.FieldRepetitionType_REQUIRED)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, RepetitionType: new(parquet.FieldRepetitionType_OPTIONAL)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, RepetitionType: new(parquet.FieldRepetitionType_REQUIRED)}},
 			CompareOption{},
 			false,
 		},
 		{
 			"different ConvertedType",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", ConvertedType: common.ToPtr(parquet.ConvertedType_LIST)}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", ConvertedType: common.ToPtr(parquet.ConvertedType_DECIMAL)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", ConvertedType: new(parquet.ConvertedType_LIST)}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", ConvertedType: new(parquet.ConvertedType_DECIMAL)}},
 			CompareOption{},
 			false,
 		},
 		{
 			"different Scale for DECIMAL",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Scale: common.ToPtr(int32(5))}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Scale: common.ToPtr(int32(10))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Scale: new(int32(5))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Scale: new(int32(10))}},
 			CompareOption{},
 			false,
 		},
 		{
 			"different Precision for DECIMAL",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Precision: common.ToPtr(int32(10))}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Precision: common.ToPtr(int32(20))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Precision: new(int32(10))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, ConvertedType: decimal, Precision: new(int32(20))}},
 			CompareOption{},
 			false,
 		},
 		{
 			"Scale ignored for non-DECIMAL",
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, Scale: common.ToPtr(int32(0))}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type, Scale: new(int32(0))}},
 			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "f", Type: int32Type}},
 			CompareOption{},
 			true,
@@ -1085,7 +1085,7 @@ func TestIsCompatible(t *testing.T) {
 		{
 			"different child at leaf",
 			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: int32Type}}}},
-			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: common.ToPtr(parquet.Type_INT64)}}}},
+			&SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}, Children: []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "a", Type: new(parquet.Type_INT64)}}}},
 			CompareOption{},
 			false,
 		},

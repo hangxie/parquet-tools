@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
@@ -121,7 +120,7 @@ func TestSortingToString(t *testing.T) {
 				{ColumnIdx: 1, Descending: true},
 			},
 			columnIndex: 0,
-			expected:    common.ToPtr("ASC"),
+			expected:    new("ASC"),
 		},
 		"descending-column-found": {
 			sortingColumns: []*parquet.SortingColumn{
@@ -129,7 +128,7 @@ func TestSortingToString(t *testing.T) {
 				{ColumnIdx: 1, Descending: true},
 			},
 			columnIndex: 1,
-			expected:    common.ToPtr("DESC"),
+			expected:    new("DESC"),
 		},
 		"multiple-columns-first-match": {
 			sortingColumns: []*parquet.SortingColumn{
@@ -138,14 +137,14 @@ func TestSortingToString(t *testing.T) {
 				{ColumnIdx: 2, Descending: false}, // Should not be reached due to first match
 			},
 			columnIndex: 2,
-			expected:    common.ToPtr("DESC"),
+			expected:    new("DESC"),
 		},
 		"column-index-conversion": {
 			sortingColumns: []*parquet.SortingColumn{
 				{ColumnIdx: 42, Descending: false},
 			},
 			columnIndex: 42,
-			expected:    common.ToPtr("ASC"),
+			expected:    new("ASC"),
 		},
 	}
 

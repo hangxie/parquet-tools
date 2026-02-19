@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/common"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
 
@@ -155,7 +154,7 @@ func TestGoStructNode(t *testing.T) {
 
 		// 45th field is "Map", whose 1st field is "Key_value", whose 3rd field is map's value
 		schemaRoot.Children[45].Children[0].Children[1].Type = nil
-		schemaRoot.Children[45].Children[0].Children[1].ConvertedType = common.ToPtr(parquet.ConvertedType_BSON)
+		schemaRoot.Children[45].Children[0].Children[1].ConvertedType = new(parquet.ConvertedType_BSON)
 		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "type not set")
