@@ -68,7 +68,7 @@ func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetF
 	}
 	ctx := context.Background()
 
-	options := []googleoption.ClientOption{}
+	var options []googleoption.ClientOption
 	if option.Anonymous {
 		options = append(options, googleoption.WithoutAuthentication())
 	}
