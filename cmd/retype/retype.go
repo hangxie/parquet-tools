@@ -395,7 +395,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 
 			// Create slice of elements
 			list := make([]listElementWrapper, val.Len())
-			for i := 0; i < val.Len(); i++ {
+			for i := range val.Len() {
 				list[i] = listElementWrapper{
 					Element: val.Index(i).Interface(),
 				}

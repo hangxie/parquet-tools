@@ -6,7 +6,6 @@ import (
 	"maps"
 	"runtime"
 	"slices"
-	"sort"
 	"strings"
 	"sync"
 
@@ -762,7 +761,7 @@ func EncodingToString(encodings []parquet.Encoding) []string {
 	for i := range encodings {
 		ret[i] = encodings[i].String()
 	}
-	sort.Strings(ret)
+	slices.Sort(ret)
 	return ret
 }
 
