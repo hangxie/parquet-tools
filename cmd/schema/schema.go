@@ -9,7 +9,7 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-var (
+const (
 	formatRaw  = "raw"
 	formatJSON = "json"
 	formatGo   = "go"
