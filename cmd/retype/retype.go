@@ -10,8 +10,6 @@ import (
 	"github.com/hangxie/parquet-go/v2/types"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
-	"github.com/hangxie/parquet-go/v2/common"
-
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
@@ -182,7 +180,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			return node.Type != nil && *node.Type == parquet.Type_INT96
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
-			node.Type = common.ToPtr(parquet.Type_INT64)
+			node.Type = new(parquet.Type_INT64)
 			node.LogicalType = &parquet.LogicalType{
 				TIMESTAMP: &parquet.TimestampType{
 					IsAdjustedToUTC: true,
@@ -246,7 +244,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			return node.LogicalType != nil && node.LogicalType.IsSetFLOAT16()
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
-			node.Type = common.ToPtr(parquet.Type_FLOAT)
+			node.Type = new(parquet.Type_FLOAT)
 			node.LogicalType = nil
 			node.TypeLength = nil
 		},
@@ -270,11 +268,11 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
 			// Remove VARIANT logical type, making it a plain BYTE_ARRAY (string)
-			node.Type = common.ToPtr(parquet.Type_BYTE_ARRAY)
+			node.Type = new(parquet.Type_BYTE_ARRAY)
 			node.LogicalType = &parquet.LogicalType{
 				STRING: &parquet.StringType{},
 			}
-			node.ConvertedType = common.ToPtr(parquet.ConvertedType_UTF8)
+			node.ConvertedType = new(parquet.ConvertedType_UTF8)
 		},
 		ConvertData: func(value any) (any, error) {
 			jsonData, err := json.Marshal(value)
@@ -292,11 +290,11 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 		},
 		TransformSchema: func(node *pschema.SchemaNode) {
 			// Remove UUID logical type, making it a plain BYTE_ARRAY (string)
-			node.Type = common.ToPtr(parquet.Type_BYTE_ARRAY)
+			node.Type = new(parquet.Type_BYTE_ARRAY)
 			node.LogicalType = &parquet.LogicalType{
 				STRING: &parquet.StringType{},
 			}
-			node.ConvertedType = common.ToPtr(parquet.ConvertedType_UTF8)
+			node.ConvertedType = new(parquet.ConvertedType_UTF8)
 			node.TypeLength = nil
 		},
 		ConvertData: func(value any) (any, error) {
@@ -343,7 +341,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 					Name:           "element",
 					Type:           node.Type,
 					TypeLength:     node.TypeLength,
-					RepetitionType: common.ToPtr(parquet.FieldRepetitionType_REQUIRED),
+					RepetitionType: new(parquet.FieldRepetitionType_REQUIRED),
 					ConvertedType:  node.ConvertedType,
 					Scale:          node.Scale,
 					Precision:      node.Precision,
@@ -362,7 +360,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			list := &pschema.SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Name:           "list",
-					RepetitionType: common.ToPtr(parquet.FieldRepetitionType_REPEATED),
+					RepetitionType: new(parquet.FieldRepetitionType_REPEATED),
 				},
 				Children:   []*pschema.SchemaNode{element},
 				InNamePath: append(inPath, "List"),
@@ -372,8 +370,8 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			// Transform original node to LIST Group
 			node.Type = nil
 			node.TypeLength = nil
-			node.RepetitionType = common.ToPtr(parquet.FieldRepetitionType_REQUIRED)
-			node.ConvertedType = common.ToPtr(parquet.ConvertedType_LIST)
+			node.RepetitionType = new(parquet.FieldRepetitionType_REQUIRED)
+			node.ConvertedType = new(parquet.ConvertedType_LIST)
 			node.LogicalType = &parquet.LogicalType{LIST: &parquet.ListType{}}
 			node.Children = []*pschema.SchemaNode{list}
 

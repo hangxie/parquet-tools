@@ -186,7 +186,7 @@ func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNo
 	}
 
 	if len(convertedTypeParts) > 0 {
-		column.ConvertedType = common.ToPtr(strings.Join(convertedTypeParts, ", "))
+		column.ConvertedType = new(strings.Join(convertedTypeParts, ", "))
 	}
 
 	var logicalTypeParts []string
@@ -199,7 +199,7 @@ func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNo
 	}
 
 	if len(logicalTypeParts) > 0 {
-		column.LogicalType = common.ToPtr(strings.Join(logicalTypeParts, ", "))
+		column.LogicalType = new(strings.Join(logicalTypeParts, ", "))
 	}
 }
 
@@ -257,9 +257,9 @@ func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *
 	for _, indexCol := range sortingColumns {
 		if indexCol.ColumnIdx == int32(columnIndex) {
 			if indexCol.Descending {
-				return common.ToPtr("DESC")
+				return new("DESC")
 			}
-			return common.ToPtr("ASC")
+			return new("ASC")
 		}
 	}
 	return nil
