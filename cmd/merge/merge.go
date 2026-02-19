@@ -74,7 +74,6 @@ func (c Cmd) Run() (retErr error) {
 			readerGroup.SetLimit(1)
 		}
 		for i := range fileReaders {
-			i := i
 			readerGroup.Go(func() error {
 				return pio.PipelineReader(gctx, fileReaders[i], writerChan, c.Source[i], c.ReadPageSize, nil)
 			})

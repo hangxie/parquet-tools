@@ -35,7 +35,8 @@ func (n goStructNode) asScalar() (string, error) {
 }
 
 func (n goStructNode) asStruct() (string, error) {
-	typeStr := "struct {\n"
+	var typeStr strings.Builder
+	typeStr.WriteString("struct {\n")
 	for _, child := range n.Children {
 		structStr, err := goStructNode{
 			SchemaNode:     *child,
@@ -44,10 +45,10 @@ func (n goStructNode) asStruct() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		typeStr += structStr + "\n"
+		typeStr.WriteString(structStr + "\n")
 	}
-	typeStr += "}"
-	return typeStr, nil
+	typeStr.WriteString("}")
+	return typeStr.String(), nil
 }
 
 func (n goStructNode) asList() (string, error) {

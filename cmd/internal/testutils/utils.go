@@ -82,9 +82,9 @@ func LoadExpected(t *testing.T, fileName string) string {
 	}
 
 	// JSON and JSONL golden files are formatted by jq
-	var result string
+	var result strings.Builder
 	var currentBuf []byte
-	for _, line := range bytes.Split(buf, []byte("\n")) {
+	for line := range bytes.SplitSeq(buf, []byte("\n")) {
 		// in jq format, if the first character is not space than it's
 		// start (when currentBuf is empty) or end of an object (when
 		// currentBuf is not empty)
@@ -95,9 +95,9 @@ func LoadExpected(t *testing.T, fileName string) string {
 			if err := json.Compact(dst, currentBuf); err != nil {
 				t.Fatal("cannot parse golden file:", fileName, "because of:", err.Error())
 			}
-			result += dst.String() + "\n"
+			result.WriteString(dst.String() + "\n")
 			currentBuf = []byte{}
 		}
 	}
-	return result
+	return result.String()
 }

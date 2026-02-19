@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/google/uuid"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/stretchr/testify/require"
@@ -108,10 +109,10 @@ func TestAzureAccessDetail(t *testing.T) {
 		}
 		dummyKey := base64.StdEncoding.EncodeToString(randBytes)
 		t.Setenv("AZURE_STORAGE_ACCESS_KEY", dummyKey)
-		uri, cred, err := azureAccessDetail(u, false, "")
+		uri, _, err := azureAccessDetail(u, false, "")
 		require.NoError(t, err)
 		require.Equal(t, "https://storageaccount.blob.core.windows.net/container/path/to/object", uri)
-		require.Equal(t, "*exported.SharedKeyCredential", reflect.TypeOf(cred).String())
+		require.Equal(t, "*exported.SharedKeyCredential", reflect.TypeFor[*azblob.SharedKeyCredential]().String())
 	})
 }
 
