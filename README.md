@@ -147,7 +147,7 @@ You can choose one of the installation methods from below, the functionality wil
 
 ### Install from Source
 
-Good for people who are familiar with [Go](https://go.dev/), you need 1.24 or newer version.
+Good for people who are familiar with [Go](https://go.dev/), you need 1.26 or newer version.
 
 ```bash
 $ go install github.com/hangxie/parquet-tools@latest
