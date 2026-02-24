@@ -106,6 +106,25 @@ func TestNewSchemaTree(t *testing.T) {
 			verifySchemaNode(t, schemaRoot, tc.checkEncodings, tc.checkNoEncodings)
 		})
 	}
+
+	t.Run("encoding map error propagates", func(t *testing.T) {
+		tmpFile := t.TempDir() + "/encoding-error.parquet"
+		data, err := os.ReadFile("../testdata/good.parquet")
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
+
+		pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		require.NoError(t, os.Remove(tmpFile))
+
+		_, err = NewSchemaTree(pr, SchemaOption{})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to build encoding map")
+	})
 }
 
 func TestBuildEncodingMap(t *testing.T) {
@@ -147,7 +166,8 @@ func TestBuildEncodingMap(t *testing.T) {
 				_ = pr.PFile.Close()
 			}()
 
-			result := buildEncodingMap(pr)
+			result, err := buildEncodingMap(pr)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			if tc.expectEmpty {
@@ -165,6 +185,49 @@ func TestBuildEncodingMap(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("clone error propagates", func(t *testing.T) {
+		// Open a valid parquet file, then delete it so Clone() fails
+		tmpFile := t.TempDir() + "/clone-error.parquet"
+		data, err := os.ReadFile("../testdata/good.parquet")
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
+
+		pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		// Delete the file so Clone() cannot re-open it
+		require.NoError(t, os.Remove(tmpFile))
+
+		_, err = buildEncodingMap(pr)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to clone file")
+	})
+
+	t.Run("read encoding error propagates", func(t *testing.T) {
+		// Open a valid parquet file, then truncate it so Clone() succeeds
+		// but reading data pages fails
+		tmpFile := t.TempDir() + "/read-error.parquet"
+		data, err := os.ReadFile("../testdata/good.parquet")
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
+
+		pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		// Truncate the file to corrupt data pages while keeping it openable
+		require.NoError(t, os.Truncate(tmpFile, 4))
+
+		_, err = buildEncodingMap(pr)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to read encoding")
+	})
 }
 
 func TestSchemaNodeGetPathMap(t *testing.T) {
@@ -762,6 +825,116 @@ func TestBuildCompressionCodecMap(t *testing.T) {
 	}
 }
 
+func TestBuildBloomFilterMap(t *testing.T) {
+	testCases := []struct {
+		name        string
+		uri         string
+		expectEmpty bool
+	}{
+		{
+			name:        "empty row groups",
+			uri:         "../testdata/empty.parquet",
+			expectEmpty: true,
+		},
+		{
+			name:        "file without bloom filters",
+			uri:         "../testdata/good.parquet",
+			expectEmpty: true,
+		},
+		{
+			name:        "file with bloom filters",
+			uri:         "../testdata/bloom-filter.parquet",
+			expectEmpty: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr, err := pio.NewParquetFileReader(tc.uri, pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
+
+			result := buildBloomFilterMap(pr)
+			require.NotNil(t, result)
+
+			if tc.expectEmpty {
+				require.Empty(t, result)
+			} else {
+				require.NotEmpty(t, result)
+				for _, info := range result {
+					require.True(t, info.Enabled)
+				}
+			}
+		})
+	}
+}
+
+func TestBloomFilterSizeMap(t *testing.T) {
+	testCases := []struct {
+		name        string
+		uri         string
+		expectEmpty bool
+	}{
+		{
+			name:        "empty row groups",
+			uri:         "../testdata/empty.parquet",
+			expectEmpty: true,
+		},
+		{
+			name:        "file without bloom filters",
+			uri:         "../testdata/good.parquet",
+			expectEmpty: true,
+		},
+		{
+			name:        "file with bloom filters",
+			uri:         "../testdata/bloom-filter.parquet",
+			expectEmpty: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr, err := pio.NewParquetFileReader(tc.uri, pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() {
+				_ = pr.PFile.Close()
+			}()
+
+			result := BloomFilterSizeMap(pr)
+			require.NotNil(t, result)
+
+			if tc.expectEmpty {
+				require.Empty(t, result)
+			} else {
+				require.NotEmpty(t, result)
+				for _, size := range result {
+					require.Greater(t, size, int32(0))
+				}
+			}
+		})
+	}
+
+	t.Run("consistent with buildBloomFilterMap", func(t *testing.T) {
+		pr, err := pio.NewParquetFileReader("../testdata/bloom-filter.parquet", pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		sizeMap := BloomFilterSizeMap(pr)
+		infoMap := buildBloomFilterMap(pr)
+
+		require.Equal(t, len(infoMap), len(sizeMap))
+		for key, info := range infoMap {
+			size, found := sizeMap[key]
+			require.True(t, found, "key %q in buildBloomFilterMap but not in BloomFilterSizeMap", key)
+			require.Equal(t, info.Size, size)
+		}
+	})
+}
+
 func TestEncodingToString(t *testing.T) {
 	testCases := []struct {
 		name      string
@@ -1205,5 +1378,315 @@ func TestGetTagMapWithCompression(t *testing.T) {
 			require.NotEmpty(t, tagMap["compression"])
 			break
 		}
+	}
+}
+
+func TestConvertedTypeString(t *testing.T) {
+	testCases := map[string]struct {
+		node *SchemaNode
+		want string
+	}{
+		"nil-node": {
+			node: nil,
+			want: "",
+		},
+		"no-converted-type": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			want: "",
+		},
+		"date": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type:          parquet.TypePtr(parquet.Type_INT32),
+					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_DATE),
+				},
+			},
+			want: "convertedtype=DATE",
+		},
+		"utf8": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type:          parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_UTF8),
+				},
+			},
+			want: "convertedtype=UTF8",
+		},
+		"decimal-with-precision-scale": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type:          parquet.TypePtr(parquet.Type_INT32),
+					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_DECIMAL),
+					Scale:         new(int32(2)),
+					Precision:     new(int32(10)),
+				},
+			},
+			want: "convertedtype=DECIMAL, scale=2, precision=10",
+		},
+		"fixed-len-decimal-with-length": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+					TypeLength:    new(int32(16)),
+					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_DECIMAL),
+					Scale:         new(int32(5)),
+					Precision:     new(int32(38)),
+				},
+			},
+			want: "convertedtype=DECIMAL, scale=5, precision=38, length=16",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := tc.node.ConvertedTypeString()
+			require.Equal(t, tc.want, result)
+		})
+	}
+}
+
+func TestLogicalTypeString(t *testing.T) {
+	testCases := map[string]struct {
+		node *SchemaNode
+		want string
+	}{
+		"nil-node": {
+			node: nil,
+			want: "",
+		},
+		"no-logical-type": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			want: "",
+		},
+		"string": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+					LogicalType: &parquet.LogicalType{
+						STRING: &parquet.StringType{},
+					},
+				},
+			},
+			want: "logicaltype=STRING",
+		},
+		"date": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+					LogicalType: &parquet.LogicalType{
+						DATE: &parquet.DateType{},
+					},
+				},
+			},
+			want: "logicaltype=DATE",
+		},
+		"decimal-with-params": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+					LogicalType: &parquet.LogicalType{
+						DECIMAL: &parquet.DecimalType{
+							Precision: 10,
+							Scale:     2,
+						},
+					},
+				},
+			},
+			want: "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+		},
+		"timestamp-millis": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT64),
+					LogicalType: &parquet.LogicalType{
+						TIMESTAMP: &parquet.TimestampType{
+							IsAdjustedToUTC: true,
+							Unit: &parquet.TimeUnit{
+								MILLIS: parquet.NewMilliSeconds(),
+							},
+						},
+					},
+				},
+			},
+			want: "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+		},
+		"integer-signed": {
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+					LogicalType: &parquet.LogicalType{
+						INTEGER: &parquet.IntType{
+							BitWidth: 32,
+							IsSigned: true,
+						},
+					},
+				},
+			},
+			want: "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := tc.node.LogicalTypeString()
+			require.Equal(t, tc.want, result)
+		})
+	}
+}
+
+func TestDecodeStatValue(t *testing.T) {
+	testCases := map[string]struct {
+		value     []byte
+		node      *SchemaNode
+		want      any
+		wantNil   bool
+		wantError bool
+	}{
+		"nil-value": {
+			value: nil,
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			wantNil: true,
+		},
+		"empty-value": {
+			value: []byte{},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			wantNil: true,
+		},
+		"geometry": {
+			value: []byte{1, 2, 3, 4},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+					LogicalType: &parquet.LogicalType{
+						GEOMETRY: &parquet.GeometryType{},
+					},
+				},
+			},
+			wantNil: true,
+		},
+		"geography": {
+			value: []byte{1, 2, 3, 4},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+					LogicalType: &parquet.LogicalType{
+						GEOGRAPHY: &parquet.GeographyType{},
+					},
+				},
+			},
+			wantNil: true,
+		},
+		"interval": {
+			value: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_INTERVAL),
+				},
+			},
+			wantNil: true,
+		},
+		"byte-array": {
+			value: []byte("hello"),
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+				},
+			},
+			want: "aGVsbG8=", // base64-encoded by ParquetTypeToJSONTypeWithLogical for raw byte arrays
+		},
+		"fixed-len-byte-array": {
+			value: []byte("abcd"),
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+				},
+			},
+			want: "YWJjZA==", // base64-encoded
+		},
+		"int32": {
+			value: []byte{9, 0, 0, 0},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			want: int32(9),
+		},
+		"int64": {
+			value: []byte{9, 0, 0, 0, 0, 0, 0, 0},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT64),
+				},
+			},
+			want: int64(9),
+		},
+		"boolean-true": {
+			value: []byte{1},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BOOLEAN),
+				},
+			},
+			want: true,
+		},
+		"float": {
+			value: []byte{0, 0, 0, 64},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_FLOAT),
+				},
+			},
+			want: float32(2),
+		},
+		"double": {
+			value: []byte{0, 0, 0, 0, 0, 0, 0, 64},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_DOUBLE),
+				},
+			},
+			want: float64(2),
+		},
+		"invalid-data": {
+			value: []byte{1},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_INT32),
+				},
+			},
+			wantError: true,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := tc.node.DecodeStatValue(tc.value)
+			if tc.wantNil {
+				require.Nil(t, result)
+			} else if tc.wantError {
+				require.NotNil(t, result)
+				require.Contains(t, result, "failed to read data")
+			} else {
+				require.Equal(t, tc.want, result)
+			}
+		})
 	}
 }

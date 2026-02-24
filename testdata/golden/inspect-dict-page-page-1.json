@@ -1,0 +1,22 @@
+{
+  "page": {
+    "index": 1,
+    "offset": 70,
+    "type": "DATA_PAGE",
+    "compressedSize": 36,
+    "uncompressedSize": 11,
+    "numValues": 2,
+    "encoding": "RLE_DICTIONARY",
+    "definitionLevelEncoding": "RLE",
+    "repetitionLevelEncoding": "RLE",
+    "statistics": {
+      "maxValue": "nike",
+      "minValue": "adidas",
+      "nullCount": 0
+    }
+  },
+  "values": [
+    "nike",
+    "adidas"
+  ]
+}

@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -50,6 +51,7 @@ func TestInspect(t *testing.T) {
 		// page level
 		"page/good-page-0":                  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-good-page-0.json"},
 		"page/dict-page-page-0":             {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-dict-page-page-0.json"},
+		"page/dict-page-page-1":             {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)}, golden: "inspect-dict-page-page-1.json"},
 		"page/row-group-rg1-page-0":         {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(1), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-row-group-rg1-page-0.json"},
 		"page/data-page-v2-page-0":          {cmd: Cmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-data-page-v2-page-0.json"},
 		"page/good-page-1":                  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)}, golden: "inspect-good-page-1.json"},
@@ -81,94 +83,6 @@ func TestInspect(t *testing.T) {
 				})
 				require.Equal(t, testutils.LoadExpected(t, tc.golden), stdout)
 				require.Equal(t, "", stderr)
-			}
-		})
-	}
-}
-
-func TestGetStatValue(t *testing.T) {
-	cmd := Cmd{}
-
-	testCases := map[string]struct {
-		value      []byte
-		schemaNode *pschema.SchemaNode
-		want       any
-		wantNil    bool
-		wantError  bool
-	}{
-		"nil-value": {
-			value: nil,
-			schemaNode: &pschema.SchemaNode{
-				SchemaElement: parquet.SchemaElement{
-					Type: parquet.TypePtr(parquet.Type_INT32),
-				},
-			},
-			wantNil: true,
-		},
-		"empty-value": {
-			value: []byte{},
-			schemaNode: &pschema.SchemaNode{
-				SchemaElement: parquet.SchemaElement{
-					Type: parquet.TypePtr(parquet.Type_INT32),
-				},
-			},
-			wantNil: true,
-		},
-		"geometry-with-data": {
-			value: []byte{1, 2, 3, 4}, // Some non-empty data
-			schemaNode: &pschema.SchemaNode{
-				SchemaElement: parquet.SchemaElement{
-					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
-					LogicalType: &parquet.LogicalType{
-						GEOMETRY: &parquet.GeometryType{},
-					},
-				},
-			},
-			wantNil: true, // Should return nil for geospatial types
-		},
-		"geography-with-data": {
-			value: []byte{1, 2, 3, 4}, // Some non-empty data
-			schemaNode: &pschema.SchemaNode{
-				SchemaElement: parquet.SchemaElement{
-					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
-					LogicalType: &parquet.LogicalType{
-						GEOGRAPHY: &parquet.GeographyType{},
-					},
-				},
-			},
-			wantNil: true, // Should return nil for geospatial types
-		},
-		"interval-with-data": {
-			value: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, // 12 bytes for interval
-			schemaNode: &pschema.SchemaNode{
-				SchemaElement: parquet.SchemaElement{
-					Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
-					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_INTERVAL),
-				},
-			},
-			wantNil: true, // Should return nil for interval types
-		},
-		"invalid-int32-data": {
-			value: []byte{1}, // Too short for INT32 (needs 4 bytes)
-			schemaNode: &pschema.SchemaNode{
-				SchemaElement: parquet.SchemaElement{
-					Type: parquet.TypePtr(parquet.Type_INT32),
-				},
-			},
-			wantError: true, // Should return error message
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			result := cmd.getStatValue(tc.value, tc.schemaNode)
-			if tc.wantNil {
-				require.Nil(t, result)
-			} else if tc.wantError {
-				require.NotNil(t, result)
-				require.Contains(t, result, "failed to read data")
-			} else {
-				require.Equal(t, tc.want, result)
 			}
 		})
 	}
@@ -458,6 +372,7 @@ func TestPrintJSON(t *testing.T) {
 	testCases := map[string]struct {
 		data      any
 		wantError bool
+		errMsg    string
 	}{
 		"valid-map": {
 			data: map[string]any{
@@ -476,6 +391,7 @@ func TestPrintJSON(t *testing.T) {
 		"invalid-data": {
 			data:      make(chan int),
 			wantError: true,
+			errMsg:    "unsupported type",
 		},
 	}
 
@@ -484,6 +400,7 @@ func TestPrintJSON(t *testing.T) {
 			err := cmd.printJSON(tc.data)
 			if tc.wantError {
 				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
 			} else {
 				require.NoError(t, err)
 			}
@@ -530,4 +447,45 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "unable to get numValues for page")
 	})
+}
+
+func TestRunCorruptFile(t *testing.T) {
+	tmpFile := t.TempDir() + "/corrupt.parquet"
+	require.NoError(t, os.WriteFile(tmpFile, []byte("not a parquet file"), 0o644))
+
+	err := Cmd{ReadOption: pio.ReadOption{}, URI: tmpFile}.Run()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "read footer")
+}
+
+func TestReadDictionaryPageValuesError(t *testing.T) {
+	tmpFile := t.TempDir() + "/dict-error.parquet"
+	data, err := os.ReadFile("../../testdata/dict-page.parquet")
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
+
+	pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { _ = pr.PFile.Close() }()
+
+	col := pr.Footer.RowGroups[0].Columns[0]
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+
+	schemaRoot, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{SkipPageEncoding: true})
+	require.NoError(t, err)
+	schemaNode := schemaRoot.GetPathMap()[pathKey]
+
+	// Get the dictionary page info before corrupting the file
+	pages, err := Cmd{}.readPages(pr, 0, 0, schemaNode)
+	require.NoError(t, err)
+	require.NotEmpty(t, pages)
+	require.Equal(t, parquet.PageType_DICTIONARY_PAGE, pages[0].Type)
+
+	// Truncate file so ReadDictionaryPageValues fails
+	require.NoError(t, os.Truncate(tmpFile, 4))
+
+	cmd := Cmd{}
+	_, err = cmd.readDictionaryPageValues(pr, col, schemaNode, pages[0])
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "failed to read dictionary page values")
 }

@@ -230,6 +230,9 @@ $PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/good.parquet"
 # inspect-dict-page-page-0.json
 $PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-page-0.json"
 
+# inspect-dict-page-page-1.json
+$PT inspect --row-group 0 --column-chunk 0 --page 1 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-page-1.json"
+
 # inspect-row-group-rg1-page-0.json
 $PT inspect --row-group 1 --column-chunk 0 --page 0 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg1-page-0.json"
 
