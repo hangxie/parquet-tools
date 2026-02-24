@@ -1,15 +1,12 @@
 package meta
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/encoding"
 	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/types"
 
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
@@ -173,84 +170,19 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 }
 
 func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNode) {
-	tagMap := schemaNode.GetTagMap()
-	orderedTags := pschema.OrderedTags()
-
-	var convertedTypeParts []string
-	for _, tag := range orderedTags {
-		if tag == "convertedtype" || tag == "scale" || tag == "precision" || tag == "length" {
-			if value, found := tagMap[tag]; found {
-				convertedTypeParts = append(convertedTypeParts, tag+"="+value)
-			}
-		}
+	if ct := schemaNode.ConvertedTypeString(); ct != "" {
+		column.ConvertedType = new(ct)
 	}
-
-	if len(convertedTypeParts) > 0 {
-		column.ConvertedType = new(strings.Join(convertedTypeParts, ", "))
-	}
-
-	var logicalTypeParts []string
-	for _, tag := range orderedTags {
-		if strings.HasPrefix(tag, "logicaltype") {
-			if value, found := tagMap[tag]; found {
-				logicalTypeParts = append(logicalTypeParts, tag+"="+value)
-			}
-		}
-	}
-
-	if len(logicalTypeParts) > 0 {
-		column.LogicalType = new(strings.Join(logicalTypeParts, ", "))
+	if lt := schemaNode.LogicalTypeString(); lt != "" {
+		column.LogicalType = new(lt)
 	}
 }
 
 func (c Cmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
 	column.NullCount = statistics.NullCount
 	column.DistinctCount = statistics.DistinctCount
-
-	isGeospatial := schemaNode.LogicalType != nil && (schemaNode.LogicalType.IsSetGEOMETRY() || schemaNode.LogicalType.IsSetGEOGRAPHY())
-	isInterval := schemaNode.ConvertedType != nil && *schemaNode.ConvertedType == parquet.ConvertedType_INTERVAL
-	if isGeospatial || isInterval {
-		// Min/Max values do not apply to GEOMETRY, GEOGRAPHY, and INTERVAL types
-		// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#interval
-		// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#geometry
-		// https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#geography
-		statistics.MaxValue = nil
-		statistics.MinValue = nil
-		return
-	}
-
-	precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
-	column.MaxValue = types.ParquetTypeToJSONTypeWithLogical(
-		retrieveValue(statistics.MaxValue, *schemaNode.Type),
-		schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-		precision, scale)
-	column.MinValue = types.ParquetTypeToJSONTypeWithLogical(
-		retrieveValue(statistics.MinValue, *schemaNode.Type),
-		schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-		precision, scale)
-}
-
-func retrieveValue(value []byte, parquetType parquet.Type) any {
-	if value == nil {
-		return nil
-	}
-
-	// Statistics for BYTE_ARRAY and FIXED_LEN_BYTE_ARRAY types don't include
-	// the length prefix that PLAIN encoding normally has, so we handle them directly
-	if parquetType == parquet.Type_BYTE_ARRAY || parquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-		return string(value)
-	}
-
-	// For numeric types, use parquet-go's encoding functions
-	buf := bytes.NewReader(value)
-	vals, err := encoding.ReadPlain(buf, parquetType, 1, 0)
-	if err != nil {
-		return fmt.Sprintf("failed to read data as %s: %v", parquetType.String(), err)
-	}
-	if len(vals) == 0 {
-		return nil
-	}
-	return vals[0]
+	column.MaxValue = schemaNode.DecodeStatValue(statistics.MaxValue)
+	column.MinValue = schemaNode.DecodeStatValue(statistics.MinValue)
 }
 
 func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {

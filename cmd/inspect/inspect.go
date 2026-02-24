@@ -1,13 +1,11 @@
 package inspect
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/encoding"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/reader"
 	"github.com/hangxie/parquet-go/v2/types"
@@ -319,82 +317,6 @@ func (c Cmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChun
 	return c.printJSON(output)
 }
 
-func (c Cmd) getConvertedType(schemaNode *pschema.SchemaNode) string {
-	tagMap := schemaNode.GetTagMap()
-	orderedTags := pschema.OrderedTags()
-
-	convertedTypeTags := map[string]struct{}{
-		"convertedtype": {},
-		"scale":         {},
-		"precision":     {},
-		"length":        {},
-	}
-
-	var convertedTypeParts []string
-	for _, tag := range orderedTags {
-		if _, ok := convertedTypeTags[tag]; !ok {
-			continue
-		}
-		if value, found := tagMap[tag]; found {
-			convertedTypeParts = append(convertedTypeParts, tag+"="+value)
-		}
-	}
-
-	return strings.Join(convertedTypeParts, ", ")
-}
-
-func (c Cmd) getLogicalType(schemaNode *pschema.SchemaNode) string {
-	tagMap := schemaNode.GetTagMap()
-	orderedTags := pschema.OrderedTags()
-
-	var logicalTypeParts []string
-	for _, tag := range orderedTags {
-		if !strings.HasPrefix(tag, "logicaltype") {
-			continue
-		}
-		if value, found := tagMap[tag]; found {
-			logicalTypeParts = append(logicalTypeParts, tag+"="+value)
-		}
-	}
-
-	return strings.Join(logicalTypeParts, ", ")
-}
-
-func (c Cmd) getStatValue(value []byte, schemaNode *pschema.SchemaNode) any {
-	if len(value) == 0 {
-		return nil
-	}
-
-	// Check if this is a type where min/max don't apply
-	isGeospatial := schemaNode.LogicalType != nil && (schemaNode.LogicalType.IsSetGEOMETRY() || schemaNode.LogicalType.IsSetGEOGRAPHY())
-	isInterval := schemaNode.ConvertedType != nil && *schemaNode.ConvertedType == parquet.ConvertedType_INTERVAL
-	if isGeospatial || isInterval {
-		return nil
-	}
-
-	var val any
-	// For BYTE_ARRAY and FIXED_LEN_BYTE_ARRAY, statistics bytes don't include the length prefix
-	if *schemaNode.Type == parquet.Type_BYTE_ARRAY || *schemaNode.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-		val = string(value)
-	} else {
-		// For other types, use parquet-go's encoding functions to decode the raw bytes
-		buf := bytes.NewReader(value)
-		vals, err := encoding.ReadPlain(buf, *schemaNode.Type, 1, 0)
-		if err != nil {
-			return fmt.Sprintf("failed to read data as %s: %v", schemaNode.Type.String(), err)
-		}
-		if len(vals) == 0 {
-			return nil
-		}
-		val = vals[0]
-	}
-
-	return types.ParquetTypeToJSONTypeWithLogical(
-		val,
-		schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-		int(schemaNode.GetPrecision()), int(schemaNode.GetScale()))
-}
-
 func (c Cmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
 	pageHeaders, err := pr.GetAllPageHeaders(rowGroupIndex, columnChunkIndex)
 	if err != nil {
@@ -590,11 +512,11 @@ func (c Cmd) addTypeInformation(output map[string]any, schemaNode *pschema.Schem
 	if schemaNode == nil {
 		return
 	}
-	if convertedType := c.getConvertedType(schemaNode); convertedType != "" {
-		output["convertedType"] = convertedType
+	if ct := schemaNode.ConvertedTypeString(); ct != "" {
+		output["convertedType"] = ct
 	}
-	if logicalType := c.getLogicalType(schemaNode); logicalType != "" {
-		output["logicalType"] = logicalType
+	if lt := schemaNode.LogicalTypeString(); lt != "" {
+		output["logicalType"] = lt
 	}
 }
 
@@ -610,10 +532,10 @@ func (c Cmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema
 	}
 
 	if schemaNode != nil {
-		if minVal := c.getStatValue(statistics.MinValue, schemaNode); minVal != nil {
+		if minVal := schemaNode.DecodeStatValue(statistics.MinValue); minVal != nil {
 			stats["minValue"] = minVal
 		}
-		if maxVal := c.getStatValue(statistics.MaxValue, schemaNode); maxVal != nil {
+		if maxVal := schemaNode.DecodeStatValue(statistics.MaxValue); maxVal != nil {
 			stats["maxValue"] = maxVal
 		}
 	}

@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -10,8 +11,10 @@ import (
 	"sync"
 
 	"github.com/hangxie/parquet-go/v2/common"
+	"github.com/hangxie/parquet-go/v2/encoding"
 	"github.com/hangxie/parquet-go/v2/parquet"
 	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v2/types"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -96,12 +99,12 @@ func readFirstDataPageEncoding(pr *reader.ParquetReader, rowGroupIndex, columnIn
 // For each column, it reads the page header at DataPageOffset to get the actual data page encoding.
 // Note: Parquet files should use consistent encodings across row groups for the same column.
 // This function reads columns in parallel to speed up remote file access.
-func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
+func buildEncodingMap(pr *reader.ParquetReader) (map[string]string, error) {
 	result := make(map[string]string)
 
 	// Use the first row group to extract encodings
 	if len(pr.Footer.RowGroups) == 0 {
-		return result
+		return result, nil
 	}
 
 	columns := pr.Footer.RowGroups[0].Columns
@@ -121,8 +124,7 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 			// This is necessary because io.ReadSeeker operations (Seek/Read) are not thread-safe
 			clonedFile, err := pr.PFile.Clone()
 			if err != nil {
-				// If cloning fails, skip this column's encoding
-				return nil
+				return fmt.Errorf("failed to clone file for column [%s]: %w", pathKey, err)
 			}
 			defer func() {
 				_ = clonedFile.Close()
@@ -138,11 +140,7 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 			// Read just the first data page header to get encoding
 			encoding, err := readFirstDataPageEncoding(clonedReader, 0, colIndex)
 			if err != nil {
-				// If we can't read the data page encoding, omit it from the schema.
-				// This lets the writer choose an appropriate default encoding for the type.
-				// Note: We don't try to guess from col.MetaData.Encodings because it mixes
-				// data encodings with definition/repetition level encodings (RLE, BIT_PACKED).
-				return nil
+				return fmt.Errorf("failed to read encoding for column [%s]: %w", pathKey, err)
 			}
 
 			mu.Lock()
@@ -152,9 +150,10 @@ func buildEncodingMap(pr *reader.ParquetReader) map[string]string {
 		})
 	}
 
-	// Wait for all goroutines to complete, ignoring errors since we handle them inline
-	_ = g.Wait()
-	return result
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // buildCompressionCodecMap extracts compression codec information from the footer metadata.
@@ -240,7 +239,11 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 	// Extract encoding information from the parquet file unless SkipPageEncoding is set
 	var encodingMap map[string]string
 	if !option.SkipPageEncoding {
-		encodingMap = buildEncodingMap(reader)
+		var err error
+		encodingMap, err = buildEncodingMap(reader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build encoding map: %w", err)
+		}
 	}
 
 	compressionCodecMap := buildCompressionCodecMap(reader)
@@ -796,6 +799,50 @@ func GetAllowedEncodings(dataType string) []string {
 	return append([]string{"PLAIN"}, allowed...)
 }
 
+// ConvertedTypeString returns the formatted converted type string from schema tags.
+// Returns "" if node is nil or has no converted type information.
+func (node *SchemaNode) ConvertedTypeString() string {
+	if node == nil {
+		return ""
+	}
+
+	tagMap := node.GetTagMap()
+
+	var parts []string
+	for _, tag := range orderedTags {
+		if tag != "convertedtype" && tag != "scale" && tag != "precision" && tag != "length" {
+			continue
+		}
+		if value, found := tagMap[tag]; found {
+			parts = append(parts, tag+"="+value)
+		}
+	}
+
+	return strings.Join(parts, ", ")
+}
+
+// LogicalTypeString returns the formatted logical type string from schema tags.
+// Returns "" if node is nil or has no logical type information.
+func (node *SchemaNode) LogicalTypeString() string {
+	if node == nil {
+		return ""
+	}
+
+	tagMap := node.GetTagMap()
+
+	var parts []string
+	for _, tag := range orderedTags {
+		if !strings.HasPrefix(tag, "logicaltype") {
+			continue
+		}
+		if value, found := tagMap[tag]; found {
+			parts = append(parts, tag+"="+value)
+		}
+	}
+
+	return strings.Join(parts, ", ")
+}
+
 // IsEncodingCompatible reports whether the given encoding is compatible with the data type.
 func IsEncodingCompatible(encoding, dataType string) bool {
 	if dataType == "" {
@@ -815,4 +862,35 @@ func IsEncodingCompatible(encoding, dataType string) bool {
 	}
 
 	return slices.Contains(compatibleEncodings, encoding)
+}
+
+// DecodeStatValue decodes raw statistics bytes into a typed Go value with logical type conversion.
+// Returns nil for nil/empty values, geospatial types, and interval types.
+func (node *SchemaNode) DecodeStatValue(value []byte) any {
+	if len(value) == 0 {
+		return nil
+	}
+
+	isGeospatial := node.LogicalType != nil && (node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY())
+	isInterval := node.ConvertedType != nil && *node.ConvertedType == parquet.ConvertedType_INTERVAL
+	if isGeospatial || isInterval {
+		return nil
+	}
+
+	var val any
+	if *node.Type == parquet.Type_BYTE_ARRAY || *node.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
+		val = string(value)
+	} else {
+		buf := bytes.NewReader(value)
+		vals, err := encoding.ReadPlain(buf, *node.Type, 1, 0)
+		if err != nil {
+			return fmt.Sprintf("failed to read data as %s: %v", node.Type.String(), err)
+		}
+		if len(vals) == 0 {
+			return nil
+		}
+		val = vals[0]
+	}
+
+	return types.ParquetTypeToJSONTypeWithLogical(val, node.Type, node.ConvertedType, node.LogicalType, int(node.GetPrecision()), int(node.GetScale()))
 }
