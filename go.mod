@@ -8,15 +8,15 @@ require (
 	github.com/alecthomas/kong v1.14.0
 	github.com/aws/aws-sdk-go-v2 v1.41.2
 	github.com/aws/aws-sdk-go-v2/config v1.32.10
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.96.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.96.2
 	github.com/google/uuid v1.6.0
-	github.com/hangxie/parquet-go/v2 v2.12.3
+	github.com/hangxie/parquet-go/v2 v2.12.4
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.11.1
 	github.com/willabides/kongplete v0.4.0
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 	golang.org/x/sync v0.19.0
-	google.golang.org/api v0.268.0
+	google.golang.org/api v0.269.0
 )
 
 require (
@@ -38,13 +38,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.5 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.10 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.18 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.1.5 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.1.6 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.18 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.18 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.9 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.6 // indirect
@@ -95,7 +95,7 @@ require (
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
 	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260213145524-e0ab670178e1 // indirect
@@ -103,9 +103,9 @@ require (
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
-	google.golang.org/genproto v0.0.0-20260223185530-2f722ef697dc // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260223185530-2f722ef697dc // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260223185530-2f722ef697dc // indirect
+	google.golang.org/genproto v0.0.0-20260226221140-a57be14db171 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260226221140-a57be14db171 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	google.golang.org/grpc v1.79.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
