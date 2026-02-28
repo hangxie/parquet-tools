@@ -2,6 +2,7 @@ package schema
 
 import (
 	"encoding/json"
+	"fmt"
 	"go/format"
 	"os"
 	"strings"
@@ -1689,4 +1690,184 @@ func TestDecodeStatValue(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPopulateLeafMetadata(t *testing.T) {
+	int32Type := parquet.Type_INT32
+	leaf := func(name string) *SchemaNode {
+		return &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: name, Type: &int32Type},
+			InNamePath:    []string{"root", name},
+			ExNamePath:    []string{"root", name},
+		}
+	}
+
+	t.Run("nil encoding map", func(t *testing.T) {
+		node := leaf("col1")
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+			InNamePath:    []string{"root"},
+			ExNamePath:    []string{"root"},
+		}
+		populateLeafMetadata(root, nil, map[string]string{"col1": "SNAPPY"}, nil)
+		require.Empty(t, node.Encoding)
+		require.Equal(t, "SNAPPY", node.CompressionCodec)
+	})
+
+	t.Run("nil compression codec map", func(t *testing.T) {
+		node := leaf("col1")
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+			InNamePath:    []string{"root"},
+			ExNamePath:    []string{"root"},
+		}
+		populateLeafMetadata(root, map[string]string{"col1": "PLAIN"}, nil, nil)
+		require.Equal(t, "PLAIN", node.Encoding)
+		require.Empty(t, node.CompressionCodec)
+	})
+
+	t.Run("bloom filter with size zero", func(t *testing.T) {
+		node := leaf("col1")
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+			InNamePath:    []string{"root"},
+			ExNamePath:    []string{"root"},
+		}
+		bfMap := map[string]bloomFilterInfo{
+			"col1": {Enabled: true, Size: 0},
+		}
+		populateLeafMetadata(root, nil, nil, bfMap)
+		require.Equal(t, "true", node.BloomFilter)
+		require.Empty(t, node.BloomFilterSize)
+	})
+
+	t.Run("bloom filter disabled", func(t *testing.T) {
+		node := leaf("col1")
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+			InNamePath:    []string{"root"},
+			ExNamePath:    []string{"root"},
+		}
+		bfMap := map[string]bloomFilterInfo{
+			"col1": {Enabled: false},
+		}
+		populateLeafMetadata(root, nil, nil, bfMap)
+		require.Empty(t, node.BloomFilter)
+		require.Empty(t, node.BloomFilterSize)
+	})
+}
+
+func TestGetTagMapEdgeCases(t *testing.T) {
+	int32Type := parquet.Type_INT32
+
+	t.Run("empty ExNamePath uses Name", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "myfield", Type: &int32Type},
+			ExNamePath:    []string{},
+			InNamePath:    []string{"root", "myfield"},
+		}
+		tagMap := node.GetTagMap()
+		require.Equal(t, "myfield", tagMap["name"])
+	})
+
+	t.Run("empty InNamePath has no inname", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "myfield", Type: &int32Type},
+			ExNamePath:    []string{"myfield"},
+			InNamePath:    []string{},
+		}
+		tagMap := node.GetTagMap()
+		_, hasInname := tagMap["inname"]
+		require.False(t, hasInname)
+	})
+
+	t.Run("STRUCT early return", func(t *testing.T) {
+		// Node with no Type, no LogicalType, no ConvertedType => STRUCT
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "mystruct"},
+			ExNamePath:    []string{"mystruct"},
+			InNamePath:    []string{"root", "mystruct"},
+		}
+		tagMap := node.GetTagMap()
+		require.Equal(t, "STRUCT", tagMap["type"])
+		require.Equal(t, "mystruct", tagMap["name"])
+		require.Equal(t, "mystruct", tagMap["inname"])
+		require.Contains(t, tagMap, "repetitiontype")
+		// Should NOT have encoding, compression, convertedtype, etc.
+		_, hasEncoding := tagMap["encoding"]
+		require.False(t, hasEncoding)
+		_, hasConvertedType := tagMap["convertedtype"]
+		require.False(t, hasConvertedType)
+	})
+}
+
+func TestUpdateTagForMapNilChild(t *testing.T) {
+	mapConvertedType := parquet.ConvertedType_MAP
+
+	t.Run("nil first child does not panic", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "mymap",
+				ConvertedType: &mapConvertedType,
+			},
+			Children:   []*SchemaNode{nil},
+			ExNamePath: []string{"mymap"},
+			InNamePath: []string{"root", "mymap"},
+		}
+		tagMap := map[string]string{}
+		// Should not panic, early return due to nil child
+		require.NotPanics(t, func() {
+			node.updateTagForMap(tagMap)
+		})
+	})
+}
+
+func TestUpdateTagFromConvertedTypeEdgeCases(t *testing.T) {
+	t.Run("INTERVAL sets length 12", func(t *testing.T) {
+		intervalType := parquet.ConvertedType_INTERVAL
+		fixedType := parquet.Type_FIXED_LEN_BYTE_ARRAY
+		typeLength := int32(12)
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "interval_col",
+				Type:          &fixedType,
+				TypeLength:    &typeLength,
+				ConvertedType: &intervalType,
+			},
+			ExNamePath: []string{"interval_col"},
+			InNamePath: []string{"root", "interval_col"},
+		}
+		tagMap := node.GetTagMap()
+		require.Equal(t, "INTERVAL", tagMap["convertedtype"])
+		require.Equal(t, "12", tagMap["length"])
+	})
+
+	t.Run("DECIMAL with FIXED_LEN_BYTE_ARRAY", func(t *testing.T) {
+		decimalType := parquet.ConvertedType_DECIMAL
+		fixedType := parquet.Type_FIXED_LEN_BYTE_ARRAY
+		typeLength := int32(16)
+		scale := int32(2)
+		precision := int32(38)
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "decimal_col",
+				Type:          &fixedType,
+				TypeLength:    &typeLength,
+				ConvertedType: &decimalType,
+				Scale:         &scale,
+				Precision:     &precision,
+			},
+			ExNamePath: []string{"decimal_col"},
+			InNamePath: []string{"root", "decimal_col"},
+		}
+		tagMap := node.GetTagMap()
+		require.Equal(t, "DECIMAL", tagMap["convertedtype"])
+		require.Equal(t, fmt.Sprint(typeLength), tagMap["length"])
+		require.Equal(t, fmt.Sprint(scale), tagMap["scale"])
+		require.Equal(t, fmt.Sprint(precision), tagMap["precision"])
+	})
 }
