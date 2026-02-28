@@ -25,7 +25,7 @@ function build() {
 
     # Launch build container
     docker ps -a | grep ${DOCKER_NAME} && docker rm -f ${DOCKER_NAME}
-    docker run -di --rm --name ${DOCKER_NAME} rockylinux/rockylinux:10
+    docker run -di --rm --name ${DOCKER_NAME} rockylinux/rockylinux:10.1
 
     # CCI does not support volume mount, so use docker cp instead
     git -C ${SOURCE_DIR} archive --format=tar.gz --prefix=${PKG_NAME}-${RPM_VER}/ -o /tmp/${PKG_NAME}-${RPM_VER}.tar.gz ${VERSION}
