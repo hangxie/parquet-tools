@@ -38,6 +38,8 @@ func TestNewParquetFileReader(t *testing.T) {
 		"http-no-range-support":  {"https://www.google.com/", rOpt, "does not support range"},
 		"http-good":              {httpURL, rOpt, ""},
 		"hdfs-failed":            {"hdfs://localhost:1/temp/good.parquet", rOpt, "connection refused"},
+		"azblob-invalid-uri1":    {"wasbs://bad/url", rOpt, "azure blob URI format:"},
+		"azblob-invalid-uri2":    {"wasbs://storageaccount.blob.core.windows.net//aa", rOpt, "azure blob URI format:"},
 	}
 
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
