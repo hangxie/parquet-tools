@@ -449,6 +449,30 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 	})
 }
 
+func TestReadPagesError(t *testing.T) {
+	tmpFile := t.TempDir() + "/truncated.parquet"
+	data, err := os.ReadFile("../../testdata/good.parquet")
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
+
+	pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { _ = pr.PFile.Close() }()
+
+	schemaRoot, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{SkipPageEncoding: true})
+	require.NoError(t, err)
+
+	pathKey := strings.Join(pr.Footer.RowGroups[0].Columns[0].MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	schemaNode := schemaRoot.GetPathMap()[pathKey]
+
+	// Nullify column metadata so readAllPageHeaders returns an error
+	pr.Footer.RowGroups[0].Columns[0].MetaData = nil
+
+	_, err = Cmd{}.readPages(pr, 0, 0, schemaNode)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "failed to read page headers")
+}
+
 func TestRunCorruptFile(t *testing.T) {
 	tmpFile := t.TempDir() + "/corrupt.parquet"
 	require.NoError(t, os.WriteFile(tmpFile, []byte("not a parquet file"), 0o644))
