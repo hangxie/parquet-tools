@@ -31,6 +31,8 @@ func TestNewParquetFileWriter(t *testing.T) {
 		"azblob-invalid-uri2":  {"wasbs://storageaccount.blob.core.windows.net//aa", "azure blob URI format:"},
 		"azblob-good":          {"wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/will-not-create-till-close", ""},
 		"http-not-support":     {"https://domain.tld/path/to/file", "writing to [https] endpoint is not currently supported"},
+		"hdfs-failed":          {"hdfs://localhost:1/temp/good.parquet", "connection refused"},
+		"hdfs-with-user":       {"hdfs://user@localhost:1/temp/good.parquet", "connection refused"},
 	}
 
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
