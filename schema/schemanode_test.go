@@ -1744,6 +1744,22 @@ func TestPopulateLeafMetadata(t *testing.T) {
 		require.Empty(t, node.BloomFilterSize)
 	})
 
+	t.Run("bloom filter with positive size", func(t *testing.T) {
+		node := leaf("col1")
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+			InNamePath:    []string{"root"},
+			ExNamePath:    []string{"root"},
+		}
+		bfMap := map[string]bloomFilterInfo{
+			"col1": {Enabled: true, Size: 1024},
+		}
+		populateLeafMetadata(root, nil, nil, bfMap)
+		require.Equal(t, "true", node.BloomFilter)
+		require.Equal(t, "1024", node.BloomFilterSize)
+	})
+
 	t.Run("bloom filter disabled", func(t *testing.T) {
 		node := leaf("col1")
 		root := &SchemaNode{
@@ -1785,6 +1801,21 @@ func TestGetTagMapEdgeCases(t *testing.T) {
 		require.False(t, hasInname)
 	})
 
+	t.Run("writer directives in tagMap", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "field", Type: &int32Type},
+			ExNamePath:    []string{"field"},
+			InNamePath:    []string{"root", "field"},
+		}
+		node.OmitStats = "true"
+		node.BloomFilter = "true"
+		node.BloomFilterSize = "1024"
+		tagMap := node.GetTagMap()
+		require.Equal(t, "true", tagMap["omitstats"])
+		require.Equal(t, "true", tagMap["bloomfilter"])
+		require.Equal(t, "1024", tagMap["bloomfiltersize"])
+	})
+
 	t.Run("STRUCT early return", func(t *testing.T) {
 		// Node with no Type, no LogicalType, no ConvertedType => STRUCT
 		node := &SchemaNode{
@@ -1824,6 +1855,40 @@ func TestUpdateTagForMapNilChild(t *testing.T) {
 			node.updateTagForMap(tagMap)
 		})
 	})
+}
+
+func TestUpdateTagForMapChildAlreadyProcessed(t *testing.T) {
+	mapType := parquet.ConvertedType_MAP
+	listType := parquet.ConvertedType_LIST
+	int32Type := parquet.Type_INT32
+
+	node := &SchemaNode{
+		SchemaElement: parquet.SchemaElement{
+			Name:          "mymap",
+			ConvertedType: &mapType,
+		},
+		Children: []*SchemaNode{
+			{
+				SchemaElement: parquet.SchemaElement{
+					Name:          "processed_child",
+					ConvertedType: &listType, // not MAP_KEY_VALUE, so already processed
+				},
+				Children: []*SchemaNode{
+					{
+						SchemaElement: parquet.SchemaElement{Name: "key", Type: &int32Type},
+						ExNamePath:    []string{"key"},
+						InNamePath:    []string{"root", "mymap", "key"},
+					},
+				},
+			},
+		},
+		ExNamePath: []string{"mymap"},
+		InNamePath: []string{"root", "mymap"},
+	}
+	tagMap := map[string]string{}
+	// Should return early because child's ConvertedType is not MAP_KEY_VALUE
+	node.updateTagForMap(tagMap)
+	require.Empty(t, tagMap)
 }
 
 func TestUpdateTagFromConvertedTypeEdgeCases(t *testing.T) {
