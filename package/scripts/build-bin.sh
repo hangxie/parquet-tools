@@ -15,9 +15,9 @@ for TARGET in ${REL_TARGET}; do
             (cd $(dirname ${BINARY});
                 BASE_NAME=$(basename ${BINARY});
                 mv ${BASE_NAME} ${BASE_NAME}.exe;
-                zip -qm ${BASE_NAME}.zip ${BASE_NAME}.exe) &
+                zip -qm ${BASE_NAME}.zip ${BASE_NAME}.exe)
         else
-            gzip ${BINARY} &
+            gzip ${BINARY}
         fi
         echo "    ${TARGET} built"
     ) &
