@@ -40,7 +40,8 @@ func TestCmd(t *testing.T) {
 		"concurrent-nan-json":     {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true}, errMsg: "json: unsupported value: NaN"},
 		"concurrent-int96":        {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
 		"concurrent-nested-csv":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true}, errMsg: "is not scalar type"},
-		// good cases - URI will be prefixed with "file://../../testdata/"
+
+		// good cases
 		"default":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json.json"},
 		"limit-0":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json.json"},
 		"limit-2":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 2, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json-limit-2.json"},
@@ -60,6 +61,7 @@ func TestCmd(t *testing.T) {
 		"old-style-list":     {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet"}, golden: "cat-old-style-list.jsonl"},
 		"multi-row-groups":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"}, golden: "cat-row-group.jsonl"},
 		"dict-page":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "dict-page.parquet"}, golden: "cat-dict-page.jsonl"},
+		"high-compression":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"}, golden: "cat-high-compression.jsonl"},
 	}
 
 	for name, tc := range testCases {
