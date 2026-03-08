@@ -1578,6 +1578,7 @@ func TestDecodeStatValue(t *testing.T) {
 						GEOMETRY: &parquet.GeometryType{},
 					},
 				},
+				UndefinedSortOrder: true,
 			},
 			wantNil: true,
 		},
@@ -1590,6 +1591,7 @@ func TestDecodeStatValue(t *testing.T) {
 						GEOGRAPHY: &parquet.GeographyType{},
 					},
 				},
+				UndefinedSortOrder: true,
 			},
 			wantNil: true,
 		},
@@ -1600,6 +1602,7 @@ func TestDecodeStatValue(t *testing.T) {
 					Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
 					ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_INTERVAL),
 				},
+				UndefinedSortOrder: true,
 			},
 			wantNil: true,
 		},
@@ -1665,6 +1668,26 @@ func TestDecodeStatValue(t *testing.T) {
 				},
 			},
 			want: float64(2),
+		},
+		"variant-child-metadata": {
+			value: []byte{1, 2, 3, 4},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+				},
+				UndefinedSortOrder: true,
+			},
+			wantNil: true,
+		},
+		"variant-child-value": {
+			value: []byte{5, 6, 7, 8},
+			node: &SchemaNode{
+				SchemaElement: parquet.SchemaElement{
+					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+				},
+				UndefinedSortOrder: true,
+			},
+			wantNil: true,
 		},
 		"invalid-data": {
 			value: []byte{1},
@@ -1774,6 +1797,151 @@ func TestPopulateLeafMetadata(t *testing.T) {
 		populateLeafMetadata(root, nil, nil, bfMap)
 		require.Empty(t, node.BloomFilter)
 		require.Empty(t, node.BloomFilterSize)
+	})
+}
+
+func TestMarkUndefinedSortOrder(t *testing.T) {
+	t.Run("variant children marked", func(t *testing.T) {
+		metadata := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "metadata",
+				Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+			},
+		}
+		value := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "value",
+				Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+			},
+		}
+		variantNode := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "Variant",
+				LogicalType: &parquet.LogicalType{
+					VARIANT: &parquet.VariantType{},
+				},
+			},
+			Children: []*SchemaNode{metadata, value},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{variantNode},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.False(t, root.UndefinedSortOrder)
+		require.False(t, variantNode.UndefinedSortOrder)
+		require.True(t, metadata.UndefinedSortOrder)
+		require.True(t, value.UndefinedSortOrder)
+	})
+
+	t.Run("non-variant children not marked", func(t *testing.T) {
+		child := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "col1",
+				Type: parquet.TypePtr(parquet.Type_INT32),
+			},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{child},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.False(t, root.UndefinedSortOrder)
+		require.False(t, child.UndefinedSortOrder)
+	})
+
+	t.Run("geometry marked", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "geo",
+				Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+				LogicalType: &parquet.LogicalType{
+					GEOMETRY: &parquet.GeometryType{},
+				},
+			},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.True(t, node.UndefinedSortOrder)
+		require.False(t, root.UndefinedSortOrder)
+	})
+
+	t.Run("geography marked", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "geo",
+				Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+				LogicalType: &parquet.LogicalType{
+					GEOGRAPHY: &parquet.GeographyType{},
+				},
+			},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.True(t, node.UndefinedSortOrder)
+	})
+
+	t.Run("interval marked", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "interval",
+				Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+				ConvertedType: parquet.ConvertedTypePtr(parquet.ConvertedType_INTERVAL),
+			},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.True(t, node.UndefinedSortOrder)
+	})
+
+	t.Run("nested variant descendants marked", func(t *testing.T) {
+		grandchild := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "nested",
+				Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
+			},
+		}
+		child := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "inner"},
+			Children:      []*SchemaNode{grandchild},
+		}
+		variantNode := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name: "Variant",
+				LogicalType: &parquet.LogicalType{
+					VARIANT: &parquet.VariantType{},
+				},
+			},
+			Children: []*SchemaNode{child},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{variantNode},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.True(t, child.UndefinedSortOrder)
+		require.True(t, grandchild.UndefinedSortOrder)
 	})
 }
 

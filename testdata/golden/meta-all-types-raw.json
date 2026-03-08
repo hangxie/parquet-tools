@@ -287,8 +287,6 @@
           "UncompressedSize": 234,
           "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "EQEAATQ=",
-          "MinValue": "EQEAATA=",
           "CompressionCodec": "GZIP"
         },
         {
@@ -306,8 +304,6 @@
           "UncompressedSize": 387,
           "NumValues": 5,
           "NullCount": 0,
-          "MaxValue": "AgEAAAkYBAAAAAAAAAA=",
-          "MinValue": "AgEAAAkYAAAAAAAAAAA=",
           "CompressionCodec": "GZIP"
         },
         {
