@@ -67,11 +67,12 @@ type SchemaNode struct {
 	InNamePath []string      `json:"-"`
 	ExNamePath []string      `json:"-"`
 	// Custom parquet-go writer directives (not part of Parquet format)
-	Encoding         string `json:"encoding,omitempty"`          // Data page encoding (PLAIN, RLE, etc)
-	OmitStats        string `json:"-"`                           // Control statistics generation (true/false)
-	CompressionCodec string `json:"compression_codec,omitempty"` // Compression codec (SNAPPY, GZIP, etc)
-	BloomFilter      string `json:"-"`                           // Enable bloom filter (true/false)
-	BloomFilterSize  string `json:"-"`                           // Bloom filter size in bytes
+	Encoding           string `json:"encoding,omitempty"`          // Data page encoding (PLAIN, RLE, etc)
+	OmitStats          string `json:"-"`                           // Control statistics generation (true/false)
+	CompressionCodec   string `json:"compression_codec,omitempty"` // Compression codec (SNAPPY, GZIP, etc)
+	BloomFilter        string `json:"-"`                           // Enable bloom filter (true/false)
+	BloomFilterSize    string `json:"-"`                           // Bloom filter size in bytes
+	UndefinedSortOrder bool   `json:"-"`                           // True for children of types with undefined sort order (e.g., VARIANT)
 }
 
 type SchemaOption struct {
@@ -291,6 +292,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 	}
 
 	populateLeafMetadata(root, encodingMap, compressionCodecMap, bloomFilterMap)
+	markUndefinedSortOrder(root)
 	return root, nil
 }
 
@@ -320,6 +322,38 @@ func populateLeafMetadata(root *SchemaNode, encodingMap, compressionCodecMap map
 				}
 			}
 		}
+	}
+}
+
+// markUndefinedSortOrder recursively marks nodes whose sort order is
+// undefined per the Parquet spec, so that DecodeStatValue skips min/max.
+//   - GEOMETRY, GEOGRAPHY: marked on the node itself (leaf with logical type)
+//   - INTERVAL: marked on the node itself (leaf with converted type)
+//   - VARIANT: a STRUCT whose logical type is on the parent, so all descendants are marked
+func markUndefinedSortOrder(node *SchemaNode) {
+	if node.LogicalType != nil {
+		if node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY() {
+			node.UndefinedSortOrder = true
+			return
+		}
+		if node.LogicalType.IsSetVARIANT() {
+			markAllDescendants(node)
+			return
+		}
+	}
+	if node.ConvertedType != nil && *node.ConvertedType == parquet.ConvertedType_INTERVAL {
+		node.UndefinedSortOrder = true
+		return
+	}
+	for _, child := range node.Children {
+		markUndefinedSortOrder(child)
+	}
+}
+
+func markAllDescendants(node *SchemaNode) {
+	for _, child := range node.Children {
+		child.UndefinedSortOrder = true
+		markAllDescendants(child)
 	}
 }
 
@@ -865,15 +899,9 @@ func IsEncodingCompatible(encoding, dataType string) bool {
 }
 
 // DecodeStatValue decodes raw statistics bytes into a typed Go value with logical type conversion.
-// Returns nil for nil/empty values, geospatial types, and interval types.
+// Returns nil for nil/empty values and types with undefined sort order.
 func (node *SchemaNode) DecodeStatValue(value []byte) any {
-	if len(value) == 0 {
-		return nil
-	}
-
-	isGeospatial := node.LogicalType != nil && (node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY())
-	isInterval := node.ConvertedType != nil && *node.ConvertedType == parquet.ConvertedType_INTERVAL
-	if isGeospatial || isInterval {
+	if len(value) == 0 || node.UndefinedSortOrder {
 		return nil
 	}
 

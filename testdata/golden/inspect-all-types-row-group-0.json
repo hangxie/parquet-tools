@@ -324,8 +324,6 @@
         "metadata"
       ],
       "statistics": {
-        "maxValue": "EQEAATQ=",
-        "minValue": "EQEAATA=",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
@@ -346,8 +344,6 @@
         "value"
       ],
       "statistics": {
-        "maxValue": "AgEAAAkYBAAAAAAAAAA=",
-        "minValue": "AgEAAAkYAAAAAAAAAAA=",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
