@@ -75,7 +75,9 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [GEOGRAPHY/GEOMETRY vs GeoParquet](#geographygeometry-vs-geoparquet)
       - [Geospatial Format](#geospatial-format)
     - [Variant Data Type Support](#variant-data-type-support)
-      - [VARIANT Convention](#variant-convention)
+      - [Physical Storage](#physical-storage)
+      - [Logical View](#logical-view)
+      - [Advanced: Fine-Grained Compression](#advanced-fine-grained-compression)
       - [Shredded VARIANT](#shredded-variant)
     - [cat Command](#cat-command)
       - [Full Data Set](#full-data-set)
@@ -191,9 +193,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.46.4
+v1.47.7
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.46.4
+v1.47.7
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -203,20 +205,20 @@ RPM and deb package can be found on [release page](https://github.com/hangxie/pa
 * On Debian/Ubuntu:
 
 ```bash
-$ sudo dpkg -i parquet-tools_1.46.4_amd64.deb
-Preparing to unpack parquet-tools_1.46.4_amd64.deb ...
-Unpacking parquet-tools (1.46.4) ...
-Setting up parquet-tools (1.46.4) ...
+$ sudo dpkg -i parquet-tools_1.47.7_amd64.deb
+Preparing to unpack parquet-tools_1.47.7_amd64.deb ...
+Unpacking parquet-tools (1.47.7) ...
+Setting up parquet-tools (1.47.7) ...
 ```
 
 * On CentOS/Fedora:
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.46.4-1.x86_64.rpm
+$ sudo rpm -Uhv parquet-tools-1.47.7-1.x86_64.rpm
 Verifying...                         ################################# [100%]
 Preparing...                         ################################# [100%]
 Updating / installing...
-   1:parquet-tools-1.46.4-1          ################################# [100%]
+   1:parquet-tools-1.47.7-1          ################################# [100%]
 ```
 
 ## Usage
@@ -1597,7 +1599,7 @@ $ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
 
 ```bash
 $ parquet-tools version
-v1.46.4
+v1.47.7
 ```
 
 #### Print All Information
@@ -1606,8 +1608,8 @@ v1.46.4
 
 ```bash
 $ parquet-tools version -a
-v1.46.4
-2025-12-14T20:17:50Z
+v1.47.7
+2026-03-07T14:48:31Z
 Homebrew
 ```
 
@@ -1615,14 +1617,14 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.46.4","BuildTime":"2025-12-14T20:17:50Z"}
+{"Version":"v1.47.7","BuildTime":"2026-03-07T14:48:31Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.46.4"}
+{"Version":"v1.47.7"}
 ```
 
 ## Credit
