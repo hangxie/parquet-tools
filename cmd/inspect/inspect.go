@@ -22,7 +22,7 @@ type PageInfo struct {
 	CompressedSize             int32             `json:"compressedSize"`
 	UncompressedSize           int32             `json:"uncompressedSize"`
 	HasCrc                     bool              `json:"hasCrc,omitempty"`
-	Crc                        int32             `json:"crc,omitempty"`
+	Crc                        string            `json:"crc,omitempty"`
 	NumValues                  *int32            `json:"numValues,omitempty"`
 	Encoding                   *parquet.Encoding `json:"encoding,omitempty"`
 	DefinitionLevelEncoding    *parquet.Encoding `json:"definitionLevelEncoding,omitempty"`
@@ -168,7 +168,7 @@ func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, in
 }
 
 func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) map[string]any {
-	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 	pathInSchema := c.resolvePathInSchema(col.MetaData.PathInSchema, inExNameMap)
 	schemaNode := pathMap[pathKey]
 
@@ -219,7 +219,7 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 	}
 
 	col := rg.Columns[columnChunkIndex]
-	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 	pathInSchema := c.resolvePathInSchema(col.MetaData.PathInSchema, inExNameMap)
 	schemaNode := pathMap[pathKey]
 
@@ -289,7 +289,7 @@ func (c Cmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChun
 		return fmt.Errorf("column chunk index %d out of range [0, %d)", columnChunkIndex, len(rg.Columns))
 	}
 	col := rg.Columns[columnChunkIndex]
-	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 	schemaNode := pathMap[pathKey]
 
 	// Read pages
@@ -344,7 +344,7 @@ func (c Cmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode 
 
 	if headerInfo.HasCRC {
 		pageInfo.HasCrc = true
-		pageInfo.Crc = headerInfo.CRC
+		pageInfo.Crc = fmt.Sprintf("%08x", uint32(headerInfo.CRC))
 	}
 
 	switch headerInfo.PageType {
@@ -500,7 +500,7 @@ func (c Cmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) [
 
 // resolvePathInSchema resolves internal path to external path using the schema map
 func (c Cmd) resolvePathInSchema(pathInSchema []string, inExNameMap map[string][]string) []string {
-	pathKey := strings.Join(pathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(pathInSchema, common.ParGoPathDelimiter)
 	if exPath, found := inExNameMap[pathKey]; found {
 		return exPath
 	}

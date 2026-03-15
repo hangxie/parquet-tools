@@ -54,6 +54,7 @@ func TestInspect(t *testing.T) {
 		"page/dict-page-page-1":             {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)}, golden: "inspect-dict-page-page-1.json"},
 		"page/row-group-rg1-page-0":         {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(1), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-row-group-rg1-page-0.json"},
 		"page/data-page-v2-page-0":          {cmd: Cmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-data-page-v2-page-0.json"},
+		"page/crc32-page-0":                 {cmd: Cmd{ReadOption: rOpt, URI: "crc32.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-crc32-rg0-cc0-pg0.json"},
 		"page/good-page-1":                  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)}, golden: "inspect-good-page-1.json"},
 		"page/row-group-page-5":             {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(5)}, golden: "inspect-row-group-page-5.json"},
 		"page/negative-page-index":          {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(-1)}, errMsg: "page index -1 out of range"},
@@ -195,14 +196,14 @@ func TestResolvePathInSchema(t *testing.T) {
 		"nested-path-found": {
 			pathInSchema: []string{"parent", "child"},
 			inExNameMap: map[string][]string{
-				"parent" + common.PAR_GO_PATH_DELIMITER + "child": {"ExternalParent", "ExternalChild"},
+				"parent" + common.ParGoPathDelimiter + "child": {"ExternalParent", "ExternalChild"},
 			},
 			want: []string{"ExternalParent", "ExternalChild"},
 		},
 		"nested-path-not-found": {
 			pathInSchema: []string{"parent", "child"},
 			inExNameMap: map[string][]string{
-				"other" + common.PAR_GO_PATH_DELIMITER + "path": {"External"},
+				"other" + common.ParGoPathDelimiter + "path": {"External"},
 			},
 			want: []string{"parent", "child"},
 		},
@@ -328,7 +329,7 @@ func TestConvertPageHeaderInfo(t *testing.T) {
 				CompressedSize:   300,
 				UncompressedSize: 400,
 				HasCrc:           true,
-				Crc:              12345,
+				Crc:              "00003039",
 				NumValues:        new(int32(50)),
 				Encoding:         new(parquet.Encoding_PLAIN),
 			},
@@ -435,7 +436,7 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 		defer func() { _ = fileReader.PFile.Close() }()
 
 		col := fileReader.Footer.RowGroups[0].Columns[0]
-		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
 		schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{})
 		require.NoError(t, err)
@@ -462,7 +463,7 @@ func TestReadPagesError(t *testing.T) {
 	schemaRoot, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{SkipPageEncoding: true})
 	require.NoError(t, err)
 
-	pathKey := strings.Join(pr.Footer.RowGroups[0].Columns[0].MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(pr.Footer.RowGroups[0].Columns[0].MetaData.PathInSchema, common.ParGoPathDelimiter)
 	schemaNode := schemaRoot.GetPathMap()[pathKey]
 
 	// Nullify column metadata so readAllPageHeaders returns an error
@@ -493,7 +494,7 @@ func TestReadDictionaryPageValuesError(t *testing.T) {
 	defer func() { _ = pr.PFile.Close() }()
 
 	col := pr.Footer.RowGroups[0].Columns[0]
-	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
 	schemaRoot, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{SkipPageEncoding: true})
 	require.NoError(t, err)

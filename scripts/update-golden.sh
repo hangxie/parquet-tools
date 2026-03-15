@@ -263,6 +263,9 @@ $PT inspect --row-group 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "
 # inspect-bloom-filter-column-chunk-0.json
 $PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-column-chunk-0.json"
 
+# inspect-crc32-rg0-cc0-pg0
+$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/crc32.parquet" | format_json > "$GOLDEN_DIR/inspect-crc32-rg0-cc0-pg0.json"
+
 # ============================================================================
 # split/merge command golden files (these use cat to verify output)
 # ============================================================================

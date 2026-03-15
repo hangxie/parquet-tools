@@ -278,7 +278,7 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 		node, found := pathMap[path]
 		require.True(t, found)
 		require.NotNil(t, node)
-		require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER))
+		require.Equal(t, path, strings.Join(node.InNamePath[1:], common.ParGoPathDelimiter))
 	}
 
 	// Test some known nested paths from the debug output
@@ -298,7 +298,7 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 		node, found := pathMap[path]
 		if found { // Only test if it exists (some may not exist in this particular test file)
 			require.NotNil(t, node)
-			require.Equal(t, path, strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER))
+			require.Equal(t, path, strings.Join(node.InNamePath[1:], common.ParGoPathDelimiter))
 		}
 	}
 
@@ -308,7 +308,7 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 	// Test that all nodes in the map have valid InNamePath
 	for path, node := range pathMap {
 		require.NotNil(t, node)
-		expectedPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+		expectedPath := strings.Join(node.InNamePath[1:], common.ParGoPathDelimiter)
 		require.Equal(t, path, expectedPath)
 
 		// Ensure InNamePath is properly set

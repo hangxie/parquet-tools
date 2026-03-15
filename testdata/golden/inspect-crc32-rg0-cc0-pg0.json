@@ -1,0 +1,26 @@
+{
+  "page": {
+    "index": 0,
+    "offset": 4,
+    "type": "DATA_PAGE_V2",
+    "compressedSize": 33,
+    "uncompressedSize": 8,
+    "hasCrc": true,
+    "crc": "dc477823",
+    "numValues": 1,
+    "encoding": "PLAIN",
+    "numNulls": 0,
+    "numRows": 0,
+    "definitionLevelsByteLength": 0,
+    "repetitionLevelsByteLength": 0,
+    "isCompressed": true,
+    "statistics": {
+      "maxValue": "nike",
+      "minValue": "nike",
+      "nullCount": 0
+    }
+  },
+  "values": [
+    "nike"
+  ]
+}
