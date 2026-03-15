@@ -209,59 +209,59 @@ $PT inspect "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspe
 # inspect-row-group-file.json
 $PT inspect "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-file.json"
 
-# inspect-good-row-group-0.json
-$PT inspect --row-group 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-row-group-0.json"
+# inspect-good-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-rg0.json"
 
-# inspect-row-group-rg-0.json
-$PT inspect --row-group 0 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg-0.json"
+# inspect-row-group-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg0.json"
 
-# inspect-row-group-rg-1.json
-$PT inspect --row-group 1 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg-1.json"
+# inspect-row-group-rg1.json
+$PT inspect --row-group 1 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg1.json"
 
-# inspect-good-column-chunk-0.json
-$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-column-chunk-0.json"
+# inspect-geospatial-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/geospatial.parquet" | format_json > "$GOLDEN_DIR/inspect-geospatial-rg0.json"
 
-# inspect-dict-page-column-chunk-0.json
-$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-column-chunk-0.json"
+# inspect-nil-statistics-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/nil-statistics.parquet" | format_json > "$GOLDEN_DIR/inspect-nil-statistics-rg0.json"
 
-# inspect-good-page-0.json
-$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-page-0.json"
+# inspect-all-types-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-rg0.json"
 
-# inspect-dict-page-page-0.json
-$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-page-0.json"
+# inspect-bloom-filter-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-rg0.json"
 
-# inspect-dict-page-page-1.json
-$PT inspect --row-group 0 --column-chunk 0 --page 1 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-page-1.json"
+# inspect-good-rg0-cc0.json
+$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-rg0-cc0.json"
 
-# inspect-row-group-rg1-page-0.json
-$PT inspect --row-group 1 --column-chunk 0 --page 0 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg1-page-0.json"
+# inspect-dict-page-rg0-cc0.json
+$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-rg0-cc0.json"
 
-# inspect-data-page-v2-page-0.json
-$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/data-page-v2.parquet" | format_json > "$GOLDEN_DIR/inspect-data-page-v2-page-0.json"
+# inspect-all-types-rg0-cc39.json
+$PT inspect --row-group 0 --column-chunk 39 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-rg0-cc39.json"
 
-# inspect-good-page-1.json
-$PT inspect --row-group 0 --column-chunk 0 --page 1 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-page-1.json"
+# inspect-bloom-filter-rg0-cc0.json
+$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-rg0-cc0.json"
 
-# inspect-row-group-page-5.json
-$PT inspect --row-group 0 --column-chunk 0 --page 5 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-page-5.json"
+# inspect-good-rg0-cc0-pg0.json
+$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-rg0-cc0-pg0.json"
 
-# inspect-geospatial-row-group-0.json
-$PT inspect --row-group 0 "$TESTDATA_DIR/geospatial.parquet" | format_json > "$GOLDEN_DIR/inspect-geospatial-row-group-0.json"
+# inspect-dict-page-rg0-cc0-pg0.json
+$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-rg0-cc0-pg0.json"
 
-# inspect-nil-statistics-row-group-0.json
-$PT inspect --row-group 0 "$TESTDATA_DIR/nil-statistics.parquet" | format_json > "$GOLDEN_DIR/inspect-nil-statistics-row-group-0.json"
+# inspect-dict-page-rg0-cc0-pg1.json
+$PT inspect --row-group 0 --column-chunk 0 --page 1 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-rg0-cc0-pg1.json"
 
-# inspect-all-types-row-group-0.json
-$PT inspect --row-group 0 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-row-group-0.json"
+# inspect-row-group-rg1-cc0-pg0.json
+$PT inspect --row-group 1 --column-chunk 0 --page 0 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg1-cc0-pg0.json"
 
-# inspect-all-types-interval-column.json
-$PT inspect --row-group 0 --column-chunk 39 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOLDEN_DIR/inspect-all-types-interval-column.json"
+# inspect-data-page-v2-rg0-cc0-pg0.json
+$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/data-page-v2.parquet" | format_json > "$GOLDEN_DIR/inspect-data-page-v2-rg0-cc0-pg0.json"
 
-# inspect-bloom-filter-row-group-0.json
-$PT inspect --row-group 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-row-group-0.json"
+# inspect-good-rg0-cc0-pg1.json
+$PT inspect --row-group 0 --column-chunk 0 --page 1 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-rg0-cc0-pg1.json"
 
-# inspect-bloom-filter-column-chunk-0.json
-$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-column-chunk-0.json"
+# inspect-row-group-rg0-cc0-pg5.json
+$PT inspect --row-group 0 --column-chunk 0 --page 5 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg0-cc0-pg5.json"
 
 # inspect-crc32-rg0-cc0-pg0
 $PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/crc32.parquet" | format_json > "$GOLDEN_DIR/inspect-crc32-rg0-cc0-pg0.json"
