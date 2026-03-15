@@ -119,7 +119,7 @@ func buildEncodingMap(pr *reader.ParquetReader) (map[string]string, error) {
 
 	for colIndex, col := range columns {
 		g.Go(func() error {
-			pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+			pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
 			// Clone the reader to get a dedicated file handle for concurrent access
 			// This is necessary because io.ReadSeeker operations (Seek/Read) are not thread-safe
@@ -169,7 +169,7 @@ func buildCompressionCodecMap(pr *reader.ParquetReader) map[string]string {
 	// Use the first row group to extract compression codecs
 	columns := pr.Footer.RowGroups[0].Columns
 	for _, col := range columns {
-		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 		result[pathKey] = col.MetaData.Codec.String()
 	}
 
@@ -198,7 +198,7 @@ func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
 		if !col.MetaData.IsSetBloomFilterOffset() {
 			continue
 		}
-		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
 		info := bloomFilterInfo{Enabled: true}
 		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
@@ -226,7 +226,7 @@ func BloomFilterSizeMap(pr *reader.ParquetReader) map[string]int32 {
 		if !col.MetaData.IsSetBloomFilterOffset() {
 			continue
 		}
-		pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
 		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
 			result[pathKey] = pr.SchemaHandler.Infos[idx].BloomFilterSize
@@ -257,7 +257,7 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 		SchemaElement: *schemas[0],
 		Children:      []*SchemaNode{},
 		InNamePath:    []string{schemas[0].Name},
-		ExNamePath:    strings.Split(reader.SchemaHandler.InPathToExPath[schemas[0].Name], common.PAR_GO_PATH_DELIMITER)[:1],
+		ExNamePath:    strings.Split(reader.SchemaHandler.InPathToExPath[schemas[0].Name], common.ParGoPathDelimiter)[:1],
 	}
 	stack := []*SchemaNode{root}
 
@@ -277,8 +277,8 @@ func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNo
 			copy(childNode.InNamePath, node.InNamePath)
 			childNode.InNamePath[len(node.InNamePath)] = schemas[pos].Name
 
-			inPathKey := strings.Join(childNode.InNamePath, common.PAR_GO_PATH_DELIMITER)
-			childNode.ExNamePath = strings.Split(reader.SchemaHandler.InPathToExPath[inPathKey], common.PAR_GO_PATH_DELIMITER)
+			inPathKey := strings.Join(childNode.InNamePath, common.ParGoPathDelimiter)
+			childNode.ExNamePath = strings.Split(reader.SchemaHandler.InPathToExPath[inPathKey], common.ParGoPathDelimiter)
 
 			node.Children = append(node.Children, childNode)
 			stack = append(stack, childNode)
@@ -304,7 +304,7 @@ func populateLeafMetadata(root *SchemaNode, encodingMap, compressionCodecMap map
 		node.Name = node.ExNamePath[len(node.ExNamePath)-1]
 
 		if node.Type != nil {
-			pathKey := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+			pathKey := strings.Join(node.InNamePath[1:], common.ParGoPathDelimiter)
 			if encodingMap != nil {
 				if encoding, found := encodingMap[pathKey]; found {
 					node.Encoding = encoding
@@ -686,7 +686,7 @@ func (s *SchemaNode) GetPathMap() map[string]*SchemaNode {
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = append(queue[1:], node.Children...)
-		retVal[strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)] = node
+		retVal[strings.Join(node.InNamePath[1:], common.ParGoPathDelimiter)] = node
 	}
 	return retVal
 }
@@ -699,7 +699,7 @@ func (s *SchemaNode) GetInExNameMap() map[string][]string {
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = append(queue[1:], node.Children...)
-		inPath := strings.Join(node.InNamePath[1:], common.PAR_GO_PATH_DELIMITER)
+		inPath := strings.Join(node.InNamePath[1:], common.ParGoPathDelimiter)
 		retVal[inPath] = node.ExNamePath[1:]
 	}
 	return retVal

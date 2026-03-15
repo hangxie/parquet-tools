@@ -130,7 +130,7 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 		CompressionCodec:  col.MetaData.Codec.String(),
 	}
 
-	pathKey := strings.Join(col.MetaData.PathInSchema, common.PAR_GO_PATH_DELIMITER)
+	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
 	// Use the correct bitset-only size from the bloom filter size map
 	if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
