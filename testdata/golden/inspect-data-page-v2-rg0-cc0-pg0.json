@@ -3,7 +3,7 @@
     "index": 0,
     "offset": 4,
     "type": "DATA_PAGE_V2",
-    "compressedSize": 33,
+    "compressedSize": 8,
     "uncompressedSize": 8,
     "numValues": 1,
     "encoding": "PLAIN",
@@ -11,7 +11,7 @@
     "numRows": 0,
     "definitionLevelsByteLength": 0,
     "repetitionLevelsByteLength": 0,
-    "isCompressed": true,
+    "isCompressed": false,
     "statistics": {
       "maxValue": "nike",
       "minValue": "nike",
