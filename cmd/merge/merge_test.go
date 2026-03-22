@@ -18,16 +18,16 @@ func TestCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}
 		wOptBadCompression := pio.WriteOption{
-			Compression:    "INVALID",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "INVALID",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}
 		tempDir := t.TempDir()
 
@@ -58,11 +58,11 @@ func TestCmd(t *testing.T) {
 	t.Run("good", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:     "SNAPPY",
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
-			DataPageVersion: 1,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
+			DataPageVersion:  1,
 		}
 		testCases := map[string]struct {
 			cmd      Cmd
@@ -97,11 +97,11 @@ func TestCmd(t *testing.T) {
 	t.Run("repeat", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:     "SNAPPY",
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
-			DataPageVersion: 1,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
+			DataPageVersion:  1,
 		}
 		tempDir := t.TempDir()
 		source := "../../testdata/all-types.parquet"
@@ -146,11 +146,11 @@ func TestCmd(t *testing.T) {
 		mergeCmd := Cmd{
 			ReadOption: pio.ReadOption{},
 			WriteOption: pio.WriteOption{
-				Compression:     "SNAPPY",
-				PageSize:        1024 * 1024,
-				RowGroupSize:    128 * 1024 * 1024,
-				ParallelNumber:  0,
-				DataPageVersion: 1,
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				ParallelNumber:   0,
+				DataPageVersion:  1,
 			},
 			ReadPageSize: 10,
 			Source:       []string{sourceGZIP, sourceSnappy},
@@ -172,10 +172,10 @@ func TestCmd(t *testing.T) {
 		mergeCmd := Cmd{
 			ReadOption: pio.ReadOption{},
 			WriteOption: pio.WriteOption{
-				Compression:    "SNAPPY",
-				PageSize:       1024 * 1024,
-				RowGroupSize:   128 * 1024 * 1024,
-				ParallelNumber: 0,
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				ParallelNumber:   0,
 			},
 			ReadPageSize: 11000,
 			Source:       []string{"../../testdata/optional-fields.parquet", "../../testdata/optional-fields.parquet"},
@@ -227,10 +227,10 @@ func BenchmarkMergeCmd(b *testing.B) {
 	cmd := Cmd{
 		ReadOption: pio.ReadOption{},
 		WriteOption: pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		},
 		ReadPageSize: 1000,
 		Source:       slices.Repeat([]string{"../../build/benchmark.parquet"}, 3),

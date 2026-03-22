@@ -36,7 +36,7 @@ func good() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	_ = pw.Write(Student{123, "John Doe", 30, 98.2, false})
 	_ = pw.Write(Student{123, "Jane Doe", 25, 98.7, true})
 	if err = pw.WriteStop(); err != nil {
@@ -67,7 +67,7 @@ func optional() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	_ = pw.Write(Student{123, "John Doe", 30, nil, false})
 	_ = pw.Write(Student{123, "Jane Doe", 25, nil, true})
 	if err = pw.WriteStop(); err != nil {
@@ -98,7 +98,7 @@ func repeated() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	_ = pw.Write(Student{123, "John Doe", 30, []float32{}, false})
 	_ = pw.Write(Student{123, "Jane Doe", 25, []float32{98.1, 99.2}, true})
 	if err = pw.WriteStop(); err != nil {
@@ -129,7 +129,7 @@ func nested() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	_ = pw.Write(Student{123, "John Doe", 30, []float32{}, false})
 	_ = pw.Write(Student{123, "Jane Doe", 25, []float32{98.4, 99.3}, true})
 	if err = pw.WriteStop(); err != nil {

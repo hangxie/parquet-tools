@@ -40,9 +40,9 @@ type PageInfo struct {
 // Cmd is a kong command for inspect
 type Cmd struct {
 	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
-	RowGroup    *int   `name:"row-group" help:"Row group index to inspect."`
-	ColumnChunk *int   `name:"column-chunk" help:"Column chunk index to inspect (requires --row-group)."`
-	Page        *int   `name:"page" help:"Page index to inspect (requires --row-group and --column-chunk)."`
+	RowGroup    *int   `help:"Row group index to inspect." placeholder:"INDEX"`
+	ColumnChunk *int   `help:"Column chunk index to inspect." placeholder:"INDEX"`
+	Page        *int   `help:"Page index to inspect." placeholder:"INDEX"`
 	pio.ReadOption
 }
 

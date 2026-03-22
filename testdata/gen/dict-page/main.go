@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 
 	// Create records with repeating brand values to benefit from dictionary encoding
 	brands := []string{"nike", "adidas", "reebok"}
