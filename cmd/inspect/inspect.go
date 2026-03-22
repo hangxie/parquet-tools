@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/types"
 
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
@@ -414,7 +414,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	if err != nil {
 		return nil, fmt.Errorf("failed to create fresh reader: %w", err)
 	}
-	defer func() { _ = freshReader.ReadStopWithError() }()
+	defer func() { _ = freshReader.ReadStop() }()
 
 	// Calculate total number of rows in the file
 	totalRows := int64(0)
@@ -490,10 +490,10 @@ func (c Cmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) [
 	result := make([]any, len(values))
 	precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
 	for i, val := range values {
-		result[i] = types.ParquetTypeToJSONTypeWithLogical(
+		result[i] = types.ParquetTypeToJSONType(
 			val,
 			schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-			precision, scale)
+			precision, scale, nil)
 	}
 	return result
 }

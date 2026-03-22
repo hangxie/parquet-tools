@@ -9,22 +9,23 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
-	"github.com/hangxie/parquet-go/v2/source"
-	"github.com/hangxie/parquet-go/v2/source/azblob"
-	"github.com/hangxie/parquet-go/v2/source/gcs"
-	"github.com/hangxie/parquet-go/v2/source/hdfs"
-	"github.com/hangxie/parquet-go/v2/source/local"
-	"github.com/hangxie/parquet-go/v2/source/s3v2"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/source"
+	"github.com/hangxie/parquet-go/v3/source/azblob"
+	"github.com/hangxie/parquet-go/v3/source/gcs"
+	"github.com/hangxie/parquet-go/v3/source/hdfs"
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/source/s3v2"
+	"github.com/hangxie/parquet-go/v3/writer"
 )
 
 // WriteOption includes options for write operation
 type WriteOption struct {
-	Compression     string `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" default:"SNAPPY"`
-	DataPageVersion int32  `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
-	PageSize        int64  `help:"Page size in bytes." default:"1048576"`
-	RowGroupSize    int64  `help:"Row group size in bytes." default:"134217728"`
-	ParallelNumber  int64  `help:"Number of parallel writer goroutines, 0 means number of cores." default:"0"`
+	Compression      string   `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" default:"SNAPPY"`
+	CompressionLevel []string `help:"Set compression levels per codec (repeatable or comma-separated). Format CODEC=LEVEL, e.g. GZIP=9,ZSTD=3. Supported: GZIP(1-9), ZSTD(1-22), BROTLI(0-11), LZ4, LZ4_RAW. SNAPPY/UNCOMPRESSED do not accept levels." name:"compression-level"`
+	DataPageVersion  int32    `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
+	PageSize         int64    `help:"Page size in bytes." default:"1048576"`
+	RowGroupSize     int64    `help:"Row group size in bytes." default:"134217728"`
+	ParallelNumber   int64    `help:"Number of parallel writer goroutines, 0 means number of cores." default:"0"`
 }
 
 func newLocalWriter(u *url.URL) (source.ParquetFileWriter, error) {
@@ -164,12 +165,17 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 }
 
 func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.ParquetWriter, error) {
+	opts, err := ParseCompressionLevels(option.CompressionLevel)
+	if err != nil {
+		return nil, err
+	}
+
 	fileWriter, err := NewParquetFileWriter(uri)
 	if err != nil {
 		return nil, err
 	}
 
-	pw, err := writer.NewParquetWriter(fileWriter, schema, int64(runtime.NumCPU()))
+	pw, err := writer.NewParquetWriter(fileWriter, schema, int64(runtime.NumCPU()), opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err

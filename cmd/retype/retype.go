@@ -6,8 +6,8 @@ import (
 	"maps"
 	"reflect"
 
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/types"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -447,7 +447,7 @@ func applyRule(s, parent *pschema.SchemaNode, match func(node, parent *pschema.S
 
 // int96ToNanos converts an INT96 encoded string to nanoseconds since epoch.
 func int96ToNanos(value string) (any, error) {
-	timestamp, err := types.INT96ToTimeWithError(value)
+	timestamp, err := types.INT96ToTime(value)
 	if err != nil {
 		return nil, fmt.Errorf("INT96 conversion failed: %w", err)
 	}

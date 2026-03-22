@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	parquetSource "github.com/hangxie/parquet-go/v2/source"
+	parquetSource "github.com/hangxie/parquet-go/v3/source"
 
 	pio "github.com/hangxie/parquet-tools/io"
 )

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v3/reader"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v3/reader"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/io"

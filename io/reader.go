@@ -11,14 +11,14 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/source"
-	pqazblob "github.com/hangxie/parquet-go/v2/source/azblob"
-	"github.com/hangxie/parquet-go/v2/source/gcs"
-	"github.com/hangxie/parquet-go/v2/source/hdfs"
-	pqhttp "github.com/hangxie/parquet-go/v2/source/http"
-	"github.com/hangxie/parquet-go/v2/source/local"
-	"github.com/hangxie/parquet-go/v2/source/s3v2"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/source"
+	pqazblob "github.com/hangxie/parquet-go/v3/source/azblob"
+	"github.com/hangxie/parquet-go/v3/source/gcs"
+	"github.com/hangxie/parquet-go/v3/source/hdfs"
+	pqhttp "github.com/hangxie/parquet-go/v3/source/http"
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/source/s3v2"
 	googleoption "google.golang.org/api/option"
 )
 

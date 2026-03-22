@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/writer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -149,13 +149,21 @@ func TestNewGenericWriter(t *testing.T) {
 		schema string
 		errMsg string
 	}{
-		"invalid-uri":       {"://uri", WriteOption{}, "", "unable to parse file location"},
-		"schema-not-json":   {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
-		"schema-invalid":    {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-codec":     {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
-		"unsupported-codec": {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
-		"supported-brotli":  {tempFile, WriteOption{Compression: "BROTLI"}, schema, ""},
-		"all-good":          {tempFile, WriteOption{Compression: "SNAPPY"}, schema, ""},
+		"invalid-uri":                      {"://uri", WriteOption{}, "", "unable to parse file location"},
+		"schema-not-json":                  {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
+		"schema-invalid":                   {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-codec":                    {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
+		"unsupported-codec":                {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
+		"supported-brotli":                 {tempFile, WriteOption{Compression: "BROTLI"}, schema, ""},
+		"all-good":                         {tempFile, WriteOption{Compression: "SNAPPY"}, schema, ""},
+		"compression-level-gzip":           {tempFile, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6"}}, schema, ""},
+		"compression-level-zstd":           {tempFile, WriteOption{Compression: "ZSTD", CompressionLevel: []string{"ZSTD=3"}}, schema, ""},
+		"compression-level-brotli":         {tempFile, WriteOption{Compression: "BROTLI", CompressionLevel: []string{"BROTLI=5"}}, schema, ""},
+		"compression-level-lz4raw":         {tempFile, WriteOption{Compression: "LZ4_RAW", CompressionLevel: []string{"LZ4_RAW=3"}}, schema, ""},
+		"compression-level-snappy-invalid": {tempFile, WriteOption{Compression: "SNAPPY", CompressionLevel: []string{"SNAPPY=3"}}, schema, "does not support compression levels"},
+		"compression-level-invalid-value":  {tempFile, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=99"}}, schema, "out of range"},
+		"compression-level-multi":          {tempFile, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}}, schema, ""},
+		"compression-level-nil":            {tempFile, WriteOption{Compression: "GZIP"}, schema, ""},
 	}
 
 	for name, tc := range testCases {
