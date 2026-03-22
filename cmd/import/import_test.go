@@ -24,10 +24,10 @@ func (m *mockParquetFileWriter) Create(_ string) (parquetSource.ParquetFileWrite
 func TestCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}
 		tempDir := t.TempDir()
 
@@ -36,7 +36,7 @@ func TestCmd(t *testing.T) {
 			errMsg string
 		}{
 			"write-format":          {Cmd{WriteOption: wOpt, Source: "src", Format: "random", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"}, "is not a recognized source format"},
-			"write-compression":     {Cmd{WriteOption: pio.WriteOption{Compression: "foobar"}, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCodec string"},
+			"write-compression":     {Cmd{WriteOption: pio.WriteOption{CompressionCodec: "foobar"}, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCodec string"},
 			"csv-schema-file":       {Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "csv", Schema: "schema", SkipHeader: false, URI: "dummy"}, "failed to load schema from"},
 			"csv-source-file":       {Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"}, "failed to open CSV file"},
 			"csv-target-file":       {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "://uri"}, "unable to parse file location"},
@@ -73,16 +73,16 @@ func TestCmd(t *testing.T) {
 
 	t.Run("good", func(t *testing.T) {
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}
 		pOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 2,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   2,
 		}
 		testCases := map[string]struct {
 			cmd      Cmd

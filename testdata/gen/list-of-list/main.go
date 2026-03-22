@@ -50,7 +50,7 @@ func main() {
 	}
 
 	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
-	pw.CompressionType = parquet.CompressionCodec_LZ4
+	pw.CompressionCodec = parquet.CompressionCodec_LZ4
 	for i := range 5 {
 		rec := RecordType{
 			Lol: make([][]string, i),

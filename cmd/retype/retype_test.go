@@ -21,10 +21,10 @@ func TestCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}
 		tempDir := t.TempDir()
 
@@ -37,10 +37,10 @@ func TestCmd(t *testing.T) {
 			"source-not-parquet":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
 			"target-file":         {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
 			"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
-				Compression:    "INVALID",
-				PageSize:       1024 * 1024,
-				RowGroupSize:   128 * 1024 * 1024,
-				ParallelNumber: 0,
+				CompressionCodec: "INVALID",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				ParallelNumber:   0,
 			}, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 		}
 
@@ -56,10 +56,10 @@ func TestCmd(t *testing.T) {
 	t.Run("good", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		wOpt := pio.WriteOption{
-			Compression:    "SNAPPY",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}
 		tempDir := t.TempDir()
 		resultFile := filepath.Join(tempDir, "retyped.parquet")

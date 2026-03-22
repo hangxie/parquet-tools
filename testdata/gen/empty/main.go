@@ -23,7 +23,7 @@ func main() {
 		log.Println("Can't create parquet writer", err)
 		return
 	}
-	pw.CompressionType = parquet.CompressionCodec_UNCOMPRESSED
+	pw.CompressionCodec = parquet.CompressionCodec_UNCOMPRESSED
 	if err = pw.WriteStop(); err != nil {
 		log.Println("WriteStop error", err)
 	}

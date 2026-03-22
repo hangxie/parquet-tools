@@ -17,10 +17,10 @@ import (
 func TestCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:    "SNAPPY",
-		PageSize:       1024 * 1024,
-		RowGroupSize:   128 * 1024 * 1024,
-		ParallelNumber: 0,
+		CompressionCodec: "SNAPPY",
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tw := trunkWriter{}
 	testCases := map[string]struct {
@@ -101,10 +101,10 @@ func TestCmd(t *testing.T) {
 		splitCmd := Cmd{
 			ReadOption: pio.ReadOption{},
 			WriteOption: pio.WriteOption{
-				Compression:    "SNAPPY",
-				PageSize:       1024 * 1024,
-				RowGroupSize:   128 * 1024 * 1024,
-				ParallelNumber: 0,
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				ParallelNumber:   0,
 			},
 			ReadPageSize: 11000,
 			URI:          "../../testdata/optional-fields.parquet",

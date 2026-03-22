@@ -37,10 +37,10 @@ func TestCmd(t *testing.T) {
 func testCmdError(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:    "SNAPPY",
-		PageSize:       1024 * 1024,
-		RowGroupSize:   128 * 1024 * 1024,
-		ParallelNumber: 0,
+		CompressionCodec: "SNAPPY",
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -55,10 +55,10 @@ func testCmdError(t *testing.T) {
 		"target-write":        {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "s3://target"}, "failed to close"},
 		"fail-on-int96":       {Cmd{FailOnInt96: true, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/all-types.parquet", URI: filepath.Join(tempDir, "dummy")}, "has type INT96 which is not supported"},
 		"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
-			Compression:    "INVALID",
-			PageSize:       1024 * 1024,
-			RowGroupSize:   128 * 1024 * 1024,
-			ParallelNumber: 0,
+			CompressionCodec: "INVALID",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		}, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 	}
 
@@ -101,11 +101,11 @@ func testCmdGood(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			wOpt := pio.WriteOption{
-				Compression:     tc.compression,
-				DataPageVersion: tc.dataPageVersion,
-				PageSize:        1024 * 1024,
-				RowGroupSize:    128 * 1024 * 1024,
-				ParallelNumber:  0,
+				CompressionCodec: tc.compression,
+				DataPageVersion:  tc.dataPageVersion,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				ParallelNumber:   0,
 			}
 			cmd := Cmd{
 				OmitStats:    tc.omitStats,
@@ -139,11 +139,11 @@ func testCmdGood(t *testing.T) {
 func testCmdVerifyData(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "ZSTD",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "ZSTD",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -190,11 +190,11 @@ func testCmdVerifyData(t *testing.T) {
 func testCmdSchemaModification(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -222,11 +222,11 @@ func testCmdSchemaModification(t *testing.T) {
 func testCmdPageSizes(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -255,18 +255,18 @@ func testCmdPageSizes(t *testing.T) {
 func testCmdEdgeCases(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	wOptV2 := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 2,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  2,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -311,10 +311,10 @@ func testCmdEdgeCases(t *testing.T) {
 			cmd: Cmd{
 				ReadOption: rOpt,
 				WriteOption: pio.WriteOption{
-					Compression:    "LZ4_RAW",
-					PageSize:       1024 * 1024,
-					RowGroupSize:   128 * 1024 * 1024,
-					ParallelNumber: 0,
+					CompressionCodec: "LZ4_RAW",
+					PageSize:         1024 * 1024,
+					RowGroupSize:     128 * 1024 * 1024,
+					ParallelNumber:   0,
 				},
 				ReadPageSize: 10,
 				Source:       "../../testdata/good.parquet",
@@ -339,11 +339,11 @@ func testCmdEdgeCases(t *testing.T) {
 func testCmdFieldEncoding(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -428,11 +428,11 @@ func testCmdFieldEncoding(t *testing.T) {
 func testCmdFieldCompression(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -520,11 +520,11 @@ func testCmdFieldCompression(t *testing.T) {
 func testCmdFieldEncodingAndCompression(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -561,11 +561,11 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 	cmd := Cmd{
 		ReadOption: rOpt,
 		WriteOption: pio.WriteOption{
-			Compression:     "ZSTD",
-			DataPageVersion: 1,
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
+			CompressionCodec: "ZSTD",
+			DataPageVersion:  1,
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       testFile,
@@ -620,11 +620,11 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 		FieldEncoding: []string{"shoe_name=DELTA_BYTE_ARRAY"},
 		ReadOption:    rOpt,
 		WriteOption: pio.WriteOption{
-			Compression:     "ZSTD",
-			DataPageVersion: 2,
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
+			CompressionCodec: "ZSTD",
+			DataPageVersion:  2,
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       "../../testdata/good.parquet",
@@ -691,11 +691,11 @@ func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {
 	cmd := Cmd{
 		ReadOption: rOpt,
 		WriteOption: pio.WriteOption{
-			Compression:     "GZIP",
-			DataPageVersion: 1,
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
+			CompressionCodec: "GZIP",
+			DataPageVersion:  1,
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       testFile,
@@ -718,11 +718,11 @@ func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
 	cmd := Cmd{
 		ReadOption: rOpt,
 		WriteOption: pio.WriteOption{
-			Compression:     "SNAPPY",
-			DataPageVersion: 2,
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
+			CompressionCodec: "SNAPPY",
+			DataPageVersion:  2,
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       "../../testdata/all-types.parquet",
@@ -934,11 +934,11 @@ func TestCmdParseFieldEncodings(t *testing.T) {
 			cmd := Cmd{
 				FieldEncoding: tc.fieldEncoding,
 				WriteOption: pio.WriteOption{
-					Compression:     "SNAPPY",
-					DataPageVersion: tc.dataPageVersion,
-					PageSize:        1024 * 1024,
-					RowGroupSize:    128 * 1024 * 1024,
-					ParallelNumber:  0,
+					CompressionCodec: "SNAPPY",
+					DataPageVersion:  tc.dataPageVersion,
+					PageSize:         1024 * 1024,
+					RowGroupSize:     128 * 1024 * 1024,
+					ParallelNumber:   0,
 				},
 			}
 			result, err := cmd.parseFieldEncodings()
@@ -1126,11 +1126,11 @@ func TestCmdParseFieldBloomFilters(t *testing.T) {
 func testCmdFieldBloomFilter(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	wOpt := pio.WriteOption{
-		Compression:     "SNAPPY",
-		DataPageVersion: 1,
-		PageSize:        1024 * 1024,
-		RowGroupSize:    128 * 1024 * 1024,
-		ParallelNumber:  0,
+		CompressionCodec: "SNAPPY",
+		DataPageVersion:  1,
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -1350,11 +1350,11 @@ func BenchmarkTranscodeCmd(b *testing.B) {
 	cmd := Cmd{
 		ReadOption: pio.ReadOption{},
 		WriteOption: pio.WriteOption{
-			Compression:     "ZSTD",
-			DataPageVersion: 1,
-			PageSize:        1024 * 1024,
-			RowGroupSize:    128 * 1024 * 1024,
-			ParallelNumber:  0,
+			CompressionCodec: "ZSTD",
+			DataPageVersion:  1,
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+			ParallelNumber:   0,
 		},
 		ReadPageSize: 1000,
 		Source:       "../../build/benchmark.parquet",

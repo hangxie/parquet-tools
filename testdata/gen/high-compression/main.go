@@ -28,7 +28,7 @@ func main() {
 		fmt.Printf("Can't create writer: %v", err)
 		return
 	}
-	pw.CompressionType = parquet.CompressionCodec_ZSTD
+	pw.CompressionCodec = parquet.CompressionCodec_ZSTD
 	pw.RowGroupSize = 512 * 1024 * 1024 // 512MB row groups
 	pw.PageSize = 512 * 1024 * 1024     // 512MB pages to maximize compression ratio
 

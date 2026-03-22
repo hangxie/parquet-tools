@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	_ = pw.Write(Row{nil, nil, nil, nil})
 	_ = pw.Write(Row{
 		Field1: toPtr([]string{"val1", "val2"}),

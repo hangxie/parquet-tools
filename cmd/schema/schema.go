@@ -19,9 +19,9 @@ const (
 // Cmd is a kong command for schema
 type Cmd struct {
 	CamelCase            bool   `help:"enforce go struct field name to be CamelCase" default:"false"`
-	Format               string `short:"f" help:"Schema format (raw/json/go/csv)." enum:"raw,json,go,csv" default:"json"`
-	SkipPageEncoding     bool   `help:"skip reading page encoding information" name:"skip-page-encoding" default:"false"`
-	ShowCompressionCodec bool   `help:"(deprecated, no effect, will be removed) compression codec is always shown" name:"show-compression-codec" default:"false"`
+	Format               string `short:"f" help:"output format (go/json/thrift)" enum:"go,json,thrift" default:"go"`
+	SkipPageEncoding     bool   `help:"skip reading page encoding information" default:"false"`
+	ShowCompressionCodec bool   `help:"(deprecated, no effect, will be removed) compression codec is always shown" default:"false"`
 	URI                  string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }
