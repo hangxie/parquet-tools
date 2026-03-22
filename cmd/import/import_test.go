@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	parquetSource "github.com/hangxie/parquet-go/v2/source"
+	parquetSource "github.com/hangxie/parquet-go/v3/source"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/io"

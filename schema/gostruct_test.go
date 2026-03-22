@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v3/parquet"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/io"

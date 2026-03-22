@@ -9,13 +9,13 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
-	"github.com/hangxie/parquet-go/v2/source"
-	"github.com/hangxie/parquet-go/v2/source/azblob"
-	"github.com/hangxie/parquet-go/v2/source/gcs"
-	"github.com/hangxie/parquet-go/v2/source/hdfs"
-	"github.com/hangxie/parquet-go/v2/source/local"
-	"github.com/hangxie/parquet-go/v2/source/s3v2"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/source"
+	"github.com/hangxie/parquet-go/v3/source/azblob"
+	"github.com/hangxie/parquet-go/v3/source/gcs"
+	"github.com/hangxie/parquet-go/v3/source/hdfs"
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/source/s3v2"
+	"github.com/hangxie/parquet-go/v3/writer"
 )
 
 // WriteOption includes options for write operation

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/encoding"
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/encoding"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/types"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -920,5 +920,5 @@ func (node *SchemaNode) DecodeStatValue(value []byte) any {
 		val = vals[0]
 	}
 
-	return types.ParquetTypeToJSONTypeWithLogical(val, node.Type, node.ConvertedType, node.LogicalType, int(node.GetPrecision()), int(node.GetScale()))
+	return types.ParquetTypeToJSONType(val, node.Type, node.ConvertedType, node.LogicalType, int(node.GetPrecision()), int(node.GetScale()), nil)
 }

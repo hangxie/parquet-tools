@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/writer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -149,9 +149,9 @@ func TestNewGenericWriter(t *testing.T) {
 		schema string
 		errMsg string
 	}{
-		"invalid-uri":       {"://uri", WriteOption{}, "", "unable to parse file location"},
-		"schema-not-json":   {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
-		"schema-invalid":    {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-uri":                      {"://uri", WriteOption{}, "", "unable to parse file location"},
+		"schema-not-json":                  {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
+		"schema-invalid":                   {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
 		"invalid-codec":     {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
 		"unsupported-codec": {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
 		"supported-brotli":  {tempFile, WriteOption{Compression: "BROTLI"}, schema, ""},

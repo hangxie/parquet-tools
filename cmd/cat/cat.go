@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hangxie/parquet-go/v2/marshal"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/schema"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/marshal"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/schema"
+	"github.com/hangxie/parquet-go/v3/types"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -33,6 +33,7 @@ type Cmd struct {
 	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
+	geoOpts []types.GeospatialOption
 }
 
 var delimiter = map[string]struct {
@@ -49,18 +50,21 @@ var delimiter = map[string]struct {
 
 // Run does actual cat job
 func (c Cmd) Run() error {
+	var geoMode types.GeospatialJSONMode
 	switch c.GeoFormat {
 	case "hex":
-		types.SetGeometryJSONMode(types.GeospatialModeHex)
-		types.SetGeographyJSONMode(types.GeospatialModeHex)
+		geoMode = types.GeospatialModeHex
 	case "base64":
-		types.SetGeometryJSONMode(types.GeospatialModeBase64)
-		types.SetGeographyJSONMode(types.GeospatialModeBase64)
+		geoMode = types.GeospatialModeBase64
 	case "geojson", "":
-		types.SetGeometryJSONMode(types.GeospatialModeGeoJSON)
-		types.SetGeographyJSONMode(types.GeospatialModeGeoJSON)
+		geoMode = types.GeospatialModeGeoJSON
 	default:
 		return fmt.Errorf("unknown geo format: [%s]", c.GeoFormat)
+	}
+	c.geoOpts = []types.GeospatialOption{
+		types.WithGeometryJSONMode(geoMode),
+		types.WithGeographyJSONMode(geoMode),
+		types.WithGeoJSONAsFeature(geoMode == types.GeospatialModeGeoJSON),
 	}
 
 	if c.ReadPageSize < 1 {
@@ -162,7 +166,7 @@ func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan stri
 			if !more {
 				return nil
 			}
-			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler)
+			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler, marshal.WithGeospatialOptions(c.geoOpts...))
 			if err != nil {
 				return err
 			}
