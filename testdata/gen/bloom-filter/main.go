@@ -29,7 +29,7 @@ func main() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	for i := range 10 {
 		value := BloomFilterData{
 			ID:       int64(i),

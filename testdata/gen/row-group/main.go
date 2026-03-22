@@ -28,7 +28,7 @@ func main() {
 	}
 	pw.RowGroupSize = 256
 	pw.PageSize = 32
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 
 	for i := range 20 {
 		_ = pw.Write(Something{"the brand is: " + strconv.Itoa(i), "the name is: " + strconv.Itoa(i)})

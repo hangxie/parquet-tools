@@ -96,7 +96,7 @@ func main() {
 
 	pw.RowGroupSize = 128 * 1024 * 1024
 	pw.PageSize = 8 * 1024
-	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
 	interval := make([]byte, 4)
 	for i := range 5 {

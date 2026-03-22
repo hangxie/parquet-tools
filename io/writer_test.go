@@ -73,6 +73,7 @@ func TestNewCSVWriter(t *testing.T) {
 		"invalid-codec":     {WriteOption{Compression: "FOOBAR"}, tempFile, []string{"name=Id, type=INT64"}, "not a valid CompressionCodec string"},
 		"unsupported-codec": {WriteOption{Compression: "LZO"}, tempFile, []string{"name=Id, type=INT64"}, "compression is not supported at this moment"},
 		"supported-brotli":  {WriteOption{Compression: "BROTLI"}, tempFile, []string{"name=Id, type=INT64"}, ""},
+		"compression-level": {WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6"}}, tempFile, []string{"name=Id, type=INT64"}, ""},
 		"hdfs-failed":       {wOpt, "hdfs://localhost:1/temp/good.parquet", nil, "connection refused"},
 		"all-good":          {WriteOption{Compression: "SNAPPY"}, tempFile, []string{"name=Id, type=INT64"}, ""},
 	}
@@ -103,22 +104,23 @@ func TestNewJSONWriter(t *testing.T) {
 	validSchema := `{"Tag":"name=parquet-go-root","Fields":[{"Tag":"name=id, type=INT64"}]}`
 
 	testCases := map[string]struct {
-		uri         string
-		schema      string
-		compression string
-		errMsg      string
+		uri    string
+		schema string
+		option WriteOption
+		errMsg string
 	}{
-		"invalid-uri":         {"://uri", "", "SNAPPY", "unable to parse file location"},
-		"invalid-schema1":     {tempFile, "invalid schema", "SNAPPY", "unmarshal json schema string"},
-		"invalid-schema2":     {tempFile, `{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "SNAPPY", "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-compression": {tempFile, validSchema, "INVALID", "not a valid CompressionCodec"},
-		"all-good":            {tempFile, validSchema, "SNAPPY", ""},
+		"invalid-uri":         {"://uri", "", WriteOption{Compression: "SNAPPY"}, "unable to parse file location"},
+		"invalid-schema1":     {tempFile, "invalid schema", WriteOption{Compression: "SNAPPY"}, "unmarshal json schema string"},
+		"invalid-schema2":     {tempFile, `{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, WriteOption{Compression: "SNAPPY"}, "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-compression": {tempFile, validSchema, WriteOption{Compression: "INVALID"}, "not a valid CompressionCodec"},
+		"compression-level":   {tempFile, validSchema, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6"}}, ""},
+		"all-good":            {tempFile, validSchema, WriteOption{Compression: "SNAPPY"}, ""},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			pw, err := NewJSONWriter(tc.uri, WriteOption{Compression: tc.compression}, tc.schema)
+			pw, err := NewJSONWriter(tc.uri, tc.option, tc.schema)
 			defer func() {
 				if pw != nil {
 					_ = pw.PFile.Close()
@@ -146,13 +148,21 @@ func TestNewGenericWriter(t *testing.T) {
 		schema string
 		errMsg string
 	}{
-		"invalid-uri":       {"://uri", WriteOption{}, "", "unable to parse file location"},
-		"schema-not-json":   {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
-		"schema-invalid":    {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-codec":     {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
-		"unsupported-codec": {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
-		"supported-brotli":  {tempFile, WriteOption{Compression: "BROTLI"}, schema, ""},
-		"all-good":          {tempFile, WriteOption{Compression: "SNAPPY"}, schema, ""},
+		"invalid-uri":                      {"://uri", WriteOption{}, "", "unable to parse file location"},
+		"schema-not-json":                  {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
+		"schema-invalid":                   {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
+		"invalid-codec":                    {tempFile, WriteOption{Compression: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
+		"unsupported-codec":                {tempFile, WriteOption{Compression: "LZO"}, schema, "compression is not supported at this moment"},
+		"supported-brotli":                 {tempFile, WriteOption{Compression: "BROTLI"}, schema, ""},
+		"all-good":                         {tempFile, WriteOption{Compression: "SNAPPY"}, schema, ""},
+		"compression-level-gzip":           {tempFile, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6"}}, schema, ""},
+		"compression-level-zstd":           {tempFile, WriteOption{Compression: "ZSTD", CompressionLevel: []string{"ZSTD=3"}}, schema, ""},
+		"compression-level-brotli":         {tempFile, WriteOption{Compression: "BROTLI", CompressionLevel: []string{"BROTLI=5"}}, schema, ""},
+		"compression-level-lz4raw":         {tempFile, WriteOption{Compression: "LZ4_RAW", CompressionLevel: []string{"LZ4_RAW=3"}}, schema, ""},
+		"compression-level-snappy-invalid": {tempFile, WriteOption{Compression: "SNAPPY", CompressionLevel: []string{"SNAPPY=3"}}, schema, "does not support compression levels"},
+		"compression-level-invalid-value":  {tempFile, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=99"}}, schema, "out of range"},
+		"compression-level-multi":          {tempFile, WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}}, schema, ""},
+		"compression-level-nil":            {tempFile, WriteOption{Compression: "GZIP"}, schema, ""},
 	}
 
 	for name, tc := range testCases {
@@ -188,6 +198,10 @@ func TestWriterOpts(t *testing.T) {
 		"valid-gzip": {
 			option:      WriteOption{Compression: "GZIP", DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048, ParallelNumber: 2},
 			expectedLen: 5,
+		},
+		"valid-compression-level": {
+			option:      WriteOption{Compression: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}, DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048, ParallelNumber: 2},
+			expectedLen: 7,
 		},
 		"defaults-only": {
 			option:      WriteOption{},

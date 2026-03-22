@@ -35,7 +35,7 @@ func main() {
 
 	pw.RowGroupSize = 128 * 1024 * 1024
 	pw.PageSize = 8 * 1024
-	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	for i := range 3 {
 		value := ListTypes{
 			ListOfStruct: slices.Repeat([]NestedStruct{{

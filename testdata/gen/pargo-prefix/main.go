@@ -43,7 +43,7 @@ func main() {
 
 	pw.RowGroupSize = 128 * 1024 * 1024
 	pw.PageSize = 8 * 1024
-	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
 	for i := range 10 {
 		value := PargoPrefix{
@@ -88,7 +88,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	_ = pw.Write(Shoe{"nike", "air_griffey"})
 	_ = pw.Write(Shoe{"fila", "grant_hill_2"})
 	_ = pw.Write(Shoe{"steph_curry", "curry7"})
