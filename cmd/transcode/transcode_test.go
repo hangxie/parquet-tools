@@ -55,6 +55,7 @@ func testCmdError(t *testing.T) {
 		"target-write":        {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "s3://target"}, "failed to close"},
 		"fail-on-int96":       {Cmd{FailOnInt96: true, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/all-types.parquet", URI: filepath.Join(tempDir, "dummy")}, "has type INT96 which is not supported"},
 		"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
+			Compression:    "INVALID",
 			PageSize:       1024 * 1024,
 			RowGroupSize:   128 * 1024 * 1024,
 			ParallelNumber: 0,
@@ -1082,7 +1083,7 @@ func TestCmdParseFieldBloomFilters(t *testing.T) {
 		{
 			name:             "invalid value",
 			fieldBloomFilter: []string{"ID=maybe"},
-			errMsg:           "invalid bloom filter value",
+			errMsg:           "invalid bloom filter size [maybe] for field [ID]: not a number",
 		},
 		{
 			name:             "not power of 2",

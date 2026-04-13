@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/types"
 
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
@@ -410,11 +410,11 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	}
 
 	// Create a fresh column reader to read the entire column
-	freshReader, err := reader.NewParquetColumnReader(pr.PFile, 4)
+	freshReader, err := reader.NewParquetColumnReader(pr.PFile, reader.WithNP(4))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create fresh reader: %w", err)
 	}
-	defer func() { _ = freshReader.ReadStopWithError() }()
+	defer func() { _ = freshReader.ReadStop() }()
 
 	// Calculate total number of rows in the file
 	totalRows := int64(0)
@@ -488,12 +488,8 @@ func (c Cmd) printJSON(data any) error {
 // convertValuesToJSON converts raw parquet values to JSON-friendly types
 func (c Cmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) []any {
 	result := make([]any, len(values))
-	precision, scale := int(schemaNode.GetPrecision()), int(schemaNode.GetScale())
 	for i, val := range values {
-		result[i] = types.ParquetTypeToJSONTypeWithLogical(
-			val,
-			schemaNode.Type, schemaNode.ConvertedType, schemaNode.LogicalType,
-			precision, scale)
+		result[i] = types.ConvertToJSONType(val, &schemaNode.SchemaElement)
 	}
 	return result
 }
@@ -532,11 +528,12 @@ func (c Cmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema
 	}
 
 	if schemaNode != nil {
-		if minVal := schemaNode.DecodeStatValue(statistics.MinValue); minVal != nil {
-			stats["minValue"] = minVal
+		min, max := schemaNode.DecodeStatistics(statistics)
+		if min != nil {
+			stats["minValue"] = min
 		}
-		if maxVal := schemaNode.DecodeStatValue(statistics.MaxValue); maxVal != nil {
-			stats["maxValue"] = maxVal
+		if max != nil {
+			stats["maxValue"] = max
 		}
 	}
 

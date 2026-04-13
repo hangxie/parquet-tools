@@ -37,6 +37,7 @@ func TestCmd(t *testing.T) {
 			"source-not-parquet":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
 			"target-file":         {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
 			"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
+				Compression:    "INVALID",
 				PageSize:       1024 * 1024,
 				RowGroupSize:   128 * 1024 * 1024,
 				ParallelNumber: 0,

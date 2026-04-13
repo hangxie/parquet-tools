@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -10,11 +9,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/encoding"
-	"github.com/hangxie/parquet-go/v2/parquet"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/parquet"
+	"github.com/hangxie/parquet-go/v3/reader"
+	pgschema "github.com/hangxie/parquet-go/v3/schema"
+	"github.com/hangxie/parquet-go/v3/types"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -326,7 +325,7 @@ func populateLeafMetadata(root *SchemaNode, encodingMap, compressionCodecMap map
 }
 
 // markUndefinedSortOrder recursively marks nodes whose sort order is
-// undefined per the Parquet spec, so that DecodeStatValue skips min/max.
+// undefined per the Parquet spec, so that DecodeStatistics skips min/max.
 //   - GEOMETRY, GEOGRAPHY: marked on the node itself (leaf with logical type)
 //   - INTERVAL: marked on the node itself (leaf with converted type)
 //   - VARIANT: a STRUCT whose logical type is on the parent, so all descendants are marked
@@ -898,27 +897,16 @@ func IsEncodingCompatible(encoding, dataType string) bool {
 	return slices.Contains(compatibleEncodings, encoding)
 }
 
-// DecodeStatValue decodes raw statistics bytes into a typed Go value with logical type conversion.
-// Returns nil for nil/empty values and types with undefined sort order.
-func (node *SchemaNode) DecodeStatValue(value []byte) any {
-	if len(value) == 0 || node.UndefinedSortOrder {
-		return nil
+// DecodeStatistics decodes a parquet.Statistics object into human-readable min/max values.
+// Returns (nil, nil) for nil/empty statistics, nodes with undefined sort order, or on error.
+func (node *SchemaNode) DecodeStatistics(stats *parquet.Statistics) (min, max any) {
+	if node.UndefinedSortOrder {
+		return nil, nil
 	}
-
-	var val any
-	if *node.Type == parquet.Type_BYTE_ARRAY || *node.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
-		val = string(value)
-	} else {
-		buf := bytes.NewReader(value)
-		vals, err := encoding.ReadPlain(buf, *node.Type, 1, 0)
-		if err != nil {
-			return fmt.Sprintf("failed to read data as %s: %v", node.Type.String(), err)
-		}
-		if len(vals) == 0 {
-			return nil
-		}
-		val = vals[0]
+	rawMin, rawMax, err := pgschema.DecodeStatisticsMinMax(&node.SchemaElement, stats)
+	if err != nil {
+		return nil, nil
 	}
-
-	return types.ParquetTypeToJSONTypeWithLogical(val, node.Type, node.ConvertedType, node.LogicalType, int(node.GetPrecision()), int(node.GetScale()))
+	return types.ConvertToJSONType(rawMin, &node.SchemaElement),
+		types.ConvertToJSONType(rawMax, &node.SchemaElement)
 }
