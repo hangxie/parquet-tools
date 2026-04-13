@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/parquet"
 	"github.com/stretchr/testify/require"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -1543,16 +1543,15 @@ func TestLogicalTypeString(t *testing.T) {
 	}
 }
 
-func TestDecodeStatValue(t *testing.T) {
+func TestDecodeStatistics(t *testing.T) {
 	testCases := map[string]struct {
-		value     []byte
-		node      *SchemaNode
-		want      any
-		wantNil   bool
-		wantError bool
+		stats   *parquet.Statistics
+		node    *SchemaNode
+		want    any
+		wantNil bool
 	}{
-		"nil-value": {
-			value: nil,
+		"nil-stats": {
+			stats: nil,
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_INT32),
@@ -1561,7 +1560,7 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"empty-value": {
-			value: []byte{},
+			stats: &parquet.Statistics{MinValue: []byte{}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_INT32),
@@ -1570,7 +1569,7 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"geometry": {
-			value: []byte{1, 2, 3, 4},
+			stats: &parquet.Statistics{MinValue: []byte{1, 2, 3, 4}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
@@ -1583,7 +1582,7 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"geography": {
-			value: []byte{1, 2, 3, 4},
+			stats: &parquet.Statistics{MinValue: []byte{1, 2, 3, 4}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
@@ -1596,7 +1595,7 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"interval": {
-			value: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+			stats: &parquet.Statistics{MinValue: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type:          parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
@@ -1607,25 +1606,26 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"byte-array": {
-			value: []byte("hello"),
+			stats: &parquet.Statistics{MinValue: []byte("hello")},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
 				},
 			},
-			want: "aGVsbG8=", // base64-encoded by ParquetTypeToJSONTypeWithLogical for raw byte arrays
+			want: "aGVsbG8=", // base64-encoded by ConvertToJSONType for raw byte arrays
 		},
 		"fixed-len-byte-array": {
-			value: []byte("abcd"),
+			stats: &parquet.Statistics{MinValue: []byte("abcd")},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
-					Type: parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+					Type:       parquet.TypePtr(parquet.Type_FIXED_LEN_BYTE_ARRAY),
+					TypeLength: new(int32(4)),
 				},
 			},
 			want: "YWJjZA==", // base64-encoded
 		},
 		"int32": {
-			value: []byte{9, 0, 0, 0},
+			stats: &parquet.Statistics{MinValue: []byte{9, 0, 0, 0}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_INT32),
@@ -1634,7 +1634,7 @@ func TestDecodeStatValue(t *testing.T) {
 			want: int32(9),
 		},
 		"int64": {
-			value: []byte{9, 0, 0, 0, 0, 0, 0, 0},
+			stats: &parquet.Statistics{MinValue: []byte{9, 0, 0, 0, 0, 0, 0, 0}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_INT64),
@@ -1643,7 +1643,7 @@ func TestDecodeStatValue(t *testing.T) {
 			want: int64(9),
 		},
 		"boolean-true": {
-			value: []byte{1},
+			stats: &parquet.Statistics{MinValue: []byte{1}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_BOOLEAN),
@@ -1652,7 +1652,7 @@ func TestDecodeStatValue(t *testing.T) {
 			want: true,
 		},
 		"float": {
-			value: []byte{0, 0, 0, 64},
+			stats: &parquet.Statistics{MinValue: []byte{0, 0, 0, 64}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_FLOAT),
@@ -1661,7 +1661,7 @@ func TestDecodeStatValue(t *testing.T) {
 			want: float32(2),
 		},
 		"double": {
-			value: []byte{0, 0, 0, 0, 0, 0, 0, 64},
+			stats: &parquet.Statistics{MinValue: []byte{0, 0, 0, 0, 0, 0, 0, 64}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_DOUBLE),
@@ -1670,7 +1670,7 @@ func TestDecodeStatValue(t *testing.T) {
 			want: float64(2),
 		},
 		"variant-child-metadata": {
-			value: []byte{1, 2, 3, 4},
+			stats: &parquet.Statistics{MinValue: []byte{1, 2, 3, 4}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
@@ -1680,7 +1680,7 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"variant-child-value": {
-			value: []byte{5, 6, 7, 8},
+			stats: &parquet.Statistics{MinValue: []byte{5, 6, 7, 8}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_BYTE_ARRAY),
@@ -1690,26 +1690,23 @@ func TestDecodeStatValue(t *testing.T) {
 			wantNil: true,
 		},
 		"invalid-data": {
-			value: []byte{1},
+			stats: &parquet.Statistics{MinValue: []byte{1}},
 			node: &SchemaNode{
 				SchemaElement: parquet.SchemaElement{
 					Type: parquet.TypePtr(parquet.Type_INT32),
 				},
 			},
-			wantError: true,
+			wantNil: true,
 		},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			result := tc.node.DecodeStatValue(tc.value)
+			min, _ := tc.node.DecodeStatistics(tc.stats)
 			if tc.wantNil {
-				require.Nil(t, result)
-			} else if tc.wantError {
-				require.NotNil(t, result)
-				require.Contains(t, result, "failed to read data")
+				require.Nil(t, min)
 			} else {
-				require.Equal(t, tc.want, result)
+				require.Equal(t, tc.want, min)
 			}
 		})
 	}

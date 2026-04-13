@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hangxie/parquet-go/v2/marshal"
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/schema"
-	"github.com/hangxie/parquet-go/v2/types"
+	"github.com/hangxie/parquet-go/v3/marshal"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/schema"
+	"github.com/hangxie/parquet-go/v3/types"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -49,20 +49,6 @@ var delimiter = map[string]struct {
 
 // Run does actual cat job
 func (c Cmd) Run() error {
-	switch c.GeoFormat {
-	case "hex":
-		types.SetGeometryJSONMode(types.GeospatialModeHex)
-		types.SetGeographyJSONMode(types.GeospatialModeHex)
-	case "base64":
-		types.SetGeometryJSONMode(types.GeospatialModeBase64)
-		types.SetGeographyJSONMode(types.GeospatialModeBase64)
-	case "geojson", "":
-		types.SetGeometryJSONMode(types.GeospatialModeGeoJSON)
-		types.SetGeographyJSONMode(types.GeospatialModeGeoJSON)
-	default:
-		return fmt.Errorf("unknown geo format: [%s]", c.GeoFormat)
-	}
-
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -151,6 +137,20 @@ func mapToStrList(flatValues map[string]any, fieldList []string) []string {
 }
 
 func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string) error {
+	var geoMode types.GeospatialJSONMode
+	switch c.GeoFormat {
+	case "hex":
+		geoMode = types.GeospatialModeHex
+	case "base64":
+		geoMode = types.GeospatialModeBase64
+	default:
+		geoMode = types.GeospatialModeGeoJSON
+	}
+	geoOpt := marshal.WithGeospatialConfig(types.NewGeospatialConfig(
+		types.WithGeometryJSONMode(geoMode),
+		types.WithGeographyJSONMode(geoMode),
+	))
+
 	strBuilder := new(strings.Builder)
 	csvWriter := csv.NewWriter(strBuilder)
 	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
@@ -162,7 +162,7 @@ func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan stri
 			if !more {
 				return nil
 			}
-			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler)
+			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler, geoOpt)
 			if err != nil {
 				return err
 			}

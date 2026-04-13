@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hangxie/parquet-go/v2/common"
-	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/parquet"
 
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
@@ -181,8 +181,7 @@ func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNo
 func (c Cmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
 	column.NullCount = statistics.NullCount
 	column.DistinctCount = statistics.DistinctCount
-	column.MaxValue = schemaNode.DecodeStatValue(statistics.MaxValue)
-	column.MinValue = schemaNode.DecodeStatValue(statistics.MinValue)
+	column.MinValue, column.MaxValue = schemaNode.DecodeStatistics(statistics)
 }
 
 func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {

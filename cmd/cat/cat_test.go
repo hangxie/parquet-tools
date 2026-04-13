@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/reader"
+	"github.com/hangxie/parquet-go/v3/reader"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
@@ -33,9 +33,8 @@ func TestCmd(t *testing.T) {
 		"nested-schema-tsv":       {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
 		"geospatial-csv":          {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
 		"geospatial-tsv":          {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
-		"invalid-geo-format":      {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", GeoFormat: "foobar", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "unknown geo format:"},
 		"nan-json-error":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
-		"arrow-gh-41321":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"}, errMsg: "invalid count"},
+		"arrow-gh-41321":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"}, errMsg: "failed to cat"},
 		"concurrent-non-existent": {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", Concurrent: true}, errMsg: "no such file or directory"},
 		"concurrent-nan-json":     {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true}, errMsg: "json: unsupported value: NaN"},
 		"concurrent-int96":        {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true}, errMsg: "type INT96 which is not supported"},

@@ -9,13 +9,13 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
-	"github.com/hangxie/parquet-go/v2/source"
-	"github.com/hangxie/parquet-go/v2/source/azblob"
-	"github.com/hangxie/parquet-go/v2/source/gcs"
-	"github.com/hangxie/parquet-go/v2/source/hdfs"
-	"github.com/hangxie/parquet-go/v2/source/local"
-	"github.com/hangxie/parquet-go/v2/source/s3v2"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/source"
+	"github.com/hangxie/parquet-go/v3/source/azblob"
+	"github.com/hangxie/parquet-go/v3/source/gcs"
+	"github.com/hangxie/parquet-go/v3/source/hdfs"
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/source/s3v2"
+	"github.com/hangxie/parquet-go/v3/writer"
 )
 
 // WriteOption includes options for write operation
@@ -110,21 +110,32 @@ func NewParquetFileWriter(uri string) (source.ParquetFileWriter, error) {
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
 
-func configureWriter(pw *writer.ParquetWriter, option WriteOption) error {
-	codec, err := compressionCodec(option.Compression)
-	if err != nil {
-		return err
+func writerOpts(option WriteOption) ([]writer.WriterOption, error) {
+	var opts []writer.WriterOption
+	if option.Compression != "" {
+		codec, err := compressionCodec(option.Compression)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, writer.WithCompressionType(codec))
 	}
-	pw.CompressionType = codec
-	pw.DataPageVersion = option.DataPageVersion
-	pw.PageSize = option.PageSize
-	pw.RowGroupSize = option.RowGroupSize
-	if option.ParallelNumber == 0 {
-		pw.NP = int64(runtime.NumCPU())
-	} else {
-		pw.NP = option.ParallelNumber
+	dpv := option.DataPageVersion
+	if dpv == 0 {
+		dpv = 2 // match CLI default
 	}
-	return nil
+	opts = append(opts, writer.WithDataPageVersion(dpv))
+	if option.PageSize > 0 {
+		opts = append(opts, writer.WithPageSize(option.PageSize))
+	}
+	if option.RowGroupSize > 0 {
+		opts = append(opts, writer.WithRowGroupSize(option.RowGroupSize))
+	}
+	np := option.ParallelNumber
+	if np == 0 {
+		np = int64(runtime.NumCPU())
+	}
+	opts = append(opts, writer.WithNP(np))
+	return opts, nil
 }
 
 func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVWriter, error) {
@@ -133,12 +144,13 @@ func NewCSVWriter(uri string, option WriteOption, schema []string) (*writer.CSVW
 		return nil, err
 	}
 
-	pw, err := writer.NewCSVWriter(schema, fileWriter, int64(runtime.NumCPU()))
+	opts, err := writerOpts(option)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
 	}
-	if err := configureWriter(&pw.ParquetWriter, option); err != nil {
+	pw, err := writer.NewCSVWriter(schema, fileWriter, opts...)
+	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
 	}
@@ -151,12 +163,13 @@ func NewJSONWriter(uri string, option WriteOption, schema string) (*writer.JSONW
 		return nil, err
 	}
 
-	pw, err := writer.NewJSONWriter(schema, fileWriter, int64(runtime.NumCPU()))
+	opts, err := writerOpts(option)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
 	}
-	if err := configureWriter(&pw.ParquetWriter, option); err != nil {
+	pw, err := writer.NewJSONWriter(schema, fileWriter, opts...)
+	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
 	}
@@ -169,12 +182,13 @@ func NewGenericWriter(uri string, option WriteOption, schema string) (*writer.Pa
 		return nil, err
 	}
 
-	pw, err := writer.NewParquetWriter(fileWriter, schema, int64(runtime.NumCPU()))
+	opts, err := writerOpts(option)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
 	}
-	if err := configureWriter(pw, option); err != nil {
+	pw, err := writer.NewParquetWriter(fileWriter, schema, opts...)
+	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
 	}

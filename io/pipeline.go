@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/writer"
 	"golang.org/x/sync/errgroup"
 )
 

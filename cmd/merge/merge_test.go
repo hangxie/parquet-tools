@@ -23,7 +23,8 @@ func TestCmd(t *testing.T) {
 			RowGroupSize:   128 * 1024 * 1024,
 			ParallelNumber: 0,
 		}
-		wOptNoCompression := pio.WriteOption{
+		wOptBadCompression := pio.WriteOption{
+			Compression:    "INVALID",
 			PageSize:       1024 * 1024,
 			RowGroupSize:   128 * 1024 * 1024,
 			ParallelNumber: 0,
@@ -40,7 +41,7 @@ func TestCmd(t *testing.T) {
 			"source-not-parquet":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/not-a-parquet-file", "../../testdata/not-a-parquet-file"}, URI: "dummy"}, "failed to read from"},
 			"source-diff-schema":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/empty.parquet"}, URI: "dummy"}, "does not have same schema"},
 			"target-file":         {Cmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "://uri"}, "unable to parse file location"},
-			"target-compression":  {Cmd{ReadOption: rOpt, WriteOption: wOptNoCompression, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
+			"target-compression":  {Cmd{ReadOption: rOpt, WriteOption: wOptBadCompression, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 			"target-write":        {Cmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "s3://target"}, "failed to close"},
 			"int96":               {Cmd{ReadOption: rOpt, WriteOption: wOpt, Concurrent: true, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/all-types.parquet", "../../testdata/all-types.parquet"}, URI: "dummy"}, "type INT96 which is not supported"},
 		}

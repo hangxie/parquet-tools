@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hangxie/parquet-go/v2/reader"
-	"github.com/hangxie/parquet-go/v2/source/local"
-	"github.com/hangxie/parquet-go/v2/writer"
+	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/writer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ func newTestReader(t *testing.T, path string) *reader.ParquetReader {
 	t.Helper()
 	fr, err := local.NewLocalFileReader(path)
 	require.NoError(t, err)
-	pr, err := reader.NewParquetReader(fr, nil, int64(runtime.NumCPU()))
+	pr, err := reader.NewParquetReader(fr, nil, reader.WithNP(int64(runtime.NumCPU())))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = pr.PFile.Close() })
 	return pr
@@ -27,7 +27,7 @@ func newTestWriter(t *testing.T, path, schema string) *writer.ParquetWriter {
 	t.Helper()
 	fw, err := local.NewLocalFileWriter(path)
 	require.NoError(t, err)
-	pw, err := writer.NewParquetWriter(fw, schema, int64(runtime.NumCPU()))
+	pw, err := writer.NewParquetWriter(fw, schema, writer.WithNP(int64(runtime.NumCPU())))
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = pw.WriteStop()

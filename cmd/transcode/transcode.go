@@ -6,12 +6,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hangxie/parquet-go/v2/bloomfilter"
-	"github.com/hangxie/parquet-go/v2/parquet"
+	"github.com/hangxie/parquet-go/v3/parquet"
 
 	pio "github.com/hangxie/parquet-tools/io"
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
+
+const minBloomFilterSize = 32
 
 // Cmd is a kong command for transcode
 type Cmd struct {
@@ -126,8 +127,11 @@ func (c Cmd) parseFieldBloomFilters() (map[string]string, error) {
 		if value != "true" && value != "false" {
 			// Must be a numeric size that is a power of 2 and at least MinBytes
 			size, err := strconv.Atoi(value)
-			if err != nil || size < bloomfilter.MinBytes {
-				return nil, fmt.Errorf("invalid bloom filter value [%s] for field [%s]: must be true, false, or a power of 2 (minimum %d)", value, fieldPath, bloomfilter.MinBytes)
+			if err != nil {
+				return nil, fmt.Errorf("invalid bloom filter size [%s] for field [%s]: not a number", value, fieldPath)
+			}
+			if size < minBloomFilterSize {
+				return nil, fmt.Errorf("invalid bloom filter value [%s] for field [%s]: must be true, false, or a power of 2 (minimum %d)", value, fieldPath, minBloomFilterSize)
 			}
 			if size&(size-1) != 0 {
 				return nil, fmt.Errorf("invalid bloom filter size [%s] for field [%s]: must be a power of 2", value, fieldPath)
