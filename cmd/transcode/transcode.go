@@ -170,13 +170,14 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 
 		// Apply field-specific bloom filter if specified
 		if bloomFilter, found := fieldBloomFilters[fieldPath]; found {
-			if bloomFilter == "false" {
+			switch bloomFilter {
+			case "false":
 				schemaTree.BloomFilter = ""
 				schemaTree.BloomFilterSize = ""
-			} else if bloomFilter == "true" {
+			case "true":
 				schemaTree.BloomFilter = "true"
 				schemaTree.BloomFilterSize = ""
-			} else {
+			default:
 				// Numeric size value
 				schemaTree.BloomFilter = "true"
 				schemaTree.BloomFilterSize = bloomFilter
