@@ -160,7 +160,7 @@ func (n goStructNode) stringWithName() (string, error) {
 }
 
 func (n goStructNode) getStructTags() (string, error) {
-	tagMap := n.SchemaNode.GetTagMap()
+	tagMap := n.GetTagMap()
 	if _, found := tagMap["valuetype"]; !found &&
 		n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
 		// make sure LIST always has "valuetype"
@@ -186,8 +186,7 @@ func (n goStructNode) getStructTags() (string, error) {
 			// inname is for raw JSON schema only, not for go struct tags
 			continue
 		}
-		if val, found := tagMap[tag]; found &&
-			!(tag == "repetitiontype" && val == "REQUIRED") {
+		if val, found := tagMap[tag]; found && (tag != "repetitiontype" || val != "REQUIRED") {
 			// repetitiontype=REQUIRED is redundant in go struct
 			annotations = append(annotations, tag+"="+val)
 		}

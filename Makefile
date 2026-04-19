@@ -40,10 +40,7 @@ format: tools  ## Format source codes
 lint: tools  ## Run static code analysis
 	@echo "==> Running static code analysis"
 	@$(GOBIN)/golangci-lint cache clean
-	@$(GOBIN)/golangci-lint run ./... \
-		--timeout 5m \
-		--exclude-use-default=false \
-		--enable gocognit
+	@$(GOBIN)/golangci-lint run ./... --timeout 5m --enable gocognit
 
 .PHONY: deps
 deps:  ## Install prerequisite for build
@@ -54,7 +51,7 @@ deps:  ## Install prerequisite for build
 tools:  ## Install build tools
 	@echo "==> Installing build tools"
 	@(cd /tmp; \
-		$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+		$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest; \
 		$(GO) install mvdan.cc/gofumpt@latest; \
 		$(GO) install golang.org/x/tools/cmd/goimports@latest; \
 	)
