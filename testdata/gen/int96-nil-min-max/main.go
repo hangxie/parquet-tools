@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_ZSTD
+	pw.CompressionCodec = parquet.CompressionCodec_ZSTD
 	for i := range 10 {
 		value := AllTypes{
 			Int96: nil,

@@ -31,7 +31,7 @@ func writeFile(filename string, codec parquet.CompressionCodec) error {
 		return fmt.Errorf("can't create parquet writer for %s: %w", filename, err)
 	}
 
-	pw.CompressionType = codec
+	pw.CompressionCodec = codec
 	for _, s := range shoes {
 		_ = pw.Write(s)
 	}

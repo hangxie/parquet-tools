@@ -16,10 +16,10 @@ const minBloomFilterSize = 32
 
 // Cmd is a kong command for transcode
 type Cmd struct {
-	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." default:"false"`
-	FieldBloomFilter []string `help:"Field-specific bloom filter in 'field.path=true/false/<size>' format. Can be specified multiple times." name:"field-bloom-filter"`
-	FieldCompression []string `help:"Field-specific compression in 'field.path=CODEC' format. Can be specified multiple times."`
-	FieldEncoding    []string `help:"Field-specific encoding in 'field.path=ENCODING' format. Can be specified multiple times."`
+	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." name:"fail-on-int96" default:"false"`
+	FieldBloomFilter []string `help:"Field-specific bloom filter." placeholder:"field.path=VALUE"`
+	FieldCompression []string `help:"Field-specific compression." placeholder:"field.path=CODEC"`
+	FieldEncoding    []string `help:"Field-specific encoding." placeholder:"field.path=ENCODING"`
 	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
 	ReadPageSize     int      `help:"Page size to read from Parquet." default:"1000"`
 	Source           string   `short:"s" help:"Source Parquet file to transcode." required:"true"`

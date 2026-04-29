@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	pw.CompressionType = parquet.CompressionCodec_GZIP
+	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 	pw.DataPageVersion = 2 // Use DATA_PAGE_V2 format
 	pw.WriteCRC = true
 	_ = pw.Write(Shoe{"nike", "air_griffey"})
