@@ -228,23 +228,25 @@ Updating / installing...
 `parquet-tools` provides help information through `-h` flag, whenever you are not sure about a parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:
 
 ```bash
-$ parquet-tools meta -h
-Usage: parquet-tools meta <uri> [flags]
+$ parquet-tools inspect -h
+Usage: parquet-tools inspect <uri> [flags]
 
-Prints the metadata.
+Inspect Parquet file structure in detail.
 
 Arguments:
   <uri>    URI of Parquet file.
 
 Flags:
-  -h, --help                        Show context-sensitive help.
+  -h, --help                      Show context-sensitive help.
 
-      --fail-on-int96               fail command if INT96 data type is present.
-      --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
-      --http-extra-headers=         (HTTP URI only) extra HTTP headers.
-      --http-ignore-tls-error       (HTTP URI only) ignore TLS error.
+      --row-group=INDEX           Row group index to inspect.
+      --column-chunk=INDEX        Column chunk index to inspect.
+      --page=INDEX                Page index to inspect.
+      --anonymous                 (S3, GCS, and Azure only) object is publicly accessible.
+      --http-extra-headers=       (HTTP URI only) extra HTTP headers.
+      --http-ignore-tls-error     (HTTP URI only) ignore TLS error.
       --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
-      --object-version=""           (S3, GCS, and Azure only) object version.
+      --object-version=""         (S3, GCS, and Azure only) object version.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
@@ -510,11 +512,10 @@ The `--compression` / `-z` parameter controls the compression algorithm used for
 
 The `--compression-level` option accepts repeatable or comma-separated `CODEC=LEVEL` values for write commands that embed the common writer options, including `import`, `merge`, `retype`, `split`, and `transcode`.
 
-Examples:
+Example:
 
 ```bash
 $ parquet-tools transcode -s input.parquet -z GZIP --compression-level GZIP=6 output.parquet
-$ parquet-tools transcode -s input.parquet -z ZSTD --compression-level GZIP=6,ZSTD=3 output.parquet
 ```
 
 Level validation:
@@ -918,9 +919,9 @@ $ parquet-tools row-count /tmp/jsonl.parquet
 
 The inspect command has hierarchical levels:
 1. **File Level** - Overview of the entire file (default)
-2. **Row Group Level** - Details of a specific row group (use `--row-group`)
-3. **Column Chunk Level** - Details of a column within a row group (use `--row-group` and `--column-chunk`)
-4. **Page Level** - Details and actual values from a specific page (use `--row-group`, `--column-chunk`, and `--page`)
+2. **Row Group Level** - Details of a specific row group (use `--row-group INDEX`)
+3. **Column Chunk Level** - Details of a column within a row group (use `--row-group INDEX --column-chunk INDEX`)
+4. **Page Level** - Details and actual values from a specific page (use `--row-group INDEX --column-chunk INDEX --page INDEX`)
 
 #### Inspect File Level
 
@@ -1430,16 +1431,16 @@ $ parquet-tools transcode -s legacy.parquet --data-page-version=1 compatible.par
 
 #### Field-Specific Encoding
 
-Use the `--field-encoding` parameter to apply different encodings to specific fields. This allows fine-grained control over encoding on a per-field basis, which is useful when different columns have different data characteristics.
+Use the `--field-encoding` parameter to apply different encodings to specific fields.
 
-The format is `field.path=ENCODING`, where `field.path` is the dot-separated path to the field. For nested structures, use the full path including intermediate elements like `list` for LIST types and `key_value` for MAP types.
+The format is `--field-encoding field.path=ENCODING`, where `field.path` is the dot-separated path to the field. For nested structures, use the full path including intermediate elements like `list` for LIST types and `key_value` for MAP types.
 
 Apply different encodings to different fields:
 
 ```bash
 $ parquet-tools transcode -s input.parquet \
-  --field-encoding "name=DELTA_BYTE_ARRAY" \
-  --field-encoding "age=DELTA_BINARY_PACKED" \
+  --field-encoding name=DELTA_BYTE_ARRAY \
+  --field-encoding age=DELTA_BINARY_PACKED \
   output.parquet
 ```
 
@@ -1448,13 +1449,13 @@ For nested fields, use the full path:
 ```bash
 # For a LIST field named "classes" with string elements
 $ parquet-tools transcode -s input.parquet \
-  --field-encoding "classes.list.element=DELTA_BYTE_ARRAY" \
+  --field-encoding classes.list.element=DELTA_BYTE_ARRAY \
   output.parquet
 
 # For nested struct fields
 $ parquet-tools transcode -s input.parquet \
-  --field-encoding "teachers.name=DELTA_BYTE_ARRAY" \
-  --field-encoding "friends.list.element.id=DELTA_BINARY_PACKED" \
+  --field-encoding teachers.name=DELTA_BYTE_ARRAY \
+  --field-encoding friends.list.element.id=DELTA_BINARY_PACKED \
   output.parquet
 ```
 
@@ -1493,9 +1494,9 @@ $ parquet-tools transcode -s input.parquet --omit-stats false output.parquet
 
 #### Field-Specific Compression
 
-Use the `--field-compression` parameter to apply different compression codecs to specific fields. This allows fine-grained control over compression on a per-field basis, which is useful when different columns have different data characteristics or size requirements.
+Use the `--field-compression` parameter to apply different compression codecs to specific fields.
 
-The format is `field.path=CODEC`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`).
+The format is `--field-compression field.path=CODEC`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`).
 
 Apply different compression codecs to different fields:
 
@@ -1541,9 +1542,9 @@ See [Compression Codecs](#compression-codecs) for more details.
 
 #### Field-Specific Bloom Filters
 
-Use the `--field-bloom-filter` parameter to add, remove, or configure bloom filters on specific fields. Bloom filters are probabilistic data structures that enable query engines to quickly skip row groups that definitely don't contain a queried value.
+Use the `--field-bloom-filter` parameter to add, remove, or configure bloom filters on specific fields.
 
-The format is `field.path=VALUE`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`) and `VALUE` is one of:
+The format is `--field-bloom-filter field.path=VALUE`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`) and `VALUE` is one of:
 
 * `true` - Enable bloom filter with default size (1024 bytes)
 * `false` - Remove bloom filter from the field
@@ -1573,9 +1574,9 @@ Configure bloom filters for multiple fields in a single command:
 
 ```bash
 $ parquet-tools transcode -s input.parquet \
-  --field-bloom-filter "id=true" \       # enable with default size
-  --field-bloom-filter "name=4096" \     # enable with 4096-byte filter
-  --field-bloom-filter "status=false" \  # disable bloom filter
+  --field-bloom-filter id=true \       # enable with default size
+  --field-bloom-filter name=4096 \     # enable with 4096-byte filter
+  --field-bloom-filter status=false \  # disable bloom filter
   output.parquet
 ```
 

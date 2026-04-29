@@ -21,7 +21,7 @@ import (
 // WriteOption includes options for write operation
 type WriteOption struct {
 	Compression      string   `short:"z" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" default:"SNAPPY"`
-	CompressionLevel []string `help:"Compression level setting in CODEC=LEVEL format, repeatable or comma-separated. Supported: GZIP(1-9), ZSTD(1-22), BROTLI(0-11), LZ4(0-9), LZ4_RAW(0-9). SNAPPY/UNCOMPRESSED do not accept levels." name:"compression-level"`
+	CompressionLevel []string `help:"Compression level setting." placeholder:"CODEC=LEVEL"`
 	DataPageVersion  int32    `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
 	PageSize         int64    `help:"Page size in bytes." default:"1048576"`
 	RowGroupSize     int64    `help:"Row group size in bytes." default:"134217728"`

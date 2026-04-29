@@ -16,14 +16,14 @@ import (
 
 // Cmd is a kong command for retype
 type Cmd struct {
-	Int96ToTimestamp bool   `name:"int96-to-timestamp" help:"Convert INT96 columns to TIMESTAMP_NANOS." default:"false"`
-	BsonToString     bool   `name:"bson-to-string" help:"Convert BSON columns to plain strings (JSON encoded)." default:"false"`
-	JsonToString     bool   `name:"json-to-string" help:"Remove JSON logical type from columns." default:"false"`
-	Float16ToFloat32 bool   `name:"float16-to-float32" help:"Convert FLOAT16 columns to FLOAT32." default:"false"`
-	VariantToString  bool   `name:"variant-to-string" help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
-	UuidToString     bool   `name:"uuid-to-string" help:"Convert UUID columns to plain strings." default:"false"`
-	RepeatedToList   bool   `name:"repeated-to-list" help:"Convert legacy repeated primitive columns to LIST format." default:"false"`
-	GeoToBinary      bool   `name:"geo-to-binary" help:"Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)." default:"false"`
+	Int96ToTimestamp bool   `help:"Convert INT96 columns to TIMESTAMP_NANOS." name:"int96-to-timestamp" default:"false"`
+	BsonToString     bool   `help:"Convert BSON columns to plain strings (JSON encoded)." default:"false"`
+	JsonToString     bool   `help:"Remove JSON logical type from columns." default:"false"`
+	Float16ToFloat32 bool   `help:"Convert FLOAT16 columns to FLOAT32." default:"false"`
+	VariantToString  bool   `help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
+	UuidToString     bool   `help:"Convert UUID columns to plain strings." default:"false"`
+	RepeatedToList   bool   `help:"Convert legacy repeated primitive columns to LIST format." default:"false"`
+	GeoToBinary      bool   `help:"Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)." default:"false"`
 	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
 	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
