@@ -25,7 +25,6 @@ type WriteOption struct {
 	DataPageVersion  int32    `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
 	PageSize         int64    `help:"Page size in bytes." default:"1048576"`
 	RowGroupSize     int64    `help:"Row group size in bytes." default:"134217728"`
-	ParallelNumber   int64    `help:"Number of parallel writer goroutines, 0 means number of cores." default:"0"`
 }
 
 func newLocalWriter(u *url.URL) (source.ParquetFileWriter, error) {
@@ -127,7 +126,7 @@ func writerOpts(option WriteOption) ([]writer.WriterOption, error) {
 	opts = append(opts, compressionLevelOpts...)
 	dpv := option.DataPageVersion
 	if dpv == 0 {
-		dpv = 2 // match CLI default
+		dpv = 2 // match CLI default and preserve existing writer behavior
 	}
 	opts = append(opts, writer.WithDataPageVersion(dpv))
 	if option.PageSize > 0 {
@@ -136,11 +135,7 @@ func writerOpts(option WriteOption) ([]writer.WriterOption, error) {
 	if option.RowGroupSize > 0 {
 		opts = append(opts, writer.WithRowGroupSize(option.RowGroupSize))
 	}
-	np := option.ParallelNumber
-	if np == 0 {
-		np = int64(runtime.NumCPU())
-	}
-	opts = append(opts, writer.WithNP(np))
+	opts = append(opts, writer.WithNP(int64(runtime.NumCPU())))
 	return opts, nil
 }
 

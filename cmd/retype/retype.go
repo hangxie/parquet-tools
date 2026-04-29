@@ -28,7 +28,6 @@ type Cmd struct {
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
 	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
 	pio.ReadOption
-	pio.WriteOption
 }
 
 // Run does actual retype job
@@ -66,7 +65,7 @@ func (c Cmd) Run() (retErr error) {
 	schemaJSON := schemaTree.JSONSchema()
 
 	// Create output file with new settings
-	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
+	fileWriter, err := pio.NewGenericWriter(c.URI, pio.WriteOption{}, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}

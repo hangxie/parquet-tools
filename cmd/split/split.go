@@ -30,7 +30,6 @@ type Cmd struct {
 	RecordCount  int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
 	URI          string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
-	pio.WriteOption
 
 	current trunkWriter
 }
@@ -72,7 +71,7 @@ func (c *Cmd) switchWriter() error {
 
 	var err error
 	c.current.targetFile = fmt.Sprintf(c.NameFormat, c.current.fileIndex)
-	c.current.writer, err = pio.NewGenericWriter(c.current.targetFile, c.WriteOption, c.current.schemaJSON)
+	c.current.writer, err = pio.NewGenericWriter(c.current.targetFile, pio.WriteOption{}, c.current.schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.current.targetFile, err)
 	}

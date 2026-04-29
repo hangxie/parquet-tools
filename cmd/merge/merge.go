@@ -20,7 +20,6 @@ type Cmd struct {
 	Source       []string `short:"s" help:"Files to be merged."`
 	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
-	pio.WriteOption
 }
 
 // Run does actual merge job
@@ -42,7 +41,7 @@ func (c Cmd) Run() (retErr error) {
 		}
 	}()
 
-	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
+	fileWriter, err := pio.NewGenericWriter(c.URI, pio.WriteOption{}, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}

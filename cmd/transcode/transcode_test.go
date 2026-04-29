@@ -40,7 +40,6 @@ func testCmdError(t *testing.T) {
 		CompressionCodec: "SNAPPY",
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -58,7 +57,6 @@ func testCmdError(t *testing.T) {
 			CompressionCodec: "INVALID",
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
 		}, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
 	}
 
@@ -105,7 +103,6 @@ func testCmdGood(t *testing.T) {
 				DataPageVersion:  tc.dataPageVersion,
 				PageSize:         1024 * 1024,
 				RowGroupSize:     128 * 1024 * 1024,
-				ParallelNumber:   0,
 			}
 			cmd := Cmd{
 				OmitStats:    tc.omitStats,
@@ -143,7 +140,6 @@ func testCmdVerifyData(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -194,7 +190,6 @@ func testCmdSchemaModification(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -226,7 +221,6 @@ func testCmdPageSizes(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -259,14 +253,12 @@ func testCmdEdgeCases(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	wOptV2 := pio.WriteOption{
 		CompressionCodec: "SNAPPY",
 		DataPageVersion:  2,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -314,7 +306,6 @@ func testCmdEdgeCases(t *testing.T) {
 					CompressionCodec: "LZ4_RAW",
 					PageSize:         1024 * 1024,
 					RowGroupSize:     128 * 1024 * 1024,
-					ParallelNumber:   0,
 				},
 				ReadPageSize: 10,
 				Source:       "../../testdata/good.parquet",
@@ -343,7 +334,6 @@ func testCmdFieldEncoding(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -432,7 +422,6 @@ func testCmdFieldCompression(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -524,7 +513,6 @@ func testCmdFieldEncodingAndCompression(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -565,7 +553,6 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 			DataPageVersion:  1,
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       testFile,
@@ -624,7 +611,6 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 			DataPageVersion:  2,
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       "../../testdata/good.parquet",
@@ -695,7 +681,6 @@ func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {
 			DataPageVersion:  1,
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       testFile,
@@ -722,7 +707,6 @@ func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
 			DataPageVersion:  2,
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
 		},
 		ReadPageSize: 10,
 		Source:       "../../testdata/all-types.parquet",
@@ -938,7 +922,6 @@ func TestCmdParseFieldEncodings(t *testing.T) {
 					DataPageVersion:  tc.dataPageVersion,
 					PageSize:         1024 * 1024,
 					RowGroupSize:     128 * 1024 * 1024,
-					ParallelNumber:   0,
 				},
 			}
 			result, err := cmd.parseFieldEncodings()
@@ -1130,7 +1113,6 @@ func testCmdFieldBloomFilter(t *testing.T) {
 		DataPageVersion:  1,
 		PageSize:         1024 * 1024,
 		RowGroupSize:     128 * 1024 * 1024,
-		ParallelNumber:   0,
 	}
 	tempDir := t.TempDir()
 
@@ -1354,7 +1336,6 @@ func BenchmarkTranscodeCmd(b *testing.B) {
 			DataPageVersion:  1,
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
 		},
 		ReadPageSize: 1000,
 		Source:       "../../build/benchmark.parquet",
