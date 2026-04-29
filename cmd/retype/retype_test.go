@@ -20,28 +20,15 @@ import (
 func TestCmd(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			CompressionCodec: "SNAPPY",
-			PageSize:         1024 * 1024,
-			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
-		}
-		tempDir := t.TempDir()
 
 		testCases := map[string]struct {
 			cmd    Cmd
 			errMsg string
 		}{
-			"pagesize-too-small":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"}, "invalid read page size"},
-			"source-non-existent": {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
-			"source-not-parquet":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
-			"target-file":         {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
-			"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
-				CompressionCodec: "INVALID",
-				PageSize:         1024 * 1024,
-				RowGroupSize:     128 * 1024 * 1024,
-				ParallelNumber:   0,
-			}, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
+			"pagesize-too-small":  {Cmd{ReadOption: rOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"}, "invalid read page size"},
+			"source-non-existent": {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
+			"source-not-parquet":  {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
+			"target-file":         {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
 		}
 
 		for name, tc := range testCases {
@@ -55,12 +42,6 @@ func TestCmd(t *testing.T) {
 
 	t.Run("good", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
-		wOpt := pio.WriteOption{
-			CompressionCodec: "SNAPPY",
-			PageSize:         1024 * 1024,
-			RowGroupSize:     128 * 1024 * 1024,
-			ParallelNumber:   0,
-		}
 		tempDir := t.TempDir()
 		resultFile := filepath.Join(tempDir, "retyped.parquet")
 		testCases := map[string]struct {
@@ -72,7 +53,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					Int96ToTimestamp: true,
 					ReadOption:       rOpt,
-					WriteOption:      wOpt,
 					ReadPageSize:     100,
 					Source:           "../../testdata/retype.parquet",
 					URI:              resultFile,
@@ -84,7 +64,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					BsonToString: true,
 					ReadOption:   rOpt,
-					WriteOption:  wOpt,
 					ReadPageSize: 100,
 					Source:       "../../testdata/retype.parquet",
 					URI:          resultFile,
@@ -96,7 +75,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					Float16ToFloat32: true,
 					ReadOption:       rOpt,
-					WriteOption:      wOpt,
 					ReadPageSize:     100,
 					Source:           "../../testdata/retype.parquet",
 					URI:              resultFile,
@@ -108,7 +86,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					JsonToString: true,
 					ReadOption:   rOpt,
-					WriteOption:  wOpt,
 					ReadPageSize: 100,
 					Source:       "../../testdata/retype.parquet",
 					URI:          resultFile,
@@ -120,7 +97,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					Int96ToTimestamp: false,
 					ReadOption:       rOpt,
-					WriteOption:      wOpt,
 					ReadPageSize:     100,
 					Source:           "../../testdata/retype.parquet",
 					URI:              resultFile,
@@ -132,7 +108,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					VariantToString: true,
 					ReadOption:      rOpt,
-					WriteOption:     wOpt,
 					ReadPageSize:    100,
 					Source:          "../../testdata/all-types.parquet",
 					URI:             resultFile,
@@ -144,7 +119,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					RepeatedToList: true,
 					ReadOption:     rOpt,
-					WriteOption:    wOpt,
 					ReadPageSize:   100,
 					Source:         "../../testdata/all-types.parquet",
 					URI:            resultFile,
@@ -156,7 +130,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					UuidToString: true,
 					ReadOption:   rOpt,
-					WriteOption:  wOpt,
 					ReadPageSize: 100,
 					Source:       "../../testdata/all-types.parquet",
 					URI:          resultFile,
@@ -168,7 +141,6 @@ func TestCmd(t *testing.T) {
 				cmd: Cmd{
 					GeoToBinary:  true,
 					ReadOption:   rOpt,
-					WriteOption:  wOpt,
 					ReadPageSize: 100,
 					Source:       "../../testdata/geospatial.parquet",
 					URI:          resultFile,

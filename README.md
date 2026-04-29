@@ -237,16 +237,16 @@ Arguments:
   <uri>    URI of Parquet file.
 
 Flags:
-  -h, --help                      Show context-sensitive help.
+  -h, --help                        Show context-sensitive help.
 
-      --row-group=INDEX           Row group index to inspect.
-      --column-chunk=INDEX        Column chunk index to inspect.
-      --page=INDEX                Page index to inspect.
-      --anonymous                 (S3, GCS, and Azure only) object is publicly accessible.
-      --http-extra-headers=       (HTTP URI only) extra HTTP headers.
-      --http-ignore-tls-error     (HTTP URI only) ignore TLS error.
+      --row-group=INDEX             Row group index to inspect.
+      --column-chunk=INDEX          Column chunk index to inspect.
+      --page=INDEX                  Page index to inspect.
+      --anonymous                   (S3, GCS, and Azure only) object is publicly accessible.
+      --http-extra-headers=         (HTTP URI only) extra HTTP headers.
+      --http-ignore-tls-error       (HTTP and S3 URI) ignore TLS error.
       --http-multiple-connection    (HTTP URI only) use multiple HTTP connection.
-      --object-version=""         (S3, GCS, and Azure only) object version.
+      --object-version=""           (S3, GCS, and Azure only) object version.
 ```
 
 Most commands can output JSON format result which can be processed by utilities like [jq](https://stedolan.github.io/jq/) or [JSON parser online](https://jsonparseronline.com/).
@@ -484,13 +484,18 @@ This section describes format options for commands that write Parquet files, inc
 
 #### Compression Codecs
 
-The `--compression` / `-z` parameter controls the compression algorithm used for writing Parquet files. This option is available for `import`, `merge`, `split`, and `transcode` commands. Different compression codecs offer different trade-offs between compression ratio, speed, and compatibility.
+The `--compression` / `-z` parameter sets the file-level default compression codec for commands that expose physical write options: `import` and `transcode`. Different compression codecs offer different trade-offs between compression ratio, speed, and compatibility.
+
+The default codec is used only for columns that do not already specify a codec through a more specific setting:
+
+* `import`: column compression in the input schema takes precedence over `--compression`.
+* `transcode`: `--field-compression field.path=CODEC` takes precedence over `--compression`; columns without a field-specific codec use the file-level default.
 
 **Supported compression codecs:**
 * `BROTLI` - Excellent compression ratio with moderate speed (Note: not supported by most Java tools)
 * `GZIP` - Better compression ratio, slower than SNAPPY
 * `LZ4_RAW` - LZ4 raw format, fast compression/decompression
-* `SNAPPY` - Fast compression/decompression (default for most commands)
+* `SNAPPY` - Fast compression/decompression (default for `import` and `transcode`)
 * `UNCOMPRESSED` - No compression
 * `ZSTD` - Excellent compression ratio with good speed
 
@@ -510,19 +515,26 @@ The `--compression` / `-z` parameter controls the compression algorithm used for
 
 #### Compression Levels
 
-The `--compression-level` option accepts repeatable or comma-separated `CODEC=LEVEL` values for write commands that embed the common writer options, including `import`, `merge`, `retype`, `split`, and `transcode`.
-
-Compression levels are keyed by codec, not by column name. This is why the option can accept more than one value: a Parquet file can contain columns written with different compression codecs.
-
-When `--compression` / `-z` is provided, that codec is used as the default compression codec for output columns. In that case, use a single matching compression level:
+The `--compression-level` option is available only for `import` and `transcode`. It accepts repeatable or comma-separated `CODEC=LEVEL` values:
 
 ```bash
-$ parquet-tools transcode -s input.parquet -z GZIP --compression-level GZIP=6 output.parquet
+$ parquet-tools transcode -s input.parquet --compression-level GZIP=9,ZSTD=3 output.parquet
 ```
 
-Do not pair a global codec with an unrelated level, such as `-z GZIP --compression-level ZSTD=3`; the ZSTD level does not apply to GZIP-compressed columns.
+Compression levels are file-level writer settings, not per-column settings. There is currently no per-column compression-level control; see [parquet-go#270](https://github.com/hangxie/parquet-go/issues/270).
 
-When `--compression` is not provided, or when `transcode` uses field-specific compression, output columns may keep or use different codecs. Provide one level per codec that should be tuned:
+The codec name in `CODEC=LEVEL` selects which compression codec the level applies to anywhere in the output file. It does not need to match `--compression`; it is used for any output column that is eventually written with that codec:
+
+* `import`: a column may use the file-level `--compression` codec, or a codec specified in the schema.
+* `transcode`: a column may use the file-level `--compression` codec, or a codec specified with `--field-compression`.
+
+For example, this sets GZIP as the default codec, but also configures ZSTD level `3` for any column that uses ZSTD through the schema or a field-specific compression override:
+
+```bash
+$ parquet-tools transcode -s input.parquet -z GZIP --compression-level GZIP=9,ZSTD=3 output.parquet
+```
+
+Field-specific compression can therefore be paired with matching file-level compression levels:
 
 ```bash
 $ parquet-tools transcode -s input.parquet \
@@ -532,7 +544,7 @@ $ parquet-tools transcode -s input.parquet \
     output.parquet
 ```
 
-In this example, GZIP columns use level `9` and ZSTD columns use level `3`. Columns using codecs without a matching `--compression-level` value use the default level for that codec. Repeatable flags are also accepted; entries are processed left to right and later values override earlier ones for the same codec.
+In this example, GZIP-compressed columns use level `9` and ZSTD-compressed columns use level `3`. Columns using codecs without a matching `--compression-level` value use the default level for that codec. A level for a codec that no output column uses is accepted and has no effect. Repeatable flags are processed left to right, and later values override earlier ones for the same codec.
 
 Level validation:
 
@@ -548,7 +560,7 @@ Level validation:
 
 #### Data Page Version
 
-Use `--data-page-version` to specify the data page format version. This option is available for `import`, `merge`, `split`, and `transcode` commands.
+Use `--data-page-version` to specify the data page format version. This option is available for `import` and `transcode` commands.
 
 Data page version 2 is preferred as it offers better compression efficiency and read performance by separating repetition/definition levels from the data. However, version 1 has wider support among older Parquet readers.
 
@@ -558,7 +570,7 @@ Data page version 2 is preferred as it offers better compression efficiency and 
 
 #### Writer Tuning Options
 
-These options allow fine-grained control over how Parquet files are written. They are available for `import`, `merge`, `split`, and `transcode` commands.
+These options allow fine-grained control over how Parquet files are written. They are available for `import` and `transcode` commands.
 
 **Page Size (`--page-size`):**
 
@@ -576,18 +588,9 @@ Controls the target size of row groups in bytes. Larger row groups improve compr
 $ parquet-tools transcode -s input.parquet --row-group-size 268435456 output.parquet
 ```
 
-**Parallel Number (`--parallel-number`):**
-
-Controls the number of parallel writer goroutines. Set to `0` (default) to use the number of CPU cores. Higher values can improve write performance on systems with many cores.
-
-```bash
-$ parquet-tools merge -s file1.parquet,file2.parquet --parallel-number 4 output.parquet
-```
-
 > [!TIP]
 > - Use smaller `--page-size` for better random access performance at the cost of higher metadata overhead
 > - Use larger `--row-group-size` for better compression ratios, but ensure sufficient memory is available
-> - Adjust `--parallel-number` based on your system's CPU cores and I/O capabilities
 
 #### Encoding
 
@@ -872,7 +875,7 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 `import` command creates a parquet file based on data in other formats. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify compression codec, default is "SNAPPY", see [Compression Codecs](#compression-codecs) for available options. `--compression-level` sets codec-specific compression levels; see [Compression Levels](#compression-levels). You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify the default compression codec for columns without a schema-level compression codec; the default is "SNAPPY". See [Compression Codecs](#compression-codecs) for available options. `--compression-level` sets file-level codec-specific compression levels; see [Compression Levels](#compression-levels). You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
@@ -1024,7 +1027,7 @@ $ parquet-tools row-count /tmp/merged.parquet
 6
 ```
 
-`--read-page-size` configures how many rows will be read from source file and write to target file each time, you can also use `--compression` to specify compression codec for target parquet file, default is "SNAPPY", see [Compression Codecs](#compression-codecs) for available options. `--compression-level` sets codec-specific compression levels; see [Compression Levels](#compression-levels). You can use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
+`--read-page-size` configures how many rows will be read from source files and written to the target file each time. `merge` preserves source schema writer directives such as column compression where possible; use `transcode` when you need to change compression, compression levels, data page version, page size, or row group size. Other read options like `--http-multiple-connection`, `--http-ignore-tls-error`, `--http-extra-headers`, `--object-version`, and `--anonymous` can still be used, but since they are applied to all source files, some of them may not make sense, eg `--object-version`.
 
 When `--concurrent` option is specified, the merge command will read input files in parallel (up to number of CPUs), this can bring performance gain between 5% and 10%, trade-off is that the order of records in the result parquet file will not be strictly in the order of input files.
 
@@ -1077,7 +1080,7 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 > These options convert all matching fields in the parquet file; there is currently no way to select particular fields for conversion.
 
 > [!TIP]
-> The `retype` command preserves the original column-level encoding and compression settings from the source file by default. These settings take precedence over global writer options (like `--compression`). If you need to change compression codecs or encodings while retyping, use the `transcode` command before or after retyping.
+> The `retype` command preserves the original column-level encoding and compression settings from the source file by default. If you need to change compression codecs, compression levels, data page version, page size, row group size, or encodings while retyping, use the `transcode` command before or after retyping.
 
 #### Convert INT96 to Timestamp
 
@@ -1356,10 +1359,9 @@ Name of output files is determined by `--name-format` and will be used by `fmt.S
 
 Other useful parameters include:
 * `--fail-on-int96` to fail the command if source parquet file contains INT96 fields
-* `--compression` to specify compression codec for output files, default is `SNAPPY`, see [Compression Codecs](#compression-codecs) for available options
-* `--compression-level` to set codec-specific compression levels, see [Compression Levels](#compression-levels)
-* `--data-page-version` to specify data page format version, see [Data Page Version](#data-page-version) for details
 * `--read-page-size` to tell how many rows will be read per batch from source
+
+`split` preserves source schema writer directives such as column compression where possible. Use `transcode` when you need to change compression, compression levels, data page version, page size, or row group size.
 
 #### Name format
 
@@ -1415,7 +1417,7 @@ The command reads data from a source Parquet file and writes it to a new output 
 
 #### Change Compression Codec
 
-Use the `--compression` / `-z` parameter to change the compression algorithm. This allows you to optimize file size, improve read/write performance, or ensure compatibility with systems that support specific compression codecs. See [Compression Codecs](#compression-codecs) for the complete list of available options. `--compression-level` sets codec-specific compression levels; see [Compression Levels](#compression-levels).
+Use the `--compression` / `-z` parameter to set the default compression algorithm for output fields that do not have `--field-compression`. This allows you to optimize file size, improve read/write performance, or ensure compatibility with systems that support specific compression codecs. See [Compression Codecs](#compression-codecs) for the complete list of available options. `--compression-level` sets file-level codec-specific compression levels; see [Compression Levels](#compression-levels).
 
 Convert a Parquet file from SNAPPY to GZIP compression:
 
@@ -1510,7 +1512,7 @@ $ parquet-tools transcode -s input.parquet --omit-stats false output.parquet
 
 #### Field-Specific Compression
 
-Use the `--field-compression` parameter to apply different compression codecs to specific fields.
+Use the `--field-compression` parameter to apply different compression codecs to specific fields. Field-specific compression takes precedence over the file-level default set by `--compression`.
 
 The format is `--field-compression field.path=CODEC`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`).
 
@@ -1546,7 +1548,7 @@ $ parquet-tools schema /tmp/mixed-compression.parquet
 * `UNCOMPRESSED` - No compression (fastest read/write, largest file size)
 * `SNAPPY` - Fast compression with reasonable ratio (default)
 * `GZIP` - Good compression ratio, slower than SNAPPY
-* `LZ4` - Very fast compression
+* `LZ4` - Deprecated in Parquet format; use `LZ4_RAW` instead
 * `LZ4_RAW` - LZ4 without frame format
 * `ZSTD` - Excellent compression ratio with good speed
 * `BROTLI` - High compression ratio, slower compression speed

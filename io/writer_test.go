@@ -192,24 +192,20 @@ func TestWriterOpts(t *testing.T) {
 		expectedLen int
 	}{
 		"all-fields-set": {
-			option:      WriteOption{CompressionCodec: "SNAPPY", DataPageVersion: 2, PageSize: 2048, RowGroupSize: 4096, ParallelNumber: 4},
+			option:      WriteOption{CompressionCodec: "SNAPPY", DataPageVersion: 2, PageSize: 2048, RowGroupSize: 4096},
 			expectedLen: 5,
 		},
 		"valid-gzip": {
-			option:      WriteOption{CompressionCodec: "GZIP", DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048, ParallelNumber: 2},
+			option:      WriteOption{CompressionCodec: "GZIP", DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048},
 			expectedLen: 5,
 		},
 		"valid-compression-level": {
-			option:      WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}, DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048, ParallelNumber: 2},
+			option:      WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}, DataPageVersion: 1, PageSize: 1024, RowGroupSize: 2048},
 			expectedLen: 7,
 		},
 		"defaults-only": {
 			option:      WriteOption{},
 			expectedLen: 2, // DataPageVersion + NP
-		},
-		"parallel-zero-defaults-to-numcpu": {
-			option:      WriteOption{CompressionCodec: "SNAPPY", ParallelNumber: 0},
-			expectedLen: 3, // compression + DataPageVersion + NP
 		},
 		"invalid-compression": {
 			option: WriteOption{CompressionCodec: "INVALID"},
