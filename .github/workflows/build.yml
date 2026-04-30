@@ -49,6 +49,9 @@ jobs:
           echo "==> Google cloud storage ..."
           test "$(./build/parquet-tools row-count --anonymous gs://cloud-samples-data/bigquery/us-states/us-states.parquet)" == '50'
 
+          echo "==> Homebrew compatibility ..."
+          ./build/parquet-tools schema https://github.com/hangxie/parquet-tools/raw/950d21759ff3bd398d2432d10243e1bace3502c5/testdata/good.parquet | grep -q "name=parquet_go_root"
+
           echo "==> HTTP endpoint ..."
           test "$(./build/parquet-tools size https://github.com/hangxie/parquet-tools/raw/refs/heads/main/testdata/good.parquet)" == "588"
           test "$(./build/parquet-tools row-count https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet)" == '6582726'
