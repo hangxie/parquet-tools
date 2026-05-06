@@ -3,6 +3,7 @@ package retype
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -29,6 +30,7 @@ func TestCmd(t *testing.T) {
 			"source-non-existent": {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
 			"source-not-parquet":  {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
 			"target-file":         {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
+			"source-schema-error": {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/ARROW-GH-41317.parquet", URI: "dummy"}, "failed to build encoding map"},
 		}
 
 		for name, tc := range testCases {
@@ -712,6 +714,62 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		targetType2 := conv.getOrCreateTargetType(srcType)
 
 		require.Equal(t, targetType1, targetType2)
+	})
+}
+
+func TestConvertMap(t *testing.T) {
+	t.Run("nil-map-field", func(t *testing.T) {
+		type TestStruct struct {
+			Name string
+			Data map[string]string
+		}
+		input := &TestStruct{Name: "test", Data: nil}
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{}})
+
+		result, err := conv.Convert(input)
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("converter-error-on-map-value", func(t *testing.T) {
+		type TestStruct struct {
+			Data map[string]string
+		}
+		input := &TestStruct{Data: map[string]string{"key": "not-valid-bson"}}
+		// matchedFields has "Value" so findConverterForField("Value") returns BsonToString inside convertMap
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleBsonToString]}, []map[string]struct{}{{"Value": {}}})
+
+		_, err := conv.Convert(input)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to convert map value")
+	})
+
+	t.Run("convert-value-error-on-map-value", func(t *testing.T) {
+		type InnerStruct struct {
+			Int96 string
+		}
+		type TestStruct struct {
+			Data map[string]InnerStruct
+		}
+		// "c2hvcnQ=" is base64 for "short" (5 bytes), too short to be a valid INT96 (needs 12)
+		input := &TestStruct{Data: map[string]InnerStruct{"key": {Int96: "c2hvcnQ="}}}
+		// matchedFields has "Int96", not "Value", so converter inside convertMap is nil → else branch
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{"Int96": {}}})
+
+		_, err := conv.Convert(input)
+		require.Error(t, err)
+	})
+}
+
+func TestBsonToJSONString(t *testing.T) {
+	t.Run("nan-float-fails-json-marshal", func(t *testing.T) {
+		// json.Marshal rejects NaN; BSON supports it, so unmarshal succeeds but marshal fails
+		bsonData, err := bson.Marshal(bson.D{{Key: "value", Value: math.NaN()}})
+		require.NoError(t, err)
+
+		_, err = bsonToJSONString(string(bsonData))
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to marshal to JSON")
 	})
 }
 
