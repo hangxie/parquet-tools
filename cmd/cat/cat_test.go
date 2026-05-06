@@ -12,6 +12,14 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
+const (
+	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	encAADPrefix = "dGVzdGVy"
+	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
 func TestCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
@@ -20,25 +28,29 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent-file":       {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"parquet-1481":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/PARQUET-1481.parquet"}, errMsg: "unknown parquet type: <UNSET>"},
-		"arrow-rs-gh-6229":        {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"}, errMsg: "expected 21 values but got 1 from RLE/bit-packed hybrid decoder"},
-		"invalid-read-page-size":  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid read page size"},
-		"invalid-skip-size":       {cmd: Cmd{ReadOption: rOpt, Skip: -10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid skip -10"},
-		"sampling-too-high":       {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 2.0, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid sampling"},
-		"sampling-too-low":        {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: -0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid sampling"},
-		"invalid-format":          {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "foobar", NoHeader: false, URI: "does/not/matter"}, errMsg: "unknown format: [foobar]"},
-		"fail-on-int96":           {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
-		"nested-schema-csv":       {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
-		"nested-schema-tsv":       {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
-		"geospatial-csv":          {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
-		"geospatial-tsv":          {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
-		"nan-json-error":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
-		"arrow-gh-41321":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"}, errMsg: "failed to cat"},
-		"concurrent-non-existent": {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", Concurrent: true}, errMsg: "no such file or directory"},
-		"concurrent-nan-json":     {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true}, errMsg: "json: unsupported value: NaN"},
-		"concurrent-int96":        {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
-		"concurrent-nested-csv":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true}, errMsg: "is not scalar type"},
+		"non-existent-file":                 {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"parquet-1481":                      {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/PARQUET-1481.parquet"}, errMsg: "unknown parquet type: <UNSET>"},
+		"arrow-rs-gh-6229":                  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"}, errMsg: "expected 21 values but got 1 from RLE/bit-packed hybrid decoder"},
+		"invalid-read-page-size":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid read page size"},
+		"invalid-skip-size":                 {cmd: Cmd{ReadOption: rOpt, Skip: -10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid skip -10"},
+		"sampling-too-high":                 {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 2.0, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid sampling"},
+		"sampling-too-low":                  {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: -0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid sampling"},
+		"invalid-format":                    {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "foobar", NoHeader: false, URI: "does/not/matter"}, errMsg: "unknown format: [foobar]"},
+		"fail-on-int96":                     {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
+		"nested-schema-csv":                 {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
+		"nested-schema-tsv":                 {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
+		"geospatial-csv":                    {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
+		"geospatial-tsv":                    {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
+		"nan-json-error":                    {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
+		"arrow-gh-41321":                    {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"}, errMsg: "failed to cat"},
+		"concurrent-non-existent":           {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", Concurrent: true}, errMsg: "no such file or directory"},
+		"concurrent-nan-json":               {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true}, errMsg: "json: unsupported value: NaN"},
+		"concurrent-int96":                  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
+		"concurrent-nested-csv":             {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true}, errMsg: "is not scalar type"},
+		"encrypted-footer-no-key":           {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-footer-wrong-key":        {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"encrypted-columns-missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+		"encrypted-aad-missing":             {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-aad.parquet"}, errMsg: "AAD prefix"},
 
 		// good cases
 		"default":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json.json"},
@@ -83,6 +95,63 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
 			}
+		})
+	}
+}
+
+func TestCmdEncrypted(t *testing.T) {
+	columnKeys := []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}
+	testCases := map[string]struct {
+		readOption pio.ReadOption
+		uri        string
+	}{
+		"columns": {
+			readOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: columnKeys,
+			},
+			uri: "file://../../testdata/encrypted-columns.parquet",
+		},
+		"footer": {
+			readOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: columnKeys,
+			},
+			uri: "file://../../testdata/encrypted-footer.parquet",
+		},
+		"aad": {
+			readOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: columnKeys,
+				AADPrefix:  encAADPrefix,
+			},
+			uri: "file://../../testdata/encrypted-aad.parquet",
+		},
+		"uniform": {
+			readOption: pio.ReadOption{
+				FooterKey: encFooterKey,
+			},
+			uri: "file://../../testdata/uniform-encryption.parquet",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := Cmd{
+				ReadOption:   tc.readOption,
+				Limit:        1,
+				ReadPageSize: 10,
+				SampleRatio:  1.0,
+				Format:       "jsonl",
+				URI:          tc.uri,
+			}
+
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, cmd.Run())
+			})
+			require.Contains(t, stdout, `"double_field"`)
+			require.Contains(t, stdout, `"float_field"`)
+			require.Equal(t, "", stderr)
 		})
 	}
 }

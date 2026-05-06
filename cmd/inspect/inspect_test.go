@@ -16,6 +16,14 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
+const (
+	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	encAADPrefix = "dGVzdGVy"
+	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
 func TestInspect(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
@@ -24,10 +32,12 @@ func TestInspect(t *testing.T) {
 		errMsg string
 	}{
 		// file level
-		"file/good":         {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "inspect-good-file.json"},
-		"file/dict-page":    {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet"}, golden: "inspect-dict-page-file.json"},
-		"file/row-group":    {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "inspect-row-group-file.json"},
-		"file/non-existent": {cmd: Cmd{ReadOption: rOpt, URI: "nonexistent.parquet"}, errMsg: "no such file or directory"},
+		"file/good":                {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "inspect-good-file.json"},
+		"file/encrypted-no-key":    {cmd: Cmd{ReadOption: rOpt, URI: "encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"file/encrypted-wrong-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"file/dict-page":           {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet"}, golden: "inspect-dict-page-file.json"},
+		"file/row-group":           {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "inspect-row-group-file.json"},
+		"file/non-existent":        {cmd: Cmd{ReadOption: rOpt, URI: "nonexistent.parquet"}, errMsg: "no such file or directory"},
 		// row group level
 		"row-group/good-rg-0":      {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0)}, golden: "inspect-good-rg0.json"},
 		"row-group/row-group-rg-0": {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0)}, golden: "inspect-row-group-rg0.json"},
@@ -85,6 +95,37 @@ func TestInspect(t *testing.T) {
 				require.Equal(t, testutils.LoadExpected(t, tc.golden), stdout)
 				require.Equal(t, "", stderr)
 			}
+		})
+	}
+}
+
+func TestInspectEncrypted(t *testing.T) {
+	encReadOption := pio.ReadOption{
+		FooterKey:  encFooterKey,
+		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+	}
+	testCases := map[string]Cmd{
+		"footer":  {ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"},
+		"columns": {ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"},
+		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"},
+		"aad": {
+			ReadOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+				AADPrefix:  encAADPrefix,
+			},
+			URI: "../../testdata/encrypted-aad.parquet",
+		},
+	}
+
+	for name, cmd := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, cmd.Run())
+			})
+			require.Contains(t, stdout, `"totalRows":50`)
+			require.Equal(t, "", stderr)
 		})
 	}
 }

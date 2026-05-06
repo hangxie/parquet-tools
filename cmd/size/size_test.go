@@ -11,6 +11,14 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
+const (
+	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	encAADPrefix = "dGVzdGVy"
+	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
 func TestCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
@@ -19,8 +27,11 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent-file": {cmd: Cmd{URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"invalid-query":     {cmd: Cmd{Query: "invalid", URI: "../../testdata/good.parquet"}, errMsg: "unknown query type"},
+		"non-existent-file":     {cmd: Cmd{URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"invalid-query":         {cmd: Cmd{Query: "invalid", URI: "../../testdata/good.parquet"}, errMsg: "unknown query type"},
+		"encrypted-no-key":      {cmd: Cmd{Query: "raw", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-wrong-key":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Query: "raw", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"encrypted-missing-col": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Query: "raw", URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
 		// good cases
 		"raw":               {cmd: Cmd{ReadOption: rOpt, Query: "raw", JSON: false, URI: "../../testdata/good.parquet"}, stdout: "588\n"},
 		"raw-json":          {cmd: Cmd{ReadOption: rOpt, Query: "raw", JSON: true, URI: "../../testdata/good.parquet"}, stdout: `{"Raw":588}` + "\n"},
@@ -48,6 +59,38 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, tc.stdout, stdout)
 				require.Equal(t, "", stderr)
 			}
+		})
+	}
+}
+
+func TestCmdEncrypted(t *testing.T) {
+	encReadOption := pio.ReadOption{
+		FooterKey:  encFooterKey,
+		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+	}
+	testCases := map[string]Cmd{
+		"footer":  {ReadOption: encReadOption, Query: "raw", URI: "../../testdata/encrypted-footer.parquet"},
+		"columns": {ReadOption: encReadOption, Query: "raw", URI: "../../testdata/encrypted-columns.parquet"},
+		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Query: "raw", URI: "../../testdata/uniform-encryption.parquet"},
+		"aad": {
+			ReadOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+				AADPrefix:  encAADPrefix,
+			},
+			Query: "raw",
+			URI:   "../../testdata/encrypted-aad.parquet",
+		},
+	}
+
+	for name, cmd := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, cmd.Run())
+			})
+			require.NotEmpty(t, stdout)
+			require.Equal(t, "", stderr)
 		})
 	}
 }

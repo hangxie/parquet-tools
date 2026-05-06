@@ -11,6 +11,14 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
+const (
+	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	encAADPrefix = "dGVzdGVy"
+	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
 func TestCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	testCases := map[string]struct {
@@ -27,6 +35,9 @@ func TestCmd(t *testing.T) {
 		"csv-nested":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-nested.parquet"}, errMsg: "CSV supports flat schema only"},
 		"csv-optional":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-optional.parquet"}, errMsg: "CSV does not support optional column"},
 		"csv-repeated":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-repeated.parquet"}, errMsg: "CSV does not support column in LIST type"},
+		// encrypted error cases
+		"encrypted-footer-no-key":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-footer-wrong-key": {cmd: schema.Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
 		// good cases - URI will be prefixed with "../../testdata/"
 		"raw":                    {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, golden: "schema-all-types-raw.json"},
 		"json":                   {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"}, golden: "schema-all-types-json.json"},
@@ -72,6 +83,39 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
 			}
+		})
+	}
+}
+
+func TestCmdEncrypted(t *testing.T) {
+	encReadOption := pio.ReadOption{
+		FooterKey:  encFooterKey,
+		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+	}
+	testCases := map[string]schema.Cmd{
+		"footer":  {ReadOption: encReadOption, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
+		"columns": {ReadOption: encReadOption, Format: "json", URI: "../../testdata/encrypted-columns.parquet"},
+		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Format: "json", URI: "../../testdata/uniform-encryption.parquet"},
+		"aad": {
+			ReadOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+				AADPrefix:  encAADPrefix,
+			},
+			Format: "json",
+			URI:    "../../testdata/encrypted-aad.parquet",
+		},
+	}
+
+	for name, cmd := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, cmd.Run())
+			})
+			require.Contains(t, stdout, "double_field")
+			require.Contains(t, stdout, "float_field")
+			require.Equal(t, "", stderr)
 		})
 	}
 }

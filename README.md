@@ -66,6 +66,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Azure Storage Container](#azure-storage-container)
       - [HDFS File](#hdfs-file)
       - [HTTP Endpoint](#http-endpoint)
+    - [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files)
     - [File Format Options](#file-format-options)
       - [Compression Codecs](#compression-codecs)
       - [Compression Levels](#compression-levels)
@@ -477,6 +478,33 @@ $ parquet-tools row-count https://...
 $ GODEBUG=http2client=0 parquet-tools row-count https://...
 18141856
 ```
+
+### Reading Encrypted Parquet Files
+
+Read commands support AES-GCM encrypted Parquet files with explicit base64-encoded keys:
+
+* `--footer-key`: AES-128 or AES-256 footer key.
+* `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
+* `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it.
+
+For example:
+
+```bash
+$ parquet-tools cat --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== encrypted.parquet
+
+$ parquet-tools cat \
+    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --column-key double_field=MTIzNDU2Nzg5MDEyMzQ1MA== \
+    --column-key float_field=MTIzNDU2Nzg5MDEyMzQ1MQ== \
+    encrypted.parquet
+
+$ parquet-tools cat \
+    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --aad-prefix dGVzdGVy \
+    encrypted.parquet
+```
+
+These flags are available on `cat`, `schema`, `meta`, `size`, `row-count`, `inspect`, `split`, `retype`, `merge`, and `transcode`. For `merge`, all encrypted source files must use the same supplied key set. To merge files with different keys, first strip encryption by transcoding each file to a plain Parquet file, then merge the plain outputs.
 
 ### File Format Options
 

@@ -119,6 +119,9 @@ func buildEncodingMap(pr *reader.ParquetReader) (map[string]string, error) {
 	for colIndex, col := range columns {
 		g.Go(func() error {
 			pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
+			if col.GetCryptoMetadata() != nil {
+				return nil
+			}
 
 			// Clone the reader to get a dedicated file handle for concurrent access
 			// This is necessary because io.ReadSeeker operations (Seek/Read) are not thread-safe
