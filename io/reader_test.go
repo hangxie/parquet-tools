@@ -8,6 +8,65 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// test files are from https://github.com/apache/parquet-testing/
+// keys can be found at https://github.com/apache/parquet-testing/blob/master/data/README.md#encrypted-files
+const (
+	encryptedFooterURI  = "../testdata/encrypted-footer.parquet"
+	encryptedColumnURI  = "../testdata/encrypted-columns.parquet"
+	encryptedAADURI     = "../testdata/encrypted-aad.parquet"
+	encryptedUniformURI = "../testdata/uniform-encryption.parquet"
+
+	testFooterKey      = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	testDoubleFieldKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	testFloatFieldKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	testAADPrefix      = "dGVzdGVy"
+	testWrongKey       = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
+func TestBuildReaderOptions(t *testing.T) {
+	testCases := map[string]struct {
+		option ReadOption
+		errMsg string
+	}{
+		"empty":                    {option: ReadOption{}},
+		"invalid-footer-key":       {option: ReadOption{FooterKey: "!!!"}, errMsg: "invalid base64 footer key"},
+		"invalid-aad-prefix":       {option: ReadOption{AADPrefix: "!!!"}, errMsg: "invalid base64 AAD prefix"},
+		"column-key-missing-equal": {option: ReadOption{ColumnKeys: []string{"colpath"}}, errMsg: "invalid column key format"},
+		"column-key-empty-path":    {option: ReadOption{ColumnKeys: []string{"=YWJj"}}, errMsg: "invalid column key format"},
+		"column-key-empty-value":   {option: ReadOption{ColumnKeys: []string{"col.path="}}, errMsg: "invalid column key format"},
+		"column-key-invalid-key":   {option: ReadOption{ColumnKeys: []string{"col.path=!!!"}}, errMsg: "invalid base64 column key"},
+		"valid-footer-key-std":     {option: ReadOption{FooterKey: testFooterKey}},
+		"valid-footer-key-url":     {option: ReadOption{FooterKey: "-_8"}},
+		"valid-column-key":         {option: ReadOption{ColumnKeys: []string{"double_field=" + testDoubleFieldKey}}},
+		"multiple-column-keys": {
+			option: ReadOption{ColumnKeys: []string{
+				"double_field=" + testDoubleFieldKey,
+				"float_field=" + testFloatFieldKey,
+			}},
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			opts, err := buildReaderOptions(tc.option)
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
+			require.NoError(t, err)
+			require.Len(t, opts, len(tc.option.ColumnKeys)+boolToInt(tc.option.FooterKey != "")+boolToInt(tc.option.AADPrefix != ""))
+		})
+	}
+}
+
+func boolToInt(v bool) int {
+	if v {
+		return 1
+	}
+	return 0
+}
+
 func TestNewParquetFileReader(t *testing.T) {
 	rOpt := ReadOption{}
 	s3URL := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff"
@@ -58,4 +117,147 @@ func TestNewParquetFileReader(t *testing.T) {
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
 	}
+}
+
+func TestNewParquetFileReaderEncryption(t *testing.T) {
+	testCases := map[string]struct {
+		uri      string
+		option   ReadOption
+		readRows bool
+		errMsg   string
+		readErr  string
+		rowCount int
+	}{
+		"plain-file-no-key": {
+			uri: "../testdata/good.parquet",
+		},
+		"plain-file-key-provided": {
+			uri:    "../testdata/good.parquet",
+			option: ReadOption{FooterKey: testFooterKey},
+			errMsg: "encryption keys provided but parquet file is not encrypted",
+		},
+		"encrypted-footer-correct-key": {
+			uri:      encryptedFooterURI,
+			option:   encryptedReadOption(),
+			readRows: true,
+			rowCount: 10,
+		},
+		"encrypted-footer-wrong-key": {
+			uri:    encryptedFooterURI,
+			option: ReadOption{FooterKey: testWrongKey},
+			errMsg: "decrypt",
+		},
+		"encrypted-footer-no-key": {
+			uri:    encryptedFooterURI,
+			errMsg: "footer decryption key",
+		},
+		"encrypted-columns-footer-and-column-keys": {
+			uri:      encryptedColumnURI,
+			option:   encryptedReadOption(),
+			readRows: true,
+			rowCount: 10,
+		},
+		"encrypted-columns-column-keys-only": {
+			uri: encryptedColumnURI,
+			option: ReadOption{ColumnKeys: []string{
+				"double_field=" + testDoubleFieldKey,
+				"float_field=" + testFloatFieldKey,
+			}},
+			errMsg: "footer decryption key",
+		},
+		"encrypted-columns-wrong-column-key": {
+			uri:    encryptedColumnURI,
+			option: encryptedReadOptionWithColumnKey("double_field=" + testWrongKey),
+			errMsg: "decrypt",
+		},
+		"encrypted-columns-extra-column-key": {
+			uri:      encryptedColumnURI,
+			option:   encryptedReadOptionWithColumnKey("Missing=" + testDoubleFieldKey),
+			readRows: true,
+			rowCount: 10,
+		},
+		"encrypted-columns-duplicate-column-key": {
+			uri:      encryptedColumnURI,
+			option:   encryptedReadOptionWithColumnKeyPrefix("double_field=" + testWrongKey),
+			readRows: true,
+			rowCount: 10,
+		},
+		"encrypted-footer-column-key-only": {
+			uri: encryptedFooterURI,
+			option: ReadOption{ColumnKeys: []string{
+				"double_field=" + testDoubleFieldKey,
+			}},
+			errMsg: "footer decryption key",
+		},
+		"encrypted-aad-provided": {
+			uri:      encryptedAADURI,
+			option:   encryptedAADReadOption(),
+			readRows: true,
+			rowCount: 10,
+		},
+		"encrypted-aad-missing": {
+			uri:    encryptedAADURI,
+			option: ReadOption{FooterKey: testFooterKey},
+			errMsg: "AAD",
+		},
+		"encrypted-uniform": {
+			uri:      encryptedUniformURI,
+			option:   ReadOption{FooterKey: testFooterKey},
+			readRows: true,
+			rowCount: 10,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			pr, err := NewParquetFileReader(tc.uri, tc.option)
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
+			require.NoError(t, err)
+			defer func() { _ = pr.ReadStop() }()
+
+			if !tc.readRows {
+				return
+			}
+			rows, err := pr.ReadByNumber(10)
+			if tc.readErr != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.readErr)
+				return
+			}
+			require.NoError(t, err)
+			require.Len(t, rows, tc.rowCount)
+		})
+	}
+}
+
+func encryptedReadOption() ReadOption {
+	return ReadOption{
+		FooterKey: testFooterKey,
+		ColumnKeys: []string{
+			"double_field=" + testDoubleFieldKey,
+			"float_field=" + testFloatFieldKey,
+		},
+	}
+}
+
+func encryptedReadOptionWithColumnKey(columnKey string) ReadOption {
+	option := encryptedReadOption()
+	option.ColumnKeys = append(option.ColumnKeys, columnKey)
+	return option
+}
+
+func encryptedReadOptionWithColumnKeyPrefix(columnKey string) ReadOption {
+	option := encryptedReadOption()
+	option.ColumnKeys = append([]string{columnKey}, option.ColumnKeys...)
+	return option
+}
+
+func encryptedAADReadOption() ReadOption {
+	option := encryptedReadOption()
+	option.AADPrefix = testAADPrefix
+	return option
 }

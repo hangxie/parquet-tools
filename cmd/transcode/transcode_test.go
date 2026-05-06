@@ -32,6 +32,7 @@ func TestCmd(t *testing.T) {
 	t.Run("preserves-encodings-with-compression-change", testCmdPreservesEncodingsWithCompressionChange)
 	t.Run("preserves-encodings-with-data-page-version-change", testCmdPreservesEncodingsWithDataPageVersionChange)
 	t.Run("field-bloom-filter", testCmdFieldBloomFilter)
+	t.Run("decrypt-encrypted", testCmdDecryptEncrypted)
 }
 
 func testCmdError(t *testing.T) {
@@ -1314,6 +1315,87 @@ func TestWriterContextCancellation(t *testing.T) {
 
 	err := pio.PipelineWriter(ctx, nil, writerChan, "test-target")
 	require.ErrorIs(t, err, context.Canceled)
+}
+
+func testCmdDecryptEncrypted(t *testing.T) {
+	const (
+		footerKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+		doubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+		floatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+		aadPrefix = "dGVzdGVy"
+	)
+	encReadOption := pio.ReadOption{
+		FooterKey:  footerKey,
+		ColumnKeys: []string{"double_field=" + doubleKey, "float_field=" + floatKey},
+	}
+	wOpt := pio.WriteOption{
+		CompressionCodec: "SNAPPY",
+		PageSize:         1024 * 1024,
+		RowGroupSize:     128 * 1024 * 1024,
+	}
+	tempDir := t.TempDir()
+
+	testCases := []struct {
+		name   string
+		source string
+		rOpt   pio.ReadOption
+		errMsg string
+	}{
+		{
+			name:   "footer",
+			source: "../../testdata/encrypted-footer.parquet",
+			rOpt:   encReadOption,
+		},
+		{
+			name:   "columns",
+			source: "../../testdata/encrypted-columns.parquet",
+			rOpt:   encReadOption,
+		},
+		{
+			name:   "aad",
+			source: "../../testdata/encrypted-aad.parquet",
+			rOpt: pio.ReadOption{
+				FooterKey:  footerKey,
+				ColumnKeys: []string{"double_field=" + doubleKey, "float_field=" + floatKey},
+				AADPrefix:  aadPrefix,
+			},
+		},
+		{
+			name:   "uniform",
+			source: "../../testdata/uniform-encryption.parquet",
+			rOpt:   pio.ReadOption{FooterKey: footerKey},
+		},
+		{
+			name:   "no-key",
+			source: "../../testdata/encrypted-footer.parquet",
+			rOpt:   pio.ReadOption{},
+			errMsg: "failed to read from",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := Cmd{
+				ReadOption:   tc.rOpt,
+				WriteOption:  wOpt,
+				ReadPageSize: 10,
+				Source:       tc.source,
+				URI:          filepath.Join(tempDir, tc.name+".parquet"),
+			}
+			err := cmd.Run()
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
+			require.NoError(t, err)
+
+			plainReader, err := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
+			require.NoError(t, err)
+			require.Equal(t, int64(50), plainReader.GetNumRows())
+			_ = plainReader.PFile.Close()
+		})
+	}
 }
 
 func BenchmarkTranscodeCmd(b *testing.B) {

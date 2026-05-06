@@ -12,6 +12,14 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
+const (
+	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	encAADPrefix = "dGVzdGVy"
+	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
 func TestSortingToString(t *testing.T) {
 	testCases := map[string]struct {
 		sortingColumns []*parquet.SortingColumn
@@ -92,10 +100,14 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent":   {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"no-int96":       {cmd: Cmd{ReadOption: rOpt, FailOnInt96: true, URI: "../../testdata/all-types.parquet"}, errMsg: "type INT96 which is not supported"},
-		"nan-json-error": {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
-		"arrow-gh-41317": {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/ARROW-GH-41317.parquet"}, errMsg: "schema node not found for column path"},
+		"non-existent":          {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"encrypted-no-key":      {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-wrong-key":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"encrypted-missing-col": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+		"encrypted-aad-missing": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "../../testdata/encrypted-aad.parquet"}, errMsg: "AAD prefix"},
+		"no-int96":              {cmd: Cmd{ReadOption: rOpt, FailOnInt96: true, URI: "../../testdata/all-types.parquet"}, errMsg: "type INT96 which is not supported"},
+		"nan-json-error":        {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
+		"arrow-gh-41317":        {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/ARROW-GH-41317.parquet"}, errMsg: "schema node not found for column path"},
 		// good cases - URI will be prefixed with "../../testdata/"
 		"raw":          {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "meta-good-raw.json"},
 		"nil-stat":     {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet"}, golden: "meta-nil-statistics-raw.json"},
@@ -126,6 +138,38 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
 			}
+		})
+	}
+}
+
+func TestCmdEncrypted(t *testing.T) {
+	encReadOption := pio.ReadOption{
+		FooterKey:  encFooterKey,
+		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+	}
+	testCases := map[string]Cmd{
+		"footer":  {ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"},
+		"columns": {ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"},
+		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"},
+		"aad": {
+			ReadOption: pio.ReadOption{
+				FooterKey:  encFooterKey,
+				ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+				AADPrefix:  encAADPrefix,
+			},
+			URI: "../../testdata/encrypted-aad.parquet",
+		},
+	}
+
+	for name, cmd := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, cmd.Run())
+			})
+			require.Contains(t, stdout, "double_field")
+			require.Contains(t, stdout, `"NumRows":50`)
+			require.Equal(t, "", stderr)
 		})
 	}
 }

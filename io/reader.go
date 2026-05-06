@@ -2,6 +2,7 @@ package io
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"os/user"
@@ -29,6 +30,57 @@ type ReadOption struct {
 	HTTPIgnoreTLSError     bool              `help:"(HTTP and S3 URI) ignore TLS error." default:"false"`
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
+	FooterKey              string            `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/256 key to decrypt the footer." default:""`
+	ColumnKeys             []string          `name:"column-key" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable." placeholder:"column.path=base64key"`
+	AADPrefix              string            `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)." default:""`
+}
+
+func decodeBase64(s string) ([]byte, error) {
+	for _, enc := range []*base64.Encoding{
+		base64.StdEncoding,
+		base64.URLEncoding,
+		base64.RawStdEncoding,
+		base64.RawURLEncoding,
+	} {
+		if b, err := enc.DecodeString(s); err == nil {
+			return b, nil
+		}
+	}
+	return nil, fmt.Errorf("not valid base64")
+}
+
+func buildReaderOptions(option ReadOption) ([]reader.ReaderOption, error) {
+	var opts []reader.ReaderOption
+
+	if option.FooterKey != "" {
+		key, err := decodeBase64(option.FooterKey)
+		if err != nil {
+			return nil, fmt.Errorf("invalid base64 footer key: %w", err)
+		}
+		opts = append(opts, reader.WithFooterKey(key))
+	}
+
+	if option.AADPrefix != "" {
+		prefix, err := decodeBase64(option.AADPrefix)
+		if err != nil {
+			return nil, fmt.Errorf("invalid base64 AAD prefix: %w", err)
+		}
+		opts = append(opts, reader.WithAADPrefix(prefix))
+	}
+
+	for _, ck := range option.ColumnKeys {
+		parts := strings.SplitN(ck, "=", 2)
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			return nil, fmt.Errorf("invalid column key format [%s], expected 'column.path=base64key'", ck)
+		}
+		key, err := decodeBase64(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid base64 column key for [%s]: %w", parts[0], err)
+		}
+		opts = append(opts, reader.WithColumnKey(parts[0], key))
+	}
+
+	return opts, nil
 }
 
 func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
@@ -121,5 +173,25 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 		return nil, fmt.Errorf("unable to open file [%s]: %w", u.String(), err)
 	}
 
-	return reader.NewParquetReader(fileReader, nil, reader.WithNP(int64(runtime.NumCPU())))
+	encOpts, err := buildReaderOptions(option)
+	if err != nil {
+		_ = fileReader.Close()
+		return nil, err
+	}
+
+	readerOpts := append(encOpts, reader.WithNP(int64(runtime.NumCPU())))
+	pr, err := reader.NewParquetReader(fileReader, nil, readerOpts...)
+	if err != nil {
+		_ = fileReader.Close()
+		return nil, err
+	}
+
+	hasEncryptionOptions := option.FooterKey != "" || len(option.ColumnKeys) > 0 || option.AADPrefix != ""
+	isEncrypted := pr.FileCrypto != nil || (pr.Footer != nil && pr.Footer.IsSetEncryptionAlgorithm())
+	if hasEncryptionOptions && !isEncrypted {
+		_ = fileReader.Close()
+		return nil, fmt.Errorf("encryption keys provided but parquet file is not encrypted")
+	}
+
+	return pr, nil
 }

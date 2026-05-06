@@ -11,6 +11,14 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
+const (
+	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
+	encAADPrefix = "dGVzdGVy"
+	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
+)
+
 func TestCmd(t *testing.T) {
 	t.Run("non-existent", func(t *testing.T) {
 		cmd := &Cmd{}
@@ -31,6 +39,45 @@ func TestCmd(t *testing.T) {
 		require.Equal(t, "3\n", stdout)
 		require.Equal(t, "", stderr)
 	})
+}
+
+func TestCmdEncrypted(t *testing.T) {
+	encReadOption := pio.ReadOption{
+		FooterKey:  encFooterKey,
+		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+	}
+	testCases := map[string]struct {
+		cmd    Cmd
+		stdout string
+		errMsg string
+	}{
+		"footer":          {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"}, stdout: "50\n"},
+		"columns":         {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"}, stdout: "50\n"},
+		"aad":             {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}, AADPrefix: encAADPrefix}, URI: "../../testdata/encrypted-aad.parquet"}, stdout: "50\n"},
+		"uniform":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"}, stdout: "50\n"},
+		"no-key":          {cmd: Cmd{ReadOption: pio.ReadOption{}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"wrong-key":       {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			if tc.errMsg == "" {
+				t.Parallel()
+			}
+			if tc.errMsg != "" {
+				err := tc.cmd.Run()
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				return
+			}
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, tc.cmd.Run())
+			})
+			require.Equal(t, tc.stdout, stdout)
+			require.Equal(t, "", stderr)
+		})
+	}
 }
 
 func BenchmarkRowCountCmd(b *testing.B) {
