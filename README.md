@@ -481,7 +481,9 @@ $ GODEBUG=http2client=0 parquet-tools row-count https://...
 
 ### Reading Encrypted Parquet Files
 
-Read commands support AES-GCM encrypted Parquet files with explicit base64-encoded keys:
+Read commands support AES-GCM encrypted Parquet files with explicit base64-encoded keys.
+
+**Note on KMS:** KMS (Key Management Service) use cases are not directly supported. If your files are protected by a KMS, you must manually retrieve the key value from the KMS provider and provide it through the CLI parameters below.
 
 * `--footer-key`: AES-128 or AES-256 footer key.
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
