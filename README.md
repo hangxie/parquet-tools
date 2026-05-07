@@ -98,10 +98,12 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Inspect Row Group Level](#inspect-row-group-level)
       - [Inspect Column Chunk Level](#inspect-column-chunk-level)
       - [Inspect Page Level](#inspect-page-level)
-      - [Encrypted Parquet Files](#encrypted-parquet-files-1)
+      - [Inspect Encryption](#inspect-encryption)
     - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
+      - [Meta Encryption](#meta-encryption)
+      - [Discovering KMS Key IDs](#discovering-kms-key-ids)
     - [retype Command](#retype-command)
       - [Convert INT96 to Timestamp](#convert-int96-to-timestamp)
       - [Convert BSON to String](#convert-bson-to-string)
@@ -1023,7 +1025,7 @@ $ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 
 {"page":{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},"values":["nike","adidas","reebok"]}
 ```
 
-#### Encrypted Parquet Files
+#### Inspect Encryption
 
 When reading an encrypted file with all required keys, `inspect` includes encryption metadata alongside regular output:
 
@@ -1125,7 +1127,7 @@ $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
 
-#### Encrypted Parquet Files
+#### Meta Encryption
 
 When reading an encrypted file with all required keys, `meta` shows encryption metadata alongside regular column metadata:
 
@@ -1142,7 +1144,7 @@ $ parquet-tools meta \
 {"NumRowGroups":1,"FooterKeyMetadata":"a2Y=","RowGroups":[{"NumRows":50,...,"Columns":[...{"PathInSchema":["float_field"],...,"EncryptionMode":"COLUMN_KEY","KeyMetadata":"a2My"},...]}]}
 ```
 
-#### Discovering KMS Key IDs Without Decryption Keys
+#### Discovering KMS Key IDs
 
 Parquet encryption stores a `key_metadata` blob alongside each encrypted key. The Parquet spec defines this field as opaque binary data with no prescribed format or encoding — its contents are entirely implementation-defined. `parquet-tools` displays the raw bytes as base64.
 
