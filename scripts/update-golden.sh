@@ -33,6 +33,7 @@ TESTDATA_DIR="$PROJECT_ROOT/testdata"
 # Build the CLI first
 echo "Building parquet-tools..."
 cd "$PROJECT_ROOT"
+mkdir -p "$PROJECT_ROOT/build"
 go build -o "$PROJECT_ROOT/build/parquet-tools" .
 
 PT="$PROJECT_ROOT/build/parquet-tools"
@@ -41,6 +42,7 @@ PT="$PROJECT_ROOT/build/parquet-tools"
 ENC_FOOTER_KEY="MDEyMzQ1Njc4OTAxMjM0NQ=="
 ENC_DOUBLE_KEY="MTIzNDU2Nzg5MDEyMzQ1MA=="
 ENC_FLOAT_KEY="MTIzNDU2Nzg5MDEyMzQ1MQ=="
+ENC_AAD_PREFIX="dGVzdGVy"
 
 # Helper function to format JSON with jq
 format_json() {
@@ -52,6 +54,36 @@ format_jsonl() {
     while IFS= read -r line; do
         echo "$line" | jq '.' 2>/dev/null || echo "$line"
     done
+}
+
+# Helper function for static golden files that are source fixtures rather than
+# command output. Listing them here keeps the coverage check complete.
+require_static_golden() {
+    if [[ ! -f "$1" ]]; then
+        echo "Missing static golden fixture: $1" >&2
+        exit 1
+    fi
+}
+
+# Ensure every file in testdata/golden is either generated below or explicitly
+# declared as a static fixture.
+assert_all_golden_files_covered() {
+    local existing_file
+    local covered_file
+
+    existing_file=$(mktemp)
+    covered_file=$(mktemp)
+
+    find "$GOLDEN_DIR" -type f -exec basename {} \; | sort > "$existing_file"
+    grep -Eo '\$GOLDEN_DIR/[[:alnum:]_.-]+' "$0" | sed 's|.*GOLDEN_DIR/||' | sort -u > "$covered_file"
+
+    if ! diff -u "$existing_file" "$covered_file"; then
+        echo "Not all golden files are covered by scripts/update-golden.sh" >&2
+        rm -f "$existing_file" "$covered_file"
+        exit 1
+    fi
+
+    rm -f "$existing_file" "$covered_file"
 }
 
 echo "Updating golden files..."
@@ -105,6 +137,12 @@ $PT cat --format jsonl "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLD
 
 # cat-dict-page.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/dict-page.parquet" | format_jsonl > "$GOLDEN_DIR/cat-dict-page.jsonl"
+
+# cat-high-compression.jsonl
+$PT cat --format jsonl --limit 1 "$TESTDATA_DIR/high-compression.parquet" | format_jsonl > "$GOLDEN_DIR/cat-high-compression.jsonl"
+
+# empty-json.txt
+$PT cat --format json "$TESTDATA_DIR/empty.parquet" > "$GOLDEN_DIR/empty-json.txt"
 
 # ============================================================================
 # schema command golden files
@@ -171,8 +209,21 @@ $PT schema --format json "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$
 # schema-bloom-filter-go.txt
 $PT schema --format go "$TESTDATA_DIR/bloom-filter.parquet" > "$GOLDEN_DIR/schema-bloom-filter-go.txt"
 
-# NOTE: schema-list-variants-*.json files are manually maintained test fixtures
-# (not generated from a parquet file). They are used to test JSON schema parsing.
+# schema-good-skip-page-encoding-raw.json
+$PT schema --format raw --skip-page-encoding "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/schema-good-skip-page-encoding-raw.json"
+
+# schema-good-skip-page-encoding.json
+$PT schema --format json --skip-page-encoding "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/schema-good-skip-page-encoding.json"
+
+# schema-good-skip-page-encoding-go.txt
+$PT schema --format go --skip-page-encoding "$TESTDATA_DIR/good.parquet" > "$GOLDEN_DIR/schema-good-skip-page-encoding-go.txt"
+
+# schema-list-variants-* files are manually maintained source fixtures used to
+# test JSON schema parsing for list encodings that are not backed by a parquet
+# file in testdata.
+require_static_golden "$GOLDEN_DIR/schema-list-variants-raw.json"
+require_static_golden "$GOLDEN_DIR/schema-list-variants-json.json"
+require_static_golden "$GOLDEN_DIR/schema-list-variants-go.txt"
 
 # ============================================================================
 # meta command golden files
@@ -217,6 +268,12 @@ $PT meta --show-key-metadata "$TESTDATA_DIR/encrypted-columns.parquet" | format_
 
 # meta-enc-no-key-uniform-raw.json
 $PT meta --show-key-metadata "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/meta-enc-no-key-uniform-raw.json"
+
+# meta-enc-no-key-aad-raw.json
+$PT meta --show-key-metadata "$TESTDATA_DIR/encrypted-aad.parquet" | format_json > "$GOLDEN_DIR/meta-enc-no-key-aad-raw.json"
+
+# meta-enc-aad-raw.json
+$PT meta --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --aad-prefix "$ENC_AAD_PREFIX" "$TESTDATA_DIR/encrypted-aad.parquet" | format_json > "$GOLDEN_DIR/meta-enc-aad-raw.json"
 
 # ============================================================================
 # inspect command golden files
@@ -267,6 +324,9 @@ $PT inspect --row-group 0 "$TESTDATA_DIR/all-types.parquet" | format_json > "$GO
 
 # inspect-bloom-filter-rg0.json
 $PT inspect --row-group 0 "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-rg0.json"
+
+# inspect-bloom-filter-file.json
+$PT inspect "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/inspect-bloom-filter-file.json"
 
 # inspect-good-rg0-cc0.json
 $PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-rg0-cc0.json"
@@ -376,6 +436,12 @@ $PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-al
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-uuid-to-string-data.json"
 rm -f "$RETYPE_OUTPUT"
 
+# retype-all-types-repeated-to-list-schema.json and retype-all-types-repeated-to-list-data.json
+$PT retype --repeated-to-list --source "$TESTDATA_DIR/all-types.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-repeated-to-list-schema.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-repeated-to-list-data.json"
+rm -f "$RETYPE_OUTPUT"
+
 # retype-geospatial-geo-to-binary-schema.json and retype-geospatial-geo-to-binary-data.json
 $PT retype --geo-to-binary --source "$TESTDATA_DIR/geospatial.parquet" "$RETYPE_OUTPUT"
 $PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-geospatial-geo-to-binary-schema.json"
@@ -390,5 +456,7 @@ echo "  special cases..."
 
 # int96-nil-min-max.json - meta output for int96 file
 $PT meta "$TESTDATA_DIR/int96-nil-min-max.parquet" | format_json > "$GOLDEN_DIR/int96-nil-min-max.json"
+
+assert_all_golden_files_covered
 
 echo "Done! Golden files updated in $GOLDEN_DIR"
