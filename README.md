@@ -1092,6 +1092,41 @@ $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
 
+#### Encrypted Parquet Files
+
+When reading an encrypted file with all required keys, `meta` shows encryption metadata alongside regular column metadata:
+
+* `FooterKeyMetadata` (top-level): the raw `key_metadata` binary blob for the footer key, displayed as base64 — present for PARE (encrypted-footer) files and PAR1 files whose footer is signed with a separate key.
+* `EncryptionMode` (per column): `"FOOTER_KEY"` if the column is encrypted with the footer key, or `"COLUMN_KEY"` if it has its own key.
+* `KeyMetadata` (per column): the raw `key_metadata` binary blob for that column's encryption key, displayed as base64, when `EncryptionMode` is `"COLUMN_KEY"`.
+
+```bash
+$ parquet-tools meta \
+    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --column-key double_field=MTIzNDU2Nzg5MDEyMzQ1MA== \
+    --column-key float_field=MTIzNDU2Nzg5MDEyMzQ1MQ== \
+    encrypted-columns.parquet
+{"NumRowGroups":1,"FooterKeyMetadata":"a2Y=","RowGroups":[{"NumRows":50,...,"Columns":[...{"PathInSchema":["float_field"],...,"EncryptionMode":"COLUMN_KEY","KeyMetadata":"a2My"},...]}]}
+```
+
+#### Discovering KMS Key IDs Without Decryption Keys
+
+Parquet encryption stores a `key_metadata` blob alongside each encrypted key. The Parquet spec defines this field as opaque binary data with no prescribed format or encoding — its contents are entirely implementation-defined. `parquet-tools` displays the raw bytes as base64.
+
+KMS-based workflows (e.g., Apache Arrow, Spark) conventionally store a JSON payload in this field, using base64 within that JSON for any binary sub-fields (such as wrapped key material). This is an ecosystem convention, not a specification requirement; other writers may store a plain key ID, an encrypted DEK, or any other binary payload.
+
+To read `key_metadata` without providing any decryption keys, use `--show-key-metadata`:
+
+```bash
+$ parquet-tools meta --show-key-metadata encrypted-columns.parquet
+{"FooterKeyMetadata":"a2Y=","Columns":[{"PathInSchema":["float_field"],"EncryptionMode":"COLUMN_KEY","KeyMetadata":"a2My"},{"PathInSchema":["double_field"],"EncryptionMode":"COLUMN_KEY","KeyMetadata":"a2Mx"}]}
+
+$ parquet-tools meta --show-key-metadata encrypted-footer.parquet
+{"FooterKeyMetadata":"a2Y="}
+```
+
+The command returns an error if the file is not encrypted.
+
 ### retype Command
 
 `retype` command changes the data type of columns in a parquet file. It supports several type conversions to improve compatibility with tools that don't support certain Parquet types.

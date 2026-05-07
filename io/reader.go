@@ -148,7 +148,7 @@ func newHDFSReader(u *url.URL, option ReadOption) (source.ParquetFileReader, err
 	return hdfs.NewHdfsFileReader([]string{u.Host}, userName, u.Path)
 }
 
-func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
+func newSourceReader(URI string, option ReadOption) (source.ParquetFileReader, error) {
 	readerFuncTable := map[string]func(*url.URL, ReadOption) (source.ParquetFileReader, error){
 		schemeLocal:              newLocalReader,
 		schemeAWSS3:              newAWSS3Reader,
@@ -167,10 +167,17 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 	if !found {
 		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}
-
-	fileReader, err := readerFunc(u, option)
+	src, err := readerFunc(u, option)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open file [%s]: %w", u.String(), err)
+	}
+	return src, nil
+}
+
+func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
+	fileReader, err := newSourceReader(URI, option)
+	if err != nil {
+		return nil, err
 	}
 
 	encOpts, err := buildReaderOptions(option)

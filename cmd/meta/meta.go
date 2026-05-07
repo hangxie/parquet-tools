@@ -1,8 +1,10 @@
 package meta
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v3/common"
@@ -14,8 +16,9 @@ import (
 
 // Cmd is a kong command for meta
 type Cmd struct {
-	FailOnInt96 bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	URI         string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FailOnInt96     bool   `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
+	ShowKeyMetadata bool   `help:"show key_metadata fields only (no decryption keys needed); useful for identifying KMS key IDs." name:"show-key-metadata" default:"false"`
+	URI             string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 }
 
@@ -36,6 +39,8 @@ type columnMeta struct {
 	BloomFilterOffset *int64  `json:",omitempty"`
 	BloomFilterLength *int32  `json:",omitempty"`
 	CompressionCodec  string
+	EncryptionMode    *string `json:",omitempty"`
+	KeyMetadata       *string `json:",omitempty"`
 }
 
 type rowGroupMeta struct {
@@ -45,12 +50,29 @@ type rowGroupMeta struct {
 }
 
 type parquetMeta struct {
-	NumRowGroups int
-	RowGroups    []rowGroupMeta
+	NumRowGroups      int
+	FooterKeyMetadata *string `json:",omitempty"`
+	RowGroups         []rowGroupMeta
 }
 
 // Run does actual meta job
 func (c Cmd) Run() error {
+	if c.ShowKeyMetadata {
+		hints, err := pio.ReadEncryptionKeyHints(c.URI, c.ReadOption)
+		if err != nil {
+			return err
+		}
+		if hints == nil {
+			return fmt.Errorf("file is not encrypted")
+		}
+		buf, err := json.Marshal(hints)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(buf))
+		return nil
+	}
+
 	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
 	if err != nil {
 		return err
@@ -73,6 +95,17 @@ func (c Cmd) Run() error {
 	meta := parquetMeta{
 		NumRowGroups: len(rowGroups),
 		RowGroups:    rowGroups,
+	}
+	if fc := reader.FileCrypto; fc != nil {
+		if km := fc.GetKeyMetadata(); len(km) > 0 {
+			encoded := base64.StdEncoding.EncodeToString(km)
+			meta.FooterKeyMetadata = &encoded
+		}
+	} else if reader.Footer != nil {
+		if km := reader.Footer.GetFooterSigningKeyMetadata(); len(km) > 0 {
+			encoded := base64.StdEncoding.EncodeToString(km)
+			meta.FooterKeyMetadata = &encoded
+		}
 	}
 	buf, err := json.Marshal(meta)
 	if err != nil {
@@ -166,6 +199,21 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 		}
 	}
 
+	if cm := col.GetCryptoMetadata(); cm != nil {
+		switch {
+		case cm.ENCRYPTION_WITH_FOOTER_KEY != nil:
+			mode := "FOOTER_KEY"
+			column.EncryptionMode = &mode
+		case cm.ENCRYPTION_WITH_COLUMN_KEY != nil:
+			mode := "COLUMN_KEY"
+			column.EncryptionMode = &mode
+			if km := cm.ENCRYPTION_WITH_COLUMN_KEY.GetKeyMetadata(); len(km) > 0 {
+				encoded := base64.StdEncoding.EncodeToString(km)
+				column.KeyMetadata = &encoded
+			}
+		}
+	}
+
 	return column, nil
 }
 
@@ -182,6 +230,24 @@ func (c Cmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, s
 	column.NullCount = statistics.NullCount
 	column.DistinctCount = statistics.DistinctCount
 	column.MinValue, column.MaxValue = schemaNode.DecodeStatistics(statistics)
+	column.MinValue = normalizeNegativeZero(column.MinValue)
+	column.MaxValue = normalizeNegativeZero(column.MaxValue)
+}
+
+// normalizeNegativeZero converts IEEE 754 negative zero floats to positive zero
+// so that JSON output is consistent with standard JSON tools that treat -0 as 0.
+func normalizeNegativeZero(v any) any {
+	switch f := v.(type) {
+	case float32:
+		if math.Signbit(float64(f)) && f == 0 {
+			return float32(0)
+		}
+	case float64:
+		if math.Signbit(f) && f == 0 {
+			return float64(0)
+		}
+	}
+	return v
 }
 
 func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {

@@ -1,0 +1,19 @@
+{
+  "FooterKeyMetadata": "a2Y=",
+  "Columns": [
+    {
+      "PathInSchema": [
+        "float_field"
+      ],
+      "EncryptionMode": "COLUMN_KEY",
+      "KeyMetadata": "a2My"
+    },
+    {
+      "PathInSchema": [
+        "double_field"
+      ],
+      "EncryptionMode": "COLUMN_KEY",
+      "KeyMetadata": "a2Mx"
+    }
+  ]
+}
