@@ -1,8 +1,10 @@
 package inspect
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v3/common"
@@ -123,15 +125,26 @@ func (c Cmd) inspectFile(reader *reader.ParquetReader) error {
 		uncompressedSize += rgUncompressed
 	}
 
+	fileInfo := map[string]any{
+		"version":          footer.Version,
+		"numRowGroups":     len(footer.RowGroups),
+		"totalRows":        totalRows,
+		"compressedSize":   compressedSize,
+		"uncompressedSize": uncompressedSize,
+		"createdBy":        footer.CreatedBy,
+	}
+	if fc := reader.FileCrypto; fc != nil {
+		if km := fc.GetKeyMetadata(); len(km) > 0 {
+			fileInfo["footerKeyMetadata"] = base64.StdEncoding.EncodeToString(km)
+		}
+	} else if footer != nil {
+		if km := footer.GetFooterSigningKeyMetadata(); len(km) > 0 {
+			fileInfo["footerKeyMetadata"] = base64.StdEncoding.EncodeToString(km)
+		}
+	}
+
 	output := map[string]any{
-		"fileInfo": map[string]any{
-			"version":          footer.Version,
-			"numRowGroups":     len(footer.RowGroups),
-			"totalRows":        totalRows,
-			"compressedSize":   compressedSize,
-			"uncompressedSize": uncompressedSize,
-			"createdBy":        footer.CreatedBy,
-		},
+		"fileInfo":  fileInfo,
 		"rowGroups": rowGroupsBrief,
 	}
 
@@ -184,6 +197,7 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 	}
 
 	c.addTypeInformation(columnChunk, schemaNode)
+	c.addEncryptionInfo(columnChunk, col)
 
 	// Add bloom filter info if available, using correct bitset-only size
 	if col.MetaData.IsSetBloomFilterOffset() {
@@ -253,6 +267,7 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 	}
 
 	c.addTypeInformation(columnChunkDetails, schemaNode)
+	c.addEncryptionInfo(columnChunkDetails, col)
 
 	// Add statistics
 	if col.MetaData.Statistics != nil {
@@ -503,6 +518,23 @@ func (c Cmd) resolvePathInSchema(pathInSchema []string, inExNameMap map[string][
 	return pathInSchema
 }
 
+// addEncryptionInfo adds encryptionMode and keyMetadata to the output map when present
+func (c Cmd) addEncryptionInfo(output map[string]any, col *parquet.ColumnChunk) {
+	cm := col.GetCryptoMetadata()
+	if cm == nil {
+		return
+	}
+	switch {
+	case cm.ENCRYPTION_WITH_FOOTER_KEY != nil:
+		output["encryptionMode"] = "FOOTER_KEY"
+	case cm.ENCRYPTION_WITH_COLUMN_KEY != nil:
+		output["encryptionMode"] = "COLUMN_KEY"
+		if km := cm.ENCRYPTION_WITH_COLUMN_KEY.GetKeyMetadata(); len(km) > 0 {
+			output["keyMetadata"] = base64.StdEncoding.EncodeToString(km)
+		}
+	}
+}
+
 // addTypeInformation adds converted and logical type information to the output map
 func (c Cmd) addTypeInformation(output map[string]any, schemaNode *pschema.SchemaNode) {
 	if schemaNode == nil {
@@ -530,12 +562,27 @@ func (c Cmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema
 	if schemaNode != nil {
 		min, max := schemaNode.DecodeStatistics(statistics)
 		if min != nil {
-			stats["minValue"] = min
+			stats["minValue"] = normalizeNegativeZero(min)
 		}
 		if max != nil {
-			stats["maxValue"] = max
+			stats["maxValue"] = normalizeNegativeZero(max)
 		}
 	}
 
 	return stats
+}
+
+// normalizeNegativeZero converts IEEE 754 negative zero to positive zero for consistent JSON output.
+func normalizeNegativeZero(v any) any {
+	switch f := v.(type) {
+	case float32:
+		if math.Signbit(float64(f)) && f == 0 {
+			return float32(0)
+		}
+	case float64:
+		if math.Signbit(f) && f == 0 {
+			return float64(0)
+		}
+	}
+	return v
 }

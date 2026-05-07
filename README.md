@@ -98,6 +98,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Inspect Row Group Level](#inspect-row-group-level)
       - [Inspect Column Chunk Level](#inspect-column-chunk-level)
       - [Inspect Page Level](#inspect-page-level)
+      - [Encrypted Parquet Files](#encrypted-parquet-files-1)
     - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
@@ -1021,6 +1022,38 @@ For dictionary pages, the values show the dictionary entries:
 $ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0 --page 0
 {"page":{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},"values":["nike","adidas","reebok"]}
 ```
+
+#### Encrypted Parquet Files
+
+When reading an encrypted file with all required keys, `inspect` includes encryption metadata alongside regular output:
+
+* `footerKeyMetadata` (in `fileInfo`): the raw `key_metadata` binary blob for the footer key, displayed as base64 — present for PARE (encrypted-footer) files and PAR1 files whose footer is signed with a separate key.
+* `encryptionMode` (per column chunk): `"FOOTER_KEY"` if the column is encrypted with the footer key, or `"COLUMN_KEY"` if it has its own key.
+* `keyMetadata` (per column chunk): the raw `key_metadata` binary blob for that column's encryption key, displayed as base64, when `encryptionMode` is `"COLUMN_KEY"`.
+
+```bash
+$ parquet-tools inspect \
+    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --column-key double_field=MTIzNDU2Nzg5MDEyMzQ1MA== \
+    --column-key float_field=MTIzNDU2Nzg5MDEyMzQ1MQ== \
+    encrypted-columns.parquet
+{"fileInfo":{"compressedSize":3129,...,"footerKeyMetadata":"a2Y=","numRowGroups":1,...},"rowGroups":[...]}
+```
+
+At row-group level, encrypted columns show their `encryptionMode` and, for column-key encryption, their `keyMetadata`:
+
+```bash
+$ parquet-tools inspect \
+    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --column-key double_field=MTIzNDU2Nzg5MDEyMzQ1MA== \
+    --column-key float_field=MTIzNDU2Nzg5MDEyMzQ1MQ== \
+    --row-group 0 \
+    encrypted-columns.parquet
+{"columnChunks":[...{"encryptionMode":"COLUMN_KEY","keyMetadata":"a2My","pathInSchema":["float_field"],...},{"encryptionMode":"COLUMN_KEY","keyMetadata":"a2Mx","pathInSchema":["double_field"],...},...],"rowGroup":{...}}
+```
+
+> [!NOTE]
+> Column chunk level inspection (showing pages) is not supported for encrypted columns. Use row-group level to see encryption metadata for individual columns.
 
 > [!TIP]
 > Use `inspect` to:

@@ -1,0 +1,178 @@
+{
+  "columnChunks": [
+    {
+      "compressedSize": 31,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "RLE"
+      ],
+      "index": 0,
+      "numValues": 50,
+      "pathInSchema": [
+        "boolean_field"
+      ],
+      "statistics": {
+        "maxValue": true,
+        "minValue": false,
+        "nullCount": 0
+      },
+      "type": "BOOLEAN",
+      "uncompressedSize": 29
+    },
+    {
+      "compressedSize": 283,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=TIME_MILLIS",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "index": 1,
+      "logicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+      "numValues": 50,
+      "pathInSchema": [
+        "int32_field"
+      ],
+      "statistics": {
+        "maxValue": "00:00:00.049",
+        "minValue": "00:00:00.000",
+        "nullCount": 0
+      },
+      "type": "INT32",
+      "uncompressedSize": 277
+    },
+    {
+      "compressedSize": 949,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "index": 2,
+      "numValues": 100,
+      "pathInSchema": [
+        "int64_field"
+      ],
+      "statistics": {
+        "maxValue": 99000000000000,
+        "minValue": 0,
+        "nullCount": 0
+      },
+      "type": "INT64",
+      "uncompressedSize": 955
+    },
+    {
+      "compressedSize": 438,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "index": 3,
+      "numValues": 50,
+      "pathInSchema": [
+        "int96_field"
+      ],
+      "type": "INT96",
+      "uncompressedSize": 677
+    },
+    {
+      "compressedSize": 412,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "encryptionMode": "COLUMN_KEY",
+      "index": 4,
+      "keyMetadata": "a2My",
+      "numValues": 50,
+      "pathInSchema": [
+        "float_field"
+      ],
+      "statistics": {
+        "maxValue": 53.9,
+        "minValue": 0,
+        "nullCount": 0
+      },
+      "type": "FLOAT",
+      "uncompressedSize": 342
+    },
+    {
+      "compressedSize": 513,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "encryptionMode": "COLUMN_KEY",
+      "index": 5,
+      "keyMetadata": "a2Mx",
+      "numValues": 50,
+      "pathInSchema": [
+        "double_field"
+      ],
+      "statistics": {
+        "maxValue": 54.4444439,
+        "minValue": 0,
+        "nullCount": 0
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 542
+    },
+    {
+      "compressedSize": 215,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "index": 6,
+      "numValues": 50,
+      "pathInSchema": [
+        "ba_field"
+      ],
+      "statistics": {
+        "maxValue": "cGFycXVldDA0OA==",
+        "minValue": "cGFycXVldDAwMA==",
+        "nullCount": 25
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressedSize": 417
+    },
+    {
+      "compressedSize": 288,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "length=10",
+      "encodings": [
+        "PLAIN",
+        "RLE",
+        "RLE_DICTIONARY"
+      ],
+      "index": 7,
+      "numValues": 50,
+      "pathInSchema": [
+        "flba_field"
+      ],
+      "statistics": {
+        "maxValue": "MTExMTExMTExMQ==",
+        "minValue": "AAAAAAAAAAAAAA==",
+        "nullCount": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressedSize": 577
+    }
+  ],
+  "rowGroup": {
+    "index": 0,
+    "numColumns": 8,
+    "numRows": 50,
+    "totalByteSize": 3816
+  }
+}
