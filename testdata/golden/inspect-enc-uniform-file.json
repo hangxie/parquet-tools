@@ -1,0 +1,21 @@
+{
+  "fileInfo": {
+    "compressedSize": 3837,
+    "createdBy": "parquet-cpp-arrow version 19.0.0-SNAPSHOT",
+    "footerKeyMetadata": "a2Y=",
+    "numRowGroups": 1,
+    "totalRows": 50,
+    "uncompressedSize": 4172,
+    "version": 2
+  },
+  "rowGroups": [
+    {
+      "compressedSize": 3837,
+      "index": 0,
+      "numColumns": 8,
+      "numRows": 50,
+      "totalByteSize": 4172,
+      "uncompressedSize": 4172
+    }
+  ]
+}

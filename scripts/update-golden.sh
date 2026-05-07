@@ -37,6 +37,11 @@ go build -o "$PROJECT_ROOT/build/parquet-tools" .
 
 PT="$PROJECT_ROOT/build/parquet-tools"
 
+# Encryption keys for encrypted test files
+ENC_FOOTER_KEY="MDEyMzQ1Njc4OTAxMjM0NQ=="
+ENC_DOUBLE_KEY="MTIzNDU2Nzg5MDEyMzQ1MA=="
+ENC_FLOAT_KEY="MTIzNDU2Nzg5MDEyMzQ1MQ=="
+
 # Helper function to format JSON with jq
 format_json() {
     jq '.' 2>/dev/null || cat
@@ -195,6 +200,24 @@ $PT meta "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/meta-row
 # meta-bloom-filter-raw.json
 $PT meta "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/meta-bloom-filter-raw.json"
 
+# meta-enc-columns-raw.json
+$PT meta --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/meta-enc-columns-raw.json"
+
+# meta-enc-footer-raw.json
+$PT meta --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" "$TESTDATA_DIR/encrypted-footer.parquet" | format_json > "$GOLDEN_DIR/meta-enc-footer-raw.json"
+
+# meta-enc-uniform-raw.json
+$PT meta --footer-key "$ENC_FOOTER_KEY" "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/meta-enc-uniform-raw.json"
+
+# meta-enc-no-key-footer-raw.json
+$PT meta --show-key-metadata "$TESTDATA_DIR/encrypted-footer.parquet" | format_json > "$GOLDEN_DIR/meta-enc-no-key-footer-raw.json"
+
+# meta-enc-no-key-columns-raw.json
+$PT meta --show-key-metadata "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/meta-enc-no-key-columns-raw.json"
+
+# meta-enc-no-key-uniform-raw.json
+$PT meta --show-key-metadata "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/meta-enc-no-key-uniform-raw.json"
+
 # ============================================================================
 # inspect command golden files
 # ============================================================================
@@ -202,6 +225,21 @@ echo "  inspect command..."
 
 # inspect-good-file.json
 $PT inspect "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-file.json"
+
+# inspect-enc-columns-file.json
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-columns-file.json"
+
+# inspect-enc-footer-file.json
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" "$TESTDATA_DIR/encrypted-footer.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-footer-file.json"
+
+# inspect-enc-uniform-file.json
+$PT inspect --footer-key "$ENC_FOOTER_KEY" "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-uniform-file.json"
+
+# inspect-enc-columns-rg0.json
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --row-group 0 "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-columns-rg0.json"
+
+# inspect-enc-uniform-rg0.json
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --row-group 0 "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-uniform-rg0.json"
 
 # inspect-dict-page-file.json
 $PT inspect "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-file.json"
