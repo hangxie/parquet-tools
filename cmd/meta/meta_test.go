@@ -100,10 +100,16 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent":          {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"encrypted-no-key":      {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
-		"encrypted-wrong-key":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"encrypted-missing-col": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+		"non-existent":           {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"encrypted-no-key":       {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-wrong-key":    {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"encrypted-missing-col":  {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+		"peek-key-not-encrypted": {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "../../testdata/good.parquet"}, errMsg: "file is not encrypted"},
+		// --show-key-metadata flag: show key_metadata hints so users can retrieve the right key from KMS
+		"enc-no-key-footer":     {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "encrypted-footer.parquet"}, golden: "meta-enc-no-key-footer-raw.json"},
+		"enc-no-key-columns":    {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "encrypted-columns.parquet"}, golden: "meta-enc-no-key-columns-raw.json"},
+		"enc-no-key-uniform":    {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "uniform-encryption.parquet"}, golden: "meta-enc-no-key-uniform-raw.json"},
+		"enc-no-key-aad":        {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "encrypted-aad.parquet"}, golden: "meta-enc-no-key-aad-raw.json"},
 		"encrypted-aad-missing": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "../../testdata/encrypted-aad.parquet"}, errMsg: "AAD prefix"},
 		"no-int96":              {cmd: Cmd{ReadOption: rOpt, FailOnInt96: true, URI: "../../testdata/all-types.parquet"}, errMsg: "type INT96 which is not supported"},
 		"nan-json-error":        {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
@@ -116,6 +122,43 @@ func TestCmd(t *testing.T) {
 		"geospatial":   {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet"}, golden: "meta-geospatial-raw.json"},
 		"row-group":    {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "meta-row-group-raw.json"},
 		"bloom-filter": {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet"}, golden: "meta-bloom-filter-raw.json"},
+		// encrypted cases: column-level keys with KeyMetadata, uniform footer-key encryption,
+		// and footer with both column-level keys and file-level FooterKeyMetadata
+		"enc-columns": {
+			cmd: Cmd{
+				ReadOption: pio.ReadOption{
+					FooterKey:  encFooterKey,
+					ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+				},
+				URI: "encrypted-columns.parquet",
+			},
+			golden: "meta-enc-columns-raw.json",
+		},
+		"enc-uniform": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet"},
+			golden: "meta-enc-uniform-raw.json",
+		},
+		"enc-footer": {
+			cmd: Cmd{
+				ReadOption: pio.ReadOption{
+					FooterKey:  encFooterKey,
+					ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+				},
+				URI: "encrypted-footer.parquet",
+			},
+			golden: "meta-enc-footer-raw.json",
+		},
+		"enc-aad": {
+			cmd: Cmd{
+				ReadOption: pio.ReadOption{
+					FooterKey:  encFooterKey,
+					ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
+					AADPrefix:  encAADPrefix,
+				},
+				URI: "encrypted-aad.parquet",
+			},
+			golden: "meta-enc-aad-raw.json",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -138,38 +181,6 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
 			}
-		})
-	}
-}
-
-func TestCmdEncrypted(t *testing.T) {
-	encReadOption := pio.ReadOption{
-		FooterKey:  encFooterKey,
-		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
-	}
-	testCases := map[string]Cmd{
-		"footer":  {ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"},
-		"columns": {ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"},
-		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"},
-		"aad": {
-			ReadOption: pio.ReadOption{
-				FooterKey:  encFooterKey,
-				ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
-				AADPrefix:  encAADPrefix,
-			},
-			URI: "../../testdata/encrypted-aad.parquet",
-		},
-	}
-
-	for name, cmd := range testCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			stdout, stderr := testutils.CaptureStdoutStderr(func() {
-				require.NoError(t, cmd.Run())
-			})
-			require.Contains(t, stdout, "double_field")
-			require.Contains(t, stdout, `"NumRows":50`)
-			require.Equal(t, "", stderr)
 		})
 	}
 }

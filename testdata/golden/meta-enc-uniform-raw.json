@@ -1,0 +1,162 @@
+{
+  "NumRowGroups": 1,
+  "FooterKeyMetadata": "a2Y=",
+  "RowGroups": [
+    {
+      "NumRows": 50,
+      "TotalByteSize": 4172,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "boolean_field"
+          ],
+          "Type": "BOOLEAN",
+          "Encodings": [
+            "RLE"
+          ],
+          "CompressedSize": 95,
+          "UncompressedSize": 61,
+          "NumValues": 50,
+          "NullCount": 0,
+          "MaxValue": true,
+          "MinValue": false,
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "int32_field"
+          ],
+          "Type": "INT32",
+          "ConvertedType": "convertedtype=TIME_MILLIS",
+          "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 412,
+          "UncompressedSize": 342,
+          "NumValues": 50,
+          "NullCount": 0,
+          "MaxValue": "00:00:00.049",
+          "MinValue": "00:00:00.000",
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "int64_field"
+          ],
+          "Type": "INT64",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 1077,
+          "UncompressedSize": 1019,
+          "NumValues": 100,
+          "NullCount": 0,
+          "MaxValue": 99000000000000,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "int96_field"
+          ],
+          "Type": "INT96",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 567,
+          "UncompressedSize": 742,
+          "NumValues": 50,
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "float_field"
+          ],
+          "Type": "FLOAT",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 412,
+          "UncompressedSize": 342,
+          "NumValues": 50,
+          "NullCount": 0,
+          "MaxValue": 53.9,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "double_field"
+          ],
+          "Type": "DOUBLE",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 513,
+          "UncompressedSize": 542,
+          "NumValues": 50,
+          "NullCount": 0,
+          "MaxValue": 54.4444439,
+          "MinValue": 0,
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "ba_field"
+          ],
+          "Type": "BYTE_ARRAY",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 344,
+          "UncompressedSize": 482,
+          "NumValues": 50,
+          "NullCount": 25,
+          "MaxValue": "cGFycXVldDA0OA==",
+          "MinValue": "cGFycXVldDAwMA==",
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        },
+        {
+          "PathInSchema": [
+            "flba_field"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "ConvertedType": "length=10",
+          "Encodings": [
+            "PLAIN",
+            "RLE",
+            "RLE_DICTIONARY"
+          ],
+          "CompressedSize": 417,
+          "UncompressedSize": 642,
+          "NumValues": 50,
+          "NullCount": 0,
+          "MaxValue": "MTExMTExMTExMQ==",
+          "MinValue": "AAAAAAAAAAAAAA==",
+          "CompressionCodec": "SNAPPY",
+          "EncryptionMode": "FOOTER_KEY"
+        }
+      ]
+    }
+  ]
+}
