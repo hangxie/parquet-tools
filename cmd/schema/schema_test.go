@@ -36,7 +36,7 @@ func TestCmd(t *testing.T) {
 		"csv-optional":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-optional.parquet"}, errMsg: "CSV does not support optional column"},
 		"csv-repeated":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-repeated.parquet"}, errMsg: "CSV does not support column in LIST type"},
 		// encrypted error cases
-		"encrypted-footer-no-key":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-footer-no-key":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
 		"encrypted-footer-wrong-key": {cmd: schema.Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
 		// good cases - URI will be prefixed with "../../testdata/"
 		"raw":                    {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, golden: "schema-all-types-raw.json"},

@@ -33,7 +33,7 @@ func TestInspect(t *testing.T) {
 	}{
 		// file level
 		"file/good":                {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "inspect-good-file.json"},
-		"file/encrypted-no-key":    {cmd: Cmd{ReadOption: rOpt, URI: "encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"file/encrypted-no-key":    {cmd: Cmd{ReadOption: rOpt, URI: "encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
 		"file/encrypted-wrong-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "encrypted-footer.parquet"}, errMsg: "decrypt"},
 		"file/encrypted-columns":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet"}, golden: "inspect-enc-columns-file.json"},
 		"file/encrypted-footer":    {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-footer.parquet"}, golden: "inspect-enc-footer-file.json"},

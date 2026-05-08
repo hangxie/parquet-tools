@@ -55,9 +55,9 @@ func TestCmdEncrypted(t *testing.T) {
 		"columns":         {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"}, stdout: "50\n"},
 		"aad":             {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}, AADPrefix: encAADPrefix}, URI: "../../testdata/encrypted-aad.parquet"}, stdout: "50\n"},
 		"uniform":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"}, stdout: "50\n"},
-		"no-key":          {cmd: Cmd{ReadOption: pio.ReadOption{}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"no-key":          {cmd: Cmd{ReadOption: pio.ReadOption{}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
 		"wrong-key":       {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+		"missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decryption key required for column"},
 	}
 
 	for name, tc := range testCases {

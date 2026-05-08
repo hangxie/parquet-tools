@@ -47,9 +47,9 @@ func TestCmd(t *testing.T) {
 		"concurrent-nan-json":               {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true}, errMsg: "json: unsupported value: NaN"},
 		"concurrent-int96":                  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
 		"concurrent-nested-csv":             {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true}, errMsg: "is not scalar type"},
-		"encrypted-footer-no-key":           {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "footer decryption key"},
+		"encrypted-footer-no-key":           {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
 		"encrypted-footer-wrong-key":        {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"encrypted-columns-missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "column decryption key"},
+		"encrypted-columns-missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decryption key required for column"},
 		"encrypted-aad-missing":             {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-aad.parquet"}, errMsg: "AAD prefix"},
 
 		// good cases

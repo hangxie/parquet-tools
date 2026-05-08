@@ -149,7 +149,7 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 		},
 		"encrypted-footer-no-key": {
 			uri:    encryptedFooterURI,
-			errMsg: "footer decryption key",
+			errMsg: "decryption key required for footer",
 		},
 		"encrypted-columns-footer-and-column-keys": {
 			uri:      encryptedColumnURI,
@@ -163,7 +163,7 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 				"double_field=" + testDoubleFieldKey,
 				"float_field=" + testFloatFieldKey,
 			}},
-			errMsg: "footer decryption key",
+			errMsg: "decryption key required for footer",
 		},
 		"encrypted-columns-wrong-column-key": {
 			uri:    encryptedColumnURI,
@@ -187,7 +187,7 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 			option: ReadOption{ColumnKeys: []string{
 				"double_field=" + testDoubleFieldKey,
 			}},
-			errMsg: "footer decryption key",
+			errMsg: "decryption key required for footer",
 		},
 		"encrypted-aad-provided": {
 			uri:      encryptedAADURI,
