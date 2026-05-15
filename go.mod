@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	cloud.google.com/go/storage v1.62.1
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.4
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.7.0
 	github.com/alecthomas/kong v1.15.0
 	github.com/apache/thrift v0.23.1-0.20260429210525-1ebdaef5dae4
 	github.com/aws/aws-sdk-go-v2 v1.41.7
@@ -93,7 +93,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
-	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
