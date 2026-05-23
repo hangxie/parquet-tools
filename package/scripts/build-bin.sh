@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+rm -f /tmp/release-build-pid
 for TARGET in ${REL_TARGET}; do
     (
         BINARY=${BUILD_DIR}/release/parquet-tools-${VERSION}-${TARGET}
@@ -21,5 +22,9 @@ for TARGET in ${REL_TARGET}; do
         fi
         echo "    ${TARGET} built"
     ) &
+    echo $! >> /tmp/release-build-pid
 done
-wait
+
+for PID in $(cat /tmp/release-build-pid); do
+    wait $PID
+done
