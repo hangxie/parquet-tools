@@ -140,6 +140,12 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet"},
 			golden: "meta-enc-columns-footer-only.json",
 		},
+		// Mixed plaintext/encrypted with no keys at all: footer is plaintext-signed
+		// so output is identical to the footer-key-only case.
+		"enc-columns-no-keys": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "encrypted-columns.parquet"},
+			golden: "meta-enc-columns-footer-only.json",
+		},
 		"enc-uniform": {
 			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet"},
 			golden: "meta-enc-uniform-raw.json",
