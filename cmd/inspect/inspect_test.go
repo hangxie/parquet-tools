@@ -55,8 +55,9 @@ func TestInspect(t *testing.T) {
 		"row-group/bloom-filter":          {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0)}, golden: "inspect-bloom-filter-rg0.json"},
 		// column chunk level
 		"column-chunk/good-col-0":                {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-good-rg0-cc0.json"},
-		"column-chunk/encrypted-columns-float":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)}, errMsg: "page header inspection is not supported for encrypted columns"},
-		"column-chunk/encrypted-uniform-boolean": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0), ColumnChunk: new(0)}, errMsg: "page header inspection is not supported for encrypted columns"},
+		"column-chunk/encrypted-columns-float":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)}, golden: "inspect-enc-columns-rg0-cc4.json"},
+		"column-chunk/encrypted-uniform-boolean": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-enc-uniform-rg0-cc0.json"},
+		"column-chunk/encrypted-columns-no-key":  {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)}, errMsg: "decryption key required for column float_field"},
 		"column-chunk/dict-page-col-0":           {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-dict-page-rg0-cc0.json"},
 		"column-chunk/all-types-interval":        {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0), ColumnChunk: new(39)}, golden: "inspect-all-types-rg0-cc39.json"},
 		"column-chunk/bloom-filter-col-0":        {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-bloom-filter-rg0-cc0.json"},

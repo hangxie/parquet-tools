@@ -275,6 +275,9 @@ $PT meta --show-key-metadata "$TESTDATA_DIR/encrypted-aad.parquet" | format_json
 # meta-enc-aad-raw.json
 $PT meta --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --aad-prefix "$ENC_AAD_PREFIX" "$TESTDATA_DIR/encrypted-aad.parquet" | format_json > "$GOLDEN_DIR/meta-enc-aad-raw.json"
 
+# meta-enc-columns-footer-only.json - mixed plaintext/encrypted columns with footer key only
+$PT meta --footer-key "$ENC_FOOTER_KEY" "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/meta-enc-columns-footer-only.json"
+
 # ============================================================================
 # inspect command golden files
 # ============================================================================
@@ -297,6 +300,12 @@ $PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBL
 
 # inspect-enc-uniform-rg0.json
 $PT inspect --footer-key "$ENC_FOOTER_KEY" --row-group 0 "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-uniform-rg0.json"
+
+# inspect-enc-columns-rg0-cc4.json - encrypted column chunk page inspection (float_field)
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --row-group 0 --column-chunk 4 "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-columns-rg0-cc4.json"
+
+# inspect-enc-uniform-rg0-cc0.json - uniform-encrypted column chunk page inspection (boolean_field)
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --row-group 0 --column-chunk 0 "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-uniform-rg0-cc0.json"
 
 # inspect-dict-page-file.json
 $PT inspect "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-file.json"

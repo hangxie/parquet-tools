@@ -27,11 +27,13 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent-file":     {cmd: Cmd{URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"invalid-query":         {cmd: Cmd{Query: "invalid", URI: "../../testdata/good.parquet"}, errMsg: "unknown query type"},
-		"encrypted-no-key":      {cmd: Cmd{Query: "raw", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
-		"encrypted-wrong-key":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Query: "raw", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"encrypted-missing-col": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Query: "raw", URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decryption key required for column"},
+		"non-existent-file":   {cmd: Cmd{URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"invalid-query":       {cmd: Cmd{Query: "invalid", URI: "../../testdata/good.parquet"}, errMsg: "unknown query type"},
+		"encrypted-no-key":    {cmd: Cmd{Query: "raw", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
+		"encrypted-wrong-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Query: "raw", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		// Mixed plaintext/encrypted: size only needs structural metadata, so a footer
+		// key alone works even when column keys are missing.
+		"encrypted-footer-only-mixed": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Query: "raw", URI: "../../testdata/encrypted-columns.parquet"}, stdout: "3129\n"},
 		// good cases
 		"raw":               {cmd: Cmd{ReadOption: rOpt, Query: "raw", JSON: false, URI: "../../testdata/good.parquet"}, stdout: "588\n"},
 		"raw-json":          {cmd: Cmd{ReadOption: rOpt, Query: "raw", JSON: true, URI: "../../testdata/good.parquet"}, stdout: `{"Raw":588}` + "\n"},

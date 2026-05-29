@@ -163,7 +163,13 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 				"double_field=" + testDoubleFieldKey,
 				"float_field=" + testFloatFieldKey,
 			}},
-			errMsg: "decryption key required for footer",
+			readRows: true,
+			rowCount: 10,
+		},
+		"encrypted-columns-no-keys": {
+			uri:      encryptedColumnURI,
+			readRows: true,
+			readErr:  "decryption key required for column",
 		},
 		"encrypted-columns-wrong-column-key": {
 			uri:    encryptedColumnURI,

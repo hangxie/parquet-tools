@@ -1,0 +1,37 @@
+{
+  "columnChunk": {
+    "columnChunkIndex": 0,
+    "compressedSize": 95,
+    "compressionCodec": "SNAPPY",
+    "dataPageOffset": 4,
+    "encodings": [
+      "RLE"
+    ],
+    "encryptionMode": "FOOTER_KEY",
+    "numValues": 50,
+    "pathInSchema": [
+      "boolean_field"
+    ],
+    "rowGroupIndex": 0,
+    "statistics": {
+      "maxValue": true,
+      "minValue": false,
+      "nullCount": 0
+    },
+    "type": "BOOLEAN",
+    "uncompressedSize": 61
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 4,
+      "type": "DATA_PAGE",
+      "compressedSize": 46,
+      "uncompressedSize": 12,
+      "numValues": 50,
+      "encoding": "RLE",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE"
+    }
+  ]
+}

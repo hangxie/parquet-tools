@@ -51,13 +51,17 @@ func TestCmdEncrypted(t *testing.T) {
 		stdout string
 		errMsg string
 	}{
-		"footer":          {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"}, stdout: "50\n"},
-		"columns":         {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"}, stdout: "50\n"},
-		"aad":             {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}, AADPrefix: encAADPrefix}, URI: "../../testdata/encrypted-aad.parquet"}, stdout: "50\n"},
-		"uniform":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"}, stdout: "50\n"},
-		"no-key":          {cmd: Cmd{ReadOption: pio.ReadOption{}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
-		"wrong-key":       {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decryption key required for column"},
+		"footer":    {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"}, stdout: "50\n"},
+		"columns":   {cmd: Cmd{ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"}, stdout: "50\n"},
+		"aad":       {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}, AADPrefix: encAADPrefix}, URI: "../../testdata/encrypted-aad.parquet"}, stdout: "50\n"},
+		"uniform":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"}, stdout: "50\n"},
+		"no-key":    {cmd: Cmd{ReadOption: pio.ReadOption{}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
+		"wrong-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		// Mixed plaintext/encrypted: row count only needs row-group metadata, so a footer
+		// key alone is enough even when some column keys are missing.
+		"footer-only-mixed": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, stdout: "50\n"},
+		// Plaintext-signed footer in encrypted-columns.parquet does not require any key for row count.
+		"no-key-mixed": {cmd: Cmd{ReadOption: pio.ReadOption{}, URI: "../../testdata/encrypted-columns.parquet"}, stdout: "50\n"},
 	}
 
 	for name, tc := range testCases {
