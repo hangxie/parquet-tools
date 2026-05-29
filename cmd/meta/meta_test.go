@@ -100,11 +100,11 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent":           {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"encrypted-no-key":       {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
-		"encrypted-wrong-key":    {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"encrypted-missing-col":  {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decryption key required for column"},
-		"peek-key-not-encrypted": {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "../../testdata/good.parquet"}, errMsg: "file is not encrypted"},
+		"non-existent":            {cmd: Cmd{ReadOption: rOpt, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
+		"encrypted-no-key":        {cmd: Cmd{ReadOption: rOpt, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
+		"encrypted-wrong-key":     {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"encrypted-wrong-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encWrongKey, "float_field=" + encWrongKey}}, URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decrypt"},
+		"peek-key-not-encrypted":  {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "../../testdata/good.parquet"}, errMsg: "file is not encrypted"},
 		// --show-key-metadata flag: show key_metadata hints so users can retrieve the right key from KMS
 		"enc-no-key-footer":     {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "encrypted-footer.parquet"}, golden: "meta-enc-no-key-footer-raw.json"},
 		"enc-no-key-columns":    {cmd: Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "encrypted-columns.parquet"}, golden: "meta-enc-no-key-columns-raw.json"},
@@ -133,6 +133,12 @@ func TestCmd(t *testing.T) {
 				URI: "encrypted-columns.parquet",
 			},
 			golden: "meta-enc-columns-raw.json",
+		},
+		// Mixed plaintext/encrypted: only footer key supplied. Plaintext-signed footer
+		// exposes column structure, but encrypted column stats are unavailable.
+		"enc-columns-footer-only": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet"},
+			golden: "meta-enc-columns-footer-only.json",
 		},
 		"enc-uniform": {
 			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet"},

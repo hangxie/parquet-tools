@@ -1,0 +1,51 @@
+{
+  "columnChunk": {
+    "columnChunkIndex": 4,
+    "compressedSize": 412,
+    "compressionCodec": "SNAPPY",
+    "dataPageOffset": 1989,
+    "dictionaryPageOffset": 1705,
+    "encodings": [
+      "PLAIN",
+      "RLE",
+      "RLE_DICTIONARY"
+    ],
+    "encryptionMode": "COLUMN_KEY",
+    "keyMetadata": "a2My",
+    "numValues": 50,
+    "pathInSchema": [
+      "float_field"
+    ],
+    "rowGroupIndex": 0,
+    "statistics": {
+      "maxValue": 53.9,
+      "minValue": 0,
+      "nullCount": 0
+    },
+    "type": "FLOAT",
+    "uncompressedSize": 342
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 1705,
+      "type": "DICTIONARY_PAGE",
+      "compressedSize": 236,
+      "uncompressedSize": 200,
+      "numValues": 50,
+      "encoding": "PLAIN",
+      "isSorted": false
+    },
+    {
+      "index": 1,
+      "offset": 1989,
+      "type": "DATA_PAGE",
+      "compressedSize": 78,
+      "uncompressedSize": 44,
+      "numValues": 50,
+      "encoding": "RLE_DICTIONARY",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE"
+    }
+  ]
+}
