@@ -1,0 +1,29 @@
+{
+  "Tag": "name=schema, inname=Schema",
+  "Fields": [
+    {
+      "Tag": "name=boolean_field, inname=Boolean_field, type=BOOLEAN, encoding=RLE, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=int32_field, inname=Int32_field, type=INT32, convertedtype=TIME_MILLIS, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS, encoding=RLE_DICTIONARY, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=int64_field, inname=Int64_field, type=INT64, repetitiontype=REPEATED, encoding=RLE_DICTIONARY, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=int96_field, inname=Int96_field, type=INT96, encoding=RLE_DICTIONARY, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=float_field, inname=Float_field, type=FLOAT, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=double_field, inname=Double_field, type=DOUBLE, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=ba_field, inname=Ba_field, type=BYTE_ARRAY, repetitiontype=OPTIONAL, encoding=RLE_DICTIONARY, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=flba_field, inname=Flba_field, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY, compression=SNAPPY"
+    }
+  ]
+}

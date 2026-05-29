@@ -38,6 +38,9 @@ func TestCmd(t *testing.T) {
 		// encrypted error cases
 		"encrypted-footer-no-key":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
 		"encrypted-footer-wrong-key": {cmd: schema.Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		// Mixed plaintext/encrypted: schema only needs the plaintext-signed footer,
+		// so no keys at all are required even when columns are encrypted.
+		"enc-columns-no-keys": {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "encrypted-columns.parquet"}, golden: "schema-enc-columns-json.json"},
 		// good cases - URI will be prefixed with "../../testdata/"
 		"raw":                    {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, golden: "schema-all-types-raw.json"},
 		"json":                   {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"}, golden: "schema-all-types-json.json"},

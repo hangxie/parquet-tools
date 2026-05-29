@@ -218,6 +218,9 @@ $PT schema --format json --skip-page-encoding "$TESTDATA_DIR/good.parquet" | for
 # schema-good-skip-page-encoding-go.txt
 $PT schema --format go --skip-page-encoding "$TESTDATA_DIR/good.parquet" > "$GOLDEN_DIR/schema-good-skip-page-encoding-go.txt"
 
+# schema-enc-columns-json.json - schema from plaintext-signed footer without keys
+$PT schema --format json "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/schema-enc-columns-json.json"
+
 # schema-list-variants-* files are manually maintained source fixtures used to
 # test JSON schema parsing for list encodings that are not backed by a parquet
 # file in testdata.
@@ -300,6 +303,9 @@ $PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBL
 
 # inspect-enc-uniform-rg0.json
 $PT inspect --footer-key "$ENC_FOOTER_KEY" --row-group 0 "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-uniform-rg0.json"
+
+# inspect-enc-columns-no-keys-rg0.json - row-group inspection without keys (encrypted columns lose stats)
+$PT inspect --row-group 0 "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-columns-no-keys-rg0.json"
 
 # inspect-enc-columns-rg0-cc4.json - encrypted column chunk page inspection (float_field)
 $PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --row-group 0 --column-chunk 4 "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-columns-rg0-cc4.json"
