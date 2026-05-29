@@ -11,10 +11,10 @@ import (
 // test files are from https://github.com/apache/parquet-testing/
 // keys can be found at https://github.com/apache/parquet-testing/blob/master/data/README.md#encrypted-files
 const (
-	encryptedFooterURI  = "../testdata/encrypted-footer.parquet"
-	encryptedColumnURI  = "../testdata/encrypted-columns.parquet"
-	encryptedAADURI     = "../testdata/encrypted-aad.parquet"
-	encryptedUniformURI = "../testdata/uniform-encryption.parquet"
+	encryptedFooterURI  = "../testdata/encrypted-footer.parquet"   // renamed from encrypt_columns_and_footer.parquet.encrypted
+	encryptedColumnURI  = "../testdata/encrypted-columns.parquet"  // renamed from encrypt_columns_plaintext_footer.parquet.encrypted
+	encryptedAADURI     = "../testdata/encrypted-aad.parquet"      // renamed from encrypt_columns_and_footer_disable_aad_storage.parquet.encrypted
+	encryptedUniformURI = "../testdata/uniform-encryption.parquet" // renamed from uniform_encryption.parquet.encrypted
 
 	testFooterKey      = "MDEyMzQ1Njc4OTAxMjM0NQ=="
 	testDoubleFieldKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
