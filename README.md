@@ -511,6 +511,9 @@ $ parquet-tools cat \
 
 These flags are available on `cat`, `schema`, `meta`, `size`, `row-count`, `inspect`, `split`, `retype`, `merge`, and `transcode`. For `merge`, all encrypted source files must use the same supplied key set. To merge files with different keys, first strip encryption by transcoding each file to a plain Parquet file, then merge the plain outputs.
 
+> [!NOTE]
+> **Partial keys and plaintext-signed footers.** Files with a plaintext-signed footer (PAR1 with per-column encryption) expose structural metadata — row counts, sizes, schema, encodings, and `key_metadata` hints — without any keys. Commands that only read footer/column metadata (`schema`, `row-count`, `size`, `meta`, `inspect` at file or row-group level) succeed on such files even when some or all column keys are missing. Missing-key errors are deferred to the moment an encrypted column's data or page-level details are actually requested (e.g. `cat`, or `inspect --column-chunk N` on an encrypted column). Files with an encrypted footer (PARE) still require the footer key to read anything.
+
 ### File Format Options
 
 This section describes format options for commands that write Parquet files, including compression, data page version, and encoding settings.
@@ -1055,7 +1058,7 @@ $ parquet-tools inspect \
 ```
 
 > [!NOTE]
-> Column chunk level inspection (showing pages) is not supported for encrypted columns. Use row-group level to see encryption metadata for individual columns.
+> Column-chunk level inspection (showing page headers) also works on encrypted columns when the corresponding key is supplied — page headers are transparently decrypted using the configured `--footer-key` or `--column-key`. Without the key for that column, the request fails with `decryption key required for column <name>`.
 
 > [!TIP]
 > Use `inspect` to:
