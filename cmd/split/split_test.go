@@ -119,6 +119,171 @@ func TestCmd(t *testing.T) {
 	})
 }
 
+const (
+	splitEncryptionFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	splitEncryptionColumnKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
+)
+
+func TestCmdEncryption(t *testing.T) {
+	source := filepath.Join("..", "..", "testdata", "good.parquet")
+
+	testCases := []struct {
+		name        string
+		writeOption pio.WriteOption
+		readOption  pio.ReadOption
+		footerMagic string
+	}{
+		{
+			name: "encrypted-footer",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  splitEncryptionFooterKey,
+			},
+			readOption:  pio.ReadOption{FooterKey: splitEncryptionFooterKey},
+			footerMagic: "PARE",
+		},
+		{
+			name: "encrypted-footer-column-keys",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  splitEncryptionFooterKey,
+				WriterColumnKeys: []string{"shoe_name=" + splitEncryptionColumnKey},
+			},
+			readOption: pio.ReadOption{
+				FooterKey:  splitEncryptionFooterKey,
+				ColumnKeys: []string{"shoe_name=" + splitEncryptionColumnKey},
+			},
+			footerMagic: "PARE",
+		},
+		{
+			name: "plaintext-footer-column-keys",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  splitEncryptionFooterKey,
+				WriterColumnKeys: []string{"shoe_name=" + splitEncryptionColumnKey},
+				PlaintextFooter:  true,
+			},
+			readOption: pio.ReadOption{
+				FooterKey:  splitEncryptionFooterKey,
+				ColumnKeys: []string{"shoe_name=" + splitEncryptionColumnKey},
+			},
+			footerMagic: "PAR1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			cmd := Cmd{
+				ReadOption:   pio.ReadOption{},
+				WriteOption:  tc.writeOption,
+				ReadPageSize: 1000,
+				RecordCount:  2,
+				NameFormat:   filepath.Join(tempDir, "part-%d.parquet"),
+				URI:          source,
+			}
+			require.NoError(t, cmd.Run())
+
+			files, err := os.ReadDir(tempDir)
+			require.NoError(t, err)
+			require.Equal(t, 2, len(files))
+
+			var totalRows int64
+			for _, file := range files {
+				path := filepath.Join(tempDir, file.Name())
+				require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, path))
+				reader, err := pio.NewParquetFileReader(path, tc.readOption)
+				require.NoError(t, err)
+				totalRows += reader.GetNumRows()
+				_ = reader.PFile.Close()
+			}
+			require.Equal(t, int64(3), totalRows)
+		})
+	}
+}
+
+func TestCmdEncryptionErrors(t *testing.T) {
+	source := filepath.Join("..", "..", "testdata", "good.parquet")
+
+	testCases := []struct {
+		name        string
+		writeOption pio.WriteOption
+		errMsg      string
+	}{
+		{
+			name: "missing-footer-key",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterColumnKeys: []string{"shoe_name=" + splitEncryptionColumnKey},
+			},
+			errMsg: "--writer-footer-key is required",
+		},
+		{
+			name: "bad-base64",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  "not base64",
+			},
+			errMsg: "invalid base64 writer footer key",
+		},
+		{
+			name: "wrong-key-size",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  "MTIzNDU=",
+			},
+			errMsg: "writer footer key must be 16, 24, or 32 bytes",
+		},
+		{
+			name: "missing-column-key-path",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  splitEncryptionFooterKey,
+				WriterColumnKeys: []string{"missing=" + splitEncryptionColumnKey},
+			},
+			errMsg: "writer column key path [missing] not found in schema",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			cmd := Cmd{
+				ReadOption:   pio.ReadOption{},
+				WriteOption:  tc.writeOption,
+				ReadPageSize: 1000,
+				RecordCount:  2,
+				NameFormat:   filepath.Join(tempDir, "part-%d.parquet"),
+				URI:          source,
+			}
+			err := cmd.Run()
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
+}
+
 func TestCheckNameFormat(t *testing.T) {
 	testCases := map[string]error{
 		// good

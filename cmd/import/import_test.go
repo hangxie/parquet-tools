@@ -8,7 +8,14 @@ import (
 	parquetSource "github.com/hangxie/parquet-go/v3/source"
 	"github.com/stretchr/testify/require"
 
+	"github.com/hangxie/parquet-tools/cmd/cat"
+	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
 	pio "github.com/hangxie/parquet-tools/io"
+)
+
+const (
+	importEncryptionFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	importEncryptionColumnKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
 )
 
 type mockParquetFileWriter struct {
@@ -19,6 +26,17 @@ func (m *mockParquetFileWriter) Write(p []byte) (int, error) { return len(p), ni
 func (m *mockParquetFileWriter) Close() error                { return m.closeFunc() }
 func (m *mockParquetFileWriter) Create(_ string) (parquetSource.ParquetFileWriter, error) {
 	return nil, fmt.Errorf("not implemented")
+}
+
+func importTestCatCmd(uri string, option pio.ReadOption) cat.Cmd {
+	return cat.Cmd{
+		ReadOption:   option,
+		ReadPageSize: 1000,
+		SampleRatio:  1.0,
+		Format:       "json",
+		GeoFormat:    "geojson",
+		URI:          uri,
+	}
 }
 
 func TestCmd(t *testing.T) {
@@ -102,6 +120,306 @@ func TestCmd(t *testing.T) {
 				require.Equal(t, tc.rowCount, reader.GetNumRows())
 			})
 		}
+	})
+}
+
+func TestCmdEncryption(t *testing.T) {
+	source := filepath.Join("..", "..", "testdata", "csv.source")
+	schema := filepath.Join("..", "..", "testdata", "csv.schema")
+	tempDir := t.TempDir()
+
+	plainURI := filepath.Join(tempDir, "plain.parquet")
+	plainCmd := Cmd{
+		WriteOption: pio.WriteOption{
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+		},
+		Source: source,
+		Format: "csv",
+		Schema: schema,
+		URI:    plainURI,
+	}
+	require.NoError(t, plainCmd.Run())
+	wantOutput := testutils.CommandStdout(t, importTestCatCmd(plainURI, pio.ReadOption{}))
+
+	testCases := []struct {
+		name        string
+		writeOption pio.WriteOption
+		readOption  pio.ReadOption
+		footerMagic string
+	}{
+		{
+			name: "encrypted-footer",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  importEncryptionFooterKey,
+			},
+			readOption:  pio.ReadOption{FooterKey: importEncryptionFooterKey},
+			footerMagic: "PARE",
+		},
+		{
+			name: "encrypted-footer-ctr-algorithm",
+			writeOption: pio.WriteOption{
+				CompressionCodec:    "SNAPPY",
+				PageSize:            1024 * 1024,
+				RowGroupSize:        128 * 1024 * 1024,
+				WriterFooterKey:     importEncryptionFooterKey,
+				EncryptionAlgorithm: "AES-GCM-CTR-V1",
+			},
+			readOption:  pio.ReadOption{FooterKey: importEncryptionFooterKey},
+			footerMagic: "PARE",
+		},
+		{
+			name: "encrypted-footer-column-keys",
+			writeOption: pio.WriteOption{
+				CompressionCodec:    "SNAPPY",
+				PageSize:            1024 * 1024,
+				RowGroupSize:        128 * 1024 * 1024,
+				WriterFooterKey:     importEncryptionFooterKey,
+				WriterColumnKeys:    []string{"Bool=" + importEncryptionColumnKey},
+				DataPageVersion:     2,
+				EncryptionAlgorithm: "AES-GCM-V1",
+			},
+			readOption: pio.ReadOption{
+				FooterKey:  importEncryptionFooterKey,
+				ColumnKeys: []string{"Bool=" + importEncryptionColumnKey},
+			},
+			footerMagic: "PARE",
+		},
+		{
+			name: "plaintext-footer-column-keys",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  importEncryptionFooterKey,
+				WriterColumnKeys: []string{"Bool=" + importEncryptionColumnKey},
+				PlaintextFooter:  true,
+				DataPageVersion:  2,
+			},
+			readOption: pio.ReadOption{
+				FooterKey:  importEncryptionFooterKey,
+				ColumnKeys: []string{"Bool=" + importEncryptionColumnKey},
+			},
+			footerMagic: "PAR1",
+		},
+		{
+			name: "encrypted-footer-sentinel-column",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  importEncryptionFooterKey,
+				WriterColumnKeys: []string{"Bool=@footer-key"},
+			},
+			readOption:  pio.ReadOption{FooterKey: importEncryptionFooterKey},
+			footerMagic: "PARE",
+		},
+		{
+			name: "encrypted-footer-encrypt-all-columns",
+			writeOption: pio.WriteOption{
+				CompressionCodec:  "SNAPPY",
+				PageSize:          1024 * 1024,
+				RowGroupSize:      128 * 1024 * 1024,
+				WriterFooterKey:   importEncryptionFooterKey,
+				EncryptAllColumns: true,
+			},
+			readOption:  pio.ReadOption{FooterKey: importEncryptionFooterKey},
+			footerMagic: "PARE",
+		},
+		{
+			name: "plaintext-footer-encrypt-all-columns",
+			writeOption: pio.WriteOption{
+				CompressionCodec:  "SNAPPY",
+				PageSize:          1024 * 1024,
+				RowGroupSize:      128 * 1024 * 1024,
+				WriterFooterKey:   importEncryptionFooterKey,
+				EncryptAllColumns: true,
+				PlaintextFooter:   true,
+			},
+			readOption:  pio.ReadOption{FooterKey: importEncryptionFooterKey},
+			footerMagic: "PAR1",
+		},
+		{
+			name: "plaintext-footer-sentinel-column",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  importEncryptionFooterKey,
+				WriterColumnKeys: []string{"Bool=@footer-key"},
+				PlaintextFooter:  true,
+			},
+			readOption:  pio.ReadOption{FooterKey: importEncryptionFooterKey},
+			footerMagic: "PAR1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			uri := filepath.Join(tempDir, tc.name+".parquet")
+			cmd := Cmd{
+				WriteOption: tc.writeOption,
+				Source:      source,
+				Format:      "csv",
+				Schema:      schema,
+				URI:         uri,
+			}
+			require.NoError(t, cmd.Run())
+			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
+			require.Equal(t, wantOutput, testutils.CommandStdout(t, importTestCatCmd(uri, tc.readOption)))
+		})
+	}
+}
+
+func TestCmdEncryptionErrors(t *testing.T) {
+	tempDir := t.TempDir()
+
+	testCases := []struct {
+		name        string
+		writeOption pio.WriteOption
+		errMsg      string
+	}{
+		{
+			name: "missing-footer-key",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterColumnKeys: []string{"Bool=" + importEncryptionColumnKey},
+			},
+			errMsg: "--writer-footer-key is required",
+		},
+		{
+			name: "bad-base64",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  "not base64",
+			},
+			errMsg: "invalid base64 writer footer key",
+		},
+		{
+			name: "wrong-key-size",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  "MTIzNDU=",
+			},
+			errMsg: "writer footer key must be 16, 24, or 32 bytes",
+		},
+		{
+			name: "missing-column-key-path",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  importEncryptionFooterKey,
+				WriterColumnKeys: []string{"Missing=" + importEncryptionColumnKey},
+			},
+			errMsg: "writer column key path [Missing] not found in schema",
+		},
+		{
+			name: "duplicate-column-key-path",
+			writeOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				PageSize:         1024 * 1024,
+				RowGroupSize:     128 * 1024 * 1024,
+				WriterFooterKey:  importEncryptionFooterKey,
+				WriterColumnKeys: []string{
+					"Bool=" + importEncryptionColumnKey,
+					"Bool=" + importEncryptionColumnKey,
+				},
+			},
+			errMsg: "duplicate writer column key path [Bool]",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := Cmd{
+				WriteOption: tc.writeOption,
+				Source:      filepath.Join("..", "..", "testdata", "csv.source"),
+				Format:      "csv",
+				Schema:      filepath.Join("..", "..", "testdata", "csv.schema"),
+				URI:         filepath.Join(tempDir, tc.name+".parquet"),
+			}
+			err := cmd.Run()
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
+}
+
+// TestCmdEncryptionEncryptAllColumns proves that --encrypt-all-columns
+// actually encrypts unlisted columns. With --plaintext-footer the file's
+// footer can be read without keys, so the discriminator is whether reading
+// column data succeeds with no keys: without the flag, columns are plaintext
+// and the read succeeds; with the flag, columns are footer-key encrypted and
+// the read must fail.
+func TestCmdEncryptionEncryptAllColumns(t *testing.T) {
+	source := filepath.Join("..", "..", "testdata", "csv.source")
+	schema := filepath.Join("..", "..", "testdata", "csv.schema")
+	tempDir := t.TempDir()
+
+	runImport := func(t *testing.T, name string, option pio.WriteOption) string {
+		t.Helper()
+		option.CompressionCodec = "SNAPPY"
+		option.PageSize = 1024 * 1024
+		option.RowGroupSize = 128 * 1024 * 1024
+		uri := filepath.Join(tempDir, name+".parquet")
+		cmd := Cmd{
+			WriteOption: option,
+			Source:      source,
+			Format:      "csv",
+			Schema:      schema,
+			URI:         uri,
+		}
+		require.NoError(t, cmd.Run())
+		return uri
+	}
+
+	catNoKeysErr := func(t *testing.T, uri string) error {
+		t.Helper()
+		var err error
+		_, _ = testutils.CaptureStdoutStderr(func() {
+			err = importTestCatCmd(uri, pio.ReadOption{}).Run()
+		})
+		return err
+	}
+
+	t.Run("default-mixed-no-column-keys-allows-no-key-read", func(t *testing.T) {
+		uri := runImport(t, "default-mixed", pio.WriteOption{
+			WriterFooterKey: importEncryptionFooterKey,
+			PlaintextFooter: true,
+			WriterColumnKeys: []string{
+				// At least one encrypted column is required for --plaintext-footer.
+				// Use the sentinel so this test does not depend on a column key.
+				"Bool=@footer-key",
+			},
+		})
+		// All columns except Bool are plaintext; Bool is encrypted with the
+		// footer key. cat without keys must fail on Bool but the failure
+		// proves the unlisted columns are at least readable up to that point.
+		err := catNoKeysErr(t, uri)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "decryption key required")
+	})
+
+	t.Run("encrypt-all-columns-blocks-no-key-read", func(t *testing.T) {
+		uri := runImport(t, "encrypt-all", pio.WriteOption{
+			WriterFooterKey:   importEncryptionFooterKey,
+			EncryptAllColumns: true,
+			PlaintextFooter:   true,
+		})
+		err := catNoKeysErr(t, uri)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "decryption key required")
 	})
 }
 
