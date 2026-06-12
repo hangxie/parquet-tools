@@ -36,6 +36,8 @@ func TestBuildReaderOptions(t *testing.T) {
 		"column-key-empty-value":   {option: ReadOption{ColumnKeys: []string{"col.path="}}, errMsg: "invalid column key format"},
 		"column-key-invalid-key":   {option: ReadOption{ColumnKeys: []string{"col.path=!!!"}}, errMsg: "invalid base64 column key"},
 		"valid-footer-key-std":     {option: ReadOption{FooterKey: testFooterKey}},
+		"reject-url-safe-base64":   {option: ReadOption{FooterKey: "-_8="}, errMsg: "invalid base64 footer key"},
+		"reject-unpadded-base64":   {option: ReadOption{FooterKey: "MDEyMzQ1Njc4OTAxMjM0NQ"}, errMsg: "invalid base64 footer key"},
 		"valid-column-key":         {option: ReadOption{ColumnKeys: []string{"double_field=" + testDoubleFieldKey}}},
 		"multiple-column-keys": {
 			option: ReadOption{ColumnKeys: []string{
@@ -173,7 +175,7 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 		"encrypted-columns-wrong-column-key": {
 			uri:    encryptedColumnURI,
 			option: encryptedReadOptionWithColumnKey("double_field=" + testWrongKey),
-			errMsg: "decrypt",
+			errMsg: "decrypt AES-GCM module: cipher: message authentication failed",
 		},
 		"encrypted-columns-not-exists": {
 			uri:    encryptedColumnURI,
