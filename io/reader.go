@@ -35,18 +35,16 @@ type ReadOption struct {
 	AADPrefix              string            `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)." default:""`
 }
 
+// decodeBase64 accepts only standard base64 with padding (RFC 4648 §4).
+// URL-safe and unpadded variants are rejected so that sentinels like
+// "@footer-key" remain the only path to special-cased values and so that
+// inputs cannot be silently reinterpreted between encodings.
 func decodeBase64(s string) ([]byte, error) {
-	for _, enc := range []*base64.Encoding{
-		base64.StdEncoding,
-		base64.URLEncoding,
-		base64.RawStdEncoding,
-		base64.RawURLEncoding,
-	} {
-		if b, err := enc.DecodeString(s); err == nil {
-			return b, nil
-		}
+	b, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, fmt.Errorf("not valid base64")
 	}
-	return nil, fmt.Errorf("not valid base64")
+	return b, nil
 }
 
 func buildReaderOptions(option ReadOption) ([]reader.ReaderOption, error) {

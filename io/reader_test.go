@@ -36,7 +36,6 @@ func TestBuildReaderOptions(t *testing.T) {
 		"column-key-empty-value":   {option: ReadOption{ColumnKeys: []string{"col.path="}}, errMsg: "invalid column key format"},
 		"column-key-invalid-key":   {option: ReadOption{ColumnKeys: []string{"col.path=!!!"}}, errMsg: "invalid base64 column key"},
 		"valid-footer-key-std":     {option: ReadOption{FooterKey: testFooterKey}},
-		"valid-footer-key-url":     {option: ReadOption{FooterKey: "-_8"}},
 		"valid-column-key":         {option: ReadOption{ColumnKeys: []string{"double_field=" + testDoubleFieldKey}}},
 		"multiple-column-keys": {
 			option: ReadOption{ColumnKeys: []string{
@@ -176,11 +175,10 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 			option: encryptedReadOptionWithColumnKey("double_field=" + testWrongKey),
 			errMsg: "decrypt",
 		},
-		"encrypted-columns-extra-column-key": {
-			uri:      encryptedColumnURI,
-			option:   encryptedReadOptionWithColumnKey("Missing=" + testDoubleFieldKey),
-			readRows: true,
-			rowCount: 10,
+		"encrypted-columns-not-exists": {
+			uri:    encryptedColumnURI,
+			option: encryptedReadOptionWithColumnKey("Missing=" + testDoubleFieldKey),
+			errMsg: "does not match any schema column",
 		},
 		"encrypted-columns-duplicate-column-key": {
 			uri:      encryptedColumnURI,
