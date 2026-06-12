@@ -15,6 +15,10 @@ import (
 
 var stdCaptureMutex sync.Mutex
 
+type runnableCommand interface {
+	Run() error
+}
+
 // HasSameSchema compares the logical schema of two parquet files using structural
 // tree comparison. An optional CompareOption can be provided to control which
 // writer directives (encoding, compression, etc.) are included in the comparison;
@@ -69,6 +73,30 @@ func CaptureStdoutStderr(f func()) (string, string) {
 	os.Stderr = savedStderr
 
 	return string(stdout), string(stderr)
+}
+
+func CommandStdout(t *testing.T, cmd runnableCommand) string {
+	t.Helper()
+
+	stdout, _ := CaptureStdoutStderr(func() {
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+	})
+	return stdout
+}
+
+func ParquetFooterMagic(t *testing.T, fileName string) string {
+	t.Helper()
+
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		t.Fatal("cannot load parquet file:", fileName, "because of:", err.Error())
+	}
+	if len(data) < 4 {
+		t.Fatal("parquet file is too short:", fileName)
+	}
+	return string(data[len(data)-4:])
 }
 
 // LoadExpected
