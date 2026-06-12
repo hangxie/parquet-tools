@@ -30,7 +30,7 @@ type ReadOption struct {
 	HTTPIgnoreTLSError     bool              `help:"(HTTP and S3 URI) ignore TLS error." default:"false"`
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
-	FooterKey              string            `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first." default:""`
+	FooterKey              string            `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first." default:""`
 	ColumnKeys             []string          `name:"column-key" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
 	AADPrefix              string            `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)." default:""`
 }
