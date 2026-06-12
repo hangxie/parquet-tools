@@ -67,6 +67,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [HDFS File](#hdfs-file)
       - [HTTP Endpoint](#http-endpoint)
     - [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files)
+    - [Writing Encrypted Parquet Files](#writing-encrypted-parquet-files)
     - [File Format Options](#file-format-options)
       - [Compression Codecs](#compression-codecs)
       - [Compression Levels](#compression-levels)
@@ -488,7 +489,9 @@ Read commands support AES-GCM encrypted Parquet files with explicit base64-encod
 
 **Note on KMS:** KMS (Key Management Service) use cases are not directly supported. If your files are protected by a KMS, you must manually retrieve the key value from the KMS provider and provide it through the CLI parameters below.
 
-* `--footer-key`: AES-128 or AES-256 footer key.
+All supplied key and AAD values must be standard base64 with padding (RFC 4648 §4). URL-safe and unpadded variants are rejected.
+
+* `--footer-key`: AES-128, AES-192, or AES-256 footer key.
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
 * `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it.
 
@@ -513,6 +516,90 @@ These flags are available on `cat`, `schema`, `meta`, `size`, `row-count`, `insp
 
 > [!NOTE]
 > **Partial keys and plaintext-signed footers.** Files with a plaintext-signed footer (PAR1 with per-column encryption) expose structural metadata — row counts, sizes, schema, encodings, and `key_metadata` hints — without any keys. Commands that only read footer/column metadata (`schema`, `row-count`, `size`, `meta`, `inspect` at file or row-group level) succeed on such files even when some or all column keys are missing. Missing-key errors are deferred to the moment an encrypted column's data or page-level details are actually requested (e.g. `cat`, or `inspect --column-chunk N` on an encrypted column). Files with an encrypted footer (PARE) still require the footer key to read anything.
+
+### Writing Encrypted Parquet Files
+
+Writer-encryption flags are available on `import`, `transcode`, `split`, `merge`, and `retype`. They accept explicit base64-encoded AES keys; KMS and `key_metadata` resolution are not supported when writing, so provide the raw key values through CLI flags. For `split`, the same encryption settings apply to every output file.
+
+Command-line arguments can be visible in shell history and process listings. Avoid passing production key material directly on shared systems; use short-lived shells, clear shell history, and prefer local operational controls that limit process inspection.
+
+All writer keys must be standard base64 with padding (RFC 4648 §4) and must decode to 16 bytes (AES-128), 24 bytes (AES-192), or 32 bytes (AES-256). URL-safe and unpadded variants are rejected.
+
+`--writer-footer-key` is required for every encryption mode. It encrypts the footer; with `--plaintext-footer` it signs the footer with AES-GCM instead. It is also the key used for any column whose `--writer-column-key` directive selects the footer key, and for unlisted columns when `--encrypt-all-columns` is set.
+
+`--writer-column-key column.path=VALUE` selects per-column encryption for the listed column. `column.path` is the dotted file-schema path of a leaf column **without** the schema root (e.g. `Parent.Child`, not `parquet_go_root.Parent.Child`). `VALUE` is either a base64-encoded AES key (the column gets its own dedicated key) or the literal `@footer-key` (the column is encrypted with `--writer-footer-key`). The leading `@` is outside the base64 alphabet, so the sentinel cannot collide with a key value.
+
+By default, columns not listed in `--writer-column-key` are written as plaintext. Set `--encrypt-all-columns` to encrypt every leaf column not otherwise listed with `--writer-footer-key`.
+
+Supported write scenarios:
+
+| Scenario | Flags | Result |
+| -------- | ----- | ------ |
+| Encrypted footer, all columns plaintext | `--writer-footer-key` | Encrypted `PARE` footer; every column ships plaintext (the footer key is needed to read footer metadata but not column data) |
+| Encrypted footer, some columns with dedicated keys | `--writer-footer-key`, one or more `--writer-column-key column.path=base64key` | Encrypted `PARE` footer; listed columns use their dedicated keys; unlisted columns ship plaintext |
+| Encrypted footer, some columns use the footer key | `--writer-footer-key`, one or more `--writer-column-key column.path=@footer-key` | Encrypted `PARE` footer; listed columns are encrypted with the footer key; unlisted columns ship plaintext |
+| Encrypted footer, every column encrypted | `--writer-footer-key`, `--encrypt-all-columns` | Encrypted `PARE` footer; every column is encrypted with the footer key |
+| Encrypted footer, mixed dedicated keys + footer-key fill-in | `--writer-footer-key`, `--writer-column-key column.path=base64key` (one or more), `--encrypt-all-columns` | Encrypted `PARE` footer; listed columns use their dedicated keys; unlisted columns use the footer key |
+| Plaintext footer, some columns encrypted | `--writer-footer-key`, one or more `--writer-column-key column.path=base64key` (or `=@footer-key`), `--plaintext-footer` | Plaintext `PAR1` footer signed by the footer key; listed columns are encrypted; unlisted columns ship plaintext |
+| Plaintext footer, every column encrypted | `--writer-footer-key`, `--encrypt-all-columns`, `--plaintext-footer` | Plaintext `PAR1` footer signed by the footer key; every column is encrypted with the footer key |
+| Plaintext footer, no columns encrypted (sign-only) | `--writer-footer-key`, `--plaintext-footer` | Plaintext `PAR1` footer signed by the footer key; every column ships plaintext. Provides footer integrity (tamper detection of schema, statistics, offsets) without confidentiality |
+
+> [!NOTE]
+> **Default treatment of unlisted columns is plaintext.** This mirrors the underlying parquet-go writer default. If you want every column encrypted with the footer key (the previous all-or-nothing behavior), add `--encrypt-all-columns`. `--plaintext-footer` no longer implies any column encryption on its own; without column flags it produces a sign-only file where the footer signature still proves the schema and statistics have not been altered.
+
+> [!NOTE]
+> **Encrypted footer with all columns plaintext (`--writer-footer-key` alone) is permitted by the Parquet spec, but does not really make sense (personal opinion).** The footer key is required to read the footer metadata, yet the column data itself is exposed in the clear — anyone with file access can scan column values without ever obtaining the footer key. If your goal is to protect data, pair `--writer-footer-key` with `--writer-column-key` and/or `--encrypt-all-columns`.
+
+Examples:
+
+```bash
+# Encrypted footer; every column ships plaintext.
+$ parquet-tools import -f csv \
+    -s testdata/csv.source \
+    -m testdata/csv.schema \
+    --writer-footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    /tmp/encrypted-footer.parquet
+
+# Encrypted footer; Bool gets its own key, every other column ships plaintext.
+$ parquet-tools import -f csv \
+    -s testdata/csv.source \
+    -m testdata/csv.schema \
+    --writer-footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --writer-column-key Bool=MTIzNDU2Nzg5MDEyMzQ1MA== \
+    /tmp/mixed-columns.parquet
+
+# Encrypted footer; every column encrypted with the footer key.
+$ parquet-tools import -f csv \
+    -s testdata/csv.source \
+    -m testdata/csv.schema \
+    --writer-footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --encrypt-all-columns \
+    /tmp/encrypted-all.parquet
+
+# Plaintext signed footer; shoe_name is encrypted with the footer key; other
+# columns ship plaintext.
+$ parquet-tools transcode \
+    -s testdata/good.parquet \
+    --writer-footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --writer-column-key shoe_name=@footer-key \
+    --plaintext-footer \
+    /tmp/plaintext-footer.parquet
+```
+
+`--encryption-algorithm` controls the Parquet modular encryption algorithm used when `--writer-footer-key` is set. It does not enable encryption on its own: with no other encryption flag the file is written unencrypted, and the other encryption flags (`--plaintext-footer`, `--encrypt-all-columns`, `--writer-column-key`) all require `--writer-footer-key`.
+
+* `AES-GCM-V1` (default): authenticates every encrypted module.
+* `AES-GCM-CTR-V1`: uses AES-CTR for page bodies. This has lower overhead, but page body tampering is not detected by the cipher.
+
+To transcode an encrypted source and write it with different output keys, combine reader and writer flags:
+
+```bash
+$ parquet-tools transcode \
+    -s encrypted-source.parquet \
+    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --writer-footer-key YWJjZGVmMDEyMzQ1Njc4OQ== \
+    /tmp/re-encrypted.parquet
+```
 
 ### File Format Options
 
@@ -911,7 +998,7 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 `import` command creates a parquet file based on data in other formats. The target file can be on local file system or cloud storage object like S3, you need to have permission to write to target location. Existing file or cloud storage object will be overwritten.
 
-The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify the default compression codec for columns without a schema-level compression codec; the default is "SNAPPY". See [Compression Codecs](#compression-codecs) for available options. `--compression-level` sets file-level codec-specific compression levels; see [Compression Levels](#compression-levels). You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
+The command takes 3 parameters, `--source` tells which file (file system only) to load source data, `--format` tells the format of the source data file, it can be `json`, `jsonl` or `csv`, `--schema` points to the file that holds schema. Optionally, you can use `--compression` to specify the default compression codec for columns without a schema-level compression codec; the default is "SNAPPY". See [Compression Codecs](#compression-codecs) for available options. `--compression-level` sets file-level codec-specific compression levels; see [Compression Levels](#compression-levels). You can also use `--data-page-version` to specify the data page format version, see [Data Page Version](#data-page-version) for details. Writer encryption flags are described in [Writing Encrypted Parquet Files](#writing-encrypted-parquet-files). If CSV file contains a header line, you can use `--skip-header` to skip the first line of CSV file.
 
 Each source data file format has its own dedicated schema format:
 
@@ -1513,7 +1600,7 @@ $ parquet-tools row-count 1.parquet
 
 `transcode` command converts a Parquet file to a new Parquet file with the same data but different encoding settings. This is useful for changing compression algorithms, optimizing file size, upgrading page formats, controlling statistics, or preparing files for systems with specific requirements.
 
-The command reads data from a source Parquet file and writes it to a new output file with the specified encoding parameters. All data is preserved exactly - only the storage encoding changes.
+The command reads data from a source Parquet file and writes it to a new output file with the specified encoding parameters. All data is preserved exactly - only the storage encoding changes. Writer encryption flags are described in [Writing Encrypted Parquet Files](#writing-encrypted-parquet-files). Reader encryption flags such as `--footer-key` and writer encryption flags such as `--writer-footer-key` can be combined to read encrypted input and write encrypted output with different keys.
 
 > [!NOTE]
 > `transcode` reads page-level encoding information from the source file to preserve encodings accurately. For remote files (S3, GCS, HTTP), this requires additional I/O to read page headers for each column. If you only need to inspect the schema structure, use `schema --skip-page-encoding` instead for faster results.

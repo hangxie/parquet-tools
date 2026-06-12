@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/posener/complete"
@@ -19,6 +20,7 @@ import (
 	"github.com/hangxie/parquet-tools/cmd/split"
 	"github.com/hangxie/parquet-tools/cmd/transcode"
 	"github.com/hangxie/parquet-tools/cmd/version"
+	pio "github.com/hangxie/parquet-tools/io"
 )
 
 var cli struct {
@@ -43,6 +45,7 @@ func main() {
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 		kong.Description("A utility to inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md"),
+		kong.Vars{"writer_encryption_algorithms": strings.Join(pio.WriterEncryptionAlgorithms, ",")},
 	)
 	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
 
