@@ -16,7 +16,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/willabides/kongplete v0.4.0
 	go.mongodb.org/mongo-driver/v2 v2.6.0
-	golang.org/x/sync v0.20.0
+	golang.org/x/sync v0.21.0
 	google.golang.org/api v0.283.0
 )
 
