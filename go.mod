@@ -7,7 +7,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.7.0
 	github.com/alecthomas/kong v1.15.0
 	github.com/apache/thrift v0.23.1-0.20260429210525-1ebdaef5dae4
-	github.com/aws/aws-sdk-go-v2 v1.41.12
+	github.com/aws/aws-sdk-go-v2 v1.42.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.23
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.103.2
 	github.com/google/uuid v1.6.0
