@@ -9,7 +9,7 @@ require (
 	github.com/apache/thrift v0.23.1-0.20260429210525-1ebdaef5dae4
 	github.com/aws/aws-sdk-go-v2 v1.42.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.25
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.103.3
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.0
 	github.com/google/uuid v1.6.0
 	github.com/hangxie/parquet-go/v3 v3.2.1
 	github.com/posener/complete v1.2.3
