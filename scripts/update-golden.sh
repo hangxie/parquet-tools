@@ -144,6 +144,9 @@ $PT cat --format jsonl --limit 1 "$TESTDATA_DIR/high-compression.parquet" | form
 # cat-unknown-type.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$GOLDEN_DIR/cat-unknown-type.jsonl"
 
+# cat-unknown-type-raw.jsonl
+$PT cat --format jsonl --raw-unknown "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$GOLDEN_DIR/cat-unknown-type-raw.jsonl"
+
 # empty-json.txt
 $PT cat --format json "$TESTDATA_DIR/empty.parquet" > "$GOLDEN_DIR/empty-json.txt"
 

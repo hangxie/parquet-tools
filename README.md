@@ -90,6 +90,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Sampling](#sampling)
       - [Compound Rule](#compound-rule)
       - [Output Format](#output-format)
+      - [UNKNOWN Logical Type](#unknown-logical-type)
     - [import Command](#import-command)
       - [Import from CSV](#import-from-csv)
       - [Import from JSON](#import-from-json)
@@ -992,6 +993,23 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 {"shoe_brand":"nike","shoe_name":"air_griffey"}
 {"shoe_brand":"fila","shoe_name":"grant_hill_2"}
 {"shoe_brand":"steph_curry","shoe_name":"curry7"}
+```
+
+#### UNKNOWN Logical Type
+
+The [Parquet UNKNOWN logical type](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#unknown-null) marks a column as always-null regardless of the physical values stored in the file. By default, `cat` honors the spec and outputs `null` for every value in such a column.
+
+If you need to inspect the raw physical value actually written into the file (useful when debugging non-conformant writers), pass `--raw-unknown`:
+
+```bash
+$ parquet-tools cat --format jsonl testdata/unknown-type.parquet
+{"id":1,"name":"alice","unknown_col":null}
+{"id":2,"name":"bob","unknown_col":null}
+{"id":3,"name":"charlie","unknown_col":null}
+$ parquet-tools cat --format jsonl --raw-unknown testdata/unknown-type.parquet
+{"id":1,"name":"alice","unknown_col":null}
+{"id":2,"name":"bob","unknown_col":null}
+{"id":3,"name":"charlie","unknown_col":30}
 ```
 
 ### import Command

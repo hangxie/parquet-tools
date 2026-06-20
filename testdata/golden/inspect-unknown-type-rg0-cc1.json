@@ -1,57 +1,29 @@
 {
   "columnChunk": {
     "columnChunkIndex": 1,
-    "compressedSize": 87,
+    "compressedSize": 115,
     "compressionCodec": "SNAPPY",
-    "dataPageOffset": 183,
+    "dataPageOffset": 175,
     "encodings": [
       "PLAIN",
       "RLE"
     ],
     "logicalType": "logicaltype=UNKNOWN",
-    "numValues": 5,
+    "numValues": 3,
     "pathInSchema": [
       "unknown_col"
     ],
     "rowGroupIndex": 0,
     "statistics": {
-      "nullCount": 5
+      "nullCount": 2
     },
     "type": "INT32",
-    "uncompressedSize": 81
+    "uncompressedSize": 109
   },
   "pages": [
     {
       "index": 0,
-      "offset": 183,
-      "type": "DATA_PAGE",
-      "compressedSize": 8,
-      "uncompressedSize": 6,
-      "numValues": 2,
-      "encoding": "PLAIN",
-      "definitionLevelEncoding": "RLE",
-      "repetitionLevelEncoding": "RLE",
-      "statistics": {
-        "nullCount": 2
-      }
-    },
-    {
-      "index": 1,
-      "offset": 212,
-      "type": "DATA_PAGE",
-      "compressedSize": 8,
-      "uncompressedSize": 6,
-      "numValues": 2,
-      "encoding": "PLAIN",
-      "definitionLevelEncoding": "RLE",
-      "repetitionLevelEncoding": "RLE",
-      "statistics": {
-        "nullCount": 2
-      }
-    },
-    {
-      "index": 2,
-      "offset": 241,
+      "offset": 175,
       "type": "DATA_PAGE",
       "compressedSize": 8,
       "uncompressedSize": 6,
@@ -61,6 +33,34 @@
       "repetitionLevelEncoding": "RLE",
       "statistics": {
         "nullCount": 1
+      }
+    },
+    {
+      "index": 1,
+      "offset": 204,
+      "type": "DATA_PAGE",
+      "compressedSize": 8,
+      "uncompressedSize": 6,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 1
+      }
+    },
+    {
+      "index": 2,
+      "offset": 233,
+      "type": "DATA_PAGE",
+      "compressedSize": 12,
+      "uncompressedSize": 10,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 0
       }
     }
   ]
