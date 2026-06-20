@@ -28,6 +28,7 @@ type Cmd struct {
 	GeoFormat    string  `help:"experimental, output format (geojson/hex/base64) for geospatial fields" enum:"geojson,hex,base64" default:"geojson"`
 	Limit        uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
+	RawUnknown   bool    `help:"output actual physical value for UNKNOWN logical type columns instead of null" name:"raw-unknown" default:"false"`
 	ReadPageSize int     `help:"Page size to read from Parquet." default:"1000"`
 	SampleRatio  float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
@@ -136,7 +137,32 @@ func mapToStrList(flatValues map[string]any, fieldList []string) []string {
 	return values
 }
 
-func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string) error {
+// unknownColumnNames returns the external names of all leaf nodes whose
+// logical type is UNKNOWN. These columns must be nulled out by default.
+func unknownColumnNames(root *pschema.SchemaNode) map[string]struct{} {
+	cols := map[string]struct{}{}
+	for _, child := range root.Children {
+		if child.LogicalType != nil && child.LogicalType.IsSetUNKNOWN() {
+			cols[child.Name] = struct{}{}
+		}
+	}
+	return cols
+}
+
+func nullifyUnknownCols(rowStruct any, unknownCols map[string]struct{}) {
+	if len(unknownCols) == 0 {
+		return
+	}
+	m, ok := rowStruct.(map[string]any)
+	if !ok {
+		return
+	}
+	for col := range unknownCols {
+		m[col] = nil
+	}
+}
+
+func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string, unknownCols map[string]struct{}) error {
 	var geoMode types.GeospatialJSONMode
 	switch c.GeoFormat {
 	case "hex":
@@ -165,6 +191,9 @@ func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan stri
 			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler, geoOpt)
 			if err != nil {
 				return err
+			}
+			if !c.RawUnknown {
+				nullifyUnknownCols(rowStruct, unknownCols)
 			}
 
 			// Format the row as a string based on the format
@@ -228,6 +257,12 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 		return err
 	}
 
+	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{})
+	if err != nil {
+		return err
+	}
+	unknownCols := unknownColumnNames(schemaRoot)
+
 	// skip rows
 	if err := fileReader.SkipRows(c.Skip); err != nil {
 		return err
@@ -263,7 +298,7 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 	for range concurrency {
 		g.Go(func() error {
 			defer encodersWg.Done()
-			return c.encoder(gctx, rowChan, outputChan, fileReader.SchemaHandler, fieldList)
+			return c.encoder(gctx, rowChan, outputChan, fileReader.SchemaHandler, fieldList, unknownCols)
 		})
 	}
 

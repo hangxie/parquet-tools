@@ -11,5 +11,5 @@
 {
   "id": 3,
   "name": "charlie",
-  "unknown_col": null
+  "unknown_col": 30
 }

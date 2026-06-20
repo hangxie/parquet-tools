@@ -103,7 +103,7 @@ func TestCmd(t *testing.T) {
 			"csv-w-header":  {Cmd{WriteOption: wOpt, Source: "csv-with-header.source", Format: "csv", Schema: "csv.schema", SkipHeader: true, URI: ""}, 10},
 			"json":          {Cmd{WriteOption: wOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""}, 1},
 			"jsonl":         {Cmd{WriteOption: wOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""}, 10},
-			"json-unknown":  {Cmd{WriteOption: wOpt, Source: "unknown-type.source", Format: "json", Schema: "unknown-type.schema", SkipHeader: false, URI: ""}, 3},
+			"json-unknown":  {Cmd{WriteOption: wOpt, Source: "unknown-type-json.source", Format: "json", Schema: "unknown-type.schema", SkipHeader: false, URI: ""}, 3},
 		}
 
 		tempDir := t.TempDir()
