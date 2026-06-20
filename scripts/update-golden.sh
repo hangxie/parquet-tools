@@ -141,6 +141,9 @@ $PT cat --format jsonl "$TESTDATA_DIR/dict-page.parquet" | format_jsonl > "$GOLD
 # cat-high-compression.jsonl
 $PT cat --format jsonl --limit 1 "$TESTDATA_DIR/high-compression.parquet" | format_jsonl > "$GOLDEN_DIR/cat-high-compression.jsonl"
 
+# cat-unknown-type.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$GOLDEN_DIR/cat-unknown-type.jsonl"
+
 # empty-json.txt
 $PT cat --format json "$TESTDATA_DIR/empty.parquet" > "$GOLDEN_DIR/empty-json.txt"
 
@@ -378,6 +381,12 @@ $PT inspect --row-group 0 --column-chunk 0 --page 5 "$TESTDATA_DIR/row-group.par
 
 # inspect-crc32-rg0-cc0-pg0
 $PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/crc32.parquet" | format_json > "$GOLDEN_DIR/inspect-crc32-rg0-cc0-pg0.json"
+
+# inspect-unknown-type-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/unknown-type.parquet" | format_json > "$GOLDEN_DIR/inspect-unknown-type-rg0.json"
+
+# inspect-unknown-type-rg0-cc1.json
+$PT inspect --row-group 0 --column-chunk 1 "$TESTDATA_DIR/unknown-type.parquet" | format_json > "$GOLDEN_DIR/inspect-unknown-type-rg0-cc1.json"
 
 # ============================================================================
 # split/merge command golden files (these use cat to verify output)

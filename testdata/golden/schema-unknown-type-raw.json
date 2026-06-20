@@ -1,34 +1,46 @@
 {
   "repetition_type": "REQUIRED",
-  "name": "schema",
+  "name": "parquet_go_root",
   "num_children": 3,
   "children": [
     {
       "type": "INT32",
+      "type_length": 0,
       "repetition_type": "OPTIONAL",
       "name": "id",
-      "encoding": "RLE_DICTIONARY",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
+      "encoding": "PLAIN",
       "compression_codec": "SNAPPY"
     },
     {
       "type": "INT32",
+      "type_length": 0,
       "repetition_type": "OPTIONAL",
       "name": "unknown_col",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
       "logicalType": {
         "UNKNOWN": {}
       },
-      "encoding": "RLE_DICTIONARY",
+      "encoding": "PLAIN",
       "compression_codec": "SNAPPY"
     },
     {
       "type": "BYTE_ARRAY",
+      "type_length": 0,
       "repetition_type": "OPTIONAL",
       "name": "name",
       "converted_type": "UTF8",
+      "scale": 0,
+      "precision": 0,
+      "field_id": 0,
       "logicalType": {
         "STRING": {}
       },
-      "encoding": "RLE_DICTIONARY",
+      "encoding": "PLAIN",
       "compression_codec": "SNAPPY"
     }
   ]

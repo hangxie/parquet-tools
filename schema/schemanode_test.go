@@ -1940,6 +1940,25 @@ func TestMarkUndefinedSortOrder(t *testing.T) {
 		require.True(t, child.UndefinedSortOrder)
 		require.True(t, grandchild.UndefinedSortOrder)
 	})
+
+	t.Run("unknown marked", func(t *testing.T) {
+		node := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:        "unknown_col",
+				Type:        parquet.TypePtr(parquet.Type_INT32),
+				LogicalType: &parquet.LogicalType{UNKNOWN: &parquet.NullType{}},
+			},
+		}
+		root := &SchemaNode{
+			SchemaElement: parquet.SchemaElement{Name: "root"},
+			Children:      []*SchemaNode{node},
+		}
+
+		markUndefinedSortOrder(root)
+
+		require.True(t, node.UndefinedSortOrder)
+		require.False(t, root.UndefinedSortOrder)
+	})
 }
 
 func TestGetTagMapEdgeCases(t *testing.T) {

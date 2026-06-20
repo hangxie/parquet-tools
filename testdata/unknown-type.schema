@@ -1,0 +1,14 @@
+{
+  "Tag": "name=parquet-go-root",
+  "Fields": [
+    {
+      "Tag": "name=id, type=INT32, repetitiontype=OPTIONAL"
+    },
+    {
+      "Tag": "name=unknown_col, type=INT32, logicaltype=UNKNOWN, repetitiontype=OPTIONAL"
+    },
+    {
+      "Tag": "name=name, type=BYTE_ARRAY, logicaltype=STRING, repetitiontype=OPTIONAL"
+    }
+  ]
+}

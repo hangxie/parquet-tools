@@ -334,7 +334,7 @@ func populateLeafMetadata(root *SchemaNode, encodingMap, compressionCodecMap map
 //   - VARIANT: a STRUCT whose logical type is on the parent, so all descendants are marked
 func markUndefinedSortOrder(node *SchemaNode) {
 	if node.LogicalType != nil {
-		if node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY() {
+		if node.LogicalType.IsSetGEOMETRY() || node.LogicalType.IsSetGEOGRAPHY() || node.LogicalType.IsSetUNKNOWN() {
 			node.UndefinedSortOrder = true
 			return
 		}

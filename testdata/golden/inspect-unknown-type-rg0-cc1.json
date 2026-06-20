@@ -1,0 +1,67 @@
+{
+  "columnChunk": {
+    "columnChunkIndex": 1,
+    "compressedSize": 87,
+    "compressionCodec": "SNAPPY",
+    "dataPageOffset": 183,
+    "encodings": [
+      "PLAIN",
+      "RLE"
+    ],
+    "logicalType": "logicaltype=UNKNOWN",
+    "numValues": 5,
+    "pathInSchema": [
+      "unknown_col"
+    ],
+    "rowGroupIndex": 0,
+    "statistics": {
+      "nullCount": 5
+    },
+    "type": "INT32",
+    "uncompressedSize": 81
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 183,
+      "type": "DATA_PAGE",
+      "compressedSize": 8,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 2
+      }
+    },
+    {
+      "index": 1,
+      "offset": 212,
+      "type": "DATA_PAGE",
+      "compressedSize": 8,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 2
+      }
+    },
+    {
+      "index": 2,
+      "offset": 241,
+      "type": "DATA_PAGE",
+      "compressedSize": 8,
+      "uncompressedSize": 6,
+      "numValues": 1,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "nullCount": 1
+      }
+    }
+  ]
+}

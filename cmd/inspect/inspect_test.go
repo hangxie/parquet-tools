@@ -54,6 +54,7 @@ func TestInspect(t *testing.T) {
 		"row-group/geospatial":                    {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet", RowGroup: new(0)}, golden: "inspect-geospatial-rg0.json"},
 		"row-group/nil-statistics":                {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: new(0)}, golden: "inspect-nil-statistics-rg0.json"},
 		"row-group/all-types":                     {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0)}, golden: "inspect-all-types-rg0.json"},
+		"row-group/unknown-type":                  {cmd: Cmd{ReadOption: rOpt, URI: "unknown-type.parquet", RowGroup: new(0)}, golden: "inspect-unknown-type-rg0.json"},
 		"row-group/bloom-filter":                  {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0)}, golden: "inspect-bloom-filter-rg0.json"},
 		// column chunk level
 		"column-chunk/good-col-0":                {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-good-rg0-cc0.json"},
@@ -62,6 +63,7 @@ func TestInspect(t *testing.T) {
 		"column-chunk/encrypted-columns-no-key":  {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)}, errMsg: "decryption key required for column schema.float_field"},
 		"column-chunk/dict-page-col-0":           {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-dict-page-rg0-cc0.json"},
 		"column-chunk/all-types-interval":        {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0), ColumnChunk: new(39)}, golden: "inspect-all-types-rg0-cc39.json"},
+		"column-chunk/unknown-type-col-1":        {cmd: Cmd{ReadOption: rOpt, URI: "unknown-type.parquet", RowGroup: new(0), ColumnChunk: new(1)}, golden: "inspect-unknown-type-rg0-cc1.json"},
 		"column-chunk/bloom-filter-col-0":        {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-bloom-filter-rg0-cc0.json"},
 		"column-chunk/negative-column-index":     {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1)}, errMsg: "column chunk index -1 out of range"},
 		"column-chunk/out-of-range-column":       {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(999)}, errMsg: "column chunk index 999 out of range"},

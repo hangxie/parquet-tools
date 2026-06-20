@@ -1,0 +1,71 @@
+{
+  "columnChunks": [
+    {
+      "compressedSize": 179,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 0,
+      "numValues": 5,
+      "pathInSchema": [
+        "id"
+      ],
+      "statistics": {
+        "maxValue": 5,
+        "minValue": 1,
+        "nullCount": 0
+      },
+      "type": "INT32",
+      "uncompressedSize": 173
+    },
+    {
+      "compressedSize": 87,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 1,
+      "logicalType": "logicaltype=UNKNOWN",
+      "numValues": 5,
+      "pathInSchema": [
+        "unknown_col"
+      ],
+      "statistics": {
+        "nullCount": 5
+      },
+      "type": "INT32",
+      "uncompressedSize": 81
+    },
+    {
+      "compressedSize": 206,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=UTF8",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 2,
+      "logicalType": "logicaltype=STRING",
+      "numValues": 5,
+      "pathInSchema": [
+        "name"
+      ],
+      "statistics": {
+        "maxValue": "eve",
+        "minValue": "alice",
+        "nullCount": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressedSize": 200
+    }
+  ],
+  "rowGroup": {
+    "index": 0,
+    "numColumns": 3,
+    "numRows": 5,
+    "totalByteSize": 454
+  }
+}
