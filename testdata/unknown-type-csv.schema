@@ -1,0 +1,3 @@
+name=id, type=INT32, repetitiontype=OPTIONAL
+name=unknown_col, type=INT32, logicaltype=UNKNOWN, repetitiontype=OPTIONAL
+name=name, type=BYTE_ARRAY, logicaltype=STRING, repetitiontype=OPTIONAL

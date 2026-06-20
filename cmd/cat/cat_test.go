@@ -73,6 +73,7 @@ func TestCmd(t *testing.T) {
 		"multi-row-groups":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"}, golden: "cat-row-group.jsonl"},
 		"dict-page":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "dict-page.parquet"}, golden: "cat-dict-page.jsonl"},
 		"high-compression":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"}, golden: "cat-high-compression.jsonl"},
+		"unknown-type":       {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet"}, golden: "cat-unknown-type.jsonl"},
 	}
 
 	for name, tc := range testCases {

@@ -76,6 +76,7 @@ func TestCmd(t *testing.T) {
 			"jsonl-source":          {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "invalid JSON string:"},
 			"jsonl-target":          {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "s3://target"}, "failed to close Parquet file"},
 			"jsonl-schema-mismatch": {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "failed to close Parquet writer"},
+			"csv-unknown-not-nil":   {Cmd{WriteOption: wOpt, Source: "../../testdata/unknown-type-bad.csv", Format: "csv", Schema: "../../testdata/unknown-type-csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "UNKNOWN column"},
 		}
 
 		for name, tc := range testCases {
@@ -102,6 +103,7 @@ func TestCmd(t *testing.T) {
 			"csv-w-header":  {Cmd{WriteOption: wOpt, Source: "csv-with-header.source", Format: "csv", Schema: "csv.schema", SkipHeader: true, URI: ""}, 10},
 			"json":          {Cmd{WriteOption: wOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""}, 1},
 			"jsonl":         {Cmd{WriteOption: wOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""}, 10},
+			"json-unknown":  {Cmd{WriteOption: wOpt, Source: "unknown-type.source", Format: "json", Schema: "unknown-type.schema", SkipHeader: false, URI: ""}, 3},
 		}
 
 		tempDir := t.TempDir()
