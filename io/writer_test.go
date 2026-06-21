@@ -460,6 +460,30 @@ func TestNewCSVWriter(t *testing.T) {
 			[]string{"name=Id, type=INT64"},
 			"",
 		},
+		"invalid-schema-decimal-float": {
+			wOpt,
+			tempFile,
+			[]string{"name=val, type=FLOAT, convertedtype=DECIMAL, scale=2, precision=9"},
+			"LogicalType DECIMAL can only be used",
+		},
+		"invalid-schema-date-int64": {
+			wOpt,
+			tempFile,
+			[]string{"name=val, type=INT64, logicaltype=DATE"},
+			"LogicalType DATE can only be used with INT32",
+		},
+		"invalid-schema-timestamp-int32": {
+			wOpt,
+			tempFile,
+			[]string{"name=val, type=INT32, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"},
+			"LogicalType TIMESTAMP can only be used with INT64",
+		},
+		"invalid-schema-float16-byte-array": {
+			wOpt,
+			tempFile,
+			[]string{"name=val, type=BYTE_ARRAY, logicaltype=FLOAT16"},
+			"LogicalType FLOAT16 can only be used with FIXED_LEN_BYTE_ARRAY",
+		},
 		"column-key-parse-error": {
 			WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
@@ -753,6 +777,30 @@ func TestNewGenericWriter(t *testing.T) {
 			WriteOption{CompressionCodec: "GZIP"},
 			schema,
 			"",
+		},
+		"schema-decimal-float": {
+			tempFile,
+			WriteOption{},
+			`{"Tag":"name=root","Fields":[{"Tag":"name=val, type=FLOAT, convertedtype=DECIMAL, scale=2, precision=9"}]}`,
+			"LogicalType DECIMAL can only be used",
+		},
+		"schema-date-int64": {
+			tempFile,
+			WriteOption{},
+			`{"Tag":"name=root","Fields":[{"Tag":"name=val, type=INT64, logicaltype=DATE"}]}`,
+			"LogicalType DATE can only be used with INT32",
+		},
+		"schema-timestamp-int32": {
+			tempFile,
+			WriteOption{},
+			`{"Tag":"name=root","Fields":[{"Tag":"name=val, type=INT32, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"}]}`,
+			"LogicalType TIMESTAMP can only be used with INT64",
+		},
+		"schema-float16-byte-array": {
+			tempFile,
+			WriteOption{},
+			`{"Tag":"name=root","Fields":[{"Tag":"name=val, type=BYTE_ARRAY, logicaltype=FLOAT16"}]}`,
+			"LogicalType FLOAT16 can only be used with FIXED_LEN_BYTE_ARRAY",
 		},
 		"column-key-parse-error": {
 			tempFile,

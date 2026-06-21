@@ -1,0 +1,8 @@
+{
+  "Tag": "name=parquet-go-root",
+  "Fields": [
+    {
+      "Tag": "name=val, type=FLOAT, convertedtype=DECIMAL, scale=2, precision=9"
+    }
+  ]
+}

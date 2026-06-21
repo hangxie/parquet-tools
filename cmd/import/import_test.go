@@ -152,6 +152,18 @@ func TestCmd(t *testing.T) {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/unknown-type-bad.csv", Format: "csv", Schema: "../../testdata/unknown-type-csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
 				"UNKNOWN column",
 			},
+			"csv-invalid-logical-type": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/invalid-logical-type.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"LogicalType DECIMAL can only be used",
+			},
+			"json-invalid-logical-type": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/invalid-logical-type-json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"LogicalType DECIMAL can only be used",
+			},
+			"jsonl-invalid-logical-type": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/invalid-logical-type-json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"LogicalType DECIMAL can only be used",
+			},
 		}
 
 		for name, tc := range testCases {
