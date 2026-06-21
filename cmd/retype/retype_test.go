@@ -26,11 +26,26 @@ func TestCmd(t *testing.T) {
 			cmd    Cmd
 			errMsg string
 		}{
-			"pagesize-too-small":  {Cmd{ReadOption: rOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"}, "invalid read page size"},
-			"source-non-existent": {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
-			"source-not-parquet":  {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
-			"target-file":         {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
-			"source-schema-error": {Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/ARROW-GH-41317.parquet", URI: "dummy"}, "failed to build encoding map"},
+			"pagesize-too-small": {
+				Cmd{ReadOption: rOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"},
+				"invalid read page size",
+			},
+			"source-non-existent": {
+				Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"},
+				"no such file or directory",
+			},
+			"source-not-parquet": {
+				Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"},
+				"failed to read from",
+			},
+			"target-file": {
+				Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"},
+				"unable to parse file location",
+			},
+			"source-schema-error": {
+				Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/ARROW-GH-41317.parquet", URI: "dummy"},
+				"failed to build encoding map",
+			},
 		}
 
 		for name, tc := range testCases {

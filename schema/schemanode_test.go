@@ -407,10 +407,22 @@ func TestTimeUnitToTag(t *testing.T) {
 		unit    parquet.TimeUnit
 		unitTag string
 	}{
-		"empty-unit": {parquet.TimeUnit{}, "UNKNOWN_UNIT"},
-		"nanos":      {parquet.TimeUnit{NANOS: &parquet.NanoSeconds{}}, "NANOS"},
-		"micros":     {parquet.TimeUnit{MICROS: &parquet.MicroSeconds{}}, "MICROS"},
-		"millis":     {parquet.TimeUnit{MILLIS: &parquet.MilliSeconds{}}, "MILLIS"},
+		"empty-unit": {
+			parquet.TimeUnit{},
+			"UNKNOWN_UNIT",
+		},
+		"nanos": {
+			parquet.TimeUnit{NANOS: &parquet.NanoSeconds{}},
+			"NANOS",
+		},
+		"micros": {
+			parquet.TimeUnit{MICROS: &parquet.MicroSeconds{}},
+			"MICROS",
+		},
+		"millis": {
+			parquet.TimeUnit{MILLIS: &parquet.MilliSeconds{}},
+			"MILLIS",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -1757,7 +1769,10 @@ func TestPopulateLeafMetadata(t *testing.T) {
 			ExNamePath:    []string{"root"},
 		}
 		bfMap := map[string]bloomFilterInfo{
-			"col1": {Enabled: true, Size: 0},
+			"col1": {
+				Enabled: true,
+				Size:    0,
+			},
 		}
 		populateLeafMetadata(root, nil, nil, bfMap)
 		require.Equal(t, "true", node.BloomFilter)
@@ -1773,7 +1788,10 @@ func TestPopulateLeafMetadata(t *testing.T) {
 			ExNamePath:    []string{"root"},
 		}
 		bfMap := map[string]bloomFilterInfo{
-			"col1": {Enabled: true, Size: 1024},
+			"col1": {
+				Enabled: true,
+				Size:    1024,
+			},
 		}
 		populateLeafMetadata(root, nil, nil, bfMap)
 		require.Equal(t, "true", node.BloomFilter)
@@ -1789,7 +1807,9 @@ func TestPopulateLeafMetadata(t *testing.T) {
 			ExNamePath:    []string{"root"},
 		}
 		bfMap := map[string]bloomFilterInfo{
-			"col1": {Enabled: false},
+			"col1": {
+				Enabled: false,
+			},
 		}
 		populateLeafMetadata(root, nil, nil, bfMap)
 		require.Empty(t, node.BloomFilter)
