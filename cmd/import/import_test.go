@@ -52,31 +52,106 @@ func TestCmd(t *testing.T) {
 			cmd    Cmd
 			errMsg string
 		}{
-			"write-format":          {Cmd{WriteOption: wOpt, Source: "src", Format: "random", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"}, "is not a recognized source format"},
-			"write-compression":     {Cmd{WriteOption: pio.WriteOption{CompressionCodec: "foobar"}, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCodec string"},
-			"csv-schema-file":       {Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "csv", Schema: "schema", SkipHeader: false, URI: "dummy"}, "failed to load schema from"},
-			"csv-source-file":       {Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"}, "failed to open CSV file"},
-			"csv-target-file":       {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "://uri"}, "unable to parse file location"},
-			"csv-schema":            {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "expect 'key=value' but got '{'"},
-			"csv-source":            {Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "failed to read CSV record from"},
-			"csv-malformed":         {Cmd{WriteOption: wOpt, Source: "../../testdata/csv-malformed.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "failed to read CSV record from"},
-			"csv-target":            {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "s3://target"}, "failed to close Parquet file"},
-			"json-schema-file":      {Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "json", Schema: "schema", SkipHeader: false, URI: "dummy"}, "failed to load schema from"},
-			"json-source-file":      {Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "dummy"}, "failed to load source from"},
-			"json-target-file":      {Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "://uri"}, "unable to parse file location"},
-			"json-schema":           {Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"}, "is not a valid schema JSON"},
-			"json-source":           {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "dummy"}, "is not a valid JSON array"},
-			"json-source-not-array": {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "dummy"}, "is not a valid JSON array"},
-			"json-target":           {Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "s3://target"}, "failed to close Parquet file"},
-			"json-schema-mismatch":  {Cmd{WriteOption: wOpt, Source: "../../testdata/json.bad-source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "failed to close Parquet writer"},
-			"jsonl-schema-file":     {Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "jsonl", Schema: "schema", SkipHeader: false, URI: "dummy"}, "failed to load schema from"},
-			"jsonl-source-file":     {Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "dummy"}, "failed to open source file"},
-			"jsonl-target-file":     {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "://uri"}, "unable to parse file location"},
-			"jsonl-schema":          {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"}, "is not a valid schema JSON"},
-			"jsonl-source":          {Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "invalid JSON string:"},
-			"jsonl-target":          {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "s3://target"}, "failed to close Parquet file"},
-			"jsonl-schema-mismatch": {Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "failed to close Parquet writer"},
-			"csv-unknown-not-nil":   {Cmd{WriteOption: wOpt, Source: "../../testdata/unknown-type-bad.csv", Format: "csv", Schema: "../../testdata/unknown-type-csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")}, "UNKNOWN column"},
+			"write-format": {
+				Cmd{WriteOption: wOpt, Source: "src", Format: "random", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"},
+				"is not a recognized source format",
+			},
+			"write-compression": {
+				Cmd{WriteOption: pio.WriteOption{CompressionCodec: "foobar"}, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"not a valid CompressionCodec string",
+			},
+			"csv-schema-file": {
+				Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "csv", Schema: "schema", SkipHeader: false, URI: "dummy"},
+				"failed to load schema from",
+			},
+			"csv-source-file": {
+				Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"},
+				"failed to open CSV file",
+			},
+			"csv-target-file": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "://uri"},
+				"unable to parse file location",
+			},
+			"csv-schema": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"expect 'key=value' but got '{'",
+			},
+			"csv-source": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"failed to read CSV record from",
+			},
+			"csv-malformed": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv-malformed.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"failed to read CSV record from",
+			},
+			"csv-target": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "s3://target"},
+				"failed to close Parquet file",
+			},
+			"json-schema-file": {
+				Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "json", Schema: "schema", SkipHeader: false, URI: "dummy"},
+				"failed to load schema from",
+			},
+			"json-source-file": {
+				Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "dummy"},
+				"failed to load source from",
+			},
+			"json-target-file": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "://uri"},
+				"unable to parse file location",
+			},
+			"json-schema": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"},
+				"is not a valid schema JSON",
+			},
+			"json-source": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "dummy"},
+				"is not a valid JSON array",
+			},
+			"json-source-not-array": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "dummy"},
+				"is not a valid JSON array",
+			},
+			"json-target": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "s3://target"},
+				"failed to close Parquet file",
+			},
+			"json-schema-mismatch": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.bad-source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"failed to close Parquet writer",
+			},
+			"jsonl-schema-file": {
+				Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "jsonl", Schema: "schema", SkipHeader: false, URI: "dummy"},
+				"failed to load schema from",
+			},
+			"jsonl-source-file": {
+				Cmd{WriteOption: wOpt, Source: "file/does/not/exist", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "dummy"},
+				"failed to open source file",
+			},
+			"jsonl-target-file": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "://uri"},
+				"unable to parse file location",
+			},
+			"jsonl-schema": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "dummy"},
+				"is not a valid schema JSON",
+			},
+			"jsonl-source": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"invalid JSON string:",
+			},
+			"jsonl-target": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "s3://target"},
+				"failed to close Parquet file",
+			},
+			"jsonl-schema-mismatch": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"failed to close Parquet writer",
+			},
+			"csv-unknown-not-nil": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/unknown-type-bad.csv", Format: "csv", Schema: "../../testdata/unknown-type-csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"UNKNOWN column",
+			},
 		}
 
 		for name, tc := range testCases {
@@ -99,11 +174,26 @@ func TestCmd(t *testing.T) {
 			cmd      Cmd
 			rowCount int64
 		}{
-			"csv-wo-header": {Cmd{WriteOption: wOpt, Source: "csv.source", Format: "csv", Schema: "csv.schema", SkipHeader: false, URI: ""}, 10},
-			"csv-w-header":  {Cmd{WriteOption: wOpt, Source: "csv-with-header.source", Format: "csv", Schema: "csv.schema", SkipHeader: true, URI: ""}, 10},
-			"json":          {Cmd{WriteOption: wOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""}, 1},
-			"jsonl":         {Cmd{WriteOption: wOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""}, 10},
-			"json-unknown":  {Cmd{WriteOption: wOpt, Source: "unknown-type-json.source", Format: "json", Schema: "unknown-type.schema", SkipHeader: false, URI: ""}, 3},
+			"csv-wo-header": {
+				Cmd{WriteOption: wOpt, Source: "csv.source", Format: "csv", Schema: "csv.schema", SkipHeader: false, URI: ""},
+				10,
+			},
+			"csv-w-header": {
+				Cmd{WriteOption: wOpt, Source: "csv-with-header.source", Format: "csv", Schema: "csv.schema", SkipHeader: true, URI: ""},
+				10,
+			},
+			"json": {
+				Cmd{WriteOption: wOpt, Source: "json.source", Format: "json", Schema: "json.schema", SkipHeader: false, URI: ""},
+				1,
+			},
+			"jsonl": {
+				Cmd{WriteOption: wOpt, Source: "jsonl.source", Format: "jsonl", Schema: "jsonl.schema", SkipHeader: false, URI: ""},
+				10,
+			},
+			"json-unknown": {
+				Cmd{WriteOption: wOpt, Source: "unknown-type-json.source", Format: "json", Schema: "unknown-type.schema", SkipHeader: false, URI: ""},
+				3,
+			},
 		}
 
 		tempDir := t.TempDir()

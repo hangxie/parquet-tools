@@ -67,12 +67,30 @@ func testCmdError(t *testing.T) {
 		cmd    Cmd
 		errMsg string
 	}{
-		"pagesize-too-small":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"}, "invalid read page size"},
-		"source-non-existent": {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"}, "no such file or directory"},
-		"source-not-parquet":  {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"}, "failed to read from"},
-		"target-file":         {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"}, "unable to parse file location"},
-		"target-write":        {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "s3://target"}, "failed to close"},
-		"fail-on-int96":       {Cmd{FailOnInt96: true, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/all-types.parquet", URI: filepath.Join(tempDir, "dummy")}, "has type INT96 which is not supported"},
+		"pagesize-too-small": {
+			Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 0, Source: "../../testdata/good.parquet", URI: "dummy"},
+			"invalid read page size",
+		},
+		"source-non-existent": {
+			Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "does/not/exist", URI: "dummy"},
+			"no such file or directory",
+		},
+		"source-not-parquet": {
+			Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/not-a-parquet-file", URI: "dummy"},
+			"failed to read from",
+		},
+		"target-file": {
+			Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "://uri"},
+			"unable to parse file location",
+		},
+		"target-write": {
+			Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: "s3://target"},
+			"failed to close",
+		},
+		"fail-on-int96": {
+			Cmd{FailOnInt96: true, ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, Source: "../../testdata/all-types.parquet", URI: filepath.Join(tempDir, "dummy")},
+			"has type INT96 which is not supported",
+		},
 		"target-compression": {Cmd{ReadOption: rOpt, WriteOption: pio.WriteOption{
 			CompressionCodec: "INVALID",
 			PageSize:         1024 * 1024,
@@ -98,21 +116,111 @@ func testCmdGood(t *testing.T) {
 		omitStats       string
 		rowCount        int64
 	}{
-		"good-gzip":         {"good.parquet", "GZIP", 1, "", 3},
-		"good-zstd":         {"good.parquet", "ZSTD", 1, "", 3},
-		"good-uncompressed": {"good.parquet", "UNCOMPRESSED", 1, "", 3},
-		"good-lz4":          {"good.parquet", "LZ4", 1, "", 3},
-		"good-brotli":       {"good.parquet", "BROTLI", 1, "", 3},
-		"all-types-gzip":    {"all-types.parquet", "GZIP", 1, "", 5},
-		"all-types-zstd":    {"all-types.parquet", "ZSTD", 1, "", 5},
-		"all-types-brotli":  {"all-types.parquet", "BROTLI", 1, "", 5},
-		"empty-gzip":        {"empty.parquet", "GZIP", 1, "", 0},
-		"good-v2":           {"good.parquet", "SNAPPY", 2, "", 3},
-		"all-types-v2-zstd": {"all-types.parquet", "ZSTD", 2, "", 5},
-		"good-v2-brotli":    {"good.parquet", "BROTLI", 2, "", 3},
-		"good-stats-true":   {"good.parquet", "SNAPPY", 1, "true", 3},
-		"good-stats-false":  {"good.parquet", "SNAPPY", 1, "false", 3},
-		"good-all-options":  {"good.parquet", "ZSTD", 2, "true", 3},
+		"good-gzip": {
+			"good.parquet",
+			"GZIP",
+			1,
+			"",
+			3,
+		},
+		"good-zstd": {
+			"good.parquet",
+			"ZSTD",
+			1,
+			"",
+			3,
+		},
+		"good-uncompressed": {
+			"good.parquet",
+			"UNCOMPRESSED",
+			1,
+			"",
+			3,
+		},
+		"good-lz4": {
+			"good.parquet",
+			"LZ4",
+			1,
+			"",
+			3,
+		},
+		"good-brotli": {
+			"good.parquet",
+			"BROTLI",
+			1,
+			"",
+			3,
+		},
+		"all-types-gzip": {
+			"all-types.parquet",
+			"GZIP",
+			1,
+			"",
+			5,
+		},
+		"all-types-zstd": {
+			"all-types.parquet",
+			"ZSTD",
+			1,
+			"",
+			5,
+		},
+		"all-types-brotli": {
+			"all-types.parquet",
+			"BROTLI",
+			1,
+			"",
+			5,
+		},
+		"empty-gzip": {
+			"empty.parquet",
+			"GZIP",
+			1,
+			"",
+			0,
+		},
+		"good-v2": {
+			"good.parquet",
+			"SNAPPY",
+			2,
+			"",
+			3,
+		},
+		"all-types-v2-zstd": {
+			"all-types.parquet",
+			"ZSTD",
+			2,
+			"",
+			5,
+		},
+		"good-v2-brotli": {
+			"good.parquet",
+			"BROTLI",
+			2,
+			"",
+			3,
+		},
+		"good-stats-true": {
+			"good.parquet",
+			"SNAPPY",
+			1,
+			"true",
+			3,
+		},
+		"good-stats-false": {
+			"good.parquet",
+			"SNAPPY",
+			1,
+			"false",
+			3,
+		},
+		"good-all-options": {
+			"good.parquet",
+			"ZSTD",
+			2,
+			"true",
+			3,
+		},
 	}
 	tempDir := t.TempDir()
 

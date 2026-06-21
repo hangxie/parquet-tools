@@ -32,61 +32,217 @@ func TestInspect(t *testing.T) {
 		errMsg string
 	}{
 		// file level
-		"file/good":                      {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet"}, golden: "inspect-good-file.json"},
-		"file/encrypted-no-key":          {cmd: Cmd{ReadOption: rOpt, URI: "encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
-		"file/encrypted-wrong-key":       {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"file/encrypted-columns":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet"}, golden: "inspect-enc-columns-file.json"},
-		"file/encrypted-columns-no-keys": {cmd: Cmd{ReadOption: rOpt, URI: "encrypted-columns.parquet"}, golden: "inspect-enc-columns-file.json"},
-		"file/encrypted-footer":          {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-footer.parquet"}, golden: "inspect-enc-footer-file.json"},
-		"file/encrypted-uniform":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet"}, golden: "inspect-enc-uniform-file.json"},
-		"file/dict-page":                 {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet"}, golden: "inspect-dict-page-file.json"},
-		"file/row-group":                 {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet"}, golden: "inspect-row-group-file.json"},
-		"file/non-existent":              {cmd: Cmd{ReadOption: rOpt, URI: "nonexistent.parquet"}, errMsg: "no such file or directory"},
+		"file/good": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet"},
+			golden: "inspect-good-file.json",
+		},
+		"file/encrypted-no-key": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "encrypted-footer.parquet"},
+			errMsg: "decryption key required for footer",
+		},
+		"file/encrypted-wrong-key": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, URI: "encrypted-footer.parquet"},
+			errMsg: "decrypt",
+		},
+		"file/encrypted-columns": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet"},
+			golden: "inspect-enc-columns-file.json",
+		},
+		"file/encrypted-columns-no-keys": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "encrypted-columns.parquet"},
+			golden: "inspect-enc-columns-file.json",
+		},
+		"file/encrypted-footer": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-footer.parquet"},
+			golden: "inspect-enc-footer-file.json",
+		},
+		"file/encrypted-uniform": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet"},
+			golden: "inspect-enc-uniform-file.json",
+		},
+		"file/dict-page": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "dict-page.parquet"},
+			golden: "inspect-dict-page-file.json",
+		},
+		"file/row-group": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet"},
+			golden: "inspect-row-group-file.json",
+		},
+		"file/non-existent": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "nonexistent.parquet"},
+			errMsg: "no such file or directory",
+		},
 		// row group level
-		"row-group/good-rg-0":                     {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0)}, golden: "inspect-good-rg0.json"},
-		"row-group/encrypted-columns-rg0":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0)}, golden: "inspect-enc-columns-rg0.json"},
-		"row-group/encrypted-columns-no-keys-rg0": {cmd: Cmd{ReadOption: rOpt, URI: "encrypted-columns.parquet", RowGroup: new(0)}, golden: "inspect-enc-columns-no-keys-rg0.json"},
-		"row-group/encrypted-uniform-rg0":         {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0)}, golden: "inspect-enc-uniform-rg0.json"},
-		"row-group/row-group-rg-0":                {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0)}, golden: "inspect-row-group-rg0.json"},
-		"row-group/row-group-rg-1":                {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(1)}, golden: "inspect-row-group-rg1.json"},
-		"row-group/negative-index":                {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(-1)}, errMsg: "row group index -1 out of range"},
-		"row-group/out-of-range":                  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(999)}, errMsg: "row group index 999 out of range"},
-		"row-group/geospatial":                    {cmd: Cmd{ReadOption: rOpt, URI: "geospatial.parquet", RowGroup: new(0)}, golden: "inspect-geospatial-rg0.json"},
-		"row-group/nil-statistics":                {cmd: Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: new(0)}, golden: "inspect-nil-statistics-rg0.json"},
-		"row-group/all-types":                     {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0)}, golden: "inspect-all-types-rg0.json"},
-		"row-group/unknown-type":                  {cmd: Cmd{ReadOption: rOpt, URI: "unknown-type.parquet", RowGroup: new(0)}, golden: "inspect-unknown-type-rg0.json"},
-		"row-group/bloom-filter":                  {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0)}, golden: "inspect-bloom-filter-rg0.json"},
+		"row-group/good-rg-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0)},
+			golden: "inspect-good-rg0.json",
+		},
+		"row-group/encrypted-columns-rg0": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0)},
+			golden: "inspect-enc-columns-rg0.json",
+		},
+		"row-group/encrypted-columns-no-keys-rg0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "encrypted-columns.parquet", RowGroup: new(0)},
+			golden: "inspect-enc-columns-no-keys-rg0.json",
+		},
+		"row-group/encrypted-uniform-rg0": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0)},
+			golden: "inspect-enc-uniform-rg0.json",
+		},
+		"row-group/row-group-rg-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0)},
+			golden: "inspect-row-group-rg0.json",
+		},
+		"row-group/row-group-rg-1": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(1)},
+			golden: "inspect-row-group-rg1.json",
+		},
+		"row-group/negative-index": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(-1)},
+			errMsg: "row group index -1 out of range",
+		},
+		"row-group/out-of-range": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(999)},
+			errMsg: "row group index 999 out of range",
+		},
+		"row-group/geospatial": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "geospatial.parquet", RowGroup: new(0)},
+			golden: "inspect-geospatial-rg0.json",
+		},
+		"row-group/nil-statistics": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "nil-statistics.parquet", RowGroup: new(0)},
+			golden: "inspect-nil-statistics-rg0.json",
+		},
+		"row-group/all-types": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0)},
+			golden: "inspect-all-types-rg0.json",
+		},
+		"row-group/unknown-type": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "unknown-type.parquet", RowGroup: new(0)},
+			golden: "inspect-unknown-type-rg0.json",
+		},
+		"row-group/bloom-filter": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0)},
+			golden: "inspect-bloom-filter-rg0.json",
+		},
 		// column chunk level
-		"column-chunk/good-col-0":                {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-good-rg0-cc0.json"},
-		"column-chunk/encrypted-columns-float":   {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)}, golden: "inspect-enc-columns-rg0-cc4.json"},
-		"column-chunk/encrypted-uniform-boolean": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-enc-uniform-rg0-cc0.json"},
-		"column-chunk/encrypted-columns-no-key":  {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)}, errMsg: "decryption key required for column schema.float_field"},
-		"column-chunk/dict-page-col-0":           {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-dict-page-rg0-cc0.json"},
-		"column-chunk/all-types-interval":        {cmd: Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0), ColumnChunk: new(39)}, golden: "inspect-all-types-rg0-cc39.json"},
-		"column-chunk/unknown-type-col-1":        {cmd: Cmd{ReadOption: rOpt, URI: "unknown-type.parquet", RowGroup: new(0), ColumnChunk: new(1)}, golden: "inspect-unknown-type-rg0-cc1.json"},
-		"column-chunk/bloom-filter-col-0":        {cmd: Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0), ColumnChunk: new(0)}, golden: "inspect-bloom-filter-rg0-cc0.json"},
-		"column-chunk/negative-column-index":     {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1)}, errMsg: "column chunk index -1 out of range"},
-		"column-chunk/out-of-range-column":       {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(999)}, errMsg: "column chunk index 999 out of range"},
-		"column-chunk/without-row-group":         {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", ColumnChunk: new(0)}, errMsg: "--column-chunk requires --row-group"},
-		"column-chunk/negative-row-group":        {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(-1), ColumnChunk: new(0)}, errMsg: "row group index -1 out of range"},
-		"column-chunk/out-of-range-row-group":    {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(999), ColumnChunk: new(0)}, errMsg: "row group index 999 out of range"},
+		"column-chunk/good-col-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0)},
+			golden: "inspect-good-rg0-cc0.json",
+		},
+		"column-chunk/encrypted-columns-float": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)},
+			golden: "inspect-enc-columns-rg0-cc4.json",
+		},
+		"column-chunk/encrypted-uniform-boolean": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0), ColumnChunk: new(0)},
+			golden: "inspect-enc-uniform-rg0-cc0.json",
+		},
+		"column-chunk/encrypted-columns-no-key": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)},
+			errMsg: "decryption key required for column schema.float_field",
+		},
+		"column-chunk/dict-page-col-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0)},
+			golden: "inspect-dict-page-rg0-cc0.json",
+		},
+		"column-chunk/all-types-interval": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "all-types.parquet", RowGroup: new(0), ColumnChunk: new(39)},
+			golden: "inspect-all-types-rg0-cc39.json",
+		},
+		"column-chunk/unknown-type-col-1": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "unknown-type.parquet", RowGroup: new(0), ColumnChunk: new(1)},
+			golden: "inspect-unknown-type-rg0-cc1.json",
+		},
+		"column-chunk/bloom-filter-col-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0), ColumnChunk: new(0)},
+			golden: "inspect-bloom-filter-rg0-cc0.json",
+		},
+		"column-chunk/negative-column-index": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1)},
+			errMsg: "column chunk index -1 out of range",
+		},
+		"column-chunk/out-of-range-column": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(999)},
+			errMsg: "column chunk index 999 out of range",
+		},
+		"column-chunk/without-row-group": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", ColumnChunk: new(0)},
+			errMsg: "--column-chunk requires --row-group",
+		},
+		"column-chunk/negative-row-group": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(-1), ColumnChunk: new(0)},
+			errMsg: "row group index -1 out of range",
+		},
+		"column-chunk/out-of-range-row-group": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(999), ColumnChunk: new(0)},
+			errMsg: "row group index 999 out of range",
+		},
 		// page level
-		"page/good-page-0":                  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-good-rg0-cc0-pg0.json"},
-		"page/dict-page-page-0":             {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-dict-page-rg0-cc0-pg0.json"},
-		"page/dict-page-page-1":             {cmd: Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)}, golden: "inspect-dict-page-rg0-cc0-pg1.json"},
-		"page/row-group-rg1-page-0":         {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(1), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-row-group-rg1-cc0-pg0.json"},
-		"page/data-page-v2-page-0":          {cmd: Cmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-data-page-v2-rg0-cc0-pg0.json"},
-		"page/crc32-page-0":                 {cmd: Cmd{ReadOption: rOpt, URI: "crc32.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)}, golden: "inspect-crc32-rg0-cc0-pg0.json"},
-		"page/good-page-1":                  {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)}, golden: "inspect-good-rg0-cc0-pg1.json"},
-		"page/row-group-page-5":             {cmd: Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(5)}, golden: "inspect-row-group-rg0-cc0-pg5.json"},
-		"page/negative-page-index":          {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(-1)}, errMsg: "page index -1 out of range"},
-		"page/out-of-range-page":            {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(999)}, errMsg: "page index 999 out of range"},
-		"page/without-row-group-and-column": {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", Page: new(0)}, errMsg: "--page requires both --row-group and --column-chunk"},
-		"page/without-column":               {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), Page: new(0)}, errMsg: "--page requires both --row-group and --column-chunk"},
-		"page/negative-row-group":           {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(-1), ColumnChunk: new(0), Page: new(0)}, errMsg: "row group index -1 out of range"},
-		"page/out-of-range-row-group":       {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(999), ColumnChunk: new(0), Page: new(0)}, errMsg: "row group index 999 out of range"},
-		"page/negative-column-chunk":        {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1), Page: new(0)}, errMsg: "column chunk index -1 out of range"},
-		"page/out-of-range-column-chunk":    {cmd: Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(999), Page: new(0)}, errMsg: "column chunk index 999 out of range"},
+		"page/good-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-good-rg0-cc0-pg0.json",
+		},
+		"page/dict-page-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-dict-page-rg0-cc0-pg0.json",
+		},
+		"page/dict-page-page-1": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
+			golden: "inspect-dict-page-rg0-cc0-pg1.json",
+		},
+		"page/row-group-rg1-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(1), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-row-group-rg1-cc0-pg0.json",
+		},
+		"page/data-page-v2-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-data-page-v2-rg0-cc0-pg0.json",
+		},
+		"page/crc32-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "crc32.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-crc32-rg0-cc0-pg0.json",
+		},
+		"page/good-page-1": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
+			golden: "inspect-good-rg0-cc0-pg1.json",
+		},
+		"page/row-group-page-5": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(5)},
+			golden: "inspect-row-group-rg0-cc0-pg5.json",
+		},
+		"page/negative-page-index": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(-1)},
+			errMsg: "page index -1 out of range",
+		},
+		"page/out-of-range-page": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(999)},
+			errMsg: "page index 999 out of range",
+		},
+		"page/without-row-group-and-column": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", Page: new(0)},
+			errMsg: "--page requires both --row-group and --column-chunk",
+		},
+		"page/without-column": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), Page: new(0)},
+			errMsg: "--page requires both --row-group and --column-chunk",
+		},
+		"page/negative-row-group": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(-1), ColumnChunk: new(0), Page: new(0)},
+			errMsg: "row group index -1 out of range",
+		},
+		"page/out-of-range-row-group": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(999), ColumnChunk: new(0), Page: new(0)},
+			errMsg: "row group index 999 out of range",
+		},
+		"page/negative-column-chunk": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1), Page: new(0)},
+			errMsg: "column chunk index -1 out of range",
+		},
+		"page/out-of-range-column-chunk": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(999), Page: new(0)},
+			errMsg: "column chunk index 999 out of range",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -117,9 +273,18 @@ func TestInspectEncrypted(t *testing.T) {
 		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
 	}
 	testCases := map[string]Cmd{
-		"footer":  {ReadOption: encReadOption, URI: "../../testdata/encrypted-footer.parquet"},
-		"columns": {ReadOption: encReadOption, URI: "../../testdata/encrypted-columns.parquet"},
-		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "../../testdata/uniform-encryption.parquet"},
+		"footer": {
+			ReadOption: encReadOption,
+			URI:        "../../testdata/encrypted-footer.parquet",
+		},
+		"columns": {
+			ReadOption: encReadOption,
+			URI:        "../../testdata/encrypted-columns.parquet",
+		},
+		"uniform": {
+			ReadOption: pio.ReadOption{FooterKey: encFooterKey},
+			URI:        "../../testdata/uniform-encryption.parquet",
+		},
 		"aad": {
 			ReadOption: pio.ReadOption{
 				FooterKey:  encFooterKey,
@@ -235,14 +400,18 @@ func TestResolvePathInSchema(t *testing.T) {
 		"found-in-map": {
 			pathInSchema: []string{"col1"},
 			inExNameMap: map[string][]string{
-				"col1": {"ExternalCol1"},
+				"col1": {
+					"ExternalCol1",
+				},
 			},
 			want: []string{"ExternalCol1"},
 		},
 		"not-found-in-map": {
 			pathInSchema: []string{"col2"},
 			inExNameMap: map[string][]string{
-				"col1": {"ExternalCol1"},
+				"col1": {
+					"ExternalCol1",
+				},
 			},
 			want: []string{"col2"},
 		},

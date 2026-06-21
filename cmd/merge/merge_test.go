@@ -22,14 +22,38 @@ func TestCmd(t *testing.T) {
 			cmd    Cmd
 			errMsg string
 		}{
-			"pagesize-too-small":  {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 0, Source: []string{"src"}, URI: "dummy"}, "invalid read page size"},
-			"source-need-more":    {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet"}, URI: "dummy"}, "needs at least 2 source files"},
-			"source-non-existent": {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"does/not/exist1", "does/not/exist2"}, URI: "dummy"}, "no such file or directory"},
-			"source-not-parquet":  {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/not-a-parquet-file", "../../testdata/not-a-parquet-file"}, URI: "dummy"}, "failed to read from"},
-			"source-diff-schema":  {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/empty.parquet"}, URI: "dummy"}, "does not have same schema"},
-			"target-file":         {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "://uri"}, "unable to parse file location"},
-			"target-write":        {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "s3://target"}, "failed to close"},
-			"int96":               {Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/all-types.parquet", "../../testdata/all-types.parquet"}, URI: "dummy"}, "type INT96 which is not supported"},
+			"pagesize-too-small": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 0, Source: []string{"src"}, URI: "dummy"},
+				"invalid read page size",
+			},
+			"source-need-more": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet"}, URI: "dummy"},
+				"needs at least 2 source files",
+			},
+			"source-non-existent": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"does/not/exist1", "does/not/exist2"}, URI: "dummy"},
+				"no such file or directory",
+			},
+			"source-not-parquet": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/not-a-parquet-file", "../../testdata/not-a-parquet-file"}, URI: "dummy"},
+				"failed to read from",
+			},
+			"source-diff-schema": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/empty.parquet"}, URI: "dummy"},
+				"does not have same schema",
+			},
+			"target-file": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "://uri"},
+				"unable to parse file location",
+			},
+			"target-write": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "s3://target"},
+				"failed to close",
+			},
+			"int96": {
+				Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/all-types.parquet", "../../testdata/all-types.parquet"}, URI: "dummy"},
+				"type INT96 which is not supported",
+			},
 		}
 
 		for name, tc := range testCases {
@@ -47,10 +71,22 @@ func TestCmd(t *testing.T) {
 			cmd      Cmd
 			rowCount int64
 		}{
-			"good":      {Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"good.parquet", "good.parquet"}, URI: ""}, 6},
-			"all-types": {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"all-types.parquet", "all-types.parquet"}, URI: ""}, 10},
-			"empty":     {Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"empty.parquet", "empty.parquet"}, URI: ""}, 0},
-			"top-tag":   {Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, URI: ""}, 6},
+			"good": {
+				Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"good.parquet", "good.parquet"}, URI: ""},
+				6,
+			},
+			"all-types": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"all-types.parquet", "all-types.parquet"}, URI: ""},
+				10,
+			},
+			"empty": {
+				Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"empty.parquet", "empty.parquet"}, URI: ""},
+				0,
+			},
+			"top-tag": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, URI: ""},
+				6,
+			},
 		}
 		tempDir := t.TempDir()
 

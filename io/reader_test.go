@@ -28,17 +28,47 @@ func TestBuildReaderOptions(t *testing.T) {
 		option ReadOption
 		errMsg string
 	}{
-		"empty":                    {option: ReadOption{}},
-		"invalid-footer-key":       {option: ReadOption{FooterKey: "!!!"}, errMsg: "invalid base64 footer key"},
-		"invalid-aad-prefix":       {option: ReadOption{AADPrefix: "!!!"}, errMsg: "invalid base64 AAD prefix"},
-		"column-key-missing-equal": {option: ReadOption{ColumnKeys: []string{"colpath"}}, errMsg: "invalid column key format"},
-		"column-key-empty-path":    {option: ReadOption{ColumnKeys: []string{"=YWJj"}}, errMsg: "invalid column key format"},
-		"column-key-empty-value":   {option: ReadOption{ColumnKeys: []string{"col.path="}}, errMsg: "invalid column key format"},
-		"column-key-invalid-key":   {option: ReadOption{ColumnKeys: []string{"col.path=!!!"}}, errMsg: "invalid base64 column key"},
-		"valid-footer-key-std":     {option: ReadOption{FooterKey: testFooterKey}},
-		"reject-url-safe-base64":   {option: ReadOption{FooterKey: "-_8="}, errMsg: "invalid base64 footer key"},
-		"reject-unpadded-base64":   {option: ReadOption{FooterKey: "MDEyMzQ1Njc4OTAxMjM0NQ"}, errMsg: "invalid base64 footer key"},
-		"valid-column-key":         {option: ReadOption{ColumnKeys: []string{"double_field=" + testDoubleFieldKey}}},
+		"empty": {
+			option: ReadOption{},
+		},
+		"invalid-footer-key": {
+			option: ReadOption{FooterKey: "!!!"},
+			errMsg: "invalid base64 footer key",
+		},
+		"invalid-aad-prefix": {
+			option: ReadOption{AADPrefix: "!!!"},
+			errMsg: "invalid base64 AAD prefix",
+		},
+		"column-key-missing-equal": {
+			option: ReadOption{ColumnKeys: []string{"colpath"}},
+			errMsg: "invalid column key format",
+		},
+		"column-key-empty-path": {
+			option: ReadOption{ColumnKeys: []string{"=YWJj"}},
+			errMsg: "invalid column key format",
+		},
+		"column-key-empty-value": {
+			option: ReadOption{ColumnKeys: []string{"col.path="}},
+			errMsg: "invalid column key format",
+		},
+		"column-key-invalid-key": {
+			option: ReadOption{ColumnKeys: []string{"col.path=!!!"}},
+			errMsg: "invalid base64 column key",
+		},
+		"valid-footer-key-std": {
+			option: ReadOption{FooterKey: testFooterKey},
+		},
+		"reject-url-safe-base64": {
+			option: ReadOption{FooterKey: "-_8="},
+			errMsg: "invalid base64 footer key",
+		},
+		"reject-unpadded-base64": {
+			option: ReadOption{FooterKey: "MDEyMzQ1Njc4OTAxMjM0NQ"},
+			errMsg: "invalid base64 footer key",
+		},
+		"valid-column-key": {
+			option: ReadOption{ColumnKeys: []string{"double_field=" + testDoubleFieldKey}},
+		},
 		"multiple-column-keys": {
 			option: ReadOption{ColumnKeys: []string{
 				"double_field=" + testDoubleFieldKey,
@@ -79,27 +109,111 @@ func TestNewParquetFileReader(t *testing.T) {
 		option ReadOption
 		errMsg string
 	}{
-		"invalid-uri":            {"://uri", rOpt, "unable to parse file location"},
-		"invalid-scheme":         {"invalid-scheme://something", rOpt, "unknown location scheme"},
-		"local-file-not-found":   {"file://path/to/file", rOpt, "no such file or directory"},
-		"local-file-not-parquet": {"../testdata/not-a-parquet-file", rOpt, "invalid argument"},
-		"local-file-good":        {"../testdata/good.parquet", rOpt, ""},
-		"s3-not-found":           {"s3://bucket-does-not-exist", rOpt, "not found"},
-		"s3-good":                {s3URL, ReadOption{Anonymous: true}, ""},
-		"s3-wrong-version":       {s3URL, ReadOption{ObjectVersion: "random-version-id", Anonymous: true}, "https response error StatusCode: 400"},
-		"gcs-no-permission":      {gcsURL, rOpt, "failed to create GCS client"},
-		"gcs-wrong-generation":   {gcsURL, ReadOption{Anonymous: true, ObjectVersion: "99999"}, "Error 404: No such object:"},
-		"gcs-good":               {gcsURL, ReadOption{Anonymous: true}, ""},
-		"gcs-good-with-gen":      {gcsURL, ReadOption{Anonymous: true, ObjectVersion: "-1"}, ""},
-		"azblob-no-permission":   {azblobURL, rOpt, "Server failed to authenticate the request"},
-		"azblob-bad-version":     {azblobURL, ReadOption{Anonymous: true, ObjectVersion: "foo-bar"}, "RESPONSE 400: 400"},
-		"azblob-good":            {azblobURL, ReadOption{Anonymous: true}, ""},
-		"http-bad-url":           {"https://.../", rOpt, "no such host"},
-		"http-no-range-support":  {"https://www.google.com/", rOpt, "does not support range"},
-		"http-good":              {httpURL, rOpt, ""},
-		"hdfs-failed":            {"hdfs://localhost:1/temp/good.parquet", rOpt, "connection refused"},
-		"azblob-invalid-uri1":    {"wasbs://bad/url", rOpt, "azure blob URI format:"},
-		"azblob-invalid-uri2":    {"wasbs://storageaccount.blob.core.windows.net//aa", rOpt, "azure blob URI format:"},
+		"invalid-uri": {
+			"://uri",
+			rOpt,
+			"unable to parse file location",
+		},
+		"invalid-scheme": {
+			"invalid-scheme://something",
+			rOpt,
+			"unknown location scheme",
+		},
+		"local-file-not-found": {
+			"file://path/to/file",
+			rOpt,
+			"no such file or directory",
+		},
+		"local-file-not-parquet": {
+			"../testdata/not-a-parquet-file",
+			rOpt,
+			"invalid argument",
+		},
+		"local-file-good": {
+			"../testdata/good.parquet",
+			rOpt,
+			"",
+		},
+		"s3-not-found": {
+			"s3://bucket-does-not-exist",
+			rOpt,
+			"not found",
+		},
+		"s3-good": {
+			s3URL,
+			ReadOption{Anonymous: true},
+			"",
+		},
+		"s3-wrong-version": {
+			s3URL,
+			ReadOption{ObjectVersion: "random-version-id", Anonymous: true},
+			"https response error StatusCode: 400",
+		},
+		"gcs-no-permission": {
+			gcsURL,
+			rOpt,
+			"failed to create GCS client",
+		},
+		"gcs-wrong-generation": {
+			gcsURL,
+			ReadOption{Anonymous: true, ObjectVersion: "99999"},
+			"Error 404: No such object:",
+		},
+		"gcs-good": {
+			gcsURL,
+			ReadOption{Anonymous: true},
+			"",
+		},
+		"gcs-good-with-gen": {
+			gcsURL,
+			ReadOption{Anonymous: true, ObjectVersion: "-1"},
+			"",
+		},
+		"azblob-no-permission": {
+			azblobURL,
+			rOpt,
+			"Server failed to authenticate the request",
+		},
+		"azblob-bad-version": {
+			azblobURL,
+			ReadOption{Anonymous: true, ObjectVersion: "foo-bar"},
+			"RESPONSE 400: 400",
+		},
+		"azblob-good": {
+			azblobURL,
+			ReadOption{Anonymous: true},
+			"",
+		},
+		"http-bad-url": {
+			"https://.../",
+			rOpt,
+			"no such host",
+		},
+		"http-no-range-support": {
+			"https://www.google.com/",
+			rOpt,
+			"does not support range",
+		},
+		"http-good": {
+			httpURL,
+			rOpt,
+			"",
+		},
+		"hdfs-failed": {
+			"hdfs://localhost:1/temp/good.parquet",
+			rOpt,
+			"connection refused",
+		},
+		"azblob-invalid-uri1": {
+			"wasbs://bad/url",
+			rOpt,
+			"azure blob URI format:",
+		},
+		"azblob-invalid-uri2": {
+			"wasbs://storageaccount.blob.core.windows.net//aa",
+			rOpt,
+			"azure blob URI format:",
+		},
 	}
 
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")

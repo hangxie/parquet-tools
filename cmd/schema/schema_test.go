@@ -27,43 +27,142 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"invalid-uri":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"}, errMsg: "unknown location scheme"},
-		"invalid-format":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "foobar", URI: "../../testdata/good.parquet"}, errMsg: "unknown schema format"},
-		"go-map-value":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/map-composite-value.parquet"}, errMsg: "go struct does not support LIST as MAP value in [Parquet_go_root.Scores]"},
-		"go-list-value":     {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/list-of-list.parquet"}, errMsg: "go struct does not support LIST of LIST in [Parquet_go_root.Lol]"},
-		"go-old-style-list": {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/old-style-list.parquet"}, errMsg: "go struct does not support LIST of LIST in [My_record.First.Second.A]"},
-		"csv-nested":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-nested.parquet"}, errMsg: "CSV supports flat schema only"},
-		"csv-optional":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-optional.parquet"}, errMsg: "CSV does not support optional column"},
-		"csv-repeated":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-repeated.parquet"}, errMsg: "CSV does not support column in LIST type"},
+		"invalid-uri": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "foobar", URI: "dummy://location"},
+			errMsg: "unknown location scheme",
+		},
+		"invalid-format": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "foobar", URI: "../../testdata/good.parquet"},
+			errMsg: "unknown schema format",
+		},
+		"go-map-value": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/map-composite-value.parquet"},
+			errMsg: "go struct does not support LIST as MAP value in [Parquet_go_root.Scores]",
+		},
+		"go-list-value": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/list-of-list.parquet"},
+			errMsg: "go struct does not support LIST of LIST in [Parquet_go_root.Lol]",
+		},
+		"go-old-style-list": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "../../testdata/old-style-list.parquet"},
+			errMsg: "go struct does not support LIST of LIST in [My_record.First.Second.A]",
+		},
+		"csv-nested": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-nested.parquet"},
+			errMsg: "CSV supports flat schema only",
+		},
+		"csv-optional": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-optional.parquet"},
+			errMsg: "CSV does not support optional column",
+		},
+		"csv-repeated": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "../../testdata/csv-repeated.parquet"},
+			errMsg: "CSV does not support column in LIST type",
+		},
 		// encrypted error cases
-		"encrypted-footer-no-key":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
-		"encrypted-footer-wrong-key": {cmd: schema.Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
+		"encrypted-footer-no-key": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
+			errMsg: "decryption key required for footer",
+		},
+		"encrypted-footer-wrong-key": {
+			cmd:    schema.Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
+			errMsg: "decrypt",
+		},
 		// Mixed plaintext/encrypted: schema only needs the plaintext-signed footer,
 		// so no keys at all are required even when columns are encrypted.
-		"enc-columns-no-keys": {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "encrypted-columns.parquet"}, golden: "schema-enc-columns-json.json"},
+		"enc-columns-no-keys": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "encrypted-columns.parquet"},
+			golden: "schema-enc-columns-json.json",
+		},
 		// good cases - URI will be prefixed with "../../testdata/"
-		"raw":                    {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"}, golden: "schema-all-types-raw.json"},
-		"json":                   {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"}, golden: "schema-all-types-json.json"},
-		"go":                     {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "all-types.parquet"}, golden: "schema-all-types-go.txt"},
-		"csv":                    {cmd: schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "csv-good.parquet"}, golden: "schema-csv-good.txt"},
-		"raw-map-value-list":     {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "map-composite-value.parquet"}, golden: "schema-map-composite-value-raw.json"},
-		"json-map-value-list":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "map-composite-value.parquet"}, golden: "schema-map-composite-value-json.json"},
-		"json-map-value-map":     {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "map-value-map.parquet"}, golden: "schema-map-value-map-json.json"},
-		"pargo-prefix-flat":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-flat.parquet"}, golden: "schema-pargo-prefix-flat-go.txt"},
-		"pargo-prefix-nested":    {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-nested.parquet"}, golden: "schema-pargo-prefix-nested-go.txt"},
-		"geospatial-go":          {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "geospatial.parquet"}, golden: "schema-geospatial-go.txt"},
-		"geospatial-json":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "geospatial.parquet"}, golden: "schema-geospatial-json.json"},
-		"geospatial-raw":         {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"}, golden: "schema-geospatial-raw.json"},
-		"camel-case":             {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", CamelCase: true, URI: "good.parquet"}, golden: "schema-good-go-camel-case.txt"},
-		"skip-page-encoding":     {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", SkipPageEncoding: true, URI: "good.parquet"}, golden: "schema-good-skip-page-encoding.json"},
-		"skip-page-encoding-raw": {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", SkipPageEncoding: true, URI: "good.parquet"}, golden: "schema-good-skip-page-encoding-raw.json"},
-		"skip-page-encoding-go":  {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", SkipPageEncoding: true, URI: "good.parquet"}, golden: "schema-good-skip-page-encoding-go.txt"},
-		"unknown-type-raw":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-raw.json"},
-		"unknown-type-json":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-json.json"},
-		"unknown-type-go":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "unknown-type.parquet"}, golden: "schema-unknown-type-go.txt"},
-		"bloom-filter-raw":       {cmd: schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "bloom-filter.parquet"}, golden: "schema-bloom-filter-raw.json"},
-		"bloom-filter-json":      {cmd: schema.Cmd{ReadOption: rOpt, Format: "json", URI: "bloom-filter.parquet"}, golden: "schema-bloom-filter-json.json"},
-		"bloom-filter-go":        {cmd: schema.Cmd{ReadOption: rOpt, Format: "go", URI: "bloom-filter.parquet"}, golden: "schema-bloom-filter-go.txt"},
+		"raw": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "all-types.parquet"},
+			golden: "schema-all-types-raw.json",
+		},
+		"json": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "all-types.parquet"},
+			golden: "schema-all-types-json.json",
+		},
+		"go": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "all-types.parquet"},
+			golden: "schema-all-types-go.txt",
+		},
+		"csv": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "csv", URI: "csv-good.parquet"},
+			golden: "schema-csv-good.txt",
+		},
+		"raw-map-value-list": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "map-composite-value.parquet"},
+			golden: "schema-map-composite-value-raw.json",
+		},
+		"json-map-value-list": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "map-composite-value.parquet"},
+			golden: "schema-map-composite-value-json.json",
+		},
+		"json-map-value-map": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "map-value-map.parquet"},
+			golden: "schema-map-value-map-json.json",
+		},
+		"pargo-prefix-flat": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-flat.parquet"},
+			golden: "schema-pargo-prefix-flat-go.txt",
+		},
+		"pargo-prefix-nested": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "pargo-prefix-nested.parquet"},
+			golden: "schema-pargo-prefix-nested-go.txt",
+		},
+		"geospatial-go": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "geospatial.parquet"},
+			golden: "schema-geospatial-go.txt",
+		},
+		"geospatial-json": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "geospatial.parquet"},
+			golden: "schema-geospatial-json.json",
+		},
+		"geospatial-raw": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"},
+			golden: "schema-geospatial-raw.json",
+		},
+		"camel-case": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", CamelCase: true, URI: "good.parquet"},
+			golden: "schema-good-go-camel-case.txt",
+		},
+		"skip-page-encoding": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", SkipPageEncoding: true, URI: "good.parquet"},
+			golden: "schema-good-skip-page-encoding.json",
+		},
+		"skip-page-encoding-raw": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", SkipPageEncoding: true, URI: "good.parquet"},
+			golden: "schema-good-skip-page-encoding-raw.json",
+		},
+		"skip-page-encoding-go": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", SkipPageEncoding: true, URI: "good.parquet"},
+			golden: "schema-good-skip-page-encoding-go.txt",
+		},
+		"unknown-type-raw": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "unknown-type.parquet"},
+			golden: "schema-unknown-type-raw.json",
+		},
+		"unknown-type-json": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "unknown-type.parquet"},
+			golden: "schema-unknown-type-json.json",
+		},
+		"unknown-type-go": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "unknown-type.parquet"},
+			golden: "schema-unknown-type-go.txt",
+		},
+		"bloom-filter-raw": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "bloom-filter.parquet"},
+			golden: "schema-bloom-filter-raw.json",
+		},
+		"bloom-filter-json": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "bloom-filter.parquet"},
+			golden: "schema-bloom-filter-json.json",
+		},
+		"bloom-filter-go": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "bloom-filter.parquet"},
+			golden: "schema-bloom-filter-go.txt",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -96,9 +195,21 @@ func TestCmdEncrypted(t *testing.T) {
 		ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey},
 	}
 	testCases := map[string]schema.Cmd{
-		"footer":  {ReadOption: encReadOption, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
-		"columns": {ReadOption: encReadOption, Format: "json", URI: "../../testdata/encrypted-columns.parquet"},
-		"uniform": {ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Format: "json", URI: "../../testdata/uniform-encryption.parquet"},
+		"footer": {
+			ReadOption: encReadOption,
+			Format:     "json",
+			URI:        "../../testdata/encrypted-footer.parquet",
+		},
+		"columns": {
+			ReadOption: encReadOption,
+			Format:     "json",
+			URI:        "../../testdata/encrypted-columns.parquet",
+		},
+		"uniform": {
+			ReadOption: pio.ReadOption{FooterKey: encFooterKey},
+			Format:     "json",
+			URI:        "../../testdata/uniform-encryption.parquet",
+		},
 		"aad": {
 			ReadOption: pio.ReadOption{
 				FooterKey:  encFooterKey,

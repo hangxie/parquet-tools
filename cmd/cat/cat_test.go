@@ -28,53 +28,188 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
-		"non-existent-file":                 {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist"}, errMsg: "no such file or directory"},
-		"parquet-1481":                      {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/PARQUET-1481.parquet"}, errMsg: "unknown parquet type: <UNSET>"},
-		"arrow-rs-gh-6229":                  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"}, errMsg: "expected 21 values but got 1 from RLE/bit-packed hybrid decoder"},
-		"invalid-read-page-size":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid read page size"},
-		"invalid-skip-size":                 {cmd: Cmd{ReadOption: rOpt, Skip: -10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid skip -10"},
-		"sampling-too-high":                 {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 2.0, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true}, errMsg: "invalid sampling"},
-		"sampling-too-low":                  {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: -0.5, Format: "json", NoHeader: false, URI: "does/not/matter"}, errMsg: "invalid sampling"},
-		"invalid-format":                    {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "foobar", NoHeader: false, URI: "does/not/matter"}, errMsg: "unknown format: [foobar]"},
-		"fail-on-int96":                     {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
-		"nested-schema-csv":                 {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
-		"nested-schema-tsv":                 {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/all-types.parquet"}, errMsg: "field [Variant] is not scalar type"},
-		"geospatial-csv":                    {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
-		"geospatial-tsv":                    {cmd: Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/geospatial.parquet"}, errMsg: "field [Geometry] is not scalar type"},
-		"nan-json-error":                    {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet"}, errMsg: "json: unsupported value: NaN"},
-		"arrow-gh-41321":                    {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"}, errMsg: "failed to cat"},
-		"concurrent-non-existent":           {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", Concurrent: true}, errMsg: "no such file or directory"},
-		"concurrent-nan-json":               {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true}, errMsg: "json: unsupported value: NaN"},
-		"concurrent-int96":                  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true}, errMsg: "type INT96 which is not supported"},
-		"concurrent-nested-csv":             {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true}, errMsg: "is not scalar type"},
-		"encrypted-footer-no-key":           {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decryption key required for footer"},
-		"encrypted-footer-wrong-key":        {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"}, errMsg: "decrypt"},
-		"encrypted-columns-missing-col-key": {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-columns.parquet"}, errMsg: "decryption key required for column"},
-		"encrypted-aad-missing":             {cmd: Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-aad.parquet"}, errMsg: "AAD prefix"},
+		"non-existent-file": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist"},
+			errMsg: "no such file or directory",
+		},
+		"parquet-1481": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/PARQUET-1481.parquet"},
+			errMsg: "unknown parquet type: <UNSET>",
+		},
+		"arrow-rs-gh-6229": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"},
+			errMsg: "expected 21 values but got 1 from RLE/bit-packed hybrid decoder",
+		},
+		"invalid-read-page-size": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true},
+			errMsg: "invalid read page size",
+		},
+		"invalid-skip-size": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: -10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter"},
+			errMsg: "invalid skip -10",
+		},
+		"sampling-too-high": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 2.0, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true},
+			errMsg: "invalid sampling",
+		},
+		"sampling-too-low": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: -0.5, Format: "json", NoHeader: false, URI: "does/not/matter"},
+			errMsg: "invalid sampling",
+		},
+		"invalid-format": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "foobar", NoHeader: false, URI: "does/not/matter"},
+			errMsg: "unknown format: [foobar]",
+		},
+		"fail-on-int96": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", FailOnInt96: true},
+			errMsg: "type INT96 which is not supported",
+		},
+		"nested-schema-csv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet"},
+			errMsg: "field [Variant] is not scalar type",
+		},
+		"nested-schema-tsv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/all-types.parquet"},
+			errMsg: "field [Variant] is not scalar type",
+		},
+		"geospatial-csv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/geospatial.parquet"},
+			errMsg: "field [Geometry] is not scalar type",
+		},
+		"geospatial-tsv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/geospatial.parquet"},
+			errMsg: "field [Geometry] is not scalar type",
+		},
+		"nan-json-error": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet"},
+			errMsg: "json: unsupported value: NaN",
+		},
+		"arrow-gh-41321": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"},
+			errMsg: "failed to cat",
+		},
+		"concurrent-non-existent": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", Concurrent: true},
+			errMsg: "no such file or directory",
+		},
+		"concurrent-nan-json": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true},
+			errMsg: "json: unsupported value: NaN",
+		},
+		"concurrent-int96": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true},
+			errMsg: "type INT96 which is not supported",
+		},
+		"concurrent-nested-csv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "csv", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true},
+			errMsg: "is not scalar type",
+		},
+		"encrypted-footer-no-key": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
+			errMsg: "decryption key required for footer",
+		},
+		"encrypted-footer-wrong-key": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
+			errMsg: "decrypt",
+		},
+		"encrypted-columns-missing-col-key": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-columns.parquet"},
+			errMsg: "decryption key required for column",
+		},
+		"encrypted-aad-missing": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-aad.parquet"},
+			errMsg: "AAD prefix",
+		},
 
 		// good cases
-		"default":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json.json"},
-		"limit-0":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json.json"},
-		"limit-2":            {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 2, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-json-limit-2.json"},
-		"skip-2":             {cmd: Cmd{ReadOption: rOpt, Skip: 2, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet", Concurrent: true}, golden: "cat-good-json-skip-2.json"},
-		"skip-all":           {cmd: Cmd{ReadOption: rOpt, Skip: 20, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "empty-json.txt"},
-		"sampling-0":         {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 0.0, Format: "json", NoHeader: false, URI: "good.parquet"}, golden: "empty-json.txt"},
-		"empty":              {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "empty.parquet"}, golden: "empty-json.txt"},
-		"jsonl":              {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-jsonl.jsonl"},
-		"csv":                {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-csv.txt"},
-		"csv-no-header":      {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: true, URI: "good.parquet"}, golden: "cat-good-csv-no-header.txt"},
-		"tsv":                {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "tsv", NoHeader: false, URI: "good.parquet"}, golden: "cat-good-tsv.txt"},
-		"tsv-no-header":      {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "tsv", NoHeader: true, URI: "good.parquet"}, golden: "cat-good-tsv-no-header.txt"},
-		"all-types":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "all-types.parquet"}, golden: "cat-all-types.jsonl"},
-		"geospatial-hex":     {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "hex", NoHeader: true, URI: "geospatial.parquet"}, golden: "cat-geospatial-hex.jsonl"},
-		"geospatial-base64":  {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "base64", NoHeader: true, URI: "geospatial.parquet"}, golden: "cat-geospatial-base64.jsonl"},
-		"geospatial-geojson": {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "geospatial.parquet"}, golden: "cat-geospatial-geojson.jsonl"},
-		"old-style-list":     {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet"}, golden: "cat-old-style-list.jsonl"},
-		"multi-row-groups":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"}, golden: "cat-row-group.jsonl"},
-		"dict-page":          {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "dict-page.parquet"}, golden: "cat-dict-page.jsonl"},
-		"high-compression":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"}, golden: "cat-high-compression.jsonl"},
-		"unknown-type":       {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet"}, golden: "cat-unknown-type.jsonl"},
-		"unknown-type-raw":   {cmd: Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet", RawUnknown: true}, golden: "cat-unknown-type-raw.jsonl"},
+		"default": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-json.json",
+		},
+		"limit-0": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-json.json",
+		},
+		"limit-2": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 2, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-json-limit-2.json",
+		},
+		"skip-2": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 2, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet", Concurrent: true},
+			golden: "cat-good-json-skip-2.json",
+		},
+		"skip-all": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 20, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "good.parquet"},
+			golden: "empty-json.txt",
+		},
+		"sampling-0": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 0.0, Format: "json", NoHeader: false, URI: "good.parquet"},
+			golden: "empty-json.txt",
+		},
+		"empty": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "empty.parquet"},
+			golden: "empty-json.txt",
+		},
+		"jsonl": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-jsonl.jsonl",
+		},
+		"csv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-csv.txt",
+		},
+		"csv-no-header": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: true, URI: "good.parquet"},
+			golden: "cat-good-csv-no-header.txt",
+		},
+		"tsv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "tsv", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-tsv.txt",
+		},
+		"tsv-no-header": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "tsv", NoHeader: true, URI: "good.parquet"},
+			golden: "cat-good-tsv-no-header.txt",
+		},
+		"all-types": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "all-types.parquet"},
+			golden: "cat-all-types.jsonl",
+		},
+		"geospatial-hex": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "hex", NoHeader: true, URI: "geospatial.parquet"},
+			golden: "cat-geospatial-hex.jsonl",
+		},
+		"geospatial-base64": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "base64", NoHeader: true, URI: "geospatial.parquet"},
+			golden: "cat-geospatial-base64.jsonl",
+		},
+		"geospatial-geojson": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "geospatial.parquet"},
+			golden: "cat-geospatial-geojson.jsonl",
+		},
+		"old-style-list": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet"},
+			golden: "cat-old-style-list.jsonl",
+		},
+		"multi-row-groups": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"},
+			golden: "cat-row-group.jsonl",
+		},
+		"dict-page": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "dict-page.parquet"},
+			golden: "cat-dict-page.jsonl",
+		},
+		"high-compression": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"},
+			golden: "cat-high-compression.jsonl",
+		},
+		"unknown-type": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet"},
+			golden: "cat-unknown-type.jsonl",
+		},
+		"unknown-type-raw": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet", RawUnknown: true},
+			golden: "cat-unknown-type-raw.jsonl",
+		},
 	}
 
 	for name, tc := range testCases {

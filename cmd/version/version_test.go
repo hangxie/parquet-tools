@@ -14,14 +14,38 @@ func TestCmd(t *testing.T) {
 		cmd    Cmd
 		stdout string
 	}{
-		"plain":             {cmd: Cmd{JSON: false, All: false, BuildTime: false, Source: false}, stdout: "v1.2.3\n"},
-		"plain-with-build":  {cmd: Cmd{JSON: false, All: false, BuildTime: true, Source: false}, stdout: "v1.2.3\ntoday\n"},
-		"plain-with-source": {cmd: Cmd{JSON: false, All: false, BuildTime: false, Source: true}, stdout: "v1.2.3\nUT\n"},
-		"plain-with-all":    {cmd: Cmd{JSON: false, All: true, BuildTime: false, Source: false}, stdout: "v1.2.3\ntoday\nUT\n"},
-		"json":              {cmd: Cmd{JSON: true, All: false, BuildTime: false, Source: false}, stdout: `{"Version":"v1.2.3"}` + "\n"},
-		"json-with-build":   {cmd: Cmd{JSON: true, All: false, BuildTime: true, Source: false}, stdout: `{"Version":"v1.2.3","BuildTime":"today"}` + "\n"},
-		"json-with-source":  {cmd: Cmd{JSON: true, All: false, BuildTime: false, Source: true}, stdout: `{"Version":"v1.2.3","Source":"UT"}` + "\n"},
-		"json-with-all":     {cmd: Cmd{JSON: true, All: true, BuildTime: false, Source: false}, stdout: `{"Version":"v1.2.3","BuildTime":"today","Source":"UT"}` + "\n"},
+		"plain": {
+			cmd:    Cmd{JSON: false, All: false, BuildTime: false, Source: false},
+			stdout: "v1.2.3\n",
+		},
+		"plain-with-build": {
+			cmd:    Cmd{JSON: false, All: false, BuildTime: true, Source: false},
+			stdout: "v1.2.3\ntoday\n",
+		},
+		"plain-with-source": {
+			cmd:    Cmd{JSON: false, All: false, BuildTime: false, Source: true},
+			stdout: "v1.2.3\nUT\n",
+		},
+		"plain-with-all": {
+			cmd:    Cmd{JSON: false, All: true, BuildTime: false, Source: false},
+			stdout: "v1.2.3\ntoday\nUT\n",
+		},
+		"json": {
+			cmd:    Cmd{JSON: true, All: false, BuildTime: false, Source: false},
+			stdout: `{"Version":"v1.2.3"}` + "\n",
+		},
+		"json-with-build": {
+			cmd:    Cmd{JSON: true, All: false, BuildTime: true, Source: false},
+			stdout: `{"Version":"v1.2.3","BuildTime":"today"}` + "\n",
+		},
+		"json-with-source": {
+			cmd:    Cmd{JSON: true, All: false, BuildTime: false, Source: true},
+			stdout: `{"Version":"v1.2.3","Source":"UT"}` + "\n",
+		},
+		"json-with-all": {
+			cmd:    Cmd{JSON: true, All: true, BuildTime: false, Source: false},
+			stdout: `{"Version":"v1.2.3","BuildTime":"today","Source":"UT"}` + "\n",
+		},
 	}
 
 	version = "v1.2.3"

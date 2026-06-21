@@ -124,13 +124,55 @@ func TestGetBucketRegion(t *testing.T) {
 		ignoreTLS bool
 		errMsg    string
 	}{
-		"non-existent-bucket":            {"", uuid.New().String(), true, false, "not found"},
-		"unable-to-get-region":           {"", "localhost/something/does/not/matter", true, false, "unable to get region for S3 bucket"},
-		"bucket-name-with-dot":           {"", "xiehang.com", false, true, ""},
-		"bucket-name-with-dot-no-ignore": {"", "xiehang.com", false, false, "unable to get region for S3 bucket"},
-		"private-bucket":                 {"", "doc-example-bucket", true, false, "S3 bucket doc-example-bucket is not public"},
-		"aws-error":                      {"", "00", true, false, "unrecognized StatusCode from AWS: 400"},
-		"missing-credential":             {uuid.New().String(), "daylight-openstreetmap", false, false, "failed to get shared config profile"},
+		"non-existent-bucket": {
+			"",
+			uuid.New().String(),
+			true,
+			false,
+			"not found",
+		},
+		"unable-to-get-region": {
+			"",
+			"localhost/something/does/not/matter",
+			true,
+			false,
+			"unable to get region for S3 bucket",
+		},
+		"bucket-name-with-dot": {
+			"",
+			"xiehang.com",
+			false,
+			true,
+			"",
+		},
+		"bucket-name-with-dot-no-ignore": {
+			"",
+			"xiehang.com",
+			false,
+			false,
+			"unable to get region for S3 bucket",
+		},
+		"private-bucket": {
+			"",
+			"doc-example-bucket",
+			true,
+			false,
+			"S3 bucket doc-example-bucket is not public",
+		},
+		"aws-error": {
+			"",
+			"00",
+			true,
+			false,
+			"unrecognized StatusCode from AWS: 400",
+		},
+		"missing-credential": {
+			uuid.New().String(),
+			"daylight-openstreetmap",
+			false,
+			false,
+			"failed to get shared config profile",
+		},
 	}
 
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
@@ -167,11 +209,41 @@ func TestParseURI(t *testing.T) {
 		path   string
 		errMsg string
 	}{
-		"invalid-uri":    {"://uri", "", "", "", "unable to parse file location"},
-		"with-user":      {"scheme://username@path/to/file", "scheme", "path", "/to/file", ""},
-		"with-file":      {"file://path/to/file", "file", "", "path/to/file", ""},
-		"with-file-root": {"file:///path/to/file", "file", "", "/path/to/file", ""},
-		"without-file":   {"path/to/file", "file", "", "path/to/file", ""},
+		"invalid-uri": {
+			"://uri",
+			"",
+			"",
+			"",
+			"unable to parse file location",
+		},
+		"with-user": {
+			"scheme://username@path/to/file",
+			"scheme",
+			"path",
+			"/to/file",
+			"",
+		},
+		"with-file": {
+			"file://path/to/file",
+			"file",
+			"",
+			"path/to/file",
+			"",
+		},
+		"with-file-root": {
+			"file:///path/to/file",
+			"file",
+			"",
+			"/path/to/file",
+			"",
+		},
+		"without-file": {
+			"path/to/file",
+			"file",
+			"",
+			"path/to/file",
+			"",
+		},
 	}
 
 	for name, tc := range testCases {

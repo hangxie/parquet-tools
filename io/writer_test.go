@@ -43,20 +43,62 @@ func TestNewParquetFileWriter(t *testing.T) {
 		uri    string
 		errMsg string
 	}{
-		"invalid-uri":          {"://uri", "unable to parse file location"},
-		"invalid-scheme":       {"invalid-scheme://something", "unknown location scheme"},
-		"local-file-not-found": {"file://path/to/file", "no such file or directory"},
-		"local-not-file":       {"../testdata/", "is a directory"},
-		"local-file-good":      {tempFile, ""},
-		"s3-bucket-not-found":  {"s3://bucket-does-not-exist" + uuid.NewString(), "not found"},
-		"s3-good":              {"s3://daylight-openstreetmap/will-not-create-till-close", ""},
-		"gcs-no-permission":    {"gs://cloud-samples-data/bigquery/us-states/us-states.parquet", "failed to open GCS object"},
-		"azblob-invalid-uri1":  {"wasbs://bad/url", "azure blob URI format:"},
-		"azblob-invalid-uri2":  {"wasbs://storageaccount.blob.core.windows.net//aa", "azure blob URI format:"},
-		"azblob-good":          {"wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/will-not-create-till-close", ""},
-		"http-not-support":     {"https://domain.tld/path/to/file", "writing to [https] endpoint is not currently supported"},
-		"hdfs-failed":          {"hdfs://localhost:1/temp/good.parquet", "connection refused"},
-		"hdfs-with-user":       {"hdfs://user@localhost:1/temp/good.parquet", "connection refused"},
+		"invalid-uri": {
+			"://uri",
+			"unable to parse file location",
+		},
+		"invalid-scheme": {
+			"invalid-scheme://something",
+			"unknown location scheme",
+		},
+		"local-file-not-found": {
+			"file://path/to/file",
+			"no such file or directory",
+		},
+		"local-not-file": {
+			"../testdata/",
+			"is a directory",
+		},
+		"local-file-good": {
+			tempFile,
+			"",
+		},
+		"s3-bucket-not-found": {
+			"s3://bucket-does-not-exist" + uuid.NewString(),
+			"not found",
+		},
+		"s3-good": {
+			"s3://daylight-openstreetmap/will-not-create-till-close",
+			"",
+		},
+		"gcs-no-permission": {
+			"gs://cloud-samples-data/bigquery/us-states/us-states.parquet",
+			"failed to open GCS object",
+		},
+		"azblob-invalid-uri1": {
+			"wasbs://bad/url",
+			"azure blob URI format:",
+		},
+		"azblob-invalid-uri2": {
+			"wasbs://storageaccount.blob.core.windows.net//aa",
+			"azure blob URI format:",
+		},
+		"azblob-good": {
+			"wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/will-not-create-till-close",
+			"",
+		},
+		"http-not-support": {
+			"https://domain.tld/path/to/file",
+			"writing to [https] endpoint is not currently supported",
+		},
+		"hdfs-failed": {
+			"hdfs://localhost:1/temp/good.parquet",
+			"connection refused",
+		},
+		"hdfs-with-user": {
+			"hdfs://user@localhost:1/temp/good.parquet",
+			"connection refused",
+		},
 	}
 
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
@@ -193,8 +235,12 @@ func TestParseWriterColumnKeys(t *testing.T) {
 		errMsg    string
 		wantPaths []string
 	}{
-		"nil":   {raw: nil},
-		"empty": {raw: []string{}},
+		"nil": {
+			raw: nil,
+		},
+		"empty": {
+			raw: []string{},
+		},
 		"single": {
 			raw:       []string{"name=" + key16},
 			wantPaths: []string{"name"},
@@ -203,11 +249,26 @@ func TestParseWriterColumnKeys(t *testing.T) {
 			raw:       []string{"a=" + key16, "b=@footer-key"},
 			wantPaths: []string{"a", "b"},
 		},
-		"missing-equals":       {raw: []string{"name"}, errMsg: "invalid writer column key format [name]"},
-		"empty-path":           {raw: []string{"=" + key16}, errMsg: "invalid writer column key format [="},
-		"empty-value":          {raw: []string{"name="}, errMsg: "invalid writer column key format [name=]"},
-		"duplicate-exact":      {raw: []string{"name=" + key16, "name=@footer-key"}, errMsg: "duplicate writer column key path [name]"},
-		"duplicate-normalized": {raw: []string{"Parent.Child=" + key16, "Parent.Child=@footer-key"}, errMsg: "duplicate writer column key path [Parent.Child]"},
+		"missing-equals": {
+			raw:    []string{"name"},
+			errMsg: "invalid writer column key format [name]",
+		},
+		"empty-path": {
+			raw:    []string{"=" + key16},
+			errMsg: "invalid writer column key format [=",
+		},
+		"empty-value": {
+			raw:    []string{"name="},
+			errMsg: "invalid writer column key format [name=]",
+		},
+		"duplicate-exact": {
+			raw:    []string{"name=" + key16, "name=@footer-key"},
+			errMsg: "duplicate writer column key path [name]",
+		},
+		"duplicate-normalized": {
+			raw:    []string{"Parent.Child=" + key16, "Parent.Child=@footer-key"},
+			errMsg: "duplicate writer column key path [Parent.Child]",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -345,15 +406,60 @@ func TestNewCSVWriter(t *testing.T) {
 		schema []string
 		errMsg string
 	}{
-		"invalid-uri":       {wOpt, "://uri", nil, "unable to parse file location"},
-		"invalid-scheme":    {wOpt, "invalid-scheme://something", nil, "unknown location scheme"},
-		"invalid-schema1":   {wOpt, tempFile, []string{"invalid schema"}, "expect 'key=value'"},
-		"invalid-schema2":   {wOpt, tempFile, []string{"name=Id"}, "not a valid Type string"},
-		"invalid-schema3":   {wOpt, tempFile, []string{"name=Id, type=FOOBAR"}, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-codec":     {WriteOption{CompressionCodec: "FOOBAR"}, tempFile, []string{"name=Id, type=INT64"}, "not a valid CompressionCodec string"},
-		"unsupported-codec": {WriteOption{CompressionCodec: "LZO"}, tempFile, []string{"name=Id, type=INT64"}, "compression is not supported at this moment"},
-		"supported-brotli":  {WriteOption{CompressionCodec: "BROTLI"}, tempFile, []string{"name=Id, type=INT64"}, ""},
-		"compression-level": {WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6"}}, tempFile, []string{"name=Id, type=INT64"}, ""},
+		"invalid-uri": {
+			wOpt,
+			"://uri",
+			nil,
+			"unable to parse file location",
+		},
+		"invalid-scheme": {
+			wOpt,
+			"invalid-scheme://something",
+			nil,
+			"unknown location scheme",
+		},
+		"invalid-schema1": {
+			wOpt,
+			tempFile,
+			[]string{"invalid schema"},
+			"expect 'key=value'",
+		},
+		"invalid-schema2": {
+			wOpt,
+			tempFile,
+			[]string{"name=Id"},
+			"not a valid Type string",
+		},
+		"invalid-schema3": {
+			wOpt,
+			tempFile,
+			[]string{"name=Id, type=FOOBAR"},
+			"field [Id] with type [FOOBAR]: not a valid Type string",
+		},
+		"invalid-codec": {
+			WriteOption{CompressionCodec: "FOOBAR"},
+			tempFile,
+			[]string{"name=Id, type=INT64"},
+			"not a valid CompressionCodec string",
+		},
+		"unsupported-codec": {
+			WriteOption{CompressionCodec: "LZO"},
+			tempFile,
+			[]string{"name=Id, type=INT64"},
+			"compression is not supported at this moment",
+		},
+		"supported-brotli": {
+			WriteOption{CompressionCodec: "BROTLI"},
+			tempFile,
+			[]string{"name=Id, type=INT64"},
+			"",
+		},
+		"compression-level": {
+			WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6"}},
+			tempFile,
+			[]string{"name=Id, type=INT64"},
+			"",
+		},
 		"column-key-parse-error": {
 			WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
@@ -399,8 +505,18 @@ func TestNewCSVWriter(t *testing.T) {
 			[]string{"name=Id, type=INT64"},
 			"",
 		},
-		"hdfs-failed": {wOpt, "hdfs://localhost:1/temp/good.parquet", nil, "connection refused"},
-		"all-good":    {WriteOption{CompressionCodec: "SNAPPY"}, tempFile, []string{"name=Id, type=INT64"}, ""},
+		"hdfs-failed": {
+			wOpt,
+			"hdfs://localhost:1/temp/good.parquet",
+			nil,
+			"connection refused",
+		},
+		"all-good": {
+			WriteOption{CompressionCodec: "SNAPPY"},
+			tempFile,
+			[]string{"name=Id, type=INT64"},
+			"",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -434,11 +550,36 @@ func TestNewJSONWriter(t *testing.T) {
 		option WriteOption
 		errMsg string
 	}{
-		"invalid-uri":         {"://uri", "", WriteOption{CompressionCodec: "SNAPPY"}, "unable to parse file location"},
-		"invalid-schema1":     {tempFile, "invalid schema", WriteOption{CompressionCodec: "SNAPPY"}, "unmarshal json schema string"},
-		"invalid-schema2":     {tempFile, `{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, WriteOption{CompressionCodec: "SNAPPY"}, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-compression": {tempFile, validSchema, WriteOption{CompressionCodec: "INVALID"}, "not a valid CompressionCodec"},
-		"compression-level":   {tempFile, validSchema, WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6"}}, ""},
+		"invalid-uri": {
+			"://uri",
+			"",
+			WriteOption{CompressionCodec: "SNAPPY"},
+			"unable to parse file location",
+		},
+		"invalid-schema1": {
+			tempFile,
+			"invalid schema",
+			WriteOption{CompressionCodec: "SNAPPY"},
+			"unmarshal json schema string",
+		},
+		"invalid-schema2": {
+			tempFile,
+			`{"Tag":"name=top","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`,
+			WriteOption{CompressionCodec: "SNAPPY"},
+			"field [Id] with type [FOOBAR]: not a valid Type string",
+		},
+		"invalid-compression": {
+			tempFile,
+			validSchema,
+			WriteOption{CompressionCodec: "INVALID"},
+			"not a valid CompressionCodec",
+		},
+		"compression-level": {
+			tempFile,
+			validSchema,
+			WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6"}},
+			"",
+		},
 		"column-key-parse-error": {
 			tempFile,
 			validSchema,
@@ -484,7 +625,12 @@ func TestNewJSONWriter(t *testing.T) {
 			},
 			"",
 		},
-		"all-good": {tempFile, validSchema, WriteOption{CompressionCodec: "SNAPPY"}, ""},
+		"all-good": {
+			tempFile,
+			validSchema,
+			WriteOption{CompressionCodec: "SNAPPY"},
+			"",
+		},
 	}
 
 	for name, tc := range testCases {
@@ -518,21 +664,96 @@ func TestNewGenericWriter(t *testing.T) {
 		schema string
 		errMsg string
 	}{
-		"invalid-uri":                      {"://uri", WriteOption{}, "", "unable to parse file location"},
-		"schema-not-json":                  {tempFile, WriteOption{}, "invalid schema", "unmarshal json schema string:"},
-		"schema-invalid":                   {tempFile, WriteOption{}, `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`, "field [Id] with type [FOOBAR]: not a valid Type string"},
-		"invalid-codec":                    {tempFile, WriteOption{CompressionCodec: "FOOBAR"}, schema, "not a valid CompressionCodec string"},
-		"unsupported-codec":                {tempFile, WriteOption{CompressionCodec: "LZO"}, schema, "compression is not supported at this moment"},
-		"supported-brotli":                 {tempFile, WriteOption{CompressionCodec: "BROTLI"}, schema, ""},
-		"all-good":                         {tempFile, WriteOption{CompressionCodec: "SNAPPY"}, schema, ""},
-		"compression-level-gzip":           {tempFile, WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6"}}, schema, ""},
-		"compression-level-zstd":           {tempFile, WriteOption{CompressionCodec: "ZSTD", CompressionLevel: []string{"ZSTD=3"}}, schema, ""},
-		"compression-level-brotli":         {tempFile, WriteOption{CompressionCodec: "BROTLI", CompressionLevel: []string{"BROTLI=5"}}, schema, ""},
-		"compression-level-lz4raw":         {tempFile, WriteOption{CompressionCodec: "LZ4_RAW", CompressionLevel: []string{"LZ4_RAW=3"}}, schema, ""},
-		"compression-level-snappy-invalid": {tempFile, WriteOption{CompressionCodec: "SNAPPY", CompressionLevel: []string{"SNAPPY=3"}}, schema, "does not support compression levels"},
-		"compression-level-invalid-value":  {tempFile, WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=99"}}, schema, "out of range"},
-		"compression-level-multi":          {tempFile, WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}}, schema, ""},
-		"compression-level-nil":            {tempFile, WriteOption{CompressionCodec: "GZIP"}, schema, ""},
+		"invalid-uri": {
+			"://uri",
+			WriteOption{},
+			"",
+			"unable to parse file location",
+		},
+		"schema-not-json": {
+			tempFile,
+			WriteOption{},
+			"invalid schema",
+			"unmarshal json schema string:",
+		},
+		"schema-invalid": {
+			tempFile,
+			WriteOption{},
+			`{"Tag":"name=root","Fields":[{"Tag":"name=id, type=FOOBAR"}]}`,
+			"field [Id] with type [FOOBAR]: not a valid Type string",
+		},
+		"invalid-codec": {
+			tempFile,
+			WriteOption{CompressionCodec: "FOOBAR"},
+			schema,
+			"not a valid CompressionCodec string",
+		},
+		"unsupported-codec": {
+			tempFile,
+			WriteOption{CompressionCodec: "LZO"},
+			schema,
+			"compression is not supported at this moment",
+		},
+		"supported-brotli": {
+			tempFile,
+			WriteOption{CompressionCodec: "BROTLI"},
+			schema,
+			"",
+		},
+		"all-good": {
+			tempFile,
+			WriteOption{CompressionCodec: "SNAPPY"},
+			schema,
+			"",
+		},
+		"compression-level-gzip": {
+			tempFile,
+			WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6"}},
+			schema,
+			"",
+		},
+		"compression-level-zstd": {
+			tempFile,
+			WriteOption{CompressionCodec: "ZSTD", CompressionLevel: []string{"ZSTD=3"}},
+			schema,
+			"",
+		},
+		"compression-level-brotli": {
+			tempFile,
+			WriteOption{CompressionCodec: "BROTLI", CompressionLevel: []string{"BROTLI=5"}},
+			schema,
+			"",
+		},
+		"compression-level-lz4raw": {
+			tempFile,
+			WriteOption{CompressionCodec: "LZ4_RAW", CompressionLevel: []string{"LZ4_RAW=3"}},
+			schema,
+			"",
+		},
+		"compression-level-snappy-invalid": {
+			tempFile,
+			WriteOption{CompressionCodec: "SNAPPY", CompressionLevel: []string{"SNAPPY=3"}},
+			schema,
+			"does not support compression levels",
+		},
+		"compression-level-invalid-value": {
+			tempFile,
+			WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=99"}},
+			schema,
+			"out of range",
+		},
+		"compression-level-multi": {
+			tempFile,
+			WriteOption{CompressionCodec: "GZIP", CompressionLevel: []string{"GZIP=6,ZSTD=3"}},
+			schema,
+			"",
+		},
+		"compression-level-nil": {
+			tempFile,
+			WriteOption{CompressionCodec: "GZIP"},
+			schema,
+			"",
+		},
 		"column-key-parse-error": {
 			tempFile,
 			WriteOption{
