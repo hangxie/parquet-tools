@@ -25,8 +25,17 @@ func TestLoadKeyFile(t *testing.T) {
 			contents: `{not json`,
 			errMsg:   "parse key file",
 		},
-		"unknown-fields-ignored": {
+		"trailing-json-rejected": {
+			contents: `{"footer_key":"Zm9vdGVy"} {}`,
+			errMsg:   "parse key file",
+		},
+		"trailing-junk-rejected": {
+			contents: `{"footer_key":"Zm9vdGVy"} garbage`,
+			errMsg:   "parse key file",
+		},
+		"unknown-fields-rejected": {
 			contents: `{"foo": "bar"}`,
+			errMsg:   "parse key file",
 		},
 		"empty-object-no-op": {
 			contents: `{}`,
