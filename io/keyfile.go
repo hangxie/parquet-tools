@@ -1,8 +1,10 @@
 package io
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	stdio "io"
 	"os"
 	"sort"
 	"strings"
@@ -19,8 +21,17 @@ func loadKeyFile(path string, opt *ReadOption) error {
 	if err != nil {
 		return fmt.Errorf("read key file: %w", err)
 	}
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.DisallowUnknownFields()
 	var kf keyFileSchema
-	if err := json.Unmarshal(raw, &kf); err != nil {
+	if err := dec.Decode(&kf); err != nil {
+		return fmt.Errorf("parse key file: %w", err)
+	}
+	var extra any
+	if err := dec.Decode(&extra); err != stdio.EOF {
+		if err == nil {
+			return fmt.Errorf("parse key file: trailing data after JSON object")
+		}
 		return fmt.Errorf("parse key file: %w", err)
 	}
 	if opt.FooterKey == nil && kf.FooterKey != "" {
