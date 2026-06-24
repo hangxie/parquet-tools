@@ -19,7 +19,7 @@ to the parquet-tools Go CLI project.
 - Handle errors explicitly and provide useful CLI feedback.
 - Use `context.Context` for cancellable operations.
 - Avoid leaking goroutines or unnecessary memory allocations.
-- Source files are preferred to be under 300 LOC and must never exceed 500 LOC; split larger files into cohesive units.
+- Non-test Go source files are preferred to be under 300 LOC and must never exceed 500 LOC; split larger files into cohesive units. Test files may exceed this limit when table coverage or fixtures make that clearer than splitting.
 
 ---
 

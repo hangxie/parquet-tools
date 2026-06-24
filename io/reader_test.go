@@ -475,6 +475,18 @@ func TestApplyKeyFile(t *testing.T) {
 				require.Equal(t, []string{"a=Y2xpQQ==", "b=ZmlsZUI="}, opt.ColumnKeys)
 			},
 		},
+		"column-keys-cross-form-cli-wins": {
+			// CLI uses dot form "a.b"; file uses the same logical path.
+			// ReformPathStr normalizes both to the same key so the file
+			// entry must be suppressed and CLI value must survive.
+			kf: keyFileSchema{
+				ColumnKeys: map[string]string{"a.b": "ZmlsZQ=="},
+			},
+			initial: ReadOption{ColumnKeys: []string{"a.b=Y2xp"}},
+			check: func(t *testing.T, opt ReadOption) {
+				require.Equal(t, []string{"a.b=Y2xp"}, opt.ColumnKeys)
+			},
+		},
 	}
 
 	for name, tc := range testCases {

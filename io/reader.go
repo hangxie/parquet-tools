@@ -13,6 +13,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
+	"github.com/hangxie/parquet-go/v3/common"
 	"github.com/hangxie/parquet-go/v3/reader"
 	"github.com/hangxie/parquet-go/v3/source"
 	pqazblob "github.com/hangxie/parquet-go/v3/source/azblob"
@@ -93,7 +94,7 @@ func applyKeyFile(kf keyFileSchema, opt *ReadOption) {
 	existing := make(map[string]struct{}, len(opt.ColumnKeys))
 	for _, ck := range opt.ColumnKeys {
 		if i := strings.IndexByte(ck, '='); i > 0 {
-			existing[ck[:i]] = struct{}{}
+			existing[common.ReformPathStr(ck[:i])] = struct{}{}
 		}
 	}
 	paths := make([]string, 0, len(kf.ColumnKeys))
@@ -102,7 +103,7 @@ func applyKeyFile(kf keyFileSchema, opt *ReadOption) {
 	}
 	sort.Strings(paths)
 	for _, p := range paths {
-		if _, ok := existing[p]; !ok {
+		if _, ok := existing[common.ReformPathStr(p)]; !ok {
 			opt.ColumnKeys = append(opt.ColumnKeys, p+"="+kf.ColumnKeys[p])
 		}
 	}
