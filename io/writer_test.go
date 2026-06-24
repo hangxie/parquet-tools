@@ -12,8 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testWriterKeyBase64(size int) string {
-	return base64.StdEncoding.EncodeToString([]byte(strings.Repeat("k", size)))
+func testWriterKeyBase64(size int) *string {
+	s := base64.StdEncoding.EncodeToString([]byte(strings.Repeat("k", size)))
+	return &s
 }
 
 func testWriterNestedSchemaHandler(t *testing.T) *parquetschema.SchemaHandler {
@@ -126,7 +127,7 @@ func TestNewParquetFileWriter(t *testing.T) {
 
 func TestValidateWriterColumnKeySchemaPaths(t *testing.T) {
 	schemaHandler := testWriterNestedSchemaHandler(t)
-	columnKey := testWriterKeyBase64(16)
+	columnKey := *testWriterKeyBase64(16)
 	nestedLeaf := schemaHandler.ValueColumns[0]
 	nestedExPath := schemaHandler.InPathToExPath[nestedLeaf]
 
@@ -210,7 +211,7 @@ func TestValidateWriterColumnKeySchemaPaths(t *testing.T) {
 // behavior.
 func TestValidateWriterColumnKeySchemaPathsCrossFormDuplicate(t *testing.T) {
 	schemaHandler := testWriterNestedSchemaHandler(t)
-	columnKey := testWriterKeyBase64(16)
+	columnKey := *testWriterKeyBase64(16)
 	nestedLeaf := schemaHandler.ValueColumns[0]
 	nestedExPath := schemaHandler.InPathToExPath[nestedLeaf]
 	stripped := stripWriterSchemaRoot(nestedExPath)
@@ -228,7 +229,7 @@ func TestValidateWriterColumnKeySchemaPathsCrossFormDuplicate(t *testing.T) {
 }
 
 func TestParseWriterColumnKeys(t *testing.T) {
-	key16 := testWriterKeyBase64(16)
+	key16 := *testWriterKeyBase64(16)
 
 	testCases := map[string]struct {
 		raw       []string
@@ -346,7 +347,7 @@ func TestWriterSchemaPathToLeafDefensive(t *testing.T) {
 
 func TestWriterEncryptAllColumnsOpts(t *testing.T) {
 	schemaHandler := testWriterNestedSchemaHandler(t)
-	columnKey := testWriterKeyBase64(16)
+	columnKey := *testWriterKeyBase64(16)
 
 	testCases := []struct {
 		name        string
@@ -505,7 +506,7 @@ func TestNewCSVWriter(t *testing.T) {
 		"column-key-path-missing": {
 			WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
-				WriterColumnKeys: []string{"Missing=" + testWriterKeyBase64(16)},
+				WriterColumnKeys: []string{"Missing=" + *testWriterKeyBase64(16)},
 			},
 			tempFile,
 			[]string{"name=Id, type=INT64"},
@@ -627,7 +628,7 @@ func TestNewJSONWriter(t *testing.T) {
 			validSchema,
 			WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
-				WriterColumnKeys: []string{"missing=" + testWriterKeyBase64(16)},
+				WriterColumnKeys: []string{"missing=" + *testWriterKeyBase64(16)},
 			},
 			"writer column key path [missing] not found in schema",
 		},
@@ -824,7 +825,7 @@ func TestNewGenericWriter(t *testing.T) {
 			tempFile,
 			WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
-				WriterColumnKeys: []string{"missing=" + testWriterKeyBase64(16)},
+				WriterColumnKeys: []string{"missing=" + *testWriterKeyBase64(16)},
 			},
 			schema,
 			"writer column key path [missing] not found in schema",
@@ -917,19 +918,19 @@ func TestWriterOpts(t *testing.T) {
 			expectedLen: 3,
 		},
 		"valid-footer-key-standard-base64": {
-			option:      WriteOption{WriterFooterKey: base64StdKey},
+			option:      WriteOption{WriterFooterKey: &base64StdKey},
 			expectedLen: 3,
 		},
 		"reject-url-safe-base64-footer-key": {
-			option: WriteOption{WriterFooterKey: base64URLKey},
+			option: WriteOption{WriterFooterKey: &base64URLKey},
 			errMsg: "invalid base64 writer footer key",
 		},
 		"reject-unpadded-base64-footer-key": {
-			option: WriteOption{WriterFooterKey: base64RawKey},
+			option: WriteOption{WriterFooterKey: &base64RawKey},
 			errMsg: "invalid base64 writer footer key",
 		},
 		"invalid-footer-key-base64": {
-			option: WriteOption{WriterFooterKey: "not base64"},
+			option: WriteOption{WriterFooterKey: new("not base64")},
 			errMsg: "invalid base64 writer footer key",
 		},
 		"invalid-footer-key-size": {
@@ -939,7 +940,7 @@ func TestWriterOpts(t *testing.T) {
 		"valid-column-key": {
 			option: WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
-				WriterColumnKeys: []string{"name=" + testWriterKeyBase64(16)},
+				WriterColumnKeys: []string{"name=" + *testWriterKeyBase64(16)},
 			},
 			expectedLen: 4,
 		},
@@ -960,7 +961,7 @@ func TestWriterOpts(t *testing.T) {
 		"invalid-column-key-size": {
 			option: WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
-				WriterColumnKeys: []string{"name=" + testWriterKeyBase64(15)},
+				WriterColumnKeys: []string{"name=" + *testWriterKeyBase64(15)},
 			},
 			errMsg: "writer column key for [name] must be 16, 24, or 32 bytes",
 		},
@@ -968,14 +969,14 @@ func TestWriterOpts(t *testing.T) {
 			option: WriteOption{
 				WriterFooterKey: testWriterKeyBase64(16),
 				WriterColumnKeys: []string{
-					"name=" + testWriterKeyBase64(16),
-					"name=" + testWriterKeyBase64(24),
+					"name=" + *testWriterKeyBase64(16),
+					"name=" + *testWriterKeyBase64(24),
 				},
 			},
 			errMsg: "duplicate writer column key path [name]",
 		},
 		"column-key-without-footer-key": {
-			option: WriteOption{WriterColumnKeys: []string{"name=" + testWriterKeyBase64(16)}},
+			option: WriteOption{WriterColumnKeys: []string{"name=" + *testWriterKeyBase64(16)}},
 			errMsg: "--writer-footer-key is required for encryption",
 		},
 		"plaintext-footer-without-footer-key": {
@@ -995,7 +996,7 @@ func TestWriterOpts(t *testing.T) {
 		"plaintext-footer-with-column-key": {
 			option: WriteOption{
 				WriterFooterKey:  testWriterKeyBase64(16),
-				WriterColumnKeys: []string{"name=" + testWriterKeyBase64(16)},
+				WriterColumnKeys: []string{"name=" + *testWriterKeyBase64(16)},
 				PlaintextFooter:  true,
 			},
 			expectedLen: 5,
@@ -1091,7 +1092,7 @@ func TestWriterEncryptionRequested(t *testing.T) {
 			expected: true,
 		},
 		"column-key": {
-			option:   WriteOption{WriterColumnKeys: []string{"name=" + testWriterKeyBase64(16)}},
+			option:   WriteOption{WriterColumnKeys: []string{"name=" + *testWriterKeyBase64(16)}},
 			expected: true,
 		},
 		"plaintext-footer": {

@@ -12,11 +12,11 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-const (
-	encFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+var (
+	encFooterKey = new("MDEyMzQ1Njc4OTAxMjM0NQ==")
 	encDoubleKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
 	encFloatKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
-	encAADPrefix = "dGVzdGVy"
+	encAADPrefix = new("dGVzdGVy")
 	encWrongKey  = "d3Jvbmd3cm9uZ3dyb25nMQ=="
 )
 
@@ -109,7 +109,7 @@ func TestCmd(t *testing.T) {
 			errMsg: "decryption key required for footer",
 		},
 		"encrypted-footer-wrong-key": {
-			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encWrongKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: &encWrongKey}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", URI: "../../testdata/encrypted-footer.parquet"},
 			errMsg: "decrypt",
 		},
 		"encrypted-columns-missing-col-key": {

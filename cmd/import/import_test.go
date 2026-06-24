@@ -13,8 +13,8 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-const (
-	importEncryptionFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+var (
+	importEncryptionFooterKey = new("MDEyMzQ1Njc4OTAxMjM0NQ==")
 	importEncryptionColumnKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
 )
 
@@ -403,7 +403,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				CompressionCodec: "SNAPPY",
 				PageSize:         1024 * 1024,
 				RowGroupSize:     128 * 1024 * 1024,
-				WriterFooterKey:  "not base64",
+				WriterFooterKey:  new("not base64"),
 			},
 			errMsg: "invalid base64 writer footer key",
 		},
@@ -413,7 +413,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				CompressionCodec: "SNAPPY",
 				PageSize:         1024 * 1024,
 				RowGroupSize:     128 * 1024 * 1024,
-				WriterFooterKey:  "MTIzNDU=",
+				WriterFooterKey:  new("MTIzNDU="),
 			},
 			errMsg: "writer footer key must be 16, 24, or 32 bytes",
 		},
