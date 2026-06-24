@@ -2,6 +2,7 @@ package io
 
 import (
 	"encoding/base64"
+	"sort"
 	"testing"
 
 	"github.com/google/uuid"
@@ -420,4 +421,69 @@ func encryptedAADReadOption() ReadOption {
 	option := encryptedReadOption()
 	option.AADPrefix = testAADPrefix
 	return option
+}
+
+func TestApplyKeyFile(t *testing.T) {
+	testCases := map[string]struct {
+		kf      keyFileSchema
+		initial ReadOption
+		check   func(*testing.T, ReadOption)
+	}{
+		"empty-schema-no-op": {
+			kf:      keyFileSchema{},
+			initial: ReadOption{FooterKey: new("existing")},
+			check: func(t *testing.T, opt ReadOption) {
+				require.Equal(t, new("existing"), opt.FooterKey)
+				require.Nil(t, opt.AADPrefix)
+				require.Empty(t, opt.ColumnKeys)
+			},
+		},
+		"populates-empty-fields": {
+			kf: keyFileSchema{
+				FooterKey:  "Zm9vdGVy",
+				AADPrefix:  "YWFk",
+				ColumnKeys: map[string]string{"a.b": "Y29sQQ==", "c": "Y29sQg=="},
+			},
+			check: func(t *testing.T, opt ReadOption) {
+				require.Equal(t, new("Zm9vdGVy"), opt.FooterKey)
+				require.Equal(t, new("YWFk"), opt.AADPrefix)
+				sort.Strings(opt.ColumnKeys)
+				require.Equal(t, []string{"a.b=Y29sQQ==", "c=Y29sQg=="}, opt.ColumnKeys)
+			},
+		},
+		"cli-wins-for-scalars": {
+			kf: keyFileSchema{
+				FooterKey: "ZnJvbWZpbGU=",
+				AADPrefix: "ZnJvbWZpbGU=",
+			},
+			initial: ReadOption{
+				FooterKey: new("ZnJvbWNsaQ=="),
+				AADPrefix: new("ZnJvbWNsaQ=="),
+			},
+			check: func(t *testing.T, opt ReadOption) {
+				require.Equal(t, new("ZnJvbWNsaQ=="), opt.FooterKey)
+				require.Equal(t, new("ZnJvbWNsaQ=="), opt.AADPrefix)
+			},
+		},
+		"column-keys-merge-cli-wins": {
+			kf: keyFileSchema{
+				ColumnKeys: map[string]string{"a": "ZmlsZUE=", "b": "ZmlsZUI="},
+			},
+			initial: ReadOption{ColumnKeys: []string{"a=Y2xpQQ=="}},
+			check: func(t *testing.T, opt ReadOption) {
+				sort.Strings(opt.ColumnKeys)
+				require.Equal(t, []string{"a=Y2xpQQ==", "b=ZmlsZUI="}, opt.ColumnKeys)
+			},
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			opt := tc.initial
+			applyKeyFile(tc.kf, &opt)
+			if tc.check != nil {
+				tc.check(t, opt)
+			}
+		})
+	}
 }

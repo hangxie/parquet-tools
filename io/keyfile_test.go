@@ -3,19 +3,17 @@ package io
 import (
 	"os"
 	"path/filepath"
-	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadKeyFile(t *testing.T) {
+func TestParseKeyFile(t *testing.T) {
 	testCases := map[string]struct {
 		missing  bool
 		contents string
-		initial  ReadOption
 		errMsg   string
-		check    func(*testing.T, ReadOption)
+		check    func(*testing.T, keyFileSchema)
 	}{
 		"missing-file": {
 			missing: true,
@@ -37,38 +35,20 @@ func TestLoadKeyFile(t *testing.T) {
 			contents: `{"foo": "bar"}`,
 			errMsg:   "parse key file",
 		},
-		"empty-object-no-op": {
+		"empty-object": {
 			contents: `{}`,
-			initial:  ReadOption{FooterKey: new("existing")},
-			check: func(t *testing.T, opt ReadOption) {
-				require.Equal(t, new("existing"), opt.FooterKey)
-				require.Nil(t, opt.AADPrefix)
-				require.Empty(t, opt.ColumnKeys)
+			check: func(t *testing.T, kf keyFileSchema) {
+				require.Empty(t, kf.FooterKey)
+				require.Empty(t, kf.AADPrefix)
+				require.Empty(t, kf.ColumnKeys)
 			},
 		},
-		"populates-empty-fields": {
+		"all-fields": {
 			contents: `{"footer_key":"Zm9vdGVy","aad_prefix":"YWFk","column_keys":{"a.b":"Y29sQQ==","c":"Y29sQg=="}}`,
-			check: func(t *testing.T, opt ReadOption) {
-				require.Equal(t, new("Zm9vdGVy"), opt.FooterKey)
-				require.Equal(t, new("YWFk"), opt.AADPrefix)
-				sort.Strings(opt.ColumnKeys)
-				require.Equal(t, []string{"a.b=Y29sQQ==", "c=Y29sQg=="}, opt.ColumnKeys)
-			},
-		},
-		"cli-footer-key-wins": {
-			contents: `{"footer_key":"ZnJvbWZpbGU=","aad_prefix":"ZnJvbWZpbGU="}`,
-			initial:  ReadOption{FooterKey: new("ZnJvbWNsaQ=="), AADPrefix: new("ZnJvbWNsaQ==")},
-			check: func(t *testing.T, opt ReadOption) {
-				require.Equal(t, new("ZnJvbWNsaQ=="), opt.FooterKey)
-				require.Equal(t, new("ZnJvbWNsaQ=="), opt.AADPrefix)
-			},
-		},
-		"column-keys-merge": {
-			contents: `{"column_keys":{"a":"ZmlsZUE=","b":"ZmlsZUI="}}`,
-			initial:  ReadOption{ColumnKeys: []string{"a=Y2xpQQ=="}},
-			check: func(t *testing.T, opt ReadOption) {
-				sort.Strings(opt.ColumnKeys)
-				require.Equal(t, []string{"a=Y2xpQQ==", "b=ZmlsZUI="}, opt.ColumnKeys)
+			check: func(t *testing.T, kf keyFileSchema) {
+				require.Equal(t, "Zm9vdGVy", kf.FooterKey)
+				require.Equal(t, "YWFk", kf.AADPrefix)
+				require.Equal(t, map[string]string{"a.b": "Y29sQQ==", "c": "Y29sQg=="}, kf.ColumnKeys)
 			},
 		},
 		"empty-column-path": {
@@ -87,8 +67,7 @@ func TestLoadKeyFile(t *testing.T) {
 				require.NoError(t, os.WriteFile(path, []byte(tc.contents), 0o600))
 			}
 
-			opt := tc.initial
-			err := loadKeyFile(path, &opt)
+			kf, err := parseKeyFile(path)
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -96,7 +75,7 @@ func TestLoadKeyFile(t *testing.T) {
 			}
 			require.NoError(t, err)
 			if tc.check != nil {
-				tc.check(t, opt)
+				tc.check(t, kf)
 			}
 		})
 	}
