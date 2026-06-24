@@ -15,11 +15,13 @@ const (
 	encryptedColumnURI  = "../testdata/encrypted-columns.parquet"  // renamed from encrypt_columns_plaintext_footer.parquet.encrypted
 	encryptedAADURI     = "../testdata/encrypted-aad.parquet"      // renamed from encrypt_columns_and_footer_disable_aad_storage.parquet.encrypted
 	encryptedUniformURI = "../testdata/uniform-encryption.parquet" // renamed from uniform_encryption.parquet.encrypted
+)
 
-	testFooterKey      = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+var (
+	testFooterKey      = new("MDEyMzQ1Njc4OTAxMjM0NQ==")
 	testDoubleFieldKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
 	testFloatFieldKey  = "MTIzNDU2Nzg5MDEyMzQ1MQ=="
-	testAADPrefix      = "dGVzdGVy"
+	testAADPrefix      = new("dGVzdGVy")
 	testWrongKey       = "d3Jvbmd3cm9uZ3dyb25nMQ=="
 )
 
@@ -32,11 +34,11 @@ func TestBuildReaderOptions(t *testing.T) {
 			option: ReadOption{},
 		},
 		"invalid-footer-key": {
-			option: ReadOption{FooterKey: "!!!"},
+			option: ReadOption{FooterKey: new("!!!")},
 			errMsg: "invalid base64 footer key",
 		},
 		"invalid-aad-prefix": {
-			option: ReadOption{AADPrefix: "!!!"},
+			option: ReadOption{AADPrefix: new("!!!")},
 			errMsg: "invalid base64 AAD prefix",
 		},
 		"column-key-missing-equal": {
@@ -59,11 +61,11 @@ func TestBuildReaderOptions(t *testing.T) {
 			option: ReadOption{FooterKey: testFooterKey},
 		},
 		"reject-url-safe-base64": {
-			option: ReadOption{FooterKey: "-_8="},
+			option: ReadOption{FooterKey: new("-_8=")},
 			errMsg: "invalid base64 footer key",
 		},
 		"reject-unpadded-base64": {
-			option: ReadOption{FooterKey: "MDEyMzQ1Njc4OTAxMjM0NQ"},
+			option: ReadOption{FooterKey: new("MDEyMzQ1Njc4OTAxMjM0NQ")},
 			errMsg: "invalid base64 footer key",
 		},
 		"valid-column-key": {
@@ -86,7 +88,7 @@ func TestBuildReaderOptions(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			require.Len(t, opts, len(tc.option.ColumnKeys)+boolToInt(tc.option.FooterKey != "")+boolToInt(tc.option.AADPrefix != ""))
+			require.Len(t, opts, len(tc.option.ColumnKeys)+boolToInt(tc.option.FooterKey != nil)+boolToInt(tc.option.AADPrefix != nil))
 		})
 	}
 }
@@ -146,7 +148,7 @@ func TestNewParquetFileReader(t *testing.T) {
 		},
 		"s3-wrong-version": {
 			s3URL,
-			ReadOption{ObjectVersion: "random-version-id", Anonymous: true},
+			ReadOption{ObjectVersion: new("random-version-id"), Anonymous: true},
 			"https response error StatusCode: 400",
 		},
 		"gcs-no-permission": {
@@ -156,7 +158,7 @@ func TestNewParquetFileReader(t *testing.T) {
 		},
 		"gcs-wrong-generation": {
 			gcsURL,
-			ReadOption{Anonymous: true, ObjectVersion: "99999"},
+			ReadOption{Anonymous: true, ObjectVersion: new("99999")},
 			"Error 404: No such object:",
 		},
 		"gcs-good": {
@@ -166,7 +168,7 @@ func TestNewParquetFileReader(t *testing.T) {
 		},
 		"gcs-good-with-gen": {
 			gcsURL,
-			ReadOption{Anonymous: true, ObjectVersion: "-1"},
+			ReadOption{Anonymous: true, ObjectVersion: new("-1")},
 			"",
 		},
 		"azblob-no-permission": {
@@ -176,7 +178,7 @@ func TestNewParquetFileReader(t *testing.T) {
 		},
 		"azblob-bad-version": {
 			azblobURL,
-			ReadOption{Anonymous: true, ObjectVersion: "foo-bar"},
+			ReadOption{Anonymous: true, ObjectVersion: new("foo-bar")},
 			"RESPONSE 400: 400",
 		},
 		"azblob-good": {
@@ -259,7 +261,7 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 		},
 		"encrypted-footer-wrong-key": {
 			uri:    encryptedFooterURI,
-			option: ReadOption{FooterKey: testWrongKey},
+			option: ReadOption{FooterKey: &testWrongKey},
 			errMsg: "decrypt",
 		},
 		"encrypted-footer-no-key": {
@@ -325,6 +327,44 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 			option:   ReadOption{FooterKey: testFooterKey},
 			readRows: true,
 			rowCount: 10,
+		},
+		// uniform-encryption requires only a footer key; no column keys needed
+		"key-file-footer-only": {
+			uri:      encryptedUniformURI,
+			option:   ReadOption{KeyFile: new("../testdata/key-file-footer.json")},
+			readRows: true,
+			rowCount: 10,
+		},
+		"key-file-all-keys": {
+			uri:      encryptedColumnURI,
+			option:   ReadOption{KeyFile: new("../testdata/key-file-all.json")},
+			readRows: true,
+			rowCount: 10,
+		},
+		"key-file-aad": {
+			uri:      encryptedAADURI,
+			option:   ReadOption{KeyFile: new("../testdata/key-file-aad.json")},
+			readRows: true,
+			rowCount: 10,
+		},
+		// uniform-encryption requires only a footer key; no column keys needed
+		"key-file-cli-override": {
+			uri: encryptedUniformURI,
+			option: ReadOption{
+				KeyFile:   new("../testdata/key-file-wrong-footer.json"),
+				FooterKey: testFooterKey,
+			},
+			readRows: true,
+			rowCount: 10,
+		},
+		"key-file-empty-json-against-plaintext": {
+			uri:    "../testdata/good.parquet",
+			option: ReadOption{KeyFile: new("../testdata/key-file-empty.json")},
+		},
+		"key-file-bad-path": {
+			uri:    encryptedFooterURI,
+			option: ReadOption{KeyFile: new("../testdata/no-such-key-file.json")},
+			errMsg: "read key file",
 		},
 	}
 

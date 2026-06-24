@@ -45,7 +45,7 @@ type WriteOption struct {
 	DataPageVersion     int32    `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
 	PageSize            int64    `help:"Page size in bytes." default:"1048576"`
 	RowGroupSize        int64    `help:"Row group size in bytes." default:"134217728"`
-	WriterFooterKey     string   `name:"writer-footer-key" group:"Encryption" help:"base64-encoded AES-128/192/256 key. Encrypts the footer; also used for columns marked '=@footer-key' and for unlisted columns when --encrypt-all-columns is set. With --plaintext-footer the key signs the footer instead of encrypting it." default:""`
+	WriterFooterKey     *string  `name:"writer-footer-key" group:"Encryption" help:"base64-encoded AES-128/192/256 key. Encrypts the footer; also used for columns marked '=@footer-key' and for unlisted columns when --encrypt-all-columns is set. With --plaintext-footer the key signs the footer instead of encrypting it."`
 	WriterColumnKeys    []string `name:"writer-column-key" group:"Encryption" help:"per-column encryption directive 'column.path=VALUE'; repeatable. column.path is the dotted file-schema path of a leaf column without the schema root (e.g. Parent.Child, not parquet_go_root.Parent.Child). VALUE is a base64-encoded AES key, or the literal '@footer-key' to encrypt the column with --writer-footer-key. Columns not listed are plaintext unless --encrypt-all-columns is set." placeholder:"column.path=base64key"`
 	EncryptAllColumns   bool     `name:"encrypt-all-columns" group:"Encryption" help:"encrypt every leaf column. Columns not listed in --writer-column-key use --writer-footer-key. Default: false (only columns listed in --writer-column-key are encrypted)." default:"false"`
 	PlaintextFooter     bool     `name:"plaintext-footer" group:"Encryption" help:"write a PAR1 file with a plaintext footer signed by --writer-footer-key instead of an encrypted PARE footer. Without --encrypt-all-columns or --writer-column-key the footer is signed for integrity only (columns remain plaintext)." default:"false"`
@@ -147,7 +147,7 @@ func validateWriterAESKey(name string, key []byte) error {
 func writerEncryptionRequested(option WriteOption) bool {
 	// --encryption-algorithm only selects an algorithm once encryption is
 	// enabled by the writer key flags; it does not request encryption by itself.
-	return option.WriterFooterKey != "" || len(option.WriterColumnKeys) > 0 || option.PlaintextFooter || option.EncryptAllColumns
+	return option.WriterFooterKey != nil || len(option.WriterColumnKeys) > 0 || option.PlaintextFooter || option.EncryptAllColumns
 }
 
 // writerColumnKey is one parsed --writer-column-key directive. Path is the
@@ -208,11 +208,11 @@ func writerEncryptionOpts(option WriteOption, columnKeys []writerColumnKey) ([]w
 	if !writerEncryptionRequested(option) {
 		return nil, nil
 	}
-	if option.WriterFooterKey == "" {
+	if option.WriterFooterKey == nil {
 		return nil, fmt.Errorf("--writer-footer-key is required for encryption")
 	}
 
-	footerKey, err := decodeBase64(option.WriterFooterKey)
+	footerKey, err := decodeBase64(*option.WriterFooterKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid base64 writer footer key: %w", err)
 	}

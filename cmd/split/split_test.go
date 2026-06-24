@@ -143,8 +143,8 @@ func TestCmd(t *testing.T) {
 	})
 }
 
-const (
-	splitEncryptionFooterKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+var (
+	splitEncryptionFooterKey = new("MDEyMzQ1Njc4OTAxMjM0NQ==")
 	splitEncryptionColumnKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
 )
 
@@ -261,7 +261,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				DataPageVersion:  2,
 				PageSize:         1024 * 1024,
 				RowGroupSize:     128 * 1024 * 1024,
-				WriterFooterKey:  "not base64",
+				WriterFooterKey:  new("not base64"),
 			},
 			errMsg: "invalid base64 writer footer key",
 		},
@@ -272,7 +272,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				DataPageVersion:  2,
 				PageSize:         1024 * 1024,
 				RowGroupSize:     128 * 1024 * 1024,
-				WriterFooterKey:  "MTIzNDU=",
+				WriterFooterKey:  new("MTIzNDU="),
 			},
 			errMsg: "writer footer key must be 16, 24, or 32 bytes",
 		},

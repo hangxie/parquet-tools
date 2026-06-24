@@ -29,10 +29,11 @@ type ReadOption struct {
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	HTTPIgnoreTLSError     bool              `help:"(HTTP and S3 URI) ignore TLS error." default:"false"`
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
-	ObjectVersion          string            `help:"(S3, GCS, and Azure only) object version." default:""`
-	FooterKey              string            `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first." default:""`
+	ObjectVersion          *string           `help:"(S3, GCS, and Azure only) object version."`
+	FooterKey              *string           `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first."`
 	ColumnKeys             []string          `name:"column-key" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
-	AADPrefix              string            `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)." default:""`
+	AADPrefix              *string           `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)."`
+	KeyFile                *string           `name:"key-file" group:"Encryption" help:"path to a JSON file containing decryption keys ({footer_key, aad_prefix, column_keys}); CLI flags override file values."`
 }
 
 // decodeBase64 accepts only standard base64 with padding (RFC 4648 §4).
@@ -50,16 +51,16 @@ func decodeBase64(s string) ([]byte, error) {
 func buildReaderOptions(option ReadOption) ([]reader.ReaderOption, error) {
 	var opts []reader.ReaderOption
 
-	if option.FooterKey != "" {
-		key, err := decodeBase64(option.FooterKey)
+	if option.FooterKey != nil {
+		key, err := decodeBase64(*option.FooterKey)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 footer key: %w", err)
 		}
 		opts = append(opts, reader.WithFooterKey(key))
 	}
 
-	if option.AADPrefix != "" {
-		prefix, err := decodeBase64(option.AADPrefix)
+	if option.AADPrefix != nil {
+		prefix, err := decodeBase64(*option.AADPrefix)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 AAD prefix: %w", err)
 		}
@@ -91,15 +92,15 @@ func newAWSS3Reader(u *url.URL, option ReadOption) (source.ParquetFileReader, er
 		return nil, err
 	}
 
-	var objVersion *string
-	if option.ObjectVersion != "" {
-		objVersion = &option.ObjectVersion
-	}
-	return s3v2.NewS3FileReaderWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), objVersion)
+	return s3v2.NewS3FileReaderWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), option.ObjectVersion)
 }
 
 func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
-	azURL, cred, err := azureAccessDetail(*u, option.Anonymous, option.ObjectVersion)
+	objectVersion := ""
+	if option.ObjectVersion != nil {
+		objectVersion = *option.ObjectVersion
+	}
+	azURL, cred, err := azureAccessDetail(*u, option.Anonymous, objectVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +110,11 @@ func newAzureStorageBlobReader(u *url.URL, option ReadOption) (source.ParquetFil
 
 func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
 	generation := int64(-1)
-	if option.ObjectVersion != "" {
+	if option.ObjectVersion != nil {
 		var err error
-		generation, err = strconv.ParseInt(option.ObjectVersion, 10, 64)
+		generation, err = strconv.ParseInt(*option.ObjectVersion, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("invalid GCS generation [%s]: %w", option.ObjectVersion, err)
+			return nil, fmt.Errorf("invalid GCS generation [%s]: %w", *option.ObjectVersion, err)
 		}
 	}
 	ctx := context.Background()
@@ -173,6 +174,12 @@ func newSourceReader(URI string, option ReadOption) (source.ParquetFileReader, e
 }
 
 func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
+	if option.KeyFile != nil {
+		if err := loadKeyFile(*option.KeyFile, &option); err != nil {
+			return nil, err
+		}
+	}
+
 	fileReader, err := newSourceReader(URI, option)
 	if err != nil {
 		return nil, err
@@ -191,7 +198,7 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 		return nil, err
 	}
 
-	hasEncryptionOptions := option.FooterKey != "" || len(option.ColumnKeys) > 0 || option.AADPrefix != ""
+	hasEncryptionOptions := option.FooterKey != nil || len(option.ColumnKeys) > 0 || option.AADPrefix != nil
 	isEncrypted := pr.FileCrypto != nil || (pr.Footer != nil && pr.Footer.IsSetEncryptionAlgorithm())
 	if hasEncryptionOptions && !isEncrypted {
 		_ = fileReader.Close()
