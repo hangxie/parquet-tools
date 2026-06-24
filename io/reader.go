@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os/user"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -80,6 +81,31 @@ func buildReaderOptions(option ReadOption) ([]reader.ReaderOption, error) {
 	}
 
 	return opts, nil
+}
+
+func applyKeyFile(kf keyFileSchema, opt *ReadOption) {
+	if opt.FooterKey == nil && kf.FooterKey != "" {
+		opt.FooterKey = &kf.FooterKey
+	}
+	if opt.AADPrefix == nil && kf.AADPrefix != "" {
+		opt.AADPrefix = &kf.AADPrefix
+	}
+	existing := make(map[string]struct{}, len(opt.ColumnKeys))
+	for _, ck := range opt.ColumnKeys {
+		if i := strings.IndexByte(ck, '='); i > 0 {
+			existing[ck[:i]] = struct{}{}
+		}
+	}
+	paths := make([]string, 0, len(kf.ColumnKeys))
+	for p := range kf.ColumnKeys {
+		paths = append(paths, p)
+	}
+	sort.Strings(paths)
+	for _, p := range paths {
+		if _, ok := existing[p]; !ok {
+			opt.ColumnKeys = append(opt.ColumnKeys, p+"="+kf.ColumnKeys[p])
+		}
+	}
 }
 
 func newLocalReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
@@ -175,9 +201,11 @@ func newSourceReader(URI string, option ReadOption) (source.ParquetFileReader, e
 
 func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader, error) {
 	if option.KeyFile != nil {
-		if err := loadKeyFile(*option.KeyFile, &option); err != nil {
+		kf, err := parseKeyFile(*option.KeyFile)
+		if err != nil {
 			return nil, err
 		}
+		applyKeyFile(kf, &option)
 	}
 
 	fileReader, err := newSourceReader(URI, option)
