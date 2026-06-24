@@ -557,6 +557,30 @@ All writer keys must be standard base64 with padding (RFC 4648 §4) and must dec
 
 By default, columns not listed in `--writer-column-key` are written as plaintext. Set `--encrypt-all-columns` to encrypt every leaf column not otherwise listed with `--writer-footer-key`.
 
+To keep writer keys out of shell history and `ps` output, use `--writer-key-file` instead:
+
+```bash
+$ parquet-tools import -f csv \
+    -s testdata/csv.source \
+    -m testdata/csv.schema \
+    --writer-key-file ~/.parquet/writer-keys.json \
+    output.parquet
+```
+
+`--writer-key-file` uses the same JSON schema as `--key-file`. `aad_prefix` is accepted but ignored by the writer:
+
+```json
+{
+  "footer_key":  "base64-encoded AES-128/192/256 key",
+  "column_keys": {
+    "col.path":  "base64-encoded AES key",
+    "other.col": "@footer-key"
+  }
+}
+```
+
+CLI flags override file values. `--writer-column-key` flags merge with `column_keys`; CLI wins per column path. Recommend `chmod 600` on the file.
+
 Supported write scenarios:
 
 | Scenario | Flags | Result |
@@ -617,14 +641,14 @@ $ parquet-tools transcode \
 * `AES-GCM-V1` (default): authenticates every encrypted module.
 * `AES-GCM-CTR-V1`: uses AES-CTR for page bodies. This has lower overhead, but page body tampering is not detected by the cipher.
 
-To transcode an encrypted source and write it with different output keys, combine reader and writer flags:
+To transcode an encrypted source and write it with different output keys, combine reader and writer key files:
 
 ```bash
 $ parquet-tools transcode \
     -s encrypted-source.parquet \
-    --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
-    --writer-footer-key YWJjZGVmMDEyMzQ1Njc4OQ== \
-    /tmp/re-encrypted.parquet
+    --key-file ~/.parquet/reader-keys.json \
+    --writer-key-file ~/.parquet/writer-keys.json \
+    re-encrypted-output.parquet
 ```
 
 ### File Format Options
