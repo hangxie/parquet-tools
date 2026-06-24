@@ -513,7 +513,32 @@ $ parquet-tools cat \
     encrypted.parquet
 ```
 
-These flags are available on `cat`, `schema`, `meta`, `size`, `row-count`, `inspect`, `split`, `retype`, `merge`, and `transcode`. For `merge`, all encrypted source files must use the same supplied key set. To merge files with different keys, first strip encryption by transcoding each file to a plain Parquet file, then merge the plain outputs.
+To keep keys out of shell history and `ps` output, use `--key-file` instead:
+
+```bash
+$ parquet-tools cat --key-file ~/.parquet/keys.json encrypted.parquet
+```
+
+The file is JSON with all fields optional:
+
+```json
+{
+  "footer_key":  "base64-encoded AES-128/192/256 key",
+  "aad_prefix":  "base64-encoded AAD prefix",
+  "column_keys": {
+    "user.email": "base64-encoded AES key",
+    "user.ssn":   "base64-encoded AES key"
+  }
+}
+```
+
+CLI flags take precedence over file values. `--column-key` flags are merged with `column_keys` from the file; CLI wins per column path. Set the file's permissions to `600` to prevent other users from reading it:
+
+```bash
+chmod 600 ~/.parquet/keys.json
+```
+
+These flags — including `--key-file` — are available on `cat`, `schema`, `meta`, `size`, `row-count`, `inspect`, `split`, `retype`, `merge`, and `transcode`. For `merge`, all encrypted source files must use the same supplied key set. To merge files with different keys, first strip encryption by transcoding each file to a plain Parquet file, then merge the plain outputs.
 
 > [!NOTE]
 > **Partial keys and plaintext-signed footers.** Files with a plaintext-signed footer (PAR1 with per-column encryption) expose structural metadata — row counts, sizes, schema, encodings, and `key_metadata` hints — without any keys. Commands that only read footer/column metadata (`schema`, `row-count`, `size`, `meta`, `inspect` at file or row-group level) succeed on such files even when some or all column keys are missing. Missing-key errors are deferred to the moment an encrypted column's data or page-level details are actually requested (e.g. `cat`, or `inspect --column-chunk N` on an encrypted column). Files with an encrypted footer (PARE) still require the footer key to read anything.
