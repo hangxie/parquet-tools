@@ -38,7 +38,7 @@ func TestCmd(t *testing.T) {
 		},
 		"arrow-rs-gh-6229": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"},
-			errMsg: "expected 21 values but got 1 from RLE/bit-packed hybrid decoder",
+			errMsg: "data page value count 21 exceeds column chunk total 1",
 		},
 		"invalid-read-page-size": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true},
