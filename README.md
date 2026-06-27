@@ -532,7 +532,7 @@ The file is JSON with all fields optional:
 }
 ```
 
-CLI flags take precedence over file values. `--column-key` flags are merged with `column_keys` from the file; CLI wins per column path. Set the file's permissions to `600` to prevent other users from reading it:
+CLI flags take precedence over file values. `--column-key` flags are merged with `column_keys` from the file; CLI wins per column path. Unknown fields and trailing data in the JSON file are rejected. Set the file's permissions to `600` to prevent other users from reading it:
 
 ```bash
 chmod 600 ~/.parquet/keys.json
@@ -579,7 +579,7 @@ $ parquet-tools import -f csv \
 }
 ```
 
-CLI flags override file values. `--writer-column-key` flags merge with `column_keys`; CLI wins per column path. Recommend `chmod 600` on the file.
+CLI flags override file values. `--writer-column-key` flags merge with `column_keys`; CLI wins per column path. Unknown fields and trailing data in the JSON file are rejected. Recommend `chmod 600` on the file.
 
 Supported write scenarios:
 
