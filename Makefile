@@ -16,6 +16,7 @@ VERSION		= $(shell git describe --tags --always)
 # go option
 CGO_ENABLED := 0
 GO			?= go
+PYTHON		?= python3
 GOBIN		= $(shell $(GO) env GOPATH)/bin
 GOFLAGS		:= -trimpath
 GOSOURCES	:= $(shell find . -type f -name '*.go')
@@ -81,6 +82,7 @@ docker-build:  ## Build docker image for local test
 .PHONY: test
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
+	@$(PYTHON) -m unittest discover -s scripts -p '*_test.py'
 	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail ; \
 		cd $(BUILD_DIR)/test; \

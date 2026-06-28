@@ -190,24 +190,54 @@ def generate_html(monthly, cumulative, output_path, recent_days=RECENT_DAYS):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Star History — hangxie/parquet-tools</title>
 <style>
+html {{
+  min-height: 100%;
+}}
 body {{
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  margin: 24px; background: #fff; color: #333;
+  margin: 0; min-height: 100vh; background: #fff; color: #333;
 }}
-h2 {{ font-size: 16px; font-weight: 600; margin: 0 0 12px; }}
+.chart-page {{
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: clamp(12px, 2.5vw, 32px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}}
+h2 {{
+  width: min(100%, 175vh);
+  font-size: 16px; font-weight: 600; margin: 0 auto;
+}}
+.chart {{
+  display: block;
+  width: min(100%, 175vh);
+  height: auto;
+  margin: 0 auto;
+}}
 #tip {{
   position: fixed; background: #1e293b; color: #f8fafc;
   padding: 5px 10px; border-radius: 5px; font-size: 13px;
   pointer-events: none; display: none; white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }}
-p.meta {{ font-size: 11px; color: #bbb; margin-top: 6px; }}
+p.meta {{
+  width: min(100%, 175vh);
+  font-size: 11px; color: #bbb; margin: 0 auto;
+}}
+@media (max-width: 640px) {{
+  .chart-page {{ justify-content: flex-start; }}
+}}
 </style>
 </head>
 <body>
+<main class="chart-page">
 <h2>hangxie/parquet-tools — Star History</h2>
 <div id="tip"></div>
-<svg width="{W}" height="{H}">
+<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-labelledby="chart-title chart-desc">
+  <title id="chart-title">hangxie/parquet-tools star history</title>
+  <desc id="chart-desc">Cumulative GitHub stars from {monthly[0][0]} to {monthly[-1][0]}.</desc>
   <defs>
     <linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#2563eb" stop-opacity="0.18"/>
@@ -225,13 +255,16 @@ p.meta {{ font-size: 11px; color: #bbb; margin-top: 6px; }}
   <path id="hover-zone" d="{line_d}" fill="none" stroke="transparent" stroke-width="20" style="cursor:default"/>
 </svg>
 <p class="meta">Updated {today} &middot; {max_count} total stars</p>
+</main>
 <script>
 const tip = document.getElementById('tip');
 const pts = {js_points_str};
 const zone = document.getElementById('hover-zone');
+const svg = zone.closest('svg');
 zone.addEventListener('mousemove', e => {{
-  const rect = zone.closest('svg').getBoundingClientRect();
-  const mx = e.clientX - rect.left;
+  const rect = svg.getBoundingClientRect();
+  const viewBoxWidth = svg.viewBox.baseVal.width || rect.width;
+  const mx = rect.width ? (e.clientX - rect.left) * viewBoxWidth / rect.width : 0;
   let best = null, minD = Infinity;
   for (const p of pts) {{
     const d = Math.abs(p.x - mx);
