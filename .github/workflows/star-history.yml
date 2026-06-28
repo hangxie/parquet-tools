@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Install Python dependencies
+        run: pip install matplotlib
+
       - name: Generate star history page
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

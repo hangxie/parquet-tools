@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Fetch star history for hangxie/parquet-tools and generate an interactive HTML chart.
+Fetch star history for hangxie/parquet-tools and generate an interactive HTML chart
+and a static PNG image (requires matplotlib).
 
 Usage:
     python3 scripts/star-history.py [output.html]
+
+Output:
+    <output.html>          interactive chart
+    <output.png>           static chart for wiki embedding (sibling of the HTML file)
 
 Environment:
     GITHUB_TOKEN  GitHub personal access token (raises rate limit from 60 to 5000/hr)
@@ -249,6 +254,59 @@ zone.addEventListener('mouseleave', () => {{ tip.style.display = 'none'; }});
     print(f"Generated {output_path} ({max_count} stars, {len(monthly)} monthly + {recent_days} daily points)")
 
 
+def generate_png(monthly, output_path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+
+    if not monthly:
+        print("No star data to chart.", file=sys.stderr)
+        sys.exit(1)
+
+    dates = [datetime.strptime(d, "%Y-%m-%d") for d, _ in monthly]
+    counts = [c for _, c in monthly]
+    max_count = counts[-1]
+
+    fig, ax = plt.subplots(figsize=(9, 4.2), dpi=100)
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("white")
+
+    ax.plot(dates, counts, color="#2563eb", linewidth=2.5, solid_capstyle="round")
+    ax.fill_between(dates, counts, alpha=0.12, color="#2563eb")
+
+    y_step = tick_step(max_count)
+    ax.yaxis.set_major_locator(plt.MultipleLocator(y_step))
+    ax.grid(axis="y", color="#eeeeee", linewidth=1, linestyle="-", zorder=0)
+
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax.grid(axis="x", color="#eeeeee", linewidth=1, linestyle="--", zorder=0)
+
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    ax.spines["left"].set_color("#dddddd")
+    ax.spines["bottom"].set_color("#dddddd")
+    ax.tick_params(colors="#999999", labelsize=10)
+    ax.set_ylabel("Stars", color="#999999", fontsize=10)
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    fig.suptitle(
+        "hangxie/parquet-tools — Star History",
+        fontsize=13, fontweight="bold", color="#333333", y=0.97,
+    )
+    fig.text(
+        0.5, 0.01,
+        f"Updated {today} · {max_count} total stars",
+        ha="center", va="bottom", fontsize=9, color="#bbbbbb",
+    )
+
+    plt.tight_layout(rect=[0, 0.04, 1, 0.93])
+    plt.savefig(output_path, dpi=100, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"Generated {output_path} ({max_count} stars, {len(monthly)} monthly points)")
+
+
 def main():
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     out = sys.argv[1] if len(sys.argv) > 1 else "star-history.html"
@@ -259,6 +317,8 @@ def main():
     cumulative = cumulative_by_date(stars)
     pts = monthly_points(cumulative)
     generate_html(pts, cumulative, out, recent_days)
+    if out.endswith(".html"):
+        generate_png(pts, out[:-5] + ".png")
 
 
 if __name__ == "__main__":
