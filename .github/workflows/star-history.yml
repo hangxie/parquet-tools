@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - scripts/star-history.py
+      - .github/workflows/star-history.yml
 
 permissions:
   contents: read
