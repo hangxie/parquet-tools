@@ -24,7 +24,6 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 REPO = "hangxie/parquet-tools"
-RECENT_DAYS = 30  # daily hover tips for this many days at the trailing end of the chart
 
 
 def fetch_stars(token=None):
@@ -78,6 +77,24 @@ def monthly_points(cumulative):
     return [v for _, v in sorted(monthly.items())]
 
 
+def daily_all(cumulative):
+    """Return list of (date_str, count) for every day from first star to last, with carry-forward."""
+    if not cumulative:
+        return []
+    first = datetime.strptime(min(cumulative), "%Y-%m-%d")
+    last = datetime.strptime(max(cumulative), "%Y-%m-%d")
+    result = []
+    running = 0
+    cur = first
+    while cur <= last:
+        d = cur.strftime("%Y-%m-%d")
+        if d in cumulative:
+            running = cumulative[d]
+        result.append((d, running))
+        cur += timedelta(days=1)
+    return result
+
+
 def tick_step(max_val):
     """Return a tick interval giving 2-5 gridlines from 0 to max_val."""
     for step in [50, 100, 200, 250, 500, 1000, 2000, 5000, 10000, 25000]:
@@ -86,7 +103,7 @@ def tick_step(max_val):
     return max(1, max_val // 4)
 
 
-def generate_html(monthly, cumulative, output_path, recent_days=RECENT_DAYS):
+def generate_html(monthly, cumulative, output_path):
     if not monthly:
         print("No star data to chart.", file=sys.stderr)
         sys.exit(1)
@@ -155,26 +172,9 @@ def generate_html(monthly, cumulative, output_path, recent_days=RECENT_DAYS):
         + f" L{pts[-1][0]:.1f},{MT+ch:.1f} Z"
     )
 
-    # Daily hit targets for the trailing recent_days period
-    cutoff = last - timedelta(days=recent_days - 1)
-    cutoff_str = cutoff.strftime("%Y-%m-%d")
-    pre = {d: c for d, c in cumulative.items() if d < cutoff_str}
-    running = cumulative[max(pre)] if pre else 0
-    daily_recent = []
-    for i in range(recent_days):
-        d = (cutoff + timedelta(days=i)).strftime("%Y-%m-%d")
-        if d in cumulative:
-            running = cumulative[d]
-        daily_recent.append((d, running))
-
-    # JS point data: monthly labels outside recent window, daily labels inside
+    # JS point data: one entry per day across the full history
     js_points = []
-    for (date, count), (x, _) in zip(monthly, pts):
-        if date >= cutoff_str:
-            continue
-        label = datetime.strptime(date, "%Y-%m-%d").strftime("%b 01")
-        js_points.append(f'{{x:{x:.1f},d:"{label}",n:{count}}}')
-    for date, count in daily_recent:
+    for date, count in daily_all(cumulative):
         x = xp(date)
         label = datetime.strptime(date, "%Y-%m-%d").strftime("%b %d")
         js_points.append(f'{{x:{x:.1f},d:"{label}",n:{count}}}')
@@ -284,7 +284,7 @@ zone.addEventListener('mouseleave', () => {{ tip.style.display = 'none'; }});
 
     with open(output_path, "w") as f:
         f.write(html)
-    print(f"Generated {output_path} ({max_count} stars, {len(monthly)} monthly + {recent_days} daily points)")
+    print(f"Generated {output_path} ({max_count} stars, {len(monthly)} monthly points, daily tooltips)")
 
 
 def generate_png(monthly, output_path):
@@ -343,13 +343,12 @@ def generate_png(monthly, output_path):
 def main():
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     out = sys.argv[1] if len(sys.argv) > 1 else "star-history.html"
-    recent_days = int(sys.argv[2]) if len(sys.argv) > 2 else RECENT_DAYS
     print(f"Fetching stars for {REPO}...", flush=True)
     stars = fetch_stars(token)
     print(f"Total: {len(stars)} stars")
     cumulative = cumulative_by_date(stars)
     pts = monthly_points(cumulative)
-    generate_html(pts, cumulative, out, recent_days)
+    generate_html(pts, cumulative, out)
     if out.endswith(".html"):
         generate_png(pts, out[:-5] + ".png")
 
