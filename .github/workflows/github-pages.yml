@@ -39,15 +39,16 @@ jobs:
 
       - name: Download coverage CSV from Pages
         run: |
+          mkdir -p build
           curl --fail --silent --location \
             https://hangxie.github.io/parquet-tools/coverage.csv \
-            --output scripts/coverage.csv || true
+            --output build/coverage.csv || true
 
       - name: Generate coverage pages
         run: make pages-coverage
 
       - name: Include coverage CSV in Pages artifact
-        run: cp scripts/coverage.csv build/pages/coverage.csv
+        run: cp build/coverage.csv build/pages/coverage.csv
 
       - uses: actions/upload-artifact@v4
         with:
