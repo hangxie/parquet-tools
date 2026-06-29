@@ -9,7 +9,6 @@ on:
     paths:
       - scripts/star-history.py
       - scripts/coverage-history.py
-      - scripts/collect-coverage.py
       - .github/workflows/github-pages.yml
 
 permissions:
