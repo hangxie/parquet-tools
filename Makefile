@@ -5,6 +5,8 @@ SHELL:=/bin/bash
 
 BUILD_TIME	= $(shell date +%FT%T%z)
 BUILD_DIR	= $(CURDIR)/build
+PAGES_DIR		= $(BUILD_DIR)/pages
+COLLECT_ARGS	?=
 PKG_PREFIX	= github.com/hangxie/parquet-tools
 REL_TARGET	= \
 				darwin-amd64 darwin-arm64 \
@@ -66,6 +68,37 @@ build: deps  ## Build locally for local os/arch creating $(BUILD_DIR) in ./
 			-ldflags '$(LDFLAGS)' \
 			-o $(BUILD_DIR) ./
 
+.PHONY: collect-coverage
+collect-coverage:  ## Run tests and append current coverage to coverage.csv
+	@echo "==> Collecting coverage data"
+	@mkdir -p $(BUILD_DIR)/test
+	@set -euo pipefail ; \
+		cd $(BUILD_DIR)/test ; \
+		CGO_ENABLED=1 $(GO) test -parallel 4 -race -count 1 -trimpath \
+			-coverprofile=coverage.out.tmp $(CURDIR)/... ; \
+		grep -v "cmd/internal/testutils" coverage.out.tmp \
+			| grep -v "parquet-go" > coverage.out ; \
+		$(GO) tool cover -func=coverage.out > coverage.txt
+	@TIMESTAMP=$$($(PYTHON) -c "import time; print(int(time.time()))") ; \
+		COVERAGE=$$(grep "^total:" $(BUILD_DIR)/test/coverage.txt | awk '{print $$NF}' | tr -d '%') ; \
+		echo "$$TIMESTAMP,$$COVERAGE" >> coverage.csv ; \
+		echo "Appended: $$TIMESTAMP,$$COVERAGE"
+
+.PHONY: pages
+pages: pages-coverage pages-star  ## Generate all GitHub Pages content to build/pages/
+
+.PHONY: pages-coverage
+pages-coverage:  ## Collect coverage and generate chart (COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01")
+	@echo "==> Generating coverage history page"
+	@mkdir -p $(PAGES_DIR)
+	@$(PYTHON) scripts/coverage-history.py $(COLLECT_ARGS) $(PAGES_DIR)/coverage-history.html scripts/coverage.csv
+
+.PHONY: pages-star
+pages-star:  ## Generate star history charts to build/pages/ (requires GITHUB_TOKEN)
+	@echo "==> Generating star history page"
+	@mkdir -p $(PAGES_DIR)
+	@$(PYTHON) scripts/star-history.py $(PAGES_DIR)/star-history.html
+
 .PHONY: clean
 clean:  ## Clean up the build dirs
 	@echo "==> Cleaning up build dirs"
@@ -82,7 +115,6 @@ docker-build:  ## Build docker image for local test
 .PHONY: test
 test: deps tools  ## Run unit tests
 	@echo "==> Running unit tests"
-	@$(PYTHON) -m unittest discover -s scripts -p '*_test.py'
 	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail ; \
 		cd $(BUILD_DIR)/test; \

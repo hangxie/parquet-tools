@@ -1,0 +1,87 @@
+name: github-pages
+
+on:
+  schedule:
+    - cron: '0 8 * * 0'  # Sunday 08:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/star-history.py
+      - scripts/coverage-history.py
+      - scripts/collect-coverage.py
+      - .github/workflows/github-pages.yml
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  coverage-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go.sum
+
+      - name: Generate coverage pages
+        run: make pages-coverage
+
+      - name: Commit coverage data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/coverage.csv
+          git diff --staged --quiet || git commit -m "data(coverage): update coverage history"
+          git push
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-pages
+          path: build/pages/
+
+  star-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate star history page
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: make pages-star
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: star-pages
+          path: build/pages/
+
+  deploy:
+    needs: [coverage-history, star-history]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*-pages'
+          path: dist/
+          merge-multiple: true
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

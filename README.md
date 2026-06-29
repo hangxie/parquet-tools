@@ -1928,6 +1928,38 @@ $ parquet-tools version -j
 {"Version":"v1.47.7"}
 ```
 
+## Local Development
+
+### Generating GitHub Pages
+
+`make pages-star` and `make pages-coverage` generate the project's GitHub Pages charts locally to `build/pages/`. Run both with `make pages`.
+
+`make pages-coverage` collects coverage data and generates the chart. It checks out each day's latest commit, runs `go test`, and writes results to `scripts/coverage.csv` (sorted chronologically). Days with no commits carry forward the previous day's coverage. Days before the first commit with non-zero coverage are skipped.
+
+```bash
+make pages-coverage                                                          # last 7 days (default)
+make pages-coverage COLLECT_ARGS="--start 2021-05-01"                       # full history from a date
+make pages-coverage COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01"      # explicit range
+```
+
+These scripts require the Python `matplotlib` module, which is **not** installed automatically. Install it with whichever tool fits your environment:
+
+```bash
+# apt (Debian/Ubuntu)
+sudo apt install python3-matplotlib
+
+# Homebrew (macOS)
+brew install python3 && pip3 install matplotlib
+
+# pip
+pip install matplotlib
+
+# uv / pyenv / virtualenv / etc.
+uv pip install matplotlib
+```
+
+`make pages-star` also requires a `GITHUB_TOKEN` environment variable to fetch star data from the GitHub API.
+
 ## Credit
 
 This project is inspired by:
