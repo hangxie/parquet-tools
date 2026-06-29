@@ -42,7 +42,8 @@ jobs:
           mkdir -p build
           curl --fail --silent --location \
             https://hangxie.github.io/parquet-tools/coverage.csv \
-            --output build/coverage.csv || true
+            --output build/coverage.csv \
+          || git show 586436f:scripts/coverage.csv > build/coverage.csv
 
       - name: Generate coverage pages
         run: make pages-coverage
