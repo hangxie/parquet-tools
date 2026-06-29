@@ -92,7 +92,6 @@ pages-coverage:  ## Collect coverage and generate chart (COLLECT_ARGS="--start 2
 	@echo "==> Generating coverage history page"
 	@mkdir -p $(PAGES_DIR)
 	@$(PYTHON) scripts/coverage-history.py $(COLLECT_ARGS) $(PAGES_DIR)/coverage-history.html scripts/coverage.csv
-	@cp $(PAGES_DIR)/coverage-history.html scripts/coverage-history.html
 	@echo "==> Generating Go coverage report"
 	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail; \
