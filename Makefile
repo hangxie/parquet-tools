@@ -93,6 +93,14 @@ pages-coverage:  ## Collect coverage and generate chart (COLLECT_ARGS="--start 2
 	@mkdir -p $(PAGES_DIR)
 	@$(PYTHON) scripts/coverage-history.py $(COLLECT_ARGS) $(PAGES_DIR)/coverage-history.html scripts/coverage.csv
 	@cp $(PAGES_DIR)/coverage-history.html scripts/coverage-history.html
+	@echo "==> Generating Go coverage report"
+	@mkdir -p $(BUILD_DIR)/test
+	@set -euo pipefail; \
+		CGO_ENABLED=1 $(GO) test -parallel 4 -count 1 -trimpath \
+			-coverprofile=$(BUILD_DIR)/test/coverage.out.tmp ./...; \
+		grep -v "cmd/internal/testutils" $(BUILD_DIR)/test/coverage.out.tmp \
+			| grep -v "parquet-go" > $(BUILD_DIR)/test/coverage.out; \
+		$(GO) tool cover -html=$(BUILD_DIR)/test/coverage.out -o $(PAGES_DIR)/coverage.html
 
 .PHONY: pages-star
 pages-star:  ## Generate star history charts to build/pages/ (requires GITHUB_TOKEN)
