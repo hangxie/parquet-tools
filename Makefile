@@ -7,6 +7,7 @@ BUILD_TIME	= $(shell date +%FT%T%z)
 BUILD_DIR	= $(CURDIR)/build
 PAGES_DIR		= $(BUILD_DIR)/pages
 COLLECT_ARGS	?=
+COVERAGE_CSV	?= $(BUILD_DIR)/coverage.csv
 PKG_PREFIX	= github.com/hangxie/parquet-tools
 REL_TARGET	= \
 				darwin-amd64 darwin-arm64 \
@@ -91,7 +92,7 @@ pages: pages-coverage pages-star  ## Generate all GitHub Pages content to build/
 pages-coverage:  ## Collect coverage and generate chart (COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01")
 	@echo "==> Generating coverage history page"
 	@mkdir -p $(PAGES_DIR)
-	@$(PYTHON) scripts/coverage-history.py $(COLLECT_ARGS) $(PAGES_DIR)/coverage-history.html scripts/coverage.csv
+	@$(PYTHON) scripts/coverage-history.py $(COLLECT_ARGS) $(PAGES_DIR)/coverage-history.html $(COVERAGE_CSV)
 	@echo "==> Generating Go coverage report"
 	@mkdir -p $(BUILD_DIR)/test
 	@set -euo pipefail; \
