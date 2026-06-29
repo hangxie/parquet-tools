@@ -34,6 +34,9 @@ jobs:
           go-version: "1.26"
           cache-dependency-path: go.sum
 
+      - name: Install Python dependencies
+        run: pip install matplotlib
+
       - name: Generate coverage pages
         run: make pages-coverage
 
@@ -54,6 +57,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: pip install matplotlib
 
       - name: Generate star history page
         env:
