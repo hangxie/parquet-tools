@@ -12,7 +12,7 @@ on:
       - .github/workflows/github-pages.yml
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -37,16 +37,17 @@ jobs:
       - name: Install Python dependencies
         run: pip install matplotlib
 
+      - name: Download coverage CSV from Pages
+        run: |
+          curl --fail --silent --location \
+            https://hangxie.github.io/parquet-tools/coverage.csv \
+            --output scripts/coverage.csv || true
+
       - name: Generate coverage pages
         run: make pages-coverage
 
-      - name: Commit coverage data
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add scripts/coverage.csv
-          git diff --staged --quiet || git commit -m "data(coverage): update coverage history"
-          git push
+      - name: Include coverage CSV in Pages artifact
+        run: cp scripts/coverage.csv build/pages/coverage.csv
 
       - uses: actions/upload-artifact@v4
         with:
