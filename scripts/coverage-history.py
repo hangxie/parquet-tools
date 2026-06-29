@@ -12,6 +12,9 @@ For each day in the target range:
 New entries are written only after git HEAD is restored, so mid-loop
 checkouts never corrupt coverage.csv.
 
+The chart displays weekly data points (Mondays) to avoid clutter, while
+coverage.csv retains the full daily history.
+
 Usage:
     python3 scripts/coverage-history.py [--start YYYY-MM-DD] [--end YYYY-MM-DD]
                                         [output.html] [coverage.csv]
@@ -219,6 +222,23 @@ def collect(csv_path, start, end):
 # ---------------------------------------------------------------------------
 # Chart generation
 # ---------------------------------------------------------------------------
+
+def filter_weekly(points, weekday=0):
+    """Return a subset of points keeping one entry per week on the given weekday.
+
+    weekday follows Python's date.weekday() convention: 0=Monday … 6=Sunday.
+    The most recent point is always included so the chart reflects latest data.
+    """
+    if not points:
+        return points
+    result = [
+        (d, c) for d, c in points
+        if datetime.strptime(d, "%Y-%m-%d").weekday() == weekday
+    ]
+    if not result or result[-1] != points[-1]:
+        result.append(points[-1])
+    return result
+
 
 def load_coverage(csv_path):
     """Return sorted list of (date_string, coverage_float), one entry per day."""
@@ -524,9 +544,11 @@ def main():
         print("No data points found.", file=sys.stderr)
         sys.exit(1)
     print(f"Loaded {len(points)} data points")
-    generate_html(points, args.output)
+    chart_points = filter_weekly(points)
+    print(f"Using {len(chart_points)} weekly data points for chart")
+    generate_html(chart_points, args.output)
     if args.output.endswith(".html"):
-        generate_png(points, args.output[:-5] + ".png")
+        generate_png(chart_points, args.output[:-5] + ".png")
 
 
 if __name__ == "__main__":
