@@ -2,6 +2,8 @@ package io
 
 import (
 	"encoding/base64"
+	"os"
+	"path/filepath"
 	"sort"
 	"testing"
 
@@ -498,4 +500,34 @@ func TestApplyKeyFile(t *testing.T) {
 			}
 		})
 	}
+}
+
+func FuzzNewParquetFileReader(f *testing.F) {
+	seeds := []string{
+		"good.parquet",
+		"empty.parquet",
+		"all-types.parquet",
+		"data-page-v2.parquet",
+		"old-style-list.parquet",
+		"map-composite-value.parquet",
+		"not-a-parquet-file",
+	}
+	for _, name := range seeds {
+		data, err := os.ReadFile(filepath.Join("..", "testdata", name))
+		if err == nil {
+			f.Add(data)
+		}
+	}
+
+	f.Fuzz(func(t *testing.T, data []byte) {
+		path := filepath.Join(t.TempDir(), "input.parquet")
+		if err := os.WriteFile(path, data, 0o600); err != nil {
+			t.Skip()
+		}
+		pr, err := NewParquetFileReader(path, ReadOption{})
+		if err != nil {
+			return
+		}
+		defer func() { _ = pr.PFile.Close() }()
+	})
 }

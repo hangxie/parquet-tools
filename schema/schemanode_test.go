@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/format"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -2138,5 +2139,59 @@ func TestUpdateTagFromConvertedTypeEdgeCases(t *testing.T) {
 		require.Equal(t, fmt.Sprint(typeLength), tagMap["length"])
 		require.Equal(t, fmt.Sprint(scale), tagMap["scale"])
 		require.Equal(t, fmt.Sprint(precision), tagMap["precision"])
+	})
+}
+
+func FuzzNewSchemaTree(f *testing.F) {
+	seeds := []string{
+		"good.parquet",
+		"empty.parquet",
+		"all-types.parquet",
+		"old-style-list.parquet",
+		"map-composite-value.parquet",
+		"list-of-list.parquet",
+		"map-value-map.parquet",
+		"gostruct-list.parquet",
+		"geospatial.parquet",
+		"bloom-filter.parquet",
+		"data-page-v2.parquet",
+	}
+	for _, name := range seeds {
+		data, err := os.ReadFile(filepath.Join("..", "testdata", name))
+		if err == nil {
+			f.Add(data)
+		}
+	}
+
+	f.Fuzz(func(t *testing.T, data []byte) {
+		path := filepath.Join(t.TempDir(), "input.parquet")
+		if err := os.WriteFile(path, data, 0600); err != nil {
+			t.Skip()
+		}
+		pr, err := pio.NewParquetFileReader(path, pio.ReadOption{})
+		if err != nil {
+			return
+		}
+		defer func() { _ = pr.PFile.Close() }()
+
+		root, err := NewSchemaTree(pr, SchemaOption{})
+		if err != nil {
+			return
+		}
+
+		root.JSONSchema()
+		_, _ = root.GoStruct(false)
+		_, _ = root.GoStruct(true)
+		_, _ = root.CSVSchema()
+		root.GetTagMap()
+		root.GetPathMap()
+		root.IsCompatible(root, CompareOption{})
+		root.IsCompatible(root, CompareOption{
+			CompareEncoding:    true,
+			CompareCompression: true,
+			CompareBloomFilter: true,
+			CompareOmitStats:   true,
+			CompareRootName:    true,
+		})
 	})
 }
