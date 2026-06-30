@@ -88,17 +88,34 @@ func (n goStructNode) asList() (string, error) {
 }
 
 func (n goStructNode) asMap() (string, error) {
-	// Parquet uses MAP -> "Map_Key_Value" -> [key type, value type]
-	// go struct will be map[<key type>]<value type>
+	// Parquet MAP has two possible structures depending on whether GetTagMap has
+	// already been called on this node (which flattens MAP->MAP_KEY_VALUE->[K,V]
+	// to MAP->[K,V] via updateTagForMap). Handle both forms.
+	var keyChild, valueChild *SchemaNode
+	first := n.Children[0]
+	if first.ConvertedType != nil && *first.ConvertedType == parquet.ConvertedType_MAP_KEY_VALUE {
+		if len(first.Children) < 2 {
+			return "", fmt.Errorf("invalid MAP structure in [%s]", n.Name)
+		}
+		keyChild = first.Children[0]
+		valueChild = first.Children[1]
+	} else {
+		if len(n.Children) < 2 {
+			return "", fmt.Errorf("invalid MAP structure in [%s]", n.Name)
+		}
+		keyChild = n.Children[0]
+		valueChild = n.Children[1]
+	}
+
 	keyStr, err := goStructNode{
-		SchemaNode:     *n.Children[0].Children[0],
+		SchemaNode:     *keyChild,
 		ForceCamelCase: n.ForceCamelCase,
 	}.asScalar()
 	if err != nil {
 		return "", err
 	}
 	valueStr, err := goStructNode{
-		SchemaNode:     *n.Children[0].Children[1],
+		SchemaNode:     *valueChild,
 		ForceCamelCase: n.ForceCamelCase,
 	}.String()
 	if err != nil {
