@@ -687,6 +687,50 @@ func TestGoStruct(t *testing.T) {
 	}
 }
 
+func TestGoStructAfterJSONSchema(t *testing.T) {
+	// Regression test: JSONSchema mutates inner MAP node children through shared
+	// pointers (via updateTagForMap), so asMap must handle the flattened
+	// MAP->[Key,Value] form as well as the original MAP->MAP_KEY_VALUE->[Key,Value] form.
+	t.Run("simple map consistent output", func(t *testing.T) {
+		// A file without nested MAPs: GoStruct result must be identical whether
+		// JSONSchema is called first or not.
+		uri := "../testdata/all-types.parquet"
+
+		pr1, err := pio.NewParquetFileReader(uri, pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() { _ = pr1.PFile.Close() }()
+		root1, err := NewSchemaTree(pr1, SchemaOption{})
+		require.NoError(t, err)
+		expected, err := root1.GoStruct(false)
+		require.NoError(t, err)
+
+		pr2, err := pio.NewParquetFileReader(uri, pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() { _ = pr2.PFile.Close() }()
+		root2, err := NewSchemaTree(pr2, SchemaOption{})
+		require.NoError(t, err)
+		root2.JSONSchema()
+		actual, err := root2.GoStruct(false)
+		require.NoError(t, err)
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("nested map no panic", func(t *testing.T) {
+		// A file with a MAP-of-MAP: JSONSchema mutates the inner MAP node's
+		// Children through a shared pointer. GoStruct must return an error
+		// (unsupported type) rather than panic when it processes the now-flattened
+		// inner MAP structure via the else branch in asMap.
+		pr, err := pio.NewParquetFileReader("../testdata/map-value-map.parquet", pio.ReadOption{})
+		require.NoError(t, err)
+		defer func() { _ = pr.PFile.Close() }()
+		root, err := NewSchemaTree(pr, SchemaOption{})
+		require.NoError(t, err)
+		root.JSONSchema()
+		_, err = root.GoStruct(false)
+		require.ErrorContains(t, err, "go struct does not support MAP as MAP value")
+	})
+}
+
 func TestJSONSchema(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -2041,6 +2085,110 @@ func TestGetTagMapEdgeCases(t *testing.T) {
 	})
 }
 
+func TestGoStructMiscEdgeCases(t *testing.T) {
+	t.Run("snakeToCamel empty string", func(t *testing.T) {
+		require.Equal(t, "", snakeToCamel(""))
+	})
+
+	t.Run("String OPTIONAL VARIANT clears pointer prefix", func(t *testing.T) {
+		optionalRT := parquet.FieldRepetitionType_OPTIONAL
+		node := goStructNode{SchemaNode: SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				RepetitionType: &optionalRT,
+				LogicalType: &parquet.LogicalType{
+					VARIANT: parquet.NewVariantType(),
+				},
+			},
+		}}
+		result, err := node.String()
+		require.NoError(t, err)
+		require.Equal(t, "any", result) // typePrefix would have been "*" but cleared
+	})
+
+	t.Run("getStructTags MAP with LIST key", func(t *testing.T) {
+		mapCT := parquet.ConvertedType_MAP
+		mapKVCT := parquet.ConvertedType_MAP_KEY_VALUE
+		listCT := parquet.ConvertedType_LIST
+		int32T := parquet.Type_INT32
+		node := goStructNode{SchemaNode: SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "mymap",
+				ConvertedType: &mapCT,
+			},
+			ExNamePath: []string{"mymap"},
+			InNamePath: []string{"root", "mymap"},
+			Children: []*SchemaNode{
+				{
+					SchemaElement: parquet.SchemaElement{
+						Name:          "key_value",
+						ConvertedType: &mapKVCT,
+					},
+					Children: []*SchemaNode{
+						{
+							SchemaElement: parquet.SchemaElement{
+								Name:          "key",
+								ConvertedType: &listCT,
+							},
+							Children: []*SchemaNode{
+								{SchemaElement: parquet.SchemaElement{Name: "element", Type: &int32T}},
+							},
+						},
+						{SchemaElement: parquet.SchemaElement{Name: "value", Type: &int32T}},
+					},
+				},
+			},
+		}}
+		_, err := node.getStructTags()
+		require.ErrorContains(t, err, "go struct does not support LIST as MAP key")
+	})
+}
+
+func TestAsMapEdgeCases(t *testing.T) {
+	mapCT := parquet.ConvertedType_MAP
+	mapKVCT := parquet.ConvertedType_MAP_KEY_VALUE
+	int32T := parquet.Type_INT32
+
+	t.Run("MAP_KEY_VALUE with fewer than two children", func(t *testing.T) {
+		node := goStructNode{SchemaNode: SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "mymap",
+				ConvertedType: &mapCT,
+			},
+			Children: []*SchemaNode{
+				{
+					SchemaElement: parquet.SchemaElement{
+						Name:          "key_value",
+						ConvertedType: &mapKVCT,
+					},
+					Children: []*SchemaNode{}, // fewer than 2 → error path in if-branch
+				},
+			},
+		}}
+		_, err := node.String()
+		require.ErrorContains(t, err, "invalid MAP structure")
+	})
+
+	t.Run("pre-processed MAP with only one child", func(t *testing.T) {
+		node := goStructNode{SchemaNode: SchemaNode{
+			SchemaElement: parquet.SchemaElement{
+				Name:          "mymap",
+				ConvertedType: &mapCT,
+			},
+			Children: []*SchemaNode{
+				{
+					SchemaElement: parquet.SchemaElement{
+						Name: "key",
+						Type: &int32T,
+					},
+					// nil ConvertedType → else branch; only 1 child → error
+				},
+			},
+		}}
+		_, err := node.String()
+		require.ErrorContains(t, err, "invalid MAP structure")
+	})
+}
+
 func TestUpdateTagForMapNilChild(t *testing.T) {
 	mapConvertedType := parquet.ConvertedType_MAP
 
@@ -2165,7 +2313,7 @@ func FuzzNewSchemaTree(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		path := filepath.Join(t.TempDir(), "input.parquet")
-		if err := os.WriteFile(path, data, 0600); err != nil {
+		if err := os.WriteFile(path, data, 0o600); err != nil {
 			t.Skip()
 		}
 		pr, err := pio.NewParquetFileReader(path, pio.ReadOption{})
