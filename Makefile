@@ -7,6 +7,7 @@ BUILD_TIME	= $(shell date +%FT%T%z)
 BUILD_DIR	= $(CURDIR)/build
 PAGES_DIR		= $(BUILD_DIR)/pages
 COLLECT_ARGS	?=
+FUZZTIME		?= 10s
 COVERAGE_CSV	?= $(BUILD_DIR)/coverage.csv
 PKG_PREFIX	= github.com/hangxie/parquet-tools
 REL_TARGET	= \
@@ -132,6 +133,21 @@ test: deps tools  ## Run unit tests
 		$(GO) tool cover -html=coverage.out -o coverage.html ; \
 		$(GO) tool cover -func=coverage.out -o coverage.txt ; \
 		cat coverage.txt
+
+.PHONY: fuzz
+fuzz: deps  ## Run every fuzz test for FUZZTIME each (default 10s)
+	@echo "==> Running fuzz tests (FUZZTIME=$(FUZZTIME) each)"
+	@rc=0; \
+	for pkg in $$($(GO) list ./...); do \
+		for fn in $$(CGO_ENABLED=1 $(GO) test -list '^Fuzz' $$pkg 2>/dev/null | grep '^Fuzz'); do \
+			echo "--> $$pkg $$fn"; \
+			CGO_ENABLED=1 $(GO) test -run='^$$' -fuzz="^$$fn$$" -fuzztime=$(FUZZTIME) $$pkg 2>&1 \
+				| grep -vE "^(fuzz: |PASS$$|ok )"; \
+			s=$${PIPESTATUS[0]}; \
+			if [ $$s -ne 0 ]; then rc=$$s; fi; \
+		done; \
+	done; \
+	exit $$rc
 
 .PHONY: benchmark
 benchmark:  ## Run benchmark
