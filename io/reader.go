@@ -226,6 +226,15 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 		_ = fileReader.Close()
 		return nil, err
 	}
+	internalFooter, err := pr.InternalFooter()
+	if err != nil {
+		_ = fileReader.Close()
+		return nil, fmt.Errorf("translate footer to internal names: %w", err)
+	}
+	if internalFooter != nil {
+		pr.Footer = internalFooter
+		pr.SchemaHandler.SchemaElements = internalFooter.Schema
+	}
 
 	hasEncryptionOptions := option.FooterKey != nil || len(option.ColumnKeys) > 0 || option.AADPrefix != nil
 	isEncrypted := pr.FileCrypto != nil || (pr.Footer != nil && pr.Footer.IsSetEncryptionAlgorithm())
