@@ -1,9 +1,5 @@
 [
   {
-    "BsonField": {
-      "id": 0,
-      "value": "item-0"
-    },
     "BsonField2": {
       "id": 0,
       "value": "item-0"
@@ -27,13 +23,13 @@
         "nested": true,
         "nested_id": 0
       }
+    },
+    "bsonField": {
+      "id": 0,
+      "value": "item-0"
     }
   },
   {
-    "BsonField": {
-      "id": 1,
-      "value": "item-1"
-    },
     "BsonField2": {
       "id": 1,
       "value": "item-1"
@@ -88,13 +84,13 @@
         "nested": true,
         "nested_id": 10
       }
+    },
+    "bsonField": {
+      "id": 1,
+      "value": "item-1"
     }
   },
   {
-    "BsonField": {
-      "id": 2,
-      "value": "item-2"
-    },
     "BsonField2": {
       "id": 2,
       "value": "item-2"
@@ -176,6 +172,10 @@
         "nested": true,
         "nested_id": 20
       }
+    },
+    "bsonField": {
+      "id": 2,
+      "value": "item-2"
     }
   }
 ]

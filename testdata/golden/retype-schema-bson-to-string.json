@@ -14,7 +14,7 @@
       "Tag": "name=Int96Field2, inname=Int96Field2, type=INT96, repetitiontype=OPTIONAL, encoding=PLAIN, compression=SNAPPY"
     },
     {
-      "Tag": "name=BsonField, inname=BsonField, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+      "Tag": "name=bsonField, inname=BsonField, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
     },
     {
       "Tag": "name=BsonField2, inname=BsonField2, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"

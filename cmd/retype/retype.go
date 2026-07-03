@@ -431,9 +431,10 @@ func applyRule(s, parent *pschema.SchemaNode, match func(node, parent *pschema.S
 	// Process this node if it matches
 	if match(s, parent) {
 		transform(s)
-		// Record the field name for data conversion
-		if len(s.ExNamePath) > 0 {
-			matchedFields[s.ExNamePath[len(s.ExNamePath)-1]] = struct{}{}
+		// Record the internal field name; ReadByNumber's dynamic structs use InName as
+		// the Go struct field name, so findConverterForField must match it.
+		if len(s.InNamePath) > 0 {
+			matchedFields[s.InNamePath[len(s.InNamePath)-1]] = struct{}{}
 		}
 	}
 

@@ -1,6 +1,5 @@
 [
   {
-    "BsonField": "{\"id\":0,\"value\":\"item-0\"}",
     "BsonField2": "{\"id\":0,\"value\":\"item-0\"}",
     "BsonList": [],
     "BsonMap": {},
@@ -18,10 +17,10 @@
     "Name": "record-0",
     "Nested": {
       "ContainerBson": "{\"nested\":true,\"nested_id\":0}"
-    }
+    },
+    "bsonField": "{\"id\":0,\"value\":\"item-0\"}"
   },
   {
-    "BsonField": "{\"id\":1,\"value\":\"item-1\"}",
     "BsonField2": "{\"id\":1,\"value\":\"item-1\"}",
     "BsonList": [
       "{\"list_item\":0}"
@@ -58,10 +57,10 @@
     "Name": "record-1",
     "Nested": {
       "ContainerBson": "{\"nested\":true,\"nested_id\":10}"
-    }
+    },
+    "bsonField": "{\"id\":1,\"value\":\"item-1\"}"
   },
   {
-    "BsonField": "{\"id\":2,\"value\":\"item-2\"}",
     "BsonField2": "{\"id\":2,\"value\":\"item-2\"}",
     "BsonList": [
       "{\"list_item\":0}",
@@ -113,6 +112,7 @@
     "Name": "record-2",
     "Nested": {
       "ContainerBson": "{\"nested\":true,\"nested_id\":20}"
-    }
+    },
+    "bsonField": "{\"id\":2,\"value\":\"item-2\"}"
   }
 ]

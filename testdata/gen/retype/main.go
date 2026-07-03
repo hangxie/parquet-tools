@@ -53,7 +53,9 @@ type RetypeTest struct {
 	Int96Field2 *string `parquet:"name=Int96Field2, type=INT96, repetitiontype=OPTIONAL"`
 
 	// Top-level BSON fields (both convertedtype and logicaltype variants)
-	BsonField  string `parquet:"name=BsonField, type=BYTE_ARRAY, convertedtype=BSON"`
+	// bsonField uses a lowercase-starting parquet name so InName != ExName, exercising
+	// the applyRule matchedFields lookup path via ReadByNumber's dynamic struct field names.
+	BsonField  string `parquet:"name=bsonField, type=BYTE_ARRAY, convertedtype=BSON"`
 	BsonField2 string `parquet:"name=BsonField2, type=BYTE_ARRAY, logicaltype=BSON"`
 
 	// Top-level JSON fields (both convertedtype and logicaltype variants)
@@ -89,16 +91,18 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(RetypeTest), 4)
+	pw, err := writer.NewParquetWriter(
+		fw, new(RetypeTest),
+		writer.WithNP(4),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithPageSize(8*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_SNAPPY),
+		writer.WithDataPageVersion(2),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
-
-	pw.RowGroupSize = 128 * 1024 * 1024
-	pw.PageSize = 8 * 1024
-	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
-	pw.DataPageVersion = 2
 
 	for i := range 3 {
 		ts, _ := time.Parse("2006-01-02T15:04:05.000000Z", fmt.Sprintf("2022-01-01T%02d:%02d:%02d.%03d%03dZ", i, i, i, i, i))
