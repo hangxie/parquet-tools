@@ -1610,7 +1610,7 @@ $ parquet-tools size -q all -j testdata/good.parquet
 
 ### split Command
 
-`split` command distributes data in source file into multiple parquet files, number of output files is either `--file-count` parameter, or total number of rows in source file divided by `--record-count` parameter.
+`split` command distributes data in source file into multiple parquet files. `--file-count` produces exactly the requested number of output files, while `--record-count` limits the number of rows in each output file.
 
 Name of output files is determined by `--name-format` and will be used by `fmt.Sprintf`, default value is `result-%06d.parquet` which means output files will be under current directory with name `result-000000.parquet`, `result-000001.parquet`, etc., you can use any of file locations that support write operation, eg S3, or HDFS.
 
@@ -1640,6 +1640,8 @@ file-0000.parquet file-0001.parquet
 ```
 
 #### Exact number of output files
+
+When `--file-count` exceeds the source row count, the remaining outputs are valid schema-only Parquet files. This also means splitting an empty source with `--file-count N` creates `N` empty files.
 
 ```bash
 $ parquet-tools row-count testdata/all-types.parquet

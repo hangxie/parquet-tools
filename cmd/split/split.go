@@ -24,7 +24,7 @@ type trunkWriter struct {
 // Cmd is a kong command for split
 type Cmd struct {
 	FailOnInt96  bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	FileCount    int64  `xor:"RecordCount" help:"Generate this number of result files with potential empty ones"`
+	FileCount    int64  `xor:"RecordCount" help:"Generate exactly this number of result files, including empty files when needed."`
 	NameFormat   string `help:"Format to populate target file names" default:"result-%06d.parquet"`
 	ReadPageSize int    `help:"Page size to read from Parquet." default:"1000"`
 	RecordCount  int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
@@ -130,6 +130,11 @@ func (c Cmd) Run() error {
 				return fmt.Errorf("failed to write data from [%s]: %w", c.current.targetFile, err)
 			}
 			c.current.recordCount++
+		}
+	}
+	for c.current.fileIndex < c.FileCount {
+		if err := c.switchWriter(); err != nil {
+			return err
 		}
 	}
 	if c.current.writer != nil {
