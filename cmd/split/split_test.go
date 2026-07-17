@@ -64,6 +64,18 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 2, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: trunkWriter{}},
 			result: map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 2},
 		},
+		"file-count-exceeds-rows": {
+			cmd: Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 7, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: trunkWriter{}},
+			result: map[string]int64{
+				"ut-0.parquet": 1,
+				"ut-1.parquet": 1,
+				"ut-2.parquet": 1,
+				"ut-3.parquet": 1,
+				"ut-4.parquet": 1,
+				"ut-5.parquet": 0,
+				"ut-6.parquet": 0,
+			},
+		},
 		"one-result-record-count": {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 20, URI: "all-types.parquet", current: trunkWriter{}},
 			result: map[string]int64{"ut-0.parquet": 5},
@@ -78,7 +90,7 @@ func TestCmd(t *testing.T) {
 		},
 		"empty-file-count": {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "empty.parquet", current: trunkWriter{}},
-			result: map[string]int64{},
+			result: map[string]int64{"ut-0.parquet": 0, "ut-1.parquet": 0, "ut-2.parquet": 0},
 		},
 	}
 
