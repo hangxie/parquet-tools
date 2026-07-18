@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/url"
+	"os"
 	"reflect"
 	"testing"
 
@@ -202,6 +203,43 @@ func TestValidCompressionCodecs(t *testing.T) {
 }
 
 func TestParseURI(t *testing.T) {
+	colonPath := "parse-uri-" + uuid.NewString() + ":bar.parquet"
+	require.NoError(t, os.WriteFile(colonPath, nil, 0o600))
+	timestampPath := "2023-01-01T00:00-" + uuid.NewString() + ".parquet"
+	require.NoError(t, os.WriteFile(timestampPath, nil, 0o600))
+	nonOpaqueDir := "parse-uri-" + uuid.NewString() + ":"
+	nonOpaquePath := nonOpaqueDir + "/bar.parquet"
+	require.NoError(t, os.Mkdir(nonOpaqueDir, 0o700))
+	require.NoError(t, os.WriteFile(nonOpaquePath, nil, 0o600))
+	knownSchemePath := "s3:" + uuid.NewString()
+	require.NoError(t, os.WriteFile(knownSchemePath, nil, 0o600))
+	malformedS3Name := "parse-uri-" + uuid.NewString()
+	malformedS3Dir := "s3:/" + malformedS3Name
+	malformedS3URI := "s3://" + malformedS3Name + "/%zz"
+	require.NoError(t, os.MkdirAll(malformedS3Dir, 0o700))
+	require.NoError(t, os.WriteFile(malformedS3URI, nil, 0o600))
+	malformedUpperS3Name := "parse-uri-" + uuid.NewString()
+	malformedUpperS3Dir := "S3:/" + malformedUpperS3Name
+	malformedUpperS3URI := "S3://" + malformedUpperS3Name + "/%zz"
+	require.NoError(t, os.MkdirAll(malformedUpperS3Dir, 0o700))
+	require.NoError(t, os.WriteFile(malformedUpperS3URI, nil, 0o600))
+	t.Cleanup(func() {
+		require.NoError(t, os.Remove(colonPath))
+		require.NoError(t, os.Remove(timestampPath))
+		require.NoError(t, os.Remove(nonOpaquePath))
+		require.NoError(t, os.Remove(nonOpaqueDir))
+		require.NoError(t, os.Remove(knownSchemePath))
+		require.NoError(t, os.Remove(malformedS3URI))
+		require.NoError(t, os.Remove(malformedUpperS3URI))
+		require.NoError(t, os.Remove(malformedS3Dir))
+		require.NoError(t, os.Remove(malformedUpperS3Dir))
+		for _, root := range []string{"s3:", "S3:"} {
+			if err := os.Remove(root); err != nil && !os.IsNotExist(err) {
+				t.Errorf("remove test directory %q: %v", root, err)
+			}
+		}
+	})
+
 	testCases := map[string]struct {
 		uri    string
 		scheme string
@@ -243,6 +281,55 @@ func TestParseURI(t *testing.T) {
 			"",
 			"path/to/file",
 			"",
+		},
+		"existing-local-file-with-colon": {
+			colonPath,
+			"file",
+			"",
+			colonPath,
+			"",
+		},
+		"existing-timestamp-file-with-colon": {
+			timestampPath,
+			"file",
+			"",
+			timestampPath,
+			"",
+		},
+		"existing-non-opaque-path-with-colon": {
+			nonOpaquePath,
+			"file",
+			"",
+			nonOpaquePath,
+			"",
+		},
+		"nonexistent-path-with-colon": {
+			"foo:bar.parquet",
+			"foo",
+			"",
+			"",
+			"",
+		},
+		"existing-path-with-known-scheme": {
+			knownSchemePath,
+			"s3",
+			"",
+			"",
+			"",
+		},
+		"malformed-known-scheme-existing-locally": {
+			malformedS3URI,
+			"",
+			"",
+			"",
+			"invalid URL escape",
+		},
+		"malformed-uppercase-known-scheme-existing-locally": {
+			malformedUpperS3URI,
+			"",
+			"",
+			"",
+			"invalid URL escape",
 		},
 	}
 

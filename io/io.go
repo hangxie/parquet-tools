@@ -30,7 +30,19 @@ const (
 func parseURI(uri string) (*url.URL, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
+		scheme, _, hasScheme := strings.Cut(uri, ":")
+		if !hasScheme || !knownLocationScheme(strings.ToLower(scheme)) {
+			if localURI, found := existingLocalURI(uri); found {
+				return localURI, nil
+			}
+		}
 		return nil, fmt.Errorf("unable to parse file location [%s]: %w", uri, err)
+	}
+
+	if u.Scheme != "" && !knownLocationScheme(u.Scheme) {
+		if localURI, found := existingLocalURI(uri); found {
+			u = localURI
+		}
 	}
 
 	if u.Scheme == "" {
@@ -43,6 +55,28 @@ func parseURI(uri string) (*url.URL, error) {
 	}
 
 	return u, nil
+}
+
+func existingLocalURI(uri string) (*url.URL, bool) {
+	if _, err := os.Stat(uri); err != nil {
+		return nil, false
+	}
+	return &url.URL{Scheme: schemeLocal, Path: uri}, true
+}
+
+func knownLocationScheme(scheme string) bool {
+	switch scheme {
+	case schemeLocal,
+		schemeGoogleCloudStorage,
+		schemeHDFS,
+		schemeHTTP,
+		schemeHTTPS,
+		schemeAWSS3,
+		schemeAzureStorageBlob:
+		return true
+	default:
+		return false
+	}
 }
 
 func newTLSInsecureHTTPClient() *http.Client {

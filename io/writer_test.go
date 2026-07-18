@@ -40,6 +40,15 @@ func testWriterNestedSchemaHandler(t *testing.T) *parquetschema.SchemaHandler {
 func TestNewParquetFileWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")
+	explicitColonPath := "writer-" + uuid.NewString() + ":unit-test.parquet"
+	implicitColonPath := "writer-" + uuid.NewString() + ":unit-test.parquet"
+	t.Cleanup(func() {
+		for _, path := range []string{explicitColonPath, implicitColonPath} {
+			if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+				t.Errorf("remove test output %q: %v", path, err)
+			}
+		}
+	})
 	testCases := map[string]struct {
 		uri    string
 		errMsg string
@@ -62,6 +71,14 @@ func TestNewParquetFileWriter(t *testing.T) {
 		},
 		"local-file-good": {
 			tempFile,
+			"",
+		},
+		"new-local-file-with-colon-requires-scheme": {
+			implicitColonPath,
+			"unknown location scheme",
+		},
+		"new-local-file-with-colon-and-scheme": {
+			"file://./" + explicitColonPath,
 			"",
 		},
 		"s3-bucket-not-found": {

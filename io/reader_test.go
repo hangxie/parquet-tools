@@ -105,6 +105,14 @@ func boolToInt(v bool) int {
 
 func TestNewParquetFileReader(t *testing.T) {
 	rOpt := ReadOption{}
+	colonPath := "2023-01-01T00:00-" + uuid.NewString() + ".parquet"
+	contents, err := os.ReadFile("../testdata/good.parquet")
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(colonPath, contents, 0o600))
+	t.Cleanup(func() {
+		require.NoError(t, os.Remove(colonPath))
+	})
+
 	s3URL := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff"
 	gcsURL := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
 	azblobURL := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
@@ -136,6 +144,11 @@ func TestNewParquetFileReader(t *testing.T) {
 		},
 		"local-file-good": {
 			"../testdata/good.parquet",
+			rOpt,
+			"",
+		},
+		"local-file-with-colon": {
+			colonPath,
 			rOpt,
 			"",
 		},
