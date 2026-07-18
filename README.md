@@ -285,6 +285,29 @@ $ parquet-tools row-count file://./testdata/good.parquet
 3
 ```
 
+An existing local path containing a colon, such as `foo:bar.parquet`, is also
+recognized as a file when the prefix is not a supported location scheme. To
+make the location explicit, prefix a relative path with `file://./`:
+
+```bash
+$ cp testdata/good.parquet foo:bar.parquet
+$ parquet-tools row-count foo:bar.parquet
+3
+$ parquet-tools row-count file://./foo:bar.parquet
+3
+$ rm foo:bar.parquet
+```
+
+When writing a new file whose path contains a colon, use the explicit
+`file://./` form because the output path does not exist yet.
+
+Supported location schemes always take precedence over identically named local
+paths. This also applies to malformed URLs: for example,
+`s3://somewhere/%zz` reports an invalid URL escape instead of reading a local
+file at that path. To address that path explicitly as a local file, use the
+`file://./` form and URL-escape special characters, such as
+`file://./s3://somewhere/%25zz`.
+
 #### S3 Bucket
 
 Use full S3 URL to indicate S3 object location, it starts with `s3://`. You need to make sure you have permission to read or write the S3 object, the easiest way to verify that is using [AWS cli](https://aws.amazon.com/cli/):
