@@ -52,6 +52,9 @@ func (n goStructNode) asStruct() (string, error) {
 }
 
 func (n goStructNode) asList() (string, error) {
+	if len(n.Children) == 0 {
+		return "", fmt.Errorf("invalid LIST structure in [%s]", n.Name)
+	}
 	var typeStr string
 	var err error
 	if n.Children[0].LogicalType != nil {
@@ -80,6 +83,9 @@ func (n goStructNode) asList() (string, error) {
 			SchemaNode:     *elementNode,
 			ForceCamelCase: n.ForceCamelCase,
 		}.String()
+	} else {
+		// element type cannot be determined
+		return "", fmt.Errorf("invalid LIST structure in [%s]", n.Name)
 	}
 	if err != nil {
 		return "", err
