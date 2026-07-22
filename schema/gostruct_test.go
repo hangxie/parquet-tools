@@ -139,6 +139,47 @@ func TestGoStructNode(t *testing.T) {
 		require.Contains(t, err.Error(), "unknown type: 999")
 	})
 
+	t.Run("list-without-children", func(t *testing.T) {
+		option := pio.ReadOption{}
+		uri := "../testdata/all-types.parquet"
+		pr, err := pio.NewParquetFileReader(uri, option)
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		require.NoError(t, err)
+		require.NotNil(t, schemaRoot)
+
+		// 46th field is "List"
+		schemaRoot.Children[46].Children = nil
+		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid LIST structure in [List]")
+	})
+
+	t.Run("list-without-element-type", func(t *testing.T) {
+		option := pio.ReadOption{}
+		uri := "../testdata/all-types.parquet"
+		pr, err := pio.NewParquetFileReader(uri, option)
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		require.NoError(t, err)
+		require.NotNil(t, schemaRoot)
+
+		// 46th field is "List", whose 1st field is the interim "List" group
+		schemaRoot.Children[46].Children[0].LogicalType = nil
+		schemaRoot.Children[46].Children[0].Children = nil
+		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid LIST structure in [List]")
+	})
+
 	t.Run("invalid-map-value", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/all-types.parquet"
