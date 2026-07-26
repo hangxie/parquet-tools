@@ -65,7 +65,10 @@ jobs:
 
       - name: Generate star history page
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The list-stargazers endpoint requires authentication and rejects the
+          # default GITHUB_TOKEN (an App installation token) with
+          # "Resource not accessible by integration". Use a classic PAT instead.
+          GITHUB_TOKEN: ${{ secrets.STAR_HISTORY_TOKEN }}
         run: make pages-star
 
       - uses: actions/upload-artifact@v4
