@@ -19,29 +19,34 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     exit 1
 fi
 
-# Save current branch/commit
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-CURRENT_COMMIT=$(git rev-parse HEAD)
-
-# Function to restore original state
-restore_state() {
-    echo ""
-    echo "Restoring to original state..."
-    git checkout "$CURRENT_BRANCH" 2>/dev/null || git checkout "$CURRENT_COMMIT"
-}
-
-# Set up trap to restore state on exit
-trap restore_state EXIT
-
-# Checkout the version
-echo "Checking out version: $VERSION"
-if ! git checkout "$VERSION" 2>/dev/null; then
-    echo "Error: Failed to checkout version $VERSION"
+# Resolve paths and the requested version before creating temporary resources.
+REPO_ROOT=$(git rev-parse --show-toplevel)
+if ! VERSION_COMMIT=$(git rev-parse --verify --quiet "${VERSION}^{commit}"); then
+    echo "Error: Version '$VERSION' does not resolve to a commit"
     exit 1
 fi
 
-# Create temporary directory for benchmark results
+# Create an isolated worktree so local changes in the current checkout are safe.
 TEMP_DIR=$(mktemp -d)
+BENCH_WORKTREE="$TEMP_DIR/worktree"
+RESULTS_DIR="$TEMP_DIR/results"
+WORKTREE_CREATED=false
+
+cleanup() {
+    if [ "$WORKTREE_CREATED" = true ]; then
+        git -C "$REPO_ROOT" worktree remove --force "$BENCH_WORKTREE" >/dev/null 2>&1 || true
+    fi
+    rm -rf "$TEMP_DIR"
+}
+trap cleanup EXIT
+
+echo "Preparing isolated worktree for version: $VERSION"
+if ! git -C "$REPO_ROOT" worktree add --quiet --detach "$BENCH_WORKTREE" "$VERSION_COMMIT"; then
+    echo "Error: Failed to create worktree for version $VERSION"
+    exit 1
+fi
+WORKTREE_CREATED=true
+mkdir -p "$RESULTS_DIR"
 echo "Using temporary directory: $TEMP_DIR"
 
 # Function to extract benchmark value from output
@@ -56,10 +61,14 @@ extract_benchmark() {
 # Function to calculate median
 calculate_median() {
     local values=("$@")
-    local sorted=($(printf '%s\n' "${values[@]}" | sort -n))
+    local sorted=()
+    local value
+    while IFS= read -r value; do
+        sorted+=("$value")
+    done < <(printf '%s\n' "${values[@]}" | sort -n)
     local count=${#sorted[@]}
 
-    if [ $count -eq 0 ]; then
+    if [ "$count" -eq 0 ]; then
         echo "0"
         return
     fi
@@ -95,11 +104,16 @@ echo ""
 echo "Running benchmarks 3 times for version $VERSION..."
 for i in 1 2 3; do
     echo "Run $i/3..."
-    make benchmark > "$TEMP_DIR/benchmark_run_$i.txt" 2>&1
+    output_file="$RESULTS_DIR/benchmark_run_$i.txt"
+    if ! (cd "$BENCH_WORKTREE" && make benchmark) > "$output_file" 2>&1; then
+        echo "Error: Benchmark run $i failed for version $VERSION"
+        cat "$output_file"
+        exit 1
+    fi
 done
 
 # Detect the CPU core suffix for concurrent benchmarks
-CORE_SUFFIX=$(grep "BenchmarkCatCmd/concurrent" "$TEMP_DIR/benchmark_run_1.txt" | sed 's/.*concurrent-\([0-9]*\).*/\1/' | head -1)
+CORE_SUFFIX=$(grep "BenchmarkCatCmd/concurrent" "$RESULTS_DIR/benchmark_run_1.txt" | sed 's/.*concurrent-\([0-9]*\).*/\1/' | head -1)
 if [ -z "$CORE_SUFFIX" ]; then
     CORE_SUFFIX="8"  # Default fallback
 fi
@@ -130,7 +144,7 @@ for idx in "${!BENCH_KEYS[@]}"; do
     values=()
 
     for i in 1 2 3; do
-        value=$(extract_benchmark "$benchmark_name" "$TEMP_DIR/benchmark_run_$i.txt")
+        value=$(extract_benchmark "$benchmark_name" "$RESULTS_DIR/benchmark_run_$i.txt")
         if [ -n "$value" ]; then
             values+=("$value")
         fi
@@ -139,26 +153,20 @@ for idx in "${!BENCH_KEYS[@]}"; do
     if [ ${#values[@]} -gt 0 ]; then
         median_ns=$(calculate_median "${values[@]}")
         median_ms=$(ns_to_ms "$median_ns" "$key")
-        MEDIAN_VALUES[$idx]="$median_ms"
+        MEDIAN_VALUES[idx]="$median_ms"
         echo "  $key: $median_ms ms (from ${values[*]} ns)"
     else
         echo "  Warning: No values found for $key"
-        MEDIAN_VALUES[$idx]="N/A"
+        MEDIAN_VALUES[idx]="N/A"
     fi
 done
-
-# Clean up temp directory
-rm -rf "$TEMP_DIR"
 
 # Now update benchmarks.md
 echo ""
 echo "Updating benchmarks.md..."
 
-# Restore to original state to update benchmarks.md
-git checkout "$CURRENT_BRANCH" 2>/dev/null || git checkout "$CURRENT_COMMIT"
-
 # Read benchmarks.md
-BENCHMARKS_FILE="benchmarks.md"
+BENCHMARKS_FILE="$REPO_ROOT/benchmarks.md"
 if [ ! -f "$BENCHMARKS_FILE" ]; then
     echo "Error: $BENCHMARKS_FILE not found"
     exit 1

@@ -1955,6 +1955,10 @@ $ parquet-tools version -j
 
 ## Local Development
 
+### Updating Benchmark History
+
+Run `./scripts/gen-bench.sh <version>` to benchmark a tag or commit three times and update `benchmarks.md` with the median results. The script uses a temporary Git worktree, so the current branch and local changes are left in place.
+
 ### Generating GitHub Pages
 
 `make pages-star` and `make pages-coverage` generate the project's GitHub Pages charts locally to `build/pages/`. Run both with `make pages`.
