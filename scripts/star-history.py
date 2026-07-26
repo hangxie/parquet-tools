@@ -13,17 +13,79 @@ Output:
 
 Environment:
     GITHUB_TOKEN  GitHub personal access token (raises rate limit from 60 to 5000/hr)
+
+Transient 403/429/5xx responses (e.g. GitHub secondary rate limits on shared
+Actions-runner IPs) are retried with backoff before the script gives up.
 """
 
 import json
 import os
 import sys
+import time
 import urllib.request
 import urllib.error
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 REPO = "hangxie/parquet-tools"
+
+# GitHub shared Actions-runner IPs regularly trip secondary rate limits, which
+# surface as an immediate 403 even with a valid token. Retry such transient
+# failures with backoff instead of failing the whole Pages deploy.
+MAX_RETRIES = 5
+RETRY_STATUS = {403, 429, 500, 502, 503, 504}
+MAX_BACKOFF = 60  # cap per-attempt wait (seconds)
+
+
+def _retry_after(err, attempt):
+    """Seconds to wait before retrying, honoring GitHub's rate-limit headers."""
+    hdrs = err.headers or {}
+    retry_after = hdrs.get("Retry-After")
+    if retry_after and retry_after.isdigit():
+        return min(int(retry_after), MAX_BACKOFF)
+    reset = hdrs.get("X-RateLimit-Reset")
+    remaining = hdrs.get("X-RateLimit-Remaining")
+    if reset and reset.isdigit() and remaining == "0":
+        wait = int(reset) - int(time.time())
+        if wait > 0:
+            return min(wait, MAX_BACKOFF)
+    return min(2 ** attempt, MAX_BACKOFF)  # exponential fallback: 1,2,4,8,16s
+
+
+def _fetch_page(url, headers, page):
+    """Fetch a single stargazers page, retrying transient failures."""
+    for attempt in range(MAX_RETRIES):
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read().decode())
+        except urllib.error.HTTPError as e:
+            if e.code in RETRY_STATUS and attempt < MAX_RETRIES - 1:
+                wait = _retry_after(e, attempt)
+                print(
+                    f"GitHub API {e.code} on page {page} "
+                    f"(attempt {attempt + 1}/{MAX_RETRIES}); "
+                    f"retrying in {wait}s...",
+                    file=sys.stderr,
+                )
+                time.sleep(wait)
+                continue
+            # Final failure: dump body and rate-limit headers for diagnosis.
+            body = ""
+            try:
+                body = e.read().decode("utf-8", "replace").strip()
+            except Exception:
+                pass
+            hdrs = e.headers or {}
+            print(
+                f"GitHub API error (page {page}): {e}\n"
+                f"  X-RateLimit-Remaining: {hdrs.get('X-RateLimit-Remaining')}\n"
+                f"  X-RateLimit-Reset: {hdrs.get('X-RateLimit-Reset')}\n"
+                f"  Retry-After: {hdrs.get('Retry-After')}\n"
+                f"  body: {body}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
 
 def fetch_stars(token=None):
@@ -33,19 +95,14 @@ def fetch_stars(token=None):
     headers = {
         "Accept": "application/vnd.github.v3.star+json",
         "User-Agent": "star-history/1.0",
+        "X-GitHub-Api-Version": "2022-11-28",
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
 
     while True:
         url = f"https://api.github.com/repos/{REPO}/stargazers?per_page=100&page={page}"
-        req = urllib.request.Request(url, headers=headers)
-        try:
-            with urllib.request.urlopen(req) as resp:
-                data = json.loads(resp.read().decode())
-        except urllib.error.HTTPError as e:
-            print(f"GitHub API error (page {page}): {e}", file=sys.stderr)
-            sys.exit(1)
+        data = _fetch_page(url, headers, page)
 
         if not data:
             break
