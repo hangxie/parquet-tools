@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/hangxie/parquet-go/v3/common"
 	"github.com/hangxie/parquet-go/v3/parquet"
 )
 
@@ -26,6 +27,26 @@ const (
 	schemeAWSS3              string = "s3"
 	schemeAzureStorageBlob   string = "wasbs"
 )
+
+// ValidateFieldDelimiter rejects values that conflict with field assignments.
+func ValidateFieldDelimiter(delimiter string) error {
+	if delimiter == "" {
+		return nil
+	}
+	if len(delimiter) != 1 {
+		return fmt.Errorf("field delimiter must be a single character")
+	}
+	return nil
+}
+
+// NormalizeFieldPath splits path by delimiter (defaulting to "." when delimiter is empty)
+// and joins the segments with the internal ParGoPathDelimiter.
+func NormalizeFieldPath(path, delimiter string) string {
+	if delimiter == "" {
+		delimiter = "."
+	}
+	return common.PathToStr(strings.Split(path, delimiter))
+}
 
 func parseURI(uri string) (*url.URL, error) {
 	u, err := url.Parse(uri)

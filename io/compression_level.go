@@ -28,13 +28,13 @@ var codecsWithoutLevels = map[string]bool{
 // normalized codec name and level. Returns an error for invalid format,
 // unknown/unsupported codecs, or non-integer levels.
 func parseCompressionLevel(item string) (string, int, error) {
-	parts := strings.SplitN(item, "=", 2)
-	if len(parts) != 2 {
+	codec, levelStr, ok := strings.Cut(item, "=")
+	if !ok {
 		return "", 0, fmt.Errorf("invalid compression level format [%s], expected 'CODEC=LEVEL'", item)
 	}
 
-	codec := strings.TrimSpace(parts[0])
-	levelStr := strings.TrimSpace(parts[1])
+	codec = strings.TrimSpace(codec)
+	levelStr = strings.TrimSpace(levelStr)
 
 	if codec == "" {
 		return "", 0, fmt.Errorf("empty codec in [%s]", item)

@@ -46,6 +46,10 @@ func TestCmd(t *testing.T) {
 				Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: "../../testdata/ARROW-GH-41317.parquet", URI: "dummy"},
 				"failed to build encoding map",
 			},
+			"field-delimiter": {
+				Cmd{ReadOption: rOpt, ReadPageSize: 10, FieldDelimiter: "::", Source: "../../testdata/good.parquet", URI: "dummy"},
+				"field delimiter must be a single character",
+			},
 		}
 
 		for name, tc := range testCases {

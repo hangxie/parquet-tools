@@ -54,6 +54,10 @@ func TestCmd(t *testing.T) {
 				Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: true, ReadPageSize: 10, Source: []string{"../../testdata/all-types.parquet", "../../testdata/all-types.parquet"}, URI: "dummy"},
 				"type INT96 which is not supported",
 			},
+			"field-delimiter": {
+				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, FieldDelimiter: "::", Source: []string{"../../testdata/good.parquet", "../../testdata/good.parquet"}, URI: "dummy"},
+				"field delimiter must be a single character",
+			},
 		}
 
 		for name, tc := range testCases {

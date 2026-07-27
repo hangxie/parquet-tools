@@ -9,23 +9,27 @@ import (
 
 // Cmd is a kong command for retype.
 type Cmd struct {
-	Int96ToTimestamp bool   `help:"Convert INT96 columns to TIMESTAMP_NANOS." name:"int96-to-timestamp" default:"false"`
 	BsonToString     bool   `help:"Convert BSON columns to plain strings (JSON encoded)." default:"false"`
-	JsonToString     bool   `help:"Remove JSON logical type from columns." default:"false"`
+	FieldDelimiter   string `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
 	Float16ToFloat32 bool   `help:"Convert FLOAT16 columns to FLOAT32." name:"float16-to-float32" default:"false"`
-	VariantToString  bool   `help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
-	UuidToString     bool   `help:"Convert UUID columns to plain strings." default:"false"`
-	RepeatedToList   bool   `help:"Convert legacy repeated primitive columns to LIST format." default:"false"`
 	GeoToBinary      bool   `help:"Remove GEOGRAPHY and GEOMETRY logical types (keep as plain BYTE_ARRAY)." default:"false"`
+	Int96ToTimestamp bool   `help:"Convert INT96 columns to TIMESTAMP_NANOS." name:"int96-to-timestamp" default:"false"`
+	JsonToString     bool   `help:"Remove JSON logical type from columns." default:"false"`
 	ReadPageSize     int    `help:"Page size to read from Parquet." default:"1000"`
+	RepeatedToList   bool   `help:"Convert legacy repeated primitive columns to LIST format." default:"false"`
 	Source           string `short:"s" help:"Source Parquet file to retype." required:"true"`
 	URI              string `arg:"" predictor:"file" help:"URI of output Parquet file."`
+	UuidToString     bool   `help:"Convert UUID columns to plain strings." default:"false"`
+	VariantToString  bool   `help:"Convert VARIANT columns to plain strings (JSON encoded)." default:"false"`
 	pio.ReadOption
 	pio.WriteOption
 }
 
 // Run does actual retype job
 func (c Cmd) Run() (retErr error) {
+	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
+		return err
+	}
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -59,6 +63,8 @@ func (c Cmd) Run() (retErr error) {
 	schemaJSON := schemaTree.JSONSchema()
 
 	// Create output file with new settings
+	c.ReadOption.FieldDelimiter = c.FieldDelimiter
+	c.WriteOption.FieldDelimiter = c.FieldDelimiter
 	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)

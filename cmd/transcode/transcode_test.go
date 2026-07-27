@@ -96,6 +96,7 @@ func testCmdError(t *testing.T) {
 			PageSize:         1024 * 1024,
 			RowGroupSize:     128 * 1024 * 1024,
 		}, ReadPageSize: 10, Source: "../../testdata/good.parquet", URI: filepath.Join(tempDir, "dummy")}, "not a valid CompressionCode"},
+		"field-delimiter": {Cmd{ReadOption: rOpt, WriteOption: wOpt, ReadPageSize: 10, FieldDelimiter: "::", Source: "../../testdata/good.parquet", URI: "dummy"}, "field delimiter must be a single character"},
 	}
 
 	for name, tc := range testCases {
@@ -962,6 +963,7 @@ func TestCmdIsEncodingCompatible(t *testing.T) {
 func TestCmdParseFieldEncodings(t *testing.T) {
 	testCases := []struct {
 		name            string
+		fieldDelimiter  string
 		dataPageVersion int32
 		fieldEncoding   []string
 		expected        map[string]string
@@ -969,72 +971,98 @@ func TestCmdParseFieldEncodings(t *testing.T) {
 	}{
 		{
 			name:            "empty input",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{},
 			expected:        map[string]string{},
 		},
 		{
-			name:            "single field encoding",
+			name:            "single field encoding with = delimiter",
+			fieldDelimiter:  "=",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"shoe_brand=PLAIN"},
 			expected:        map[string]string{"shoe_brand": "PLAIN"},
 		},
 		{
-			name:            "multiple field encodings",
+			name:            "multiple field encodings with \\a delimiter",
+			fieldDelimiter:  "\a",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"shoe_brand=PLAIN", "shoe_name=PLAIN"},
 			expected:        map[string]string{"shoe_brand": "PLAIN", "shoe_name": "PLAIN"},
 		},
 		{
-			name:            "nested field path",
+			name:            "nested field path with tab delimiter",
+			fieldDelimiter:  "\t",
 			dataPageVersion: 1,
-			fieldEncoding:   []string{"parent.child.leaf=RLE"},
-			expected:        map[string]string{"parent.child.leaf": "RLE"},
+			fieldEncoding:   []string{"parent\tchild\tleaf=RLE"},
+			expected:        map[string]string{"parent\x01child\x01leaf": "RLE"},
 		},
 		{
-			name:            "case insensitive encoding",
+			name:            "case insensitive encoding with . delimiter",
+			fieldDelimiter:  ".",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"field=plain"},
 			expected:        map[string]string{"field": "PLAIN"},
 		},
 		{
-			name:            "encoding with whitespace",
+			name:            "encoding with whitespace and | delimiter",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"  field  =  RLE  "},
 			expected:        map[string]string{"field": "RLE"},
 		},
 		{
+			name:            "multi-char delimiter 12",
+			fieldDelimiter:  "12",
+			dataPageVersion: 1,
+			fieldEncoding:   []string{"field=PLAIN"},
+			expected:        map[string]string{"field": "PLAIN"},
+		},
+		{
+			name:            "empty delimiter defaults to dot",
+			fieldDelimiter:  "",
+			dataPageVersion: 1,
+			fieldEncoding:   []string{"field=PLAIN"},
+			expected:        map[string]string{"field": "PLAIN"},
+		},
+		{
 			name:            "missing equals sign",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"fieldPLAIN"},
 			errMsg:          "invalid field encoding format",
 		},
 		{
 			name:            "empty field path",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"=PLAIN"},
 			errMsg:          "empty field path",
 		},
 		{
 			name:            "empty encoding",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"field="},
 			errMsg:          "empty encoding",
 		},
 		{
 			name:            "invalid encoding",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"field=INVALID_ENCODING"},
 			errMsg:          "invalid encoding",
 		},
 		{
 			name:            "plain_dictionary allowed in v1",
+			fieldDelimiter:  "|",
 			dataPageVersion: 1,
 			fieldEncoding:   []string{"field=PLAIN_DICTIONARY"},
 			expected:        map[string]string{"field": "PLAIN_DICTIONARY"},
 		},
 		{
 			name:            "plain_dictionary not allowed in v2",
+			fieldDelimiter:  "|",
 			dataPageVersion: 2,
 			fieldEncoding:   []string{"field=PLAIN_DICTIONARY"},
 			errMsg:          "PLAIN_DICTIONARY encoding is only allowed with data page version 1",
@@ -1044,7 +1072,9 @@ func TestCmdParseFieldEncodings(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cmd := Cmd{
-				FieldEncoding: tc.fieldEncoding,
+				FieldDelimiter: tc.fieldDelimiter,
+				FieldEncoding:  tc.fieldEncoding,
+				ReadOption:     pio.ReadOption{},
 				WriteOption: pio.WriteOption{
 					CompressionCodec: "SNAPPY",
 					DataPageVersion:  tc.dataPageVersion,
@@ -1147,72 +1177,104 @@ func TestCmd_getAllowedEncodings(t *testing.T) {
 func TestCmdParseFieldBloomFilters(t *testing.T) {
 	testCases := []struct {
 		name             string
+		fieldDelimiter   string
 		fieldBloomFilter []string
 		expected         map[string]string
 		errMsg           string
 	}{
 		{
 			name:             "empty input",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{},
 			expected:         map[string]string{},
 		},
 		{
-			name:             "enable bloom filter",
+			name:             "enable bloom filter with = delimiter",
+			fieldDelimiter:   "=",
 			fieldBloomFilter: []string{"ID=true"},
 			expected:         map[string]string{"ID": "true"},
 		},
 		{
-			name:             "disable bloom filter",
+			name:             "disable bloom filter with \\a delimiter",
+			fieldDelimiter:   "\a",
 			fieldBloomFilter: []string{"ID=false"},
 			expected:         map[string]string{"ID": "false"},
 		},
 		{
-			name:             "enable with size",
+			name:             "enable with size and tab delimiter",
+			fieldDelimiter:   "\t",
 			fieldBloomFilter: []string{"ID=2048"},
 			expected:         map[string]string{"ID": "2048"},
 		},
 		{
-			name:             "multiple fields",
+			name:             "multiple fields with . delimiter",
+			fieldDelimiter:   ".",
 			fieldBloomFilter: []string{"ID=true", "Name=4096", "Age=false"},
 			expected:         map[string]string{"ID": "true", "Name": "4096", "Age": "false"},
 		},
 		{
+			name:             "nested field with | delimiter",
+			fieldDelimiter:   "|",
+			fieldBloomFilter: []string{"parent|child=true"},
+			expected:         map[string]string{"parent\x01child": "true"},
+		},
+		{
+			name:             "multi-char delimiter 12",
+			fieldDelimiter:   "12",
+			fieldBloomFilter: []string{"ID=true"},
+			expected:         map[string]string{"ID": "true"},
+		},
+		{
+			name:             "empty delimiter defaults to dot",
+			fieldDelimiter:   "",
+			fieldBloomFilter: []string{"ID=true"},
+			expected:         map[string]string{"ID": "true"},
+		},
+		{
 			name:             "missing equals sign",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"IDtrue"},
 			errMsg:           "invalid field bloom filter format",
 		},
 		{
 			name:             "empty field path",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"=true"},
 			errMsg:           "empty field path",
 		},
 		{
 			name:             "empty value",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"ID="},
 			errMsg:           "empty value",
 		},
 		{
 			name:             "invalid value",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"ID=maybe"},
 			errMsg:           "invalid bloom filter size [maybe] for field [ID]: not a number",
 		},
 		{
 			name:             "not power of 2",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"ID=3000"},
 			errMsg:           "must be a power of 2",
 		},
 		{
 			name:             "zero size",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"ID=0"},
 			errMsg:           "invalid bloom filter value",
 		},
 		{
 			name:             "negative size",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"ID=-1"},
 			errMsg:           "invalid bloom filter value",
 		},
 		{
 			name:             "below minimum size",
+			fieldDelimiter:   "|",
 			fieldBloomFilter: []string{"ID=16"},
 			errMsg:           "invalid bloom filter value",
 		},
@@ -1220,7 +1282,11 @@ func TestCmdParseFieldBloomFilters(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cmd := Cmd{FieldBloomFilter: tc.fieldBloomFilter}
+			cmd := Cmd{
+				FieldDelimiter:   tc.fieldDelimiter,
+				FieldBloomFilter: tc.fieldBloomFilter,
+				ReadOption:       pio.ReadOption{},
+			}
 			result, err := cmd.parseFieldBloomFilters()
 
 			if tc.errMsg != "" {
@@ -1342,42 +1408,50 @@ func testCmdFieldBloomFilter(t *testing.T) {
 func TestCmdParseFieldCompressions(t *testing.T) {
 	testCases := []struct {
 		name             string
+		fieldDelimiter   string
 		fieldCompression []string
 		expected         map[string]string
 		errMsg           string
 	}{
 		{
 			name:             "empty input",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{},
 			expected:         map[string]string{},
 		},
 		{
-			name:             "single field compression",
+			name:             "single field compression with \\a delimiter",
+			fieldDelimiter:   "\a",
 			fieldCompression: []string{"shoe_brand=SNAPPY"},
 			expected:         map[string]string{"shoe_brand": "SNAPPY"},
 		},
 		{
-			name:             "multiple field compressions",
+			name:             "multiple field compressions with = delimiter",
+			fieldDelimiter:   "=",
 			fieldCompression: []string{"shoe_brand=SNAPPY", "shoe_name=ZSTD"},
 			expected:         map[string]string{"shoe_brand": "SNAPPY", "shoe_name": "ZSTD"},
 		},
 		{
-			name:             "nested field path",
-			fieldCompression: []string{"parent.child.leaf=GZIP"},
-			expected:         map[string]string{"parent.child.leaf": "GZIP"},
+			name:             "nested field path with | delimiter",
+			fieldDelimiter:   "|",
+			fieldCompression: []string{"parent|child|leaf=GZIP"},
+			expected:         map[string]string{"parent\x01child\x01leaf": "GZIP"},
 		},
 		{
-			name:             "case insensitive codec",
+			name:             "case insensitive codec with . delimiter",
+			fieldDelimiter:   ".",
 			fieldCompression: []string{"field=snappy"},
 			expected:         map[string]string{"field": "SNAPPY"},
 		},
 		{
-			name:             "codec with whitespace",
+			name:             "codec with whitespace and tab delimiter",
+			fieldDelimiter:   "\t",
 			fieldCompression: []string{"  field  =  ZSTD  "},
 			expected:         map[string]string{"field": "ZSTD"},
 		},
 		{
-			name:             "all valid codecs",
+			name:             "all valid codecs with | delimiter",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{"f1=UNCOMPRESSED", "f2=SNAPPY", "f3=GZIP", "f4=LZ4", "f5=LZ4_RAW", "f6=ZSTD", "f7=BROTLI"},
 			expected: map[string]string{
 				"f1": "UNCOMPRESSED",
@@ -1390,27 +1464,44 @@ func TestCmdParseFieldCompressions(t *testing.T) {
 			},
 		},
 		{
+			name:             "multi-char delimiter 12",
+			fieldDelimiter:   "12",
+			fieldCompression: []string{"field=SNAPPY"},
+			expected:         map[string]string{"field": "SNAPPY"},
+		},
+		{
+			name:             "empty delimiter defaults to dot",
+			fieldDelimiter:   "",
+			fieldCompression: []string{"field=SNAPPY"},
+			expected:         map[string]string{"field": "SNAPPY"},
+		},
+		{
 			name:             "missing equals sign",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{"fieldSNAPPY"},
 			errMsg:           "invalid field compression format",
 		},
 		{
 			name:             "empty field path",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{"=SNAPPY"},
 			errMsg:           "empty field path",
 		},
 		{
 			name:             "empty compression codec",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{"field="},
 			errMsg:           "empty compression codec",
 		},
 		{
 			name:             "invalid compression codec",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{"field=INVALID_CODEC"},
 			errMsg:           "invalid compression codec",
 		},
 		{
 			name:             "LZO not supported",
+			fieldDelimiter:   "|",
 			fieldCompression: []string{"field=LZO"},
 			errMsg:           "invalid compression codec",
 		},
@@ -1419,7 +1510,9 @@ func TestCmdParseFieldCompressions(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cmd := Cmd{
+				FieldDelimiter:   tc.fieldDelimiter,
 				FieldCompression: tc.fieldCompression,
+				ReadOption:       pio.ReadOption{},
 			}
 			result, err := cmd.parseFieldCompressions()
 

@@ -23,12 +23,13 @@ type trunkWriter struct {
 
 // Cmd is a kong command for split
 type Cmd struct {
-	FailOnInt96  bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	FileCount    int64  `xor:"RecordCount" help:"Generate exactly this number of result files, including empty files when needed."`
-	NameFormat   string `help:"Format to populate target file names" default:"result-%06d.parquet"`
-	ReadPageSize int    `help:"Page size to read from Parquet." default:"1000"`
-	RecordCount  int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
-	URI          string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FailOnInt96    bool   `help:"Fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
+	FieldDelimiter string `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
+	FileCount      int64  `xor:"RecordCount" help:"Generate exactly this number of result files, including empty files when needed."`
+	NameFormat     string `help:"Format to populate target file names" default:"result-%06d.parquet"`
+	ReadPageSize   int    `help:"Page size to read from Parquet." default:"1000"`
+	RecordCount    int64  `xor:"FileCount" help:"Result files will have at most this number of records"`
+	URI            string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
 
@@ -71,6 +72,8 @@ func (c *Cmd) switchWriter() error {
 	}
 
 	var err error
+	c.ReadOption.FieldDelimiter = c.FieldDelimiter
+	c.WriteOption.FieldDelimiter = c.FieldDelimiter
 	c.current.targetFile = fmt.Sprintf(c.NameFormat, c.current.fileIndex)
 	c.current.writer, err = pio.NewGenericWriter(c.current.targetFile, c.WriteOption, c.current.schemaJSON)
 	if err != nil {
@@ -89,6 +92,9 @@ func (c *Cmd) switchWriter() error {
 
 // Run does actual split job
 func (c Cmd) Run() error {
+	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
+		return err
+	}
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -137,15 +143,23 @@ func (c Cmd) Run() error {
 			return err
 		}
 	}
-	if c.current.writer != nil {
-		if err := c.current.writer.WriteStop(); err != nil {
-			return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
-		}
-		if err := c.current.writer.PFile.Close(); err != nil {
-			return fmt.Errorf("failed to close [%s]: %w", c.current.targetFile, err)
-		}
+	if err := c.closeWriter(); err != nil {
+		return err
 	}
 
+	return nil
+}
+
+func (c *Cmd) closeWriter() error {
+	if c.current.writer == nil {
+		return nil
+	}
+	if err := c.current.writer.WriteStop(); err != nil {
+		return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
+	}
+	if err := c.current.writer.PFile.Close(); err != nil {
+		return fmt.Errorf("failed to close [%s]: %w", c.current.targetFile, err)
+	}
 	return nil
 }
 
