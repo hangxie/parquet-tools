@@ -23,6 +23,10 @@ func TestCmd(t *testing.T) {
 		errMsg string
 	}{
 		// error cases
+		"field-delimiter": {
+			cmd:    Cmd{FieldDelimiter: "::", ReadOption: rOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 1000, RecordCount: 10, URI: "dummy", current: tw},
+			errMsg: "field delimiter must be a single character",
+		},
 		"page-size": {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 0, NameFormat: "", ReadPageSize: 0, RecordCount: 0, URI: "dummy", current: tw},
 			errMsg: "invalid read page size",

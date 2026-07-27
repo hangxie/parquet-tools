@@ -13,7 +13,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
-	"github.com/hangxie/parquet-go/v3/common"
 	"github.com/hangxie/parquet-go/v3/reader"
 	"github.com/hangxie/parquet-go/v3/source"
 	pqazblob "github.com/hangxie/parquet-go/v3/source/azblob"
@@ -27,14 +26,15 @@ import (
 
 // ReadOption includes options for read operation
 type ReadOption struct {
+	AADPrefix              *string           `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)."`
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
+	ColumnKeys             []string          `name:"column-key" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
+	FieldDelimiter         string            `kong:"-"`
+	FooterKey              *string           `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first."`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	HTTPIgnoreTLSError     bool              `help:"(HTTP and S3 URI) ignore TLS error." default:"false"`
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	ObjectVersion          *string           `help:"(S3, GCS, and Azure only) object version."`
-	FooterKey              *string           `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first."`
-	ColumnKeys             []string          `name:"column-key" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
-	AADPrefix              *string           `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)."`
 	KeyFile                *string           `name:"key-file" group:"Encryption" help:"path to a JSON file containing decryption keys ({footer_key, aad_prefix, column_keys}); CLI flags override file values."`
 }
 
@@ -50,35 +50,35 @@ func decodeBase64(s string) ([]byte, error) {
 	return b, nil
 }
 
-func buildReaderOptions(option ReadOption) ([]reader.ReaderOption, error) {
+func buildReaderOptions(opt ReadOption) ([]reader.ReaderOption, error) {
 	var opts []reader.ReaderOption
 
-	if option.FooterKey != nil {
-		key, err := decodeBase64(*option.FooterKey)
+	if opt.FooterKey != nil {
+		key, err := decodeBase64(*opt.FooterKey)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 footer key: %w", err)
 		}
 		opts = append(opts, reader.WithFooterKey(key))
 	}
 
-	if option.AADPrefix != nil {
-		prefix, err := decodeBase64(*option.AADPrefix)
+	if opt.AADPrefix != nil {
+		prefix, err := decodeBase64(*opt.AADPrefix)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 AAD prefix: %w", err)
 		}
 		opts = append(opts, reader.WithAADPrefix(prefix))
 	}
 
-	for _, ck := range option.ColumnKeys {
-		parts := strings.SplitN(ck, "=", 2)
-		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	for _, ck := range opt.ColumnKeys {
+		path, encodedKey, found := strings.Cut(ck, "=")
+		if !found || path == "" || encodedKey == "" {
 			return nil, fmt.Errorf("invalid column key format [%s], expected 'column.path=base64key'", ck)
 		}
-		key, err := decodeBase64(parts[1])
+		key, err := decodeBase64(encodedKey)
 		if err != nil {
-			return nil, fmt.Errorf("invalid base64 column key for [%s]: %w", parts[0], err)
+			return nil, fmt.Errorf("invalid base64 column key for [%s]: %w", path, err)
 		}
-		opts = append(opts, reader.WithColumnKey(parts[0], key))
+		opts = append(opts, reader.WithColumnKey(NormalizeFieldPath(path, opt.FieldDelimiter), key))
 	}
 
 	return opts, nil
@@ -93,8 +93,8 @@ func applyKeyFile(kf keyFileSchema, opt *ReadOption) {
 	}
 	existing := make(map[string]struct{}, len(opt.ColumnKeys))
 	for _, ck := range opt.ColumnKeys {
-		if i := strings.IndexByte(ck, '='); i > 0 {
-			existing[common.ReformPathStr(ck[:i])] = struct{}{}
+		if path, _, found := strings.Cut(ck, "="); found && path != "" {
+			existing[NormalizeFieldPath(path, opt.FieldDelimiter)] = struct{}{}
 		}
 	}
 	paths := make([]string, 0, len(kf.ColumnKeys))
@@ -103,7 +103,7 @@ func applyKeyFile(kf keyFileSchema, opt *ReadOption) {
 	}
 	sort.Strings(paths)
 	for _, p := range paths {
-		if _, ok := existing[common.ReformPathStr(p)]; !ok {
+		if _, ok := existing[NormalizeFieldPath(p, opt.FieldDelimiter)]; !ok {
 			opt.ColumnKeys = append(opt.ColumnKeys, p+"="+kf.ColumnKeys[p])
 		}
 	}

@@ -492,7 +492,7 @@ func TestApplyKeyFile(t *testing.T) {
 		},
 		"column-keys-cross-form-cli-wins": {
 			// CLI uses dot form "a.b"; file uses the same logical path.
-			// ReformPathStr normalizes both to the same key so the file
+			// NormalizeFieldPath normalizes both to the same key so the file
 			// entry must be suppressed and CLI value must survive.
 			kf: keyFileSchema{
 				ColumnKeys: map[string]string{"a.b": "ZmlsZQ=="},

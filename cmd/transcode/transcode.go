@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hangxie/parquet-go/v3/common"
 	"github.com/hangxie/parquet-go/v3/parquet"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -19,6 +20,7 @@ type Cmd struct {
 	FailOnInt96      bool     `help:"Fail if INT96 fields are detected in the source file." name:"fail-on-int96" default:"false"`
 	FieldBloomFilter []string `help:"Field-specific bloom filter." placeholder:"field.path=true/false/<size>"`
 	FieldCompression []string `help:"Field-specific compression." placeholder:"field.path=CODEC"`
+	FieldDelimiter   string   `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
 	FieldEncoding    []string `help:"Field-specific encoding." placeholder:"field.path=ENCODING"`
 	OmitStats        string   `help:"Control statistics (true/false). Leave empty to keep original." default:""`
 	ReadPageSize     int      `help:"Page size to read from Parquet." default:"1000"`
@@ -29,16 +31,16 @@ type Cmd struct {
 }
 
 // parseFieldEncodings parses field-specific encoding specifications from "field.path=ENCODING" format
-// and returns a map from field path to encoding. Field paths use "." as delimiter.
+// and returns a map from normalized field path to encoding.
 func (c Cmd) parseFieldEncodings() (map[string]string, error) {
 	result := make(map[string]string)
 	for _, spec := range c.FieldEncoding {
-		parts := strings.SplitN(spec, "=", 2)
-		if len(parts) != 2 {
+		rawFieldPath, rawEncoding, found := strings.Cut(spec, "=")
+		if !found {
 			return nil, fmt.Errorf("invalid field encoding format [%s], expected 'field.path=ENCODING'", spec)
 		}
-		fieldPath := strings.TrimSpace(parts[0])
-		encoding := strings.TrimSpace(parts[1])
+		fieldPath := strings.TrimSpace(rawFieldPath)
+		encoding := strings.TrimSpace(rawEncoding)
 
 		if fieldPath == "" {
 			return nil, fmt.Errorf("empty field path in [%s]", spec)
@@ -68,22 +70,22 @@ func (c Cmd) parseFieldEncodings() (map[string]string, error) {
 			return nil, fmt.Errorf("[%s] encoding is only allowed with data page version 2 for field [%s]", encoding, fieldPath)
 		}
 
-		result[fieldPath] = strings.ToUpper(encoding)
+		result[pio.NormalizeFieldPath(fieldPath, c.FieldDelimiter)] = strings.ToUpper(encoding)
 	}
 	return result, nil
 }
 
 // parseFieldCompressions parses field-specific compression specifications from "field.path=CODEC" format
-// and returns a map from field path to compression codec. Field paths use "." as delimiter.
+// and returns a map from normalized field path to compression codec.
 func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 	result := make(map[string]string)
 	for _, spec := range c.FieldCompression {
-		parts := strings.SplitN(spec, "=", 2)
-		if len(parts) != 2 {
+		rawFieldPath, rawCodec, found := strings.Cut(spec, "=")
+		if !found {
 			return nil, fmt.Errorf("invalid field compression format [%s], expected 'field.path=CODEC'", spec)
 		}
-		fieldPath := strings.TrimSpace(parts[0])
-		codec := strings.TrimSpace(parts[1])
+		fieldPath := strings.TrimSpace(rawFieldPath)
+		codec := strings.TrimSpace(rawCodec)
 
 		if fieldPath == "" {
 			return nil, fmt.Errorf("empty field path in [%s]", spec)
@@ -99,7 +101,7 @@ func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 			return nil, fmt.Errorf("invalid compression codec [%s] for field [%s], valid codecs: %s", codec, fieldPath, strings.Join(pio.ValidCompressionCodecs, ", "))
 		}
 
-		result[fieldPath] = codec
+		result[pio.NormalizeFieldPath(fieldPath, c.FieldDelimiter)] = codec
 	}
 	return result, nil
 }
@@ -109,12 +111,12 @@ func (c Cmd) parseFieldCompressions() (map[string]string, error) {
 func (c Cmd) parseFieldBloomFilters() (map[string]string, error) {
 	result := make(map[string]string)
 	for _, spec := range c.FieldBloomFilter {
-		parts := strings.SplitN(spec, "=", 2)
-		if len(parts) != 2 {
+		rawFieldPath, rawValue, found := strings.Cut(spec, "=")
+		if !found {
 			return nil, fmt.Errorf("invalid field bloom filter format [%s], expected 'field.path=VALUE'", spec)
 		}
-		fieldPath := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
+		fieldPath := strings.TrimSpace(rawFieldPath)
+		value := strings.TrimSpace(rawValue)
 
 		if fieldPath == "" {
 			return nil, fmt.Errorf("empty field path in [%s]", spec)
@@ -138,7 +140,7 @@ func (c Cmd) parseFieldBloomFilters() (map[string]string, error) {
 			}
 		}
 
-		result[fieldPath] = value
+		result[pio.NormalizeFieldPath(fieldPath, c.FieldDelimiter)] = value
 	}
 	return result, nil
 }
@@ -148,7 +150,7 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 	// Only apply to leaf nodes (not struct/group types)
 	if schemaTree.Type != nil {
 		// Build field path from ExNamePath (skip root element)
-		fieldPath := strings.Join(schemaTree.ExNamePath[1:], ".")
+		fieldPath := common.PathToStr(schemaTree.ExNamePath[1:])
 
 		// Apply field-specific encoding if specified
 		if encoding, found := fieldEncodings[fieldPath]; found {
@@ -200,6 +202,9 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 
 // Run does actual transcode job
 func (c Cmd) Run() (retErr error) {
+	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
+		return err
+	}
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -247,6 +252,8 @@ func (c Cmd) Run() (retErr error) {
 	schemaJSON := schemaTree.JSONSchema()
 
 	// Create output file with new settings
+	c.ReadOption.FieldDelimiter = c.FieldDelimiter
+	c.WriteOption.FieldDelimiter = c.FieldDelimiter
 	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)

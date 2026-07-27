@@ -519,6 +519,8 @@ All supplied key and AAD values must be standard base64 with padding (RFC 4648 ย
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
 * `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it.
 
+Nested paths in field and column parameters use `.` as their delimiter by default. Set `--field-delimiter` to use another non-empty string that does not contain `=` (the assignment separator). This is useful when a field name contains a literal dot: for example, `--field-delimiter=/ --column-key 'user.info/ssn=KEY'` addresses the nested field `ssn` under a field literally named `user.info`. The delimiter applies to `--column-key`, `--writer-column-key`, `--field-encoding`, `--field-compression`, `--field-bloom-filter`, and column paths in key files.
+
 For example:
 
 ```bash
@@ -576,7 +578,7 @@ All writer keys must be standard base64 with padding (RFC 4648 ยง4) and must dec
 
 `--writer-footer-key` is required for every encryption mode. It encrypts the footer; with `--plaintext-footer` it signs the footer with AES-GCM instead. It is also the key used for any column whose `--writer-column-key` directive selects the footer key, and for unlisted columns when `--encrypt-all-columns` is set.
 
-`--writer-column-key column.path=VALUE` selects per-column encryption for the listed column. `column.path` is the dotted file-schema path of a leaf column **without** the schema root (e.g. `Parent.Child`, not `parquet_go_root.Parent.Child`). `VALUE` is either a base64-encoded AES key (the column gets its own dedicated key) or the literal `@footer-key` (the column is encrypted with `--writer-footer-key`). The leading `@` is outside the base64 alphabet, so the sentinel cannot collide with a key value.
+`--writer-column-key column.path=VALUE` selects per-column encryption for the listed column. `column.path` is the file-schema path of a leaf column **without** the schema root (e.g. `Parent.Child`, not `parquet_go_root.Parent.Child`) and uses `--field-delimiter` between components. `VALUE` is either a base64-encoded AES key (the column gets its own dedicated key) or the literal `@footer-key` (the column is encrypted with `--writer-footer-key`). The leading `@` is outside the base64 alphabet, so the sentinel cannot collide with a key value.
 
 By default, columns not listed in `--writer-column-key` are written as plaintext. Set `--encrypt-all-columns` to encrypt every leaf column not otherwise listed with `--writer-footer-key`.
 
@@ -1733,7 +1735,7 @@ $ parquet-tools transcode -s legacy.parquet --data-page-version=1 compatible.par
 
 Use the `--field-encoding` parameter to apply different encodings to specific fields.
 
-The format is `--field-encoding field.path=ENCODING`, where `field.path` is the dot-separated path to the field. For nested structures, use the full path including intermediate elements like `list` for LIST types and `key_value` for MAP types.
+The format is `--field-encoding field.path=ENCODING`, where `field.path` uses `--field-delimiter` (`.` by default). For nested structures, use the full path including intermediate elements like `list` for LIST types and `key_value` for MAP types.
 
 Apply different encodings to different fields:
 
@@ -1796,7 +1798,7 @@ $ parquet-tools transcode -s input.parquet --omit-stats false output.parquet
 
 Use the `--field-compression` parameter to apply different compression codecs to specific fields. Field-specific compression takes precedence over the file-level default set by `--compression`.
 
-The format is `--field-compression field.path=CODEC`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`).
+The format is `--field-compression field.path=CODEC`, where `field.path` uses `--field-delimiter` (same format as `--field-encoding`).
 
 Apply different compression codecs to different fields:
 
@@ -1844,7 +1846,7 @@ See [Compression Codecs](#compression-codecs) for more details.
 
 Use the `--field-bloom-filter` parameter to add, remove, or configure bloom filters on specific fields.
 
-The format is `--field-bloom-filter field.path=VALUE`, where `field.path` is the dot-separated path to the field (same format as `--field-encoding`) and `VALUE` is one of:
+The format is `--field-bloom-filter field.path=VALUE`, where `field.path` uses `--field-delimiter` (same format as `--field-encoding`) and `VALUE` is one of:
 
 * `true` - Enable bloom filter with default size (1024 bytes)
 * `false` - Remove bloom filter from the field

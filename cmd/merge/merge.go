@@ -14,17 +14,21 @@ import (
 
 // Cmd is a kong command for merge
 type Cmd struct {
-	Concurrent   bool     `help:"enable concurrent processing" default:"false"`
-	FailOnInt96  bool     `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
-	ReadPageSize int      `help:"Page size to read from Parquet." default:"1000"`
-	Source       []string `short:"s" help:"Files to be merged."`
-	URI          string   `arg:"" predictor:"file" help:"URI of Parquet file."`
+	Concurrent     bool     `help:"enable concurrent processing" default:"false"`
+	FailOnInt96    bool     `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
+	FieldDelimiter string   `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
+	ReadPageSize   int      `help:"Page size to read from Parquet." default:"1000"`
+	Source         []string `short:"s" help:"Files to be merged."`
+	URI            string   `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.ReadOption
 	pio.WriteOption
 }
 
 // Run does actual merge job
 func (c Cmd) Run() (retErr error) {
+	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
+		return err
+	}
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -42,6 +46,8 @@ func (c Cmd) Run() (retErr error) {
 		}
 	}()
 
+	c.ReadOption.FieldDelimiter = c.FieldDelimiter
+	c.WriteOption.FieldDelimiter = c.FieldDelimiter
 	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)

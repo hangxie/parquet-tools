@@ -18,16 +18,21 @@ import (
 
 // Cmd is a kong command for import
 type Cmd struct {
-	Format     string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
-	Schema     string `required:"" short:"m" predictor:"file" help:"Schema file name."`
-	SkipHeader bool   `help:"Skip first line of CSV files" default:"false"`
-	Source     string `required:"" short:"s" predictor:"file" help:"Source file name."`
-	URI        string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FieldDelimiter string `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
+	Format         string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
+	Schema         string `required:"" short:"m" predictor:"file" help:"Schema file name."`
+	SkipHeader     bool   `help:"Skip first line of CSV files" default:"false"`
+	Source         string `required:"" short:"s" predictor:"file" help:"Source file name."`
+	URI            string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.WriteOption
 }
 
 // Run does actual import job
 func (c Cmd) Run() error {
+	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
+		return err
+	}
+	c.WriteOption.FieldDelimiter = c.FieldDelimiter
 	switch c.Format {
 	case "csv":
 		return c.importCSV()

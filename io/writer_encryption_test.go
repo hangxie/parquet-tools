@@ -68,7 +68,7 @@ func TestValidateWriterColumnKeySchemaPaths(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			columnKeys, parseErr := parseWriterColumnKeys(tc.option.WriterColumnKeys)
+			columnKeys, parseErr := parseWriterColumnKeys(tc.option.WriterColumnKeys, tc.option.FieldDelimiter)
 			require.NoError(t, parseErr)
 			var pathToLeaf map[string]string
 			if tc.schema != nil {
@@ -88,7 +88,7 @@ func TestValidateWriterColumnKeySchemaPaths(t *testing.T) {
 // TestValidateWriterColumnKeySchemaPathsCrossFormDuplicate covers the
 // case where the user lists two --writer-column-key directives whose
 // paths refer to the same leaf via different forms. The
-// ReformPathStr-keyed dedup in parseWriterColumnKeys does not strip
+// Normalized-path dedup in parseWriterColumnKeys does not strip
 // the schema root, so this used to slip through and produce two
 // WithColumnEncrypted calls for the same leaf with conflicting keys.
 // Restricting the accepted form to stripped-external rejects the
@@ -104,7 +104,7 @@ func TestValidateWriterColumnKeySchemaPathsCrossFormDuplicate(t *testing.T) {
 	columnKeys, err := parseWriterColumnKeys([]string{
 		stripped + "=" + columnKey,
 		nestedExPath + "=@footer-key",
-	})
+	}, "")
 	require.NoError(t, err)
 	require.Len(t, columnKeys, 2)
 
@@ -117,9 +117,11 @@ func TestParseWriterColumnKeys(t *testing.T) {
 	key16 := *testWriterKeyBase64(16)
 
 	testCases := map[string]struct {
-		raw       []string
-		errMsg    string
-		wantPaths []string
+		raw                 []string
+		delimiter           string
+		errMsg              string
+		wantPaths           []string
+		wantNormalizedPaths []string
 	}{
 		"nil": {
 			raw: nil,
@@ -134,6 +136,12 @@ func TestParseWriterColumnKeys(t *testing.T) {
 		"multiple": {
 			raw:       []string{"a=" + key16, "b=@footer-key"},
 			wantPaths: []string{"a", "b"},
+		},
+		"custom-delimiter-preserves-dots-in-field-names": {
+			raw:                 []string{"Parent.With.Dot/Child.Name=" + key16},
+			delimiter:           "/",
+			wantPaths:           []string{"Parent.With.Dot/Child.Name"},
+			wantNormalizedPaths: []string{"Parent.With.Dot\x01Child.Name"},
 		},
 		"missing-equals": {
 			raw:    []string{"name"},
@@ -160,7 +168,7 @@ func TestParseWriterColumnKeys(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			parsed, err := parseWriterColumnKeys(tc.raw)
+			parsed, err := parseWriterColumnKeys(tc.raw, tc.delimiter)
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -171,6 +179,9 @@ func TestParseWriterColumnKeys(t *testing.T) {
 			require.Len(t, parsed, len(tc.wantPaths))
 			for i, p := range tc.wantPaths {
 				require.Equal(t, p, parsed[i].Path)
+				if len(tc.wantNormalizedPaths) > 0 {
+					require.Equal(t, tc.wantNormalizedPaths[i], parsed[i].NormalizedPath)
+				}
 			}
 		})
 	}
@@ -185,8 +196,8 @@ func TestWriterSchemaPathToLeaf(t *testing.T) {
 
 	// Only the stripped-external (file-schema) form is registered. Map keys
 	// are normalized to the ParGoPathDelimiter form, matching how callers look
-	// up entries via ReformPathStr(userInput).
-	require.Equal(t, nestedLeaf, pathToLeaf[common.ReformPathStr(strippedEx)])
+	// up entries via NormalizeFieldPath(userInput, delimiter).
+	require.Equal(t, nestedLeaf, pathToLeaf[strippedEx])
 	// The unstripped forms must NOT be registered, so that users cannot
 	// smuggle the same leaf in under two different paths.
 	_, ok := pathToLeaf[nestedLeaf]
@@ -214,9 +225,9 @@ func TestWriterSchemaPathToLeafDefensive(t *testing.T) {
 
 	pathToLeaf := writerSchemaPathToLeaf(schemaHandler)
 	// The !ok branch falls back to the in-path; stripping leaves "Field".
-	require.Equal(t, missingMapping, pathToLeaf[common.ReformPathStr("Field")])
+	require.Equal(t, missingMapping, pathToLeaf[NormalizeFieldPath("Field", "")])
 	// rootOnly has no children below the root and must be skipped entirely.
-	require.NotContains(t, pathToLeaf, common.ReformPathStr(rootOnly))
+	require.NotContains(t, pathToLeaf, NormalizeFieldPath(rootOnly, ""))
 	require.Len(t, pathToLeaf, 1)
 
 	opts := writerEncryptAllColumnsOpts(
@@ -270,7 +281,7 @@ func TestWriterEncryptAllColumnsOpts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			columnKeys, parseErr := parseWriterColumnKeys(tc.option.WriterColumnKeys)
+			columnKeys, parseErr := parseWriterColumnKeys(tc.option.WriterColumnKeys, tc.option.FieldDelimiter)
 			require.NoError(t, parseErr)
 			var pathToLeaf map[string]string
 			if tc.schema != nil {
@@ -376,7 +387,7 @@ func TestApplyWriterKeyFile(t *testing.T) {
 		},
 		"column-keys-cross-form-cli-wins": {
 			// CLI uses dot form "a.b"; file uses the same logical path.
-			// ReformPathStr normalizes both to the same key so the file
+			// NormalizeFieldPath normalizes both to the same key so the file
 			// entry must be suppressed and CLI value must survive.
 			kf:      keyFileSchema{ColumnKeys: map[string]string{"a.b": "ZmlsZQ=="}},
 			initial: WriteOption{WriterColumnKeys: []string{"a.b=Y2xp"}},
@@ -586,7 +597,7 @@ func TestWriterOpts(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			columnKeys, parseErr := parseWriterColumnKeys(tc.option.WriterColumnKeys)
+			columnKeys, parseErr := parseWriterColumnKeys(tc.option.WriterColumnKeys, tc.option.FieldDelimiter)
 			if parseErr != nil {
 				require.NotEmpty(t, tc.errMsg, "unexpected parse error: %v", parseErr)
 				require.Contains(t, parseErr.Error(), tc.errMsg)

@@ -164,6 +164,10 @@ func TestCmd(t *testing.T) {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/invalid-logical-type-json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
 				"LogicalType DECIMAL can only be used",
 			},
+			"field-delimiter": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, FieldDelimiter: "::", URI: "dummy"},
+				"field delimiter must be a single character",
+			},
 		}
 
 		for name, tc := range testCases {
