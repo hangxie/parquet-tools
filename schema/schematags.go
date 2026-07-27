@@ -82,10 +82,11 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 		return
 	}
 
+	required := parquet.FieldRepetitionType_REQUIRED
 	if s.Children[0].LogicalType != nil {
 		// LIST => Element (of scalar type)
 		s.Children[0].Name = "Element"
-		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		s.Children[0].RepetitionType = &required
 		maps.Copy(tagMap, s.Children[0].getTagMapWithPrefix("value"))
 		return
 	}
@@ -95,7 +96,7 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 		s.Children[0].Name = "Element"
 		s.Children[0].Type = nil
 		s.Children[0].ConvertedType = nil
-		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		s.Children[0].RepetitionType = &required
 		return
 	}
 
@@ -109,8 +110,8 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 }
 
 func (s *SchemaNode) updateTagForMap(tagMap map[string]string) {
-	if len(s.Children) == 0 || s.Children[0] == nil || len(s.Children[0].Children) == 0 {
-		// meaningless interim layer
+	if len(s.Children) == 0 || s.Children[0] == nil || len(s.Children[0].Children) < 2 {
+		// meaningless interim layer, or a malformed key_value group
 		return
 	}
 	if s.Children[0].ConvertedType != nil && *s.Children[0].ConvertedType != parquet.ConvertedType_MAP_KEY_VALUE {
