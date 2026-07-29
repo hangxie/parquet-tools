@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/alecthomas/kong"
 	"github.com/posener/complete"
@@ -23,7 +26,7 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
-var cli struct {
+type cli struct {
 	Cat              cat.Cmd                      `cmd:"" help:"Prints the content of a Parquet file, data only."`
 	Import           importcmd.Cmd                `cmd:"" help:"Create Parquet file from other source data."`
 	Inspect          inspect.Cmd                  `cmd:"" help:"Inspect Parquet file structure in detail."`
@@ -39,17 +42,29 @@ var cli struct {
 	Version          version.Cmd                  `cmd:"" help:"Show build version."`
 }
 
-func main() {
+func newParser(cli *cli) *kong.Kong {
 	parser := kong.Must(
-		&cli,
+		cli,
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 		kong.Description("A utility to inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/README.md"),
 		kong.Vars{"writer_encryption_algorithms": strings.Join(pio.WriterEncryptionAlgorithms, ",")},
 	)
 	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
+	return parser
+}
 
-	ctx, err := parser.Parse(os.Args[1:])
+func run(kongCtx *kong.Context, ctx context.Context) error {
+	kongCtx.BindTo(ctx, (*context.Context)(nil))
+	return kongCtx.Run()
+}
+
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	parser := newParser(new(cli))
+	kongCtx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)
-	ctx.FatalIfErrorf(ctx.Run())
+	kongCtx.FatalIfErrorf(run(kongCtx, ctx))
 }
