@@ -1,6 +1,7 @@
 package io
 
 import (
+	"context"
 	"encoding/base64"
 	"os"
 	"path/filepath"
@@ -126,7 +127,7 @@ func TestNewParquetFileWriter(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			pw, err := NewParquetFileWriter(tc.uri)
+			pw, err := NewParquetFileWriter(context.Background(), tc.uri)
 			defer func() {
 				if pw != nil {
 					_ = pw.Close()
@@ -304,7 +305,7 @@ func TestNewCSVWriter(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			pw, err := NewCSVWriter(tc.uri, tc.option, tc.schema)
+			pw, err := NewCSVWriter(context.Background(), tc.uri, tc.option, tc.schema)
 			defer func() {
 				if pw != nil {
 					_ = pw.PFile.Close()
@@ -430,7 +431,7 @@ func TestNewJSONWriter(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			pw, err := NewJSONWriter(tc.uri, tc.option, tc.schema)
+			pw, err := NewJSONWriter(context.Background(), tc.uri, tc.option, tc.schema)
 			defer func() {
 				if pw != nil {
 					_ = pw.PFile.Close()
@@ -634,7 +635,7 @@ func TestNewGenericWriter(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			pw, err := NewGenericWriter(tc.uri, tc.option, tc.schema)
+			pw, err := NewGenericWriter(context.Background(), tc.uri, tc.option, tc.schema)
 			defer func() {
 				if pw != nil {
 					_ = pw.PFile.Close()
@@ -655,21 +656,21 @@ func TestWriterKeyFileReadBeforeOpeningDestination(t *testing.T) {
 	validJSONSchema := `{"Tag":"name=root","Fields":[{"Tag":"name=id, type=INT64"}]}`
 	constructors := map[string]func(string, WriteOption) error{
 		"csv": func(uri string, option WriteOption) error {
-			pw, err := NewCSVWriter(uri, option, []string{"name=Id, type=INT64"})
+			pw, err := NewCSVWriter(context.Background(), uri, option, []string{"name=Id, type=INT64"})
 			if pw != nil {
 				_ = pw.PFile.Close()
 			}
 			return err
 		},
 		"json": func(uri string, option WriteOption) error {
-			pw, err := NewJSONWriter(uri, option, validJSONSchema)
+			pw, err := NewJSONWriter(context.Background(), uri, option, validJSONSchema)
 			if pw != nil {
 				_ = pw.PFile.Close()
 			}
 			return err
 		},
 		"generic": func(uri string, option WriteOption) error {
-			pw, err := NewGenericWriter(uri, option, validJSONSchema)
+			pw, err := NewGenericWriter(context.Background(), uri, option, validJSONSchema)
 			if pw != nil {
 				_ = pw.PFile.Close()
 			}

@@ -103,7 +103,7 @@ func TestCmd(t *testing.T) {
 				err := tc.cmd.Run()
 				require.NoError(t, err)
 
-				reader, _ := pio.NewParquetFileReader(tc.cmd.URI, rOpt)
+				reader, _ := pio.NewParquetFileReader(context.Background(), tc.cmd.URI, rOpt)
 				rowCount := reader.GetNumRows()
 				_ = reader.PFile.Close()
 				require.Equal(t, tc.rowCount, rowCount)
@@ -122,7 +122,7 @@ func TestCmd(t *testing.T) {
 		cmd.URI = filepath.Join(tempDir, "1.parquet")
 		require.Nil(t, cmd.Run())
 
-		reader, _ := pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, _ := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		rowCount := reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(10), rowCount)
@@ -132,7 +132,7 @@ func TestCmd(t *testing.T) {
 		cmd.URI = filepath.Join(tempDir, "2.parquet")
 		require.Nil(t, cmd.Run())
 
-		reader, _ = pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, _ = pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(15), rowCount)
@@ -142,7 +142,7 @@ func TestCmd(t *testing.T) {
 		cmd.URI = filepath.Join(tempDir, "3.parquet")
 		require.Nil(t, cmd.Run())
 
-		reader, _ = pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, _ = pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		rowCount = reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(20), rowCount)
@@ -163,7 +163,7 @@ func TestCmd(t *testing.T) {
 		}
 		require.NoError(t, mergeCmd.Run())
 
-		reader, _ := pio.NewParquetFileReader(mergedFile, pio.ReadOption{})
+		reader, _ := pio.NewParquetFileReader(context.Background(), mergedFile, pio.ReadOption{})
 		rowCount := reader.GetNumRows()
 		_ = reader.PFile.Close()
 		require.Equal(t, int64(6), rowCount)
@@ -279,7 +279,7 @@ func TestCmdEncryption(t *testing.T) {
 			require.NoError(t, cmd.Run())
 			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
 
-			reader, err := pio.NewParquetFileReader(uri, tc.readOption)
+			reader, err := pio.NewParquetFileReader(context.Background(), uri, tc.readOption)
 			require.NoError(t, err)
 			require.Equal(t, int64(6), reader.GetNumRows())
 			_ = reader.PFile.Close()

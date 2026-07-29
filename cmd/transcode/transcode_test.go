@@ -245,7 +245,7 @@ func testCmdGood(t *testing.T) {
 			require.NoError(t, err)
 
 			// Verify the output file exists and has the correct row count
-			reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+			reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 			require.NoError(t, err)
 			rowCount := reader.GetNumRows()
 			_ = reader.PFile.Close()
@@ -334,7 +334,7 @@ func testCmdSchemaModification(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify output file
-	reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+	reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 	require.NoError(t, err)
 	defer func() {
 		_ = reader.PFile.Close()
@@ -367,7 +367,7 @@ func testCmdPageSizes(t *testing.T) {
 			require.NoError(t, err)
 
 			// Verify the data is correct
-			reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+			reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 			require.NoError(t, err)
 			require.Equal(t, int64(5), reader.GetNumRows())
 			_ = reader.PFile.Close()
@@ -535,7 +535,7 @@ func testCmdFieldEncoding(t *testing.T) {
 				require.NoError(t, err)
 
 				// Verify output file exists and has correct row count
-				reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+				reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 				require.NoError(t, err)
 				require.Equal(t, int64(3), reader.GetNumRows())
 				_ = reader.PFile.Close()
@@ -626,7 +626,7 @@ func testCmdFieldCompression(t *testing.T) {
 				require.NoError(t, err)
 
 				// Verify output file exists and has correct row count
-				reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+				reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 				require.NoError(t, err)
 				require.Equal(t, int64(3), reader.GetNumRows())
 				_ = reader.PFile.Close()
@@ -661,7 +661,7 @@ func testCmdFieldEncodingAndCompression(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify output file exists and has correct row count
-	reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+	reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), reader.GetNumRows())
 	_ = reader.PFile.Close()
@@ -762,7 +762,7 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 	require.Contains(t, transcodedSchema, "encoding=DELTA_BYTE_ARRAY")
 
 	// Verify data integrity by checking row count and basic data
-	reader, err := pio.NewParquetFileReader(transcodedFile, rOpt)
+	reader, err := pio.NewParquetFileReader(context.Background(), transcodedFile, rOpt)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), reader.GetNumRows())
 	_ = reader.PFile.Close()
@@ -845,7 +845,7 @@ func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify file was created and data is correct
-	reader, err := pio.NewParquetFileReader(transcodedFile, rOpt)
+	reader, err := pio.NewParquetFileReader(context.Background(), transcodedFile, rOpt)
 	require.NoError(t, err)
 	require.Equal(t, int64(5), reader.GetNumRows())
 	_ = reader.PFile.Close()
@@ -1323,7 +1323,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 		require.NoError(t, err)
 
 		// Verify bloom filter was added
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		require.NoError(t, err)
 		defer func() { _ = reader.PFile.Close() }()
 		require.Equal(t, int64(3), reader.GetNumRows())
@@ -1346,7 +1346,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 		require.NoError(t, err)
 
 		// Verify bloom filter was removed for ID but preserved for Name and Score
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		require.NoError(t, err)
 		defer func() { _ = reader.PFile.Close() }()
 		require.Equal(t, int64(10), reader.GetNumRows())
@@ -1372,7 +1372,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 		err := cmd.Run()
 		require.NoError(t, err)
 
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		require.NoError(t, err)
 		defer func() { _ = reader.PFile.Close() }()
 
@@ -1391,7 +1391,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 		err := cmd.Run()
 		require.NoError(t, err)
 
-		reader, err := pio.NewParquetFileReader(cmd.URI, rOpt)
+		reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		require.NoError(t, err)
 		defer func() { _ = reader.PFile.Close() }()
 
@@ -1610,7 +1610,7 @@ func testCmdDecryptEncrypted(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			plainReader, err := pio.NewParquetFileReader(cmd.URI, pio.ReadOption{})
+			plainReader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, pio.ReadOption{})
 			require.NoError(t, err)
 			require.Equal(t, int64(50), plainReader.GetNumRows())
 			_ = plainReader.PFile.Close()

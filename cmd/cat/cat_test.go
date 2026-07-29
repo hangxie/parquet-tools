@@ -311,7 +311,7 @@ func TestCmdEncoder(t *testing.T) {
 				outputChan := make(chan string, 10)
 
 				// Open a test parquet file
-				fileReader, err := pio.NewParquetFileReader("file://../../testdata/good.parquet", rOpt)
+				fileReader, err := pio.NewParquetFileReader(context.Background(), "file://../../testdata/good.parquet", rOpt)
 				require.NoError(t, err)
 
 				// Populate rowChan with some data, then cancel context
@@ -337,7 +337,7 @@ func TestCmdEncoder(t *testing.T) {
 				outputChan := make(chan string, 1) // Small buffer to test the send path
 
 				// Open a test parquet file
-				fileReader, err := pio.NewParquetFileReader("file://../../testdata/good.parquet", rOpt)
+				fileReader, err := pio.NewParquetFileReader(context.Background(), "file://../../testdata/good.parquet", rOpt)
 				require.NoError(t, err)
 
 				// Populate rowChan with data

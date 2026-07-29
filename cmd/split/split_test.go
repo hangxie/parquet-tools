@@ -1,6 +1,7 @@
 package split
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -118,7 +119,7 @@ func TestCmd(t *testing.T) {
 				for _, file := range files {
 					rowCount, ok := tc.result[file.Name()]
 					require.True(t, ok)
-					reader, err := pio.NewParquetFileReader(filepath.Join(tempDir, file.Name()), rOpt)
+					reader, err := pio.NewParquetFileReader(context.Background(), filepath.Join(tempDir, file.Name()), rOpt)
 					require.NoError(t, err)
 					require.NotNil(t, reader)
 					require.Equal(t, reader.GetNumRows(), rowCount)
@@ -241,7 +242,7 @@ func TestCmdEncryption(t *testing.T) {
 			for _, file := range files {
 				path := filepath.Join(tempDir, file.Name())
 				require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, path))
-				reader, err := pio.NewParquetFileReader(path, tc.readOption)
+				reader, err := pio.NewParquetFileReader(context.Background(), path, tc.readOption)
 				require.NoError(t, err)
 				totalRows += reader.GetNumRows()
 				_ = reader.PFile.Close()

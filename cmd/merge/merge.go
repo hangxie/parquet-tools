@@ -48,7 +48,7 @@ func (c Cmd) Run() (retErr error) {
 
 	c.ReadOption.FieldDelimiter = c.FieldDelimiter
 	c.WriteOption.FieldDelimiter = c.FieldDelimiter
-	fileWriter, err := pio.NewGenericWriter(c.URI, c.WriteOption, schemaJSON)
+	fileWriter, err := pio.NewGenericWriter(context.Background(), c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
@@ -96,12 +96,12 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Source))
 	for i, source := range c.Source {
-		fileReaders[i], err = pio.NewParquetFileReader(source, c.ReadOption)
+		fileReaders[i], err = pio.NewParquetFileReader(context.Background(), source, c.ReadOption)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
-		currSchema, err := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+		currSchema, err := pschema.NewSchemaTree(context.Background(), fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 		if err != nil {
 			return nil, "", err
 		}
@@ -109,7 +109,7 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 		if rootSchema == nil {
 			rootSchema = currSchema
 			// Build a separate tree for JSON since JSONSchema() mutates the tree
-			jsonTree, jsonErr := pschema.NewSchemaTree(fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+			jsonTree, jsonErr := pschema.NewSchemaTree(context.Background(), fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 			if jsonErr != nil {
 				return nil, "", jsonErr
 			}

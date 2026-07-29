@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"os"
@@ -29,12 +30,12 @@ func HasSameSchema(file1, file2 string, opts ...pschema.CompareOption) bool {
 		option = opts[0]
 	}
 	buildTree := func(file string) *pschema.SchemaNode {
-		pr, err := pio.NewParquetFileReader(file, pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), file, pio.ReadOption{})
 		if err != nil {
 			return nil
 		}
 		defer func() { _ = pr.PFile.Close() }()
-		tree, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{})
+		tree, err := pschema.NewSchemaTree(context.Background(), pr, pschema.SchemaOption{})
 		if err != nil {
 			return nil
 		}

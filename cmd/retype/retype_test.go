@@ -279,7 +279,7 @@ func TestCmdEncryption(t *testing.T) {
 			require.NoError(t, cmd.Run())
 			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
 
-			reader, err := pio.NewParquetFileReader(uri, tc.readOption)
+			reader, err := pio.NewParquetFileReader(context.Background(), uri, tc.readOption)
 			require.NoError(t, err)
 			require.Equal(t, int64(3), reader.GetNumRows())
 			_ = reader.PFile.Close()
@@ -958,7 +958,7 @@ func TestWriterContextCancellation(t *testing.T) {
 }
 
 func TestReaderContextCancellation(t *testing.T) {
-	fileReader, err := pio.NewParquetFileReader("../../testdata/good.parquet", pio.ReadOption{})
+	fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
 	require.NoError(t, err)
 	defer func() { _ = fileReader.PFile.Close() }()
 

@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"fmt"
 	"go/format"
 	"os"
@@ -16,13 +17,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("good", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/all-types.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -41,13 +42,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("composite-map-key", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/map-value-map.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -62,13 +63,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("composite-map-value", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/map-composite-value.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -80,13 +81,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("invalid-scalar", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/good.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -100,13 +101,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("invalid-list", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/all-types.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -121,13 +122,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("invalid-map-key", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/all-types.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -142,13 +143,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("invalid-map-value", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/all-types.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -163,13 +164,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("invalid-list-element", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/list-of-list.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, schemaRoot)
 
@@ -181,13 +182,13 @@ func TestGoStructNode(t *testing.T) {
 	t.Run("as-list", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/gostruct-list.parquet"
-		pr, err := pio.NewParquetFileReader(uri, option)
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
 		}()
 
-		root, err := NewSchemaTree(pr, SchemaOption{})
+		root, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		require.NotNil(t, root)
 

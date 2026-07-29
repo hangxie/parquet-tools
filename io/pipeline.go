@@ -19,7 +19,7 @@ func PipelineWriter(ctx context.Context, fileWriter *writer.ParquetWriter, write
 			if !more {
 				return nil
 			}
-			if err := fileWriter.WriteWithContext(context.Background(), row); err != nil {
+			if err := fileWriter.WriteWithContext(ctx, row); err != nil {
 				return fmt.Errorf("failed to write data to [%s]: %w", target, err)
 			}
 		}
@@ -29,8 +29,8 @@ func PipelineWriter(ctx context.Context, fileWriter *writer.ParquetWriter, write
 // RunPipeline runs a reader and writer in parallel using errgroup. The reader sends rows
 // through an internal channel to the writer. If either side fails, the shared context is
 // cancelled so the other side exits promptly.
-func RunPipeline(fileReader *reader.ParquetReader, fileWriter *writer.ParquetWriter, source, target string, pageSize int, transform func(any) (any, error)) error {
-	g, gctx := errgroup.WithContext(context.Background())
+func RunPipeline(ctx context.Context, fileReader *reader.ParquetReader, fileWriter *writer.ParquetWriter, source, target string, pageSize int, transform func(any) (any, error)) error {
+	g, gctx := errgroup.WithContext(ctx)
 	writerChan := make(chan any)
 
 	g.Go(func() error {
@@ -49,7 +49,7 @@ func RunPipeline(fileReader *reader.ParquetReader, fileWriter *writer.ParquetWri
 // and sends them to writerChan. Pass nil for transform to skip transformation.
 func PipelineReader(ctx context.Context, fileReader *reader.ParquetReader, writerChan chan any, source string, pageSize int, transform func(any) (any, error)) error {
 	for {
-		rows, err := fileReader.ReadByNumberWithContext(context.Background(), pageSize)
+		rows, err := fileReader.ReadByNumberWithContext(ctx, pageSize)
 		if err != nil {
 			return fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}

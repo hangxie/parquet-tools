@@ -25,7 +25,7 @@ type Cmd struct {
 
 // Run does actual size job
 func (c Cmd) Run() error {
-	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
