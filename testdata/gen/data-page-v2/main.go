@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -20,18 +21,20 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Shoe), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Shoe),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+		writer.WithDataPageVersion(2),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	pw.DataPageVersion = 2 // Use DATA_PAGE_V2 format
-	_ = pw.Write(Shoe{"nike", "air_griffey"})
-	_ = pw.Write(Shoe{"fila", "grant_hill_2"})
-	_ = pw.Write(Shoe{"steph_curry", "curry7"})
-	if err = pw.WriteStop(); err != nil {
+	_ = pw.WriteWithContext(context.Background(), Shoe{"nike", "air_griffey"})
+	_ = pw.WriteWithContext(context.Background(), Shoe{"fila", "grant_hill_2"})
+	_ = pw.WriteWithContext(context.Background(), Shoe{"steph_curry", "curry7"})
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

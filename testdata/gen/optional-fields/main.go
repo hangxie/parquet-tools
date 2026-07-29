@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -27,21 +28,23 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Row), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Row),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Row{nil, nil, nil, nil})
-	_ = pw.Write(Row{
+	_ = pw.WriteWithContext(context.Background(), Row{nil, nil, nil, nil})
+	_ = pw.WriteWithContext(context.Background(), Row{
 		Field1: toPtr([]string{"val1", "val2"}),
 		Field2: toPtr(map[string]string{"val1": "val2"}),
 		Field3: toPtr(SubStruct{Foo: "bar"}),
 		Field4: toPtr(types.StrIntToBinary("123", "BigEndian", 12, true)),
 	})
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

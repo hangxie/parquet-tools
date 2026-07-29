@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -18,13 +19,15 @@ func main() {
 		log.Println("Can't create file", err)
 		return
 	}
-	pw, err := writer.NewParquetWriter(fw, new(Dummy), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Dummy),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_UNCOMPRESSED),
+	)
 	if err != nil {
 		log.Println("Can't create parquet writer", err)
 		return
 	}
-	pw.CompressionCodec = parquet.CompressionCodec_UNCOMPRESSED
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		log.Println("WriteStop error", err)
 	}
 	_ = fw.Close()

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"math"
 
@@ -18,7 +19,7 @@ func main() {
 		log.Fatalf("Failed to create file: %v", err)
 	}
 
-	pw, err := writer.NewParquetWriter(file, new(Data), 1)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), file, new(Data), writer.WithNP(1))
 	if err != nil {
 		log.Fatalf("Failed to create parquet writer: %v", err)
 	}
@@ -27,11 +28,11 @@ func main() {
 		Value: math.NaN(),
 	}
 
-	if err := pw.Write(data); err != nil {
+	if err := pw.WriteWithContext(context.Background(), data); err != nil {
 		log.Fatalf("Failed to write data: %v", err)
 	}
 
-	if err := pw.WriteStop(); err != nil {
+	if err := pw.WriteStopWithContext(context.Background()); err != nil {
 		log.Fatalf("Failed to close parquet writer: %v", err)
 	}
 

@@ -1,6 +1,7 @@
 package split
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -62,7 +63,7 @@ func (c *Cmd) openReader() (*reader.ParquetReader, error) {
 
 func (c *Cmd) switchWriter() error {
 	if c.current.writer != nil {
-		if err := c.current.writer.WriteStop(); err != nil {
+		if err := c.current.writer.WriteStopWithContext(context.Background()); err != nil {
 			return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
 		}
 		if err := c.current.writer.PFile.Close(); err != nil {
@@ -119,7 +120,7 @@ func (c Cmd) Run() error {
 	c.current.recordCount = c.RecordCount
 
 	for {
-		rows, err := parquetReader.ReadByNumber(c.ReadPageSize)
+		rows, err := parquetReader.ReadByNumberWithContext(context.Background(), c.ReadPageSize)
 		if err != nil {
 			return fmt.Errorf("failed to read from [%s]: %w", c.URI, err)
 		}
@@ -132,7 +133,7 @@ func (c Cmd) Run() error {
 					return err
 				}
 			}
-			if err := c.current.writer.Write(row); err != nil {
+			if err := c.current.writer.WriteWithContext(context.Background(), row); err != nil {
 				return fmt.Errorf("failed to write data from [%s]: %w", c.current.targetFile, err)
 			}
 			c.current.recordCount++
@@ -154,7 +155,7 @@ func (c *Cmd) closeWriter() error {
 	if c.current.writer == nil {
 		return nil
 	}
-	if err := c.current.writer.WriteStop(); err != nil {
+	if err := c.current.writer.WriteStopWithContext(context.Background()); err != nil {
 		return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
 	}
 	if err := c.current.writer.PFile.Close(); err != nil {

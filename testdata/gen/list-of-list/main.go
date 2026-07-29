@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -43,14 +44,16 @@ func main() {
 	}
 
 	// write
-	pw, err := writer.NewParquetWriter(fw, jsonSchema, 1)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, jsonSchema,
+		writer.WithNP(1),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_LZ4),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		os.Exit(1)
 	}
 
-	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
-	pw.CompressionCodec = parquet.CompressionCodec_LZ4
 	for i := range 5 {
 		rec := RecordType{
 			Lol: make([][]string, i),
@@ -61,11 +64,11 @@ func main() {
 				rec.Lol[j][k] = fmt.Sprintf("%d-%d-%d", i+1, j+1, k+1)
 			}
 		}
-		if err = pw.Write(rec); err != nil {
+		if err = pw.WriteWithContext(context.Background(), rec); err != nil {
 			fmt.Println("Write error", err)
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		os.Exit(1)
 	}

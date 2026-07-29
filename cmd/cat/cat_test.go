@@ -315,7 +315,7 @@ func TestCmdEncoder(t *testing.T) {
 				require.NoError(t, err)
 
 				// Populate rowChan with some data, then cancel context
-				rows, err := fileReader.ReadByNumber(5)
+				rows, err := fileReader.ReadByNumberWithContext(context.Background(), 5)
 				require.NoError(t, err)
 
 				// Send one row and then cancel
@@ -341,7 +341,7 @@ func TestCmdEncoder(t *testing.T) {
 				require.NoError(t, err)
 
 				// Populate rowChan with data
-				rows, err := fileReader.ReadByNumber(5)
+				rows, err := fileReader.ReadByNumberWithContext(context.Background(), 5)
 				require.NoError(t, err)
 
 				// Fill output channel to block sending

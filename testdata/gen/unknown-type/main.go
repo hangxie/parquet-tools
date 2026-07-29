@@ -40,7 +40,8 @@ func writeBase(path string) error {
 	if err != nil {
 		return err
 	}
-	pw, err := writer.NewParquetWriter(
+	pw, err := writer.NewParquetWriterWithContext(
+		context.Background(),
 		fw, new(plainRow),
 		writer.WithRowGroupSize(128*1024*1024),
 		writer.WithPageSize(8*1024),
@@ -55,11 +56,11 @@ func writeBase(path string) error {
 		{ID: new(int32(2)), UnknownCol: nil, Name: new("bob")},
 		{ID: new(int32(3)), UnknownCol: new(int32(30)), Name: new("charlie")},
 	} {
-		if err := pw.Write(row); err != nil {
+		if err := pw.WriteWithContext(context.Background(), row); err != nil {
 			return err
 		}
 	}
-	if err := pw.WriteStop(); err != nil {
+	if err := pw.WriteStopWithContext(context.Background()); err != nil {
 		return err
 	}
 	return fw.Close()

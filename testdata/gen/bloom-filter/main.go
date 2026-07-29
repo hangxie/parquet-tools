@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -23,13 +24,14 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(BloomFilterData), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(BloomFilterData),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_SNAPPY),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
-
-	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	for i := range 10 {
 		value := BloomFilterData{
 			ID:       int64(i),
@@ -38,12 +40,12 @@ func main() {
 			Score:    float64(i) * 1.5,
 			Category: fmt.Sprintf("cat-%d", i%3),
 		}
-		if err = pw.Write(value); err != nil {
+		if err = pw.WriteWithContext(context.Background(), value); err != nil {
 			fmt.Println("Write error", err)
 			return
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

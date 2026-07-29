@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -62,24 +63,26 @@ func genParquet(name, jsonSchema string) error {
 	}
 
 	// write
-	pw, err := writer.NewParquetWriter(fw, jsonSchema, 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, jsonSchema,
+		writer.WithNP(4),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_LZ4_RAW),
+	)
 	if err != nil {
 		return fmt.Errorf("cannot create parquet writer: %w", err)
 	}
 
-	pw.RowGroupSize = 128 * 1024 * 1024 // 128M
-	pw.CompressionCodec = parquet.CompressionCodec_LZ4_RAW
 	for i := range 3 {
 		stu := Student{
 			Name: "StudentName" + strconv.Itoa(i),
 			Id:   int64(i * i),
 		}
 
-		if err = pw.Write(stu); err != nil {
+		if err = pw.WriteWithContext(context.Background(), stu); err != nil {
 			return fmt.Errorf("error from Write(): %w", err)
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		return fmt.Errorf("error from WriteStop(): %w", err)
 	}
 	_ = fw.Close()

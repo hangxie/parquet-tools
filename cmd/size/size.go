@@ -1,6 +1,7 @@
 package size
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -32,7 +33,7 @@ func (c Cmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	footerSize, err := reader.GetFooterSize()
+	footerSize, err := reader.GetFooterSizeWithContext(context.Background())
 	if err != nil {
 		return err
 	}

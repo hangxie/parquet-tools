@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -30,16 +31,18 @@ func good() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Student), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Student),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Student{123, "John Doe", 30, 98.2, false})
-	_ = pw.Write(Student{123, "Jane Doe", 25, 98.7, true})
-	if err = pw.WriteStop(); err != nil {
+	_ = pw.WriteWithContext(context.Background(), Student{123, "John Doe", 30, 98.2, false})
+	_ = pw.WriteWithContext(context.Background(), Student{123, "Jane Doe", 25, 98.7, true})
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}
@@ -61,16 +64,18 @@ func optional() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Student), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Student),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Student{123, "John Doe", 30, nil, false})
-	_ = pw.Write(Student{123, "Jane Doe", 25, nil, true})
-	if err = pw.WriteStop(); err != nil {
+	_ = pw.WriteWithContext(context.Background(), Student{123, "John Doe", 30, nil, false})
+	_ = pw.WriteWithContext(context.Background(), Student{123, "Jane Doe", 25, nil, true})
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}
@@ -92,16 +97,18 @@ func repeated() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Student), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Student),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Student{123, "John Doe", 30, []float32{}, false})
-	_ = pw.Write(Student{123, "Jane Doe", 25, []float32{98.1, 99.2}, true})
-	if err = pw.WriteStop(); err != nil {
+	_ = pw.WriteWithContext(context.Background(), Student{123, "John Doe", 30, []float32{}, false})
+	_ = pw.WriteWithContext(context.Background(), Student{123, "Jane Doe", 25, []float32{98.1, 99.2}, true})
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}
@@ -123,16 +130,18 @@ func nested() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Student), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Student),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Student{123, "John Doe", 30, []float32{}, false})
-	_ = pw.Write(Student{123, "Jane Doe", 25, []float32{98.4, 99.3}, true})
-	if err = pw.WriteStop(); err != nil {
+	_ = pw.WriteWithContext(context.Background(), Student{123, "John Doe", 30, []float32{}, false})
+	_ = pw.WriteWithContext(context.Background(), Student{123, "Jane Doe", 25, []float32{98.4, 99.3}, true})
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

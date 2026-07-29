@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strconv"
@@ -27,15 +28,16 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(ListTypes), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(ListTypes),
+		writer.WithNP(4),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithPageSize(8*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_SNAPPY),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
-
-	pw.RowGroupSize = 128 * 1024 * 1024
-	pw.PageSize = 8 * 1024
-	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	for i := range 3 {
 		value := ListTypes{
 			ListOfStruct: slices.Repeat([]NestedStruct{{
@@ -45,11 +47,11 @@ func main() {
 			ListOfString: slices.Repeat([]string{strconv.FormatInt(int64(i), 10)}, i),
 		}
 
-		if err = pw.Write(value); err != nil {
+		if err = pw.WriteWithContext(context.Background(), value); err != nil {
 			fmt.Println("Write error", err)
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

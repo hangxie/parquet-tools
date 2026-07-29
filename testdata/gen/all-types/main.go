@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -88,15 +89,16 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(AllTypes), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(AllTypes),
+		writer.WithNP(4),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithPageSize(8*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_SNAPPY),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
-
-	pw.RowGroupSize = 128 * 1024 * 1024
-	pw.PageSize = 8 * 1024
-	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
 	interval := make([]byte, 4)
 	for i := range 5 {
@@ -183,11 +185,11 @@ func main() {
 			value.NestedList = append(value.NestedList, nested)
 		}
 
-		if err = pw.Write(value); err != nil {
+		if err = pw.WriteWithContext(context.Background(), value); err != nil {
 			fmt.Println("Write error", err)
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

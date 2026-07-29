@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -25,17 +26,22 @@ func writeFile(filename string, codec parquet.CompressionCodec) error {
 		return fmt.Errorf("can't create local file %s: %w", filename, err)
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Shoe), 4)
+	pw, err := writer.NewParquetWriterWithContext(
+		context.Background(),
+		fw,
+		new(Shoe),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(codec),
+	)
 	if err != nil {
 		_ = fw.Close()
 		return fmt.Errorf("can't create parquet writer for %s: %w", filename, err)
 	}
 
-	pw.CompressionCodec = codec
 	for _, s := range shoes {
-		_ = pw.Write(s)
+		_ = pw.WriteWithContext(context.Background(), s)
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		return fmt.Errorf("WriteStop error for %s: %w", filename, err)
 	}
 	_ = fw.Close()
