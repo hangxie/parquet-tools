@@ -2,6 +2,7 @@ package importcmd
 
 import (
 	"bufio"
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -102,11 +103,11 @@ func (c Cmd) importCSV() error {
 		for i := range fields {
 			parquetFields[i] = &fields[i]
 		}
-		if err = parquetWriter.WriteString(parquetFields); err != nil {
+		if err = parquetWriter.WriteStringWithContext(context.Background(), parquetFields); err != nil {
 			return fmt.Errorf("failed to write [%v] to parquet: %w", fields, err)
 		}
 	}
-	if err := parquetWriter.WriteStop(); err != nil {
+	if err := parquetWriter.WriteStopWithContext(context.Background()); err != nil {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 
@@ -144,12 +145,12 @@ func (c Cmd) importJSON() error {
 	}
 
 	for _, record := range records {
-		if err := parquetWriter.Write(string(record)); err != nil {
+		if err := parquetWriter.WriteWithContext(context.Background(), string(record)); err != nil {
 			return fmt.Errorf("failed to write to parquet file: %w", err)
 		}
 	}
 
-	if err := parquetWriter.WriteStop(); err != nil {
+	if err := parquetWriter.WriteStopWithContext(context.Background()); err != nil {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
@@ -191,11 +192,11 @@ func (c Cmd) importJSONL() error {
 			return fmt.Errorf("invalid JSON string: %s", string(jsonData))
 		}
 
-		if err := parquetWriter.Write(string(jsonData)); err != nil {
+		if err := parquetWriter.WriteWithContext(context.Background(), string(jsonData)); err != nil {
 			return fmt.Errorf("failed to write to parquet file: %w", err)
 		}
 	}
-	if err := parquetWriter.WriteStop(); err != nil {
+	if err := parquetWriter.WriteStopWithContext(context.Background()); err != nil {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {

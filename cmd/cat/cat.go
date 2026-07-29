@@ -264,7 +264,7 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 	unknownCols := unknownColumnNames(schemaRoot)
 
 	// skip rows
-	if err := fileReader.SkipRows(c.Skip); err != nil {
+	if err := fileReader.SkipRowsWithContext(context.Background(), c.Skip); err != nil {
 		return err
 	}
 
@@ -313,7 +313,7 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 			default:
 			}
 
-			rows, err := fileReader.ReadByNumber(c.ReadPageSize)
+			rows, err := fileReader.ReadByNumberWithContext(context.Background(), c.ReadPageSize)
 			if err != nil {
 				return fmt.Errorf("failed to cat: %w", err)
 			}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -23,15 +24,16 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Geospatial), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Geospatial),
+		writer.WithNP(4),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithPageSize(8*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_SNAPPY),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
-
-	pw.RowGroupSize = 128 * 1024 * 1024
-	pw.PageSize = 8 * 1024
-	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	for i := range 10 {
 		var geom, geog []byte
 		switch i % 7 {
@@ -79,11 +81,11 @@ func main() {
 			Geography: string(geog),
 		}
 
-		if err = pw.Write(value); err != nil {
+		if err = pw.WriteWithContext(context.Background(), value); err != nil {
 			fmt.Println("Write error", err)
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

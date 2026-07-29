@@ -1,6 +1,7 @@
 package io
 
 import (
+	"context"
 	"encoding/base64"
 	"os"
 	"path/filepath"
@@ -393,12 +394,12 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			defer func() { _ = pr.ReadStop() }()
+			defer func() { _ = pr.ReadStopWithContext(context.Background()) }()
 
 			if !tc.readRows {
 				return
 			}
-			rows, err := pr.ReadByNumber(10)
+			rows, err := pr.ReadByNumberWithContext(context.Background(), 10)
 			if tc.readErr != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.readErr)

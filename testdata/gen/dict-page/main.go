@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -20,13 +21,14 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Shoe), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Shoe),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		return
 	}
-
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
 
 	// Create records with repeating brand values to benefit from dictionary encoding
 	brands := []string{"nike", "adidas", "reebok"}
@@ -36,13 +38,13 @@ func main() {
 			ShoeBrand: brands[i%len(brands)],
 			ShoeName:  shoe,
 		}
-		if err = pw.Write(shoe); err != nil {
+		if err = pw.WriteWithContext(context.Background(), shoe); err != nil {
 			fmt.Println("Write error", err)
 			return
 		}
 	}
 
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

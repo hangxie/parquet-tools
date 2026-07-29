@@ -17,7 +17,7 @@ func newTestReader(t *testing.T, path string) *reader.ParquetReader {
 	t.Helper()
 	fr, err := local.NewLocalFileReader(path)
 	require.NoError(t, err)
-	pr, err := reader.NewParquetReader(fr, nil, reader.WithNP(int64(runtime.NumCPU())))
+	pr, err := reader.NewParquetReaderWithContext(context.Background(), fr, nil, reader.WithNP(int64(runtime.NumCPU())))
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = pr.PFile.Close() })
 	return pr
@@ -27,10 +27,10 @@ func newTestWriter(t *testing.T, path, schema string) *writer.ParquetWriter {
 	t.Helper()
 	fw, err := local.NewLocalFileWriter(path)
 	require.NoError(t, err)
-	pw, err := writer.NewParquetWriter(fw, schema, writer.WithNP(int64(runtime.NumCPU())))
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, schema, writer.WithNP(int64(runtime.NumCPU())))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_ = pw.WriteStop()
+		_ = pw.WriteStopWithContext(context.Background())
 		_ = pw.PFile.Close()
 	})
 	return pw
@@ -69,7 +69,7 @@ func TestPipelineWriter(t *testing.T) {
 		pw := newTestWriter(t, filepath.Join(tempDir, "out.parquet"), schema)
 
 		// Stop the writer first so writes will fail
-		_ = pw.WriteStop()
+		_ = pw.WriteStopWithContext(context.Background())
 
 		writerChan := make(chan any, 1)
 		type row struct {
@@ -159,7 +159,7 @@ func TestRunPipeline(t *testing.T) {
 		tempDir := t.TempDir()
 		pw := newTestWriter(t, filepath.Join(tempDir, "out.parquet"), schema)
 		// Stop the writer so writes fail immediately.
-		_ = pw.WriteStop()
+		_ = pw.WriteStopWithContext(context.Background())
 
 		err := RunPipeline(pr, pw, "good.parquet", "test-target", 1, nil)
 		require.Error(t, err)

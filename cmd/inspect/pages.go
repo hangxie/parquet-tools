@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -10,7 +11,7 @@ import (
 )
 
 func (c Cmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
-	pageHeaders, err := pr.GetAllPageHeaders(rowGroupIndex, columnChunkIndex)
+	pageHeaders, err := pr.GetAllPageHeadersWithContext(context.Background(), rowGroupIndex, columnChunkIndex)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read page headers: %w", err)
 	}
@@ -102,11 +103,11 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	}
 
 	// Create a fresh column reader to read the entire column
-	freshReader, err := reader.NewParquetColumnReader(pr.PFile, reader.WithNP(4))
+	freshReader, err := reader.NewParquetColumnReaderWithContext(context.Background(), pr.PFile, reader.WithNP(4))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create fresh reader: %w", err)
 	}
-	defer func() { _ = freshReader.ReadStop() }()
+	defer func() { _ = freshReader.ReadStopWithContext(context.Background()) }()
 
 	// Calculate total number of rows in the file
 	totalRows := int64(0)
@@ -115,7 +116,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	}
 
 	// Read ALL values from the entire file for this column
-	allValuesInFile, _, _, err := freshReader.ReadColumnByIndex(int64(columnChunkIndex), totalRows)
+	allValuesInFile, _, _, err := freshReader.ReadColumnByIndexWithContext(context.Background(), int64(columnChunkIndex), totalRows)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read column values: %w", err)
 	}
@@ -157,7 +158,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 func (c Cmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo PageInfo) ([]any, error) {
 	meta := col.MetaData
 
-	values, err := pr.ReadDictionaryPageValues(pageInfo.Offset, meta.Codec, meta.Type)
+	values, err := pr.ReadDictionaryPageValuesWithContext(context.Background(), pageInfo.Offset, meta.Codec, meta.Type)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read dictionary page values: %w", err)
 	}

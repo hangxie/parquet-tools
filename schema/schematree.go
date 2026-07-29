@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 	"strings"
@@ -20,7 +21,7 @@ func readFirstDataPageEncoding(pr *reader.ParquetReader, rowGroupIndex, columnIn
 	// - Dictionary pages at DataPageOffset
 	// - Proper offset calculation including header sizes
 	// - CRC and other page header variations
-	headerInfo, err := pr.GetFirstDataPageHeader(rowGroupIndex, columnIndex)
+	headerInfo, err := pr.GetFirstDataPageHeaderWithContext(context.Background(), rowGroupIndex, columnIndex)
 	if err != nil {
 		return 0, fmt.Errorf("read first data page header: %w", err)
 	}

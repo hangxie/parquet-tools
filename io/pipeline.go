@@ -19,7 +19,7 @@ func PipelineWriter(ctx context.Context, fileWriter *writer.ParquetWriter, write
 			if !more {
 				return nil
 			}
-			if err := fileWriter.Write(row); err != nil {
+			if err := fileWriter.WriteWithContext(context.Background(), row); err != nil {
 				return fmt.Errorf("failed to write data to [%s]: %w", target, err)
 			}
 		}
@@ -49,7 +49,7 @@ func RunPipeline(fileReader *reader.ParquetReader, fileWriter *writer.ParquetWri
 // and sends them to writerChan. Pass nil for transform to skip transformation.
 func PipelineReader(ctx context.Context, fileReader *reader.ParquetReader, writerChan chan any, source string, pageSize int, transform func(any) (any, error)) error {
 	for {
-		rows, err := fileReader.ReadByNumber(pageSize)
+		rows, err := fileReader.ReadByNumberWithContext(context.Background(), pageSize)
 		if err != nil {
 			return fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}

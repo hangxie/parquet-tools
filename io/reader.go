@@ -159,7 +159,7 @@ func newGoogleCloudStorageReader(u *url.URL, option ReadOption) (source.ParquetF
 }
 
 func newHTTPReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
-	return pqhttp.NewHttpReader(u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
+	return pqhttp.NewHttpReaderWithContext(context.Background(), u.String(), option.HTTPMultipleConnection, option.HTTPIgnoreTLSError, option.HTTPExtraHeaders)
 }
 
 func newHDFSReader(u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
@@ -221,7 +221,7 @@ func NewParquetFileReader(URI string, option ReadOption) (*reader.ParquetReader,
 	}
 
 	readerOpts := append(encOpts, reader.WithNP(int64(runtime.NumCPU())))
-	pr, err := reader.NewParquetReader(fileReader, nil, readerOpts...)
+	pr, err := reader.NewParquetReaderWithContext(context.Background(), fileReader, nil, readerOpts...)
 	if err != nil {
 		_ = fileReader.Close()
 		return nil, err

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -35,15 +36,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(PargoPrefix), 4)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(PargoPrefix),
+		writer.WithNP(4),
+		writer.WithRowGroupSize(128*1024*1024),
+		writer.WithPageSize(8*1024),
+		writer.WithCompressionCodec(parquet.CompressionCodec_SNAPPY),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		os.Exit(1)
 	}
 
-	pw.RowGroupSize = 128 * 1024 * 1024
-	pw.PageSize = 8 * 1024
-	pw.CompressionCodec = parquet.CompressionCodec_SNAPPY
 	decimals := []int32{0, 1, 22, 333, 4444, 0, -1, -22, -333, -4444}
 	for i := range 10 {
 		value := PargoPrefix{
@@ -65,11 +68,11 @@ func main() {
 			value.NestedList = append(value.NestedList, nested)
 		}
 
-		if err = pw.Write(value); err != nil {
+		if err = pw.WriteWithContext(context.Background(), value); err != nil {
 			fmt.Println("Write error", err)
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		os.Exit(1)
 	}
@@ -82,17 +85,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	pw, err = writer.NewParquetWriter(fw, new(Shoe), 4)
+	pw, err = writer.NewParquetWriterWithContext(context.Background(), fw, new(Shoe),
+		writer.WithNP(4),
+		writer.WithCompressionCodec(parquet.CompressionCodec_GZIP),
+	)
 	if err != nil {
 		fmt.Println("Can't create parquet writer", err)
 		os.Exit(1)
 	}
 
-	pw.CompressionCodec = parquet.CompressionCodec_GZIP
-	_ = pw.Write(Shoe{"nike", "air_griffey"})
-	_ = pw.Write(Shoe{"fila", "grant_hill_2"})
-	_ = pw.Write(Shoe{"steph_curry", "curry7"})
-	if err = pw.WriteStop(); err != nil {
+	_ = pw.WriteWithContext(context.Background(), Shoe{"nike", "air_griffey"})
+	_ = pw.WriteWithContext(context.Background(), Shoe{"fila", "grant_hill_2"})
+	_ = pw.WriteWithContext(context.Background(), Shoe{"steph_curry", "curry7"})
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		os.Exit(1)
 	}

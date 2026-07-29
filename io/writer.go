@@ -196,7 +196,7 @@ func NewCSVWriter(uri string, opt WriteOption, schema []string) (*writer.CSVWrit
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
-	pw, err := writer.NewCSVWriter(schema, fileWriter, opts...)
+	pw, err := writer.NewCSVWriterWithContext(context.Background(), schema, fileWriter, opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
@@ -233,7 +233,7 @@ func NewJSONWriter(uri string, opt WriteOption, schema string) (*writer.JSONWrit
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
-	pw, err := writer.NewJSONWriter(schema, fileWriter, opts...)
+	pw, err := writer.NewJSONWriterWithContext(context.Background(), schema, fileWriter, opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
@@ -270,7 +270,7 @@ func NewGenericWriter(uri string, opt WriteOption, schema string) (*writer.Parqu
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
-	pw, err := writer.NewParquetWriter(fileWriter, schema, opts...)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fileWriter, schema, opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err

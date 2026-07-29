@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
@@ -23,25 +24,27 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(fw, new(Record), 1)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(Record),
+		writer.WithNP(1),
+		writer.WithCompressionCodec(parquet.CompressionCodec_ZSTD),
+		writer.WithRowGroupSize(512*1024*1024), // 512MB row groups
+		writer.WithPageSize(512*1024*1024),     // 512MB pages to maximize compression ratio
+	)
 	if err != nil {
 		fmt.Printf("Can't create writer: %v", err)
 		return
 	}
-	pw.CompressionCodec = parquet.CompressionCodec_ZSTD
-	pw.RowGroupSize = 512 * 1024 * 1024 // 512MB row groups
-	pw.PageSize = 512 * 1024 * 1024     // 512MB pages to maximize compression ratio
 
 	// Write 2M identical records — compresses extremely well with PLAIN encoding
 	const numRecords = 2_000_000
 	repeatedValue := "this is a repeated value that appears in every single row of the parquet file"
 	for range numRecords {
-		if err = pw.Write(Record{Value: repeatedValue}); err != nil {
+		if err = pw.WriteWithContext(context.Background(), Record{Value: repeatedValue}); err != nil {
 			fmt.Printf("Write error: %v", err)
 			return
 		}
 	}
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Printf("WriteStop error: %v", err)
 		return
 	}

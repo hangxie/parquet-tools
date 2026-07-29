@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -91,8 +92,8 @@ func main() {
 		return
 	}
 
-	pw, err := writer.NewParquetWriter(
-		fw, new(RetypeTest),
+	pw, err := writer.NewParquetWriterWithContext(
+		context.Background(), fw, new(RetypeTest),
 		writer.WithNP(4),
 		writer.WithRowGroupSize(128*1024*1024),
 		writer.WithPageSize(8*1024),
@@ -231,12 +232,12 @@ func main() {
 		_ = listElemBsonStr
 		_ = mapValueBsonStr
 
-		if err = pw.Write(value); err != nil {
+		if err = pw.WriteWithContext(context.Background(), value); err != nil {
 			fmt.Println("Write error", err)
 		}
 	}
 
-	if err = pw.WriteStop(); err != nil {
+	if err = pw.WriteStopWithContext(context.Background()); err != nil {
 		fmt.Println("WriteStop error", err)
 		return
 	}

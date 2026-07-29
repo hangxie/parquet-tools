@@ -53,7 +53,7 @@ func (c Cmd) Run() (retErr error) {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
 	defer func() {
-		if err := fileWriter.WriteStop(); err != nil && retErr == nil {
+		if err := fileWriter.WriteStopWithContext(context.Background()); err != nil && retErr == nil {
 			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
 		}
 		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
