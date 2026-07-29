@@ -62,7 +62,7 @@ func TestCmd(t *testing.T) {
 
 		for name, tc := range testCases {
 			t.Run(name, func(t *testing.T) {
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			})
@@ -100,7 +100,7 @@ func TestCmd(t *testing.T) {
 					tc.cmd.Source[i] = filepath.Join("..", "..", "testdata", tc.cmd.Source[i])
 				}
 				tc.cmd.URI = filepath.Join(tempDir, name+".parquet")
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.NoError(t, err)
 
 				reader, _ := pio.NewParquetFileReader(context.Background(), tc.cmd.URI, rOpt)
@@ -120,7 +120,7 @@ func TestCmd(t *testing.T) {
 
 		cmd := Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{source, source}, URI: ""}
 		cmd.URI = filepath.Join(tempDir, "1.parquet")
-		require.Nil(t, cmd.Run())
+		require.Nil(t, cmd.Run(context.Background()))
 
 		reader, _ := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		rowCount := reader.GetNumRows()
@@ -130,7 +130,7 @@ func TestCmd(t *testing.T) {
 
 		cmd.Source = []string{cmd.URI, source}
 		cmd.URI = filepath.Join(tempDir, "2.parquet")
-		require.Nil(t, cmd.Run())
+		require.Nil(t, cmd.Run(context.Background()))
 
 		reader, _ = pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		rowCount = reader.GetNumRows()
@@ -140,7 +140,7 @@ func TestCmd(t *testing.T) {
 
 		cmd.Source = []string{cmd.URI, source}
 		cmd.URI = filepath.Join(tempDir, "3.parquet")
-		require.Nil(t, cmd.Run())
+		require.Nil(t, cmd.Run(context.Background()))
 
 		reader, _ = pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
 		rowCount = reader.GetNumRows()
@@ -161,7 +161,7 @@ func TestCmd(t *testing.T) {
 			Source:       []string{sourceGZIP, sourceSnappy},
 			URI:          mergedFile,
 		}
-		require.NoError(t, mergeCmd.Run())
+		require.NoError(t, mergeCmd.Run(context.Background()))
 
 		reader, _ := pio.NewParquetFileReader(context.Background(), mergedFile, pio.ReadOption{})
 		rowCount := reader.GetNumRows()
@@ -181,7 +181,7 @@ func TestCmd(t *testing.T) {
 			URI:          resultFile,
 		}
 
-		err := mergeCmd.Run()
+		err := mergeCmd.Run(context.Background())
 		require.NoError(t, err)
 
 		require.True(t, testutils.HasSameSchema("../../testdata/optional-fields.parquet", resultFile))
@@ -195,7 +195,7 @@ func TestCmd(t *testing.T) {
 			URI:          resultFile,
 		}
 		stdout, _ := testutils.CaptureStdoutStderr(func() {
-			require.NoError(t, catCmd.Run())
+			require.NoError(t, catCmd.Run(context.Background()))
 		})
 		require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/merge-optional-fields-json.json"), stdout)
 	})
@@ -276,7 +276,7 @@ func TestCmdEncryption(t *testing.T) {
 				Source:       sources,
 				URI:          uri,
 			}
-			require.NoError(t, cmd.Run())
+			require.NoError(t, cmd.Run(context.Background()))
 			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
 
 			reader, err := pio.NewParquetFileReader(context.Background(), uri, tc.readOption)
@@ -355,7 +355,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				Source:       sources,
 				URI:          filepath.Join(tempDir, tc.name+".parquet"),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
@@ -393,18 +393,18 @@ func BenchmarkMergeCmd(b *testing.B) {
 
 	// Warm up the Go runtime before actual benchmark
 	for range 10 {
-		_ = cmd.Run()
+		_ = cmd.Run(context.Background())
 	}
 
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
-			require.NoError(b, cmd.Run())
+			require.NoError(b, cmd.Run(context.Background()))
 		}
 	})
 	cmd.Concurrent = true
 	b.Run("concurrent", func(b *testing.B) {
 		for b.Loop() {
-			require.NoError(b, cmd.Run())
+			require.NoError(b, cmd.Run(context.Background()))
 		}
 	})
 }

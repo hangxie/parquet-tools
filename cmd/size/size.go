@@ -24,8 +24,8 @@ type Cmd struct {
 }
 
 // Run does actual size job
-func (c Cmd) Run() error {
-	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+func (c Cmd) Run(ctx context.Context) error {
+	reader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (c Cmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	footerSize, err := reader.GetFooterSizeWithContext(context.Background())
+	footerSize, err := reader.GetFooterSizeWithContext(ctx)
 	if err != nil {
 		return err
 	}

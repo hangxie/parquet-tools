@@ -14,8 +14,8 @@ type Cmd struct {
 }
 
 // Run does actual rowcount job
-func (c Cmd) Run() error {
-	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+func (c Cmd) Run(ctx context.Context) error {
+	reader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}

@@ -45,7 +45,7 @@ type Cmd struct {
 }
 
 // Run does actual inspect job
-func (c Cmd) Run() error {
+func (c Cmd) Run(ctx context.Context) error {
 	// Validate parameter combinations
 	if c.Page != nil && (c.RowGroup == nil || c.ColumnChunk == nil) {
 		return fmt.Errorf("--page requires both --row-group and --column-chunk")
@@ -54,7 +54,7 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("--column-chunk requires --row-group")
 	}
 
-	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (c Cmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	schemaRoot, err := pschema.NewSchemaTree(context.Background(), reader, pschema.SchemaOption{FailOnInt96: false})
+	schemaRoot, err := pschema.NewSchemaTree(ctx, reader, pschema.SchemaOption{FailOnInt96: false})
 	if err != nil {
 		return err
 	}
@@ -76,10 +76,10 @@ func (c Cmd) Run() error {
 	switch {
 	case c.Page != nil:
 		// Level 4: Show page details and values
-		return c.inspectPage(reader, *c.RowGroup, *c.ColumnChunk, *c.Page, pathMap)
+		return c.inspectPage(ctx, reader, *c.RowGroup, *c.ColumnChunk, *c.Page, pathMap)
 	case c.ColumnChunk != nil:
 		// Level 3: Show column chunk details and pages
-		return c.inspectColumnChunk(reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap, bloomSizeMap)
+		return c.inspectColumnChunk(ctx, reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap, bloomSizeMap)
 	case c.RowGroup != nil:
 		// Level 2: Show row group details and column chunks
 		return c.inspectRowGroup(reader, *c.RowGroup, inExNameMap, pathMap, bloomSizeMap)

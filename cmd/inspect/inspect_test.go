@@ -253,13 +253,13 @@ func TestInspect(t *testing.T) {
 			}
 			tc.cmd.URI = "../../testdata/" + tc.cmd.URI
 			if tc.errMsg != "" {
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			} else {
 				tc.golden = "../../testdata/golden/" + tc.golden
 				stdout, stderr := testutils.CaptureStdoutStderr(func() {
-					require.NoError(t, tc.cmd.Run())
+					require.NoError(t, tc.cmd.Run(context.Background()))
 				})
 				require.Equal(t, testutils.LoadExpected(t, tc.golden), stdout)
 				require.Equal(t, "", stderr)
@@ -300,7 +300,7 @@ func TestInspectEncrypted(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			stdout, stderr := testutils.CaptureStdoutStderr(func() {
-				require.NoError(t, cmd.Run())
+				require.NoError(t, cmd.Run(context.Background()))
 			})
 			require.Contains(t, stdout, `"totalRows":50`)
 			require.Equal(t, "", stderr)
@@ -639,7 +639,7 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 		col := &parquet.ColumnChunk{MetaData: &parquet.ColumnMetaData{}}
 		pages := []PageInfo{{Type: parquet.PageType_INDEX_PAGE}}
 
-		values, err := cmd.readPageValues(nil, 0, 0, col, nil, pages, 0)
+		values, err := cmd.readPageValues(context.Background(), nil, 0, 0, col, nil, pages, 0)
 		require.NoError(t, err)
 		require.Equal(t, []any{}, values)
 	})
@@ -648,7 +648,7 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 		col := &parquet.ColumnChunk{MetaData: &parquet.ColumnMetaData{}}
 		pages := []PageInfo{{Type: parquet.PageType_DATA_PAGE}}
 
-		_, err := cmd.readPageValues(nil, 0, 0, col, nil, pages, 5)
+		_, err := cmd.readPageValues(context.Background(), nil, 0, 0, col, nil, pages, 5)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "page index 5 out of range")
 	})
@@ -667,7 +667,7 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 
 		pages := []PageInfo{{Type: parquet.PageType_DATA_PAGE, NumValues: nil}}
 
-		_, err = cmd.readPageValues(fileReader, 0, 0, col, schemaNode, pages, 0)
+		_, err = cmd.readPageValues(context.Background(), fileReader, 0, 0, col, schemaNode, pages, 0)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "unable to get numValues for page")
 	})
@@ -692,7 +692,7 @@ func TestReadPagesError(t *testing.T) {
 	// Nullify column metadata so readAllPageHeaders returns an error
 	pr.Footer.RowGroups[0].Columns[0].MetaData = nil
 
-	_, err = Cmd{}.readPages(pr, 0, 0, schemaNode)
+	_, err = Cmd{}.readPages(context.Background(), pr, 0, 0, schemaNode)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to read page headers")
 }
@@ -701,7 +701,7 @@ func TestRunCorruptFile(t *testing.T) {
 	tmpFile := t.TempDir() + "/corrupt.parquet"
 	require.NoError(t, os.WriteFile(tmpFile, []byte("not a parquet file"), 0o644))
 
-	err := Cmd{ReadOption: pio.ReadOption{}, URI: tmpFile}.Run()
+	err := Cmd{ReadOption: pio.ReadOption{}, URI: tmpFile}.Run(context.Background())
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "read footer")
 }
@@ -724,7 +724,7 @@ func TestReadDictionaryPageValuesError(t *testing.T) {
 	schemaNode := schemaRoot.GetPathMap()[pathKey]
 
 	// Get the dictionary page info before corrupting the file
-	pages, err := Cmd{}.readPages(pr, 0, 0, schemaNode)
+	pages, err := Cmd{}.readPages(context.Background(), pr, 0, 0, schemaNode)
 	require.NoError(t, err)
 	require.NotEmpty(t, pages)
 	require.Equal(t, parquet.PageType_DICTIONARY_PAGE, pages[0].Type)
@@ -733,7 +733,7 @@ func TestReadDictionaryPageValuesError(t *testing.T) {
 	require.NoError(t, os.Truncate(tmpFile, 4))
 
 	cmd := Cmd{}
-	_, err = cmd.readDictionaryPageValues(pr, col, schemaNode, pages[0])
+	_, err = cmd.readDictionaryPageValues(context.Background(), pr, col, schemaNode, pages[0])
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to read dictionary page values")
 }

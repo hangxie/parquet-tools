@@ -1,6 +1,7 @@
 package rowcount
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestCmd(t *testing.T) {
 		cmd := &Cmd{}
 		cmd.URI = "file/does/not/exist"
 
-		err := cmd.Run()
+		err := cmd.Run(context.Background())
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "no such file or directory")
 	})
@@ -34,7 +35,7 @@ func TestCmd(t *testing.T) {
 		cmd.URI = "../../testdata/good.parquet"
 
 		stdout, stderr := testutils.CaptureStdoutStderr(func() {
-			require.Nil(t, cmd.Run())
+			require.Nil(t, cmd.Run(context.Background()))
 		})
 		require.Equal(t, "3\n", stdout)
 		require.Equal(t, "", stderr)
@@ -94,13 +95,13 @@ func TestCmdEncrypted(t *testing.T) {
 				t.Parallel()
 			}
 			if tc.errMsg != "" {
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 				return
 			}
 			stdout, stderr := testutils.CaptureStdoutStderr(func() {
-				require.NoError(t, tc.cmd.Run())
+				require.NoError(t, tc.cmd.Run(context.Background()))
 			})
 			require.Equal(t, tc.stdout, stdout)
 			require.Equal(t, "", stderr)
@@ -127,12 +128,12 @@ func BenchmarkRowCountCmd(b *testing.B) {
 
 	// Warm up the Go runtime before actual benchmark
 	for range 10 {
-		_ = cmd.Run()
+		_ = cmd.Run(context.Background())
 	}
 
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
-			require.NoError(b, cmd.Run())
+			require.NoError(b, cmd.Run(context.Background()))
 		}
 	})
 }

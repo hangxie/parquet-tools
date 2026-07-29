@@ -101,7 +101,7 @@ func testCmdError(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			err := tc.cmd.Run()
+			err := tc.cmd.Run(context.Background())
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
@@ -241,7 +241,7 @@ func testCmdGood(t *testing.T) {
 				Source:       filepath.Join("..", "..", "testdata", tc.source),
 				URI:          filepath.Join(tempDir, name+".parquet"),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.NoError(t, err)
 
 			// Verify the output file exists and has the correct row count
@@ -280,7 +280,7 @@ func testCmdVerifyData(t *testing.T) {
 		Source:       "../../testdata/good.parquet",
 		URI:          filepath.Join(tempDir, "transcoded.parquet"),
 	}
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Verify the data is the same by using cat command
@@ -302,10 +302,10 @@ func testCmdVerifyData(t *testing.T) {
 	}
 
 	originalOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catOriginal.Run())
+		require.NoError(t, catOriginal.Run(context.Background()))
 	})
 	transcodedOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catTranscoded.Run())
+		require.NoError(t, catTranscoded.Run(context.Background()))
 	})
 
 	require.Equal(t, originalOutput, transcodedOutput)
@@ -330,7 +330,7 @@ func testCmdSchemaModification(t *testing.T) {
 		URI:          filepath.Join(tempDir, "no-mods.parquet"),
 	}
 
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Verify output file
@@ -363,7 +363,7 @@ func testCmdPageSizes(t *testing.T) {
 				Source:       "../../testdata/all-types.parquet",
 				URI:          filepath.Join(tempDir, fmt.Sprintf("pagesize-%d.parquet", pageSize)),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.NoError(t, err)
 
 			// Verify the data is correct
@@ -445,7 +445,7 @@ func testCmdEdgeCases(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.cmd.Run()
+			err := tc.cmd.Run(context.Background())
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -526,7 +526,7 @@ func testCmdFieldEncoding(t *testing.T) {
 				URI:           filepath.Join(tempDir, tc.name+".parquet"),
 			}
 
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 
 			if tc.errMsg != "" {
 				require.Error(t, err)
@@ -617,7 +617,7 @@ func testCmdFieldCompression(t *testing.T) {
 				URI:              filepath.Join(tempDir, tc.name+".parquet"),
 			}
 
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 
 			if tc.errMsg != "" {
 				require.Error(t, err)
@@ -657,7 +657,7 @@ func testCmdFieldEncodingAndCompression(t *testing.T) {
 		URI:              filepath.Join(tempDir, "combined.parquet"),
 	}
 
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Verify output file exists and has correct row count
@@ -687,7 +687,7 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 		Source:       testFile,
 		URI:          transcodedFile,
 	}
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Encodings should be preserved (compare with encoding but not compression)
@@ -714,10 +714,10 @@ func testCmdPreservesEncodingsOverride(t *testing.T) {
 	}
 
 	originalOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catOriginal.Run())
+		require.NoError(t, catOriginal.Run(context.Background()))
 	})
 	transcodedOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catTranscoded.Run())
+		require.NoError(t, catTranscoded.Run(context.Background()))
 	})
 
 	require.Equal(t, originalOutput, transcodedOutput)
@@ -745,7 +745,7 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 		Source:       "../../testdata/good.parquet",
 		URI:          transcodedFile,
 	}
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Get schema from transcoded file
@@ -755,7 +755,7 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 		URI:        transcodedFile,
 	}
 	transcodedSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run())
+		require.NoError(t, schemaCmd.Run(context.Background()))
 	})
 
 	// Verify the encoding was overridden for shoe_name
@@ -786,10 +786,10 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 	}
 
 	transcodedOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catTranscoded.Run())
+		require.NoError(t, catTranscoded.Run(context.Background()))
 	})
 	originalOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catOriginal.Run())
+		require.NoError(t, catOriginal.Run(context.Background()))
 	})
 
 	require.Equal(t, originalOutput, transcodedOutput)
@@ -815,7 +815,7 @@ func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {
 		Source:       testFile,
 		URI:          transcodedFile,
 	}
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Encodings should be preserved even with different compression
@@ -841,7 +841,7 @@ func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
 		Source:       "../../testdata/all-types.parquet",
 		URI:          transcodedFile,
 	}
-	err := cmd.Run()
+	err := cmd.Run(context.Background())
 	require.NoError(t, err)
 
 	// Verify file was created and data is correct
@@ -857,7 +857,7 @@ func testCmdPreservesEncodingsWithDataPageVersionChange(t *testing.T) {
 		URI:        transcodedFile,
 	}
 	transcodedSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run())
+		require.NoError(t, schemaCmd.Run(context.Background()))
 	})
 
 	// Should not contain PLAIN_DICTIONARY in v2
@@ -1319,7 +1319,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 			Source:           filepath.Join("..", "..", "testdata", "good.parquet"),
 			URI:              filepath.Join(tempDir, "add-bloom.parquet"),
 		}
-		err := cmd.Run()
+		err := cmd.Run(context.Background())
 		require.NoError(t, err)
 
 		// Verify bloom filter was added
@@ -1342,7 +1342,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 			Source:           filepath.Join("..", "..", "testdata", "bloom-filter.parquet"),
 			URI:              filepath.Join(tempDir, "remove-bloom.parquet"),
 		}
-		err := cmd.Run()
+		err := cmd.Run(context.Background())
 		require.NoError(t, err)
 
 		// Verify bloom filter was removed for ID but preserved for Name and Score
@@ -1369,7 +1369,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 			Source:           filepath.Join("..", "..", "testdata", "good.parquet"),
 			URI:              filepath.Join(tempDir, "add-bloom-size.parquet"),
 		}
-		err := cmd.Run()
+		err := cmd.Run(context.Background())
 		require.NoError(t, err)
 
 		reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
@@ -1388,7 +1388,7 @@ func testCmdFieldBloomFilter(t *testing.T) {
 			Source:       filepath.Join("..", "..", "testdata", "bloom-filter.parquet"),
 			URI:          filepath.Join(tempDir, "preserve-bloom.parquet"),
 		}
-		err := cmd.Run()
+		err := cmd.Run(context.Background())
 		require.NoError(t, err)
 
 		reader, err := pio.NewParquetFileReader(context.Background(), cmd.URI, rOpt)
@@ -1602,7 +1602,7 @@ func testCmdDecryptEncrypted(t *testing.T) {
 				Source:       tc.source,
 				URI:          filepath.Join(tempDir, tc.name+".parquet"),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -1636,7 +1636,7 @@ func testCmdEncryptWriter(t *testing.T) {
 		ReadPageSize: 10,
 		Source:       plainSource,
 		URI:          encryptedSource,
-	}.Run())
+	}.Run(context.Background()))
 
 	testCases := []struct {
 		name        string
@@ -1723,7 +1723,7 @@ func testCmdEncryptWriter(t *testing.T) {
 				Source:       tc.source,
 				URI:          uri,
 			}
-			require.NoError(t, cmd.Run())
+			require.NoError(t, cmd.Run(context.Background()))
 			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
 			require.Equal(t, wantOutput, testutils.CommandStdout(t, transcodeTestCatCmd(uri, tc.outputRead)))
 		})
@@ -1809,7 +1809,7 @@ func testCmdEncryptWriterErrors(t *testing.T) {
 				Source:       filepath.Join("..", "..", "testdata", "good.parquet"),
 				URI:          filepath.Join(tempDir, tc.name+".parquet"),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
@@ -1844,12 +1844,12 @@ func BenchmarkTranscodeCmd(b *testing.B) {
 
 	// Warm up the Go runtime before actual benchmark
 	for range 10 {
-		_ = cmd.Run()
+		_ = cmd.Run(context.Background())
 	}
 
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
-			require.NoError(b, cmd.Run())
+			require.NoError(b, cmd.Run(context.Background()))
 		}
 	})
 }

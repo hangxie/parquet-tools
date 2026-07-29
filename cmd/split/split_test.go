@@ -103,7 +103,7 @@ func TestCmd(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			cmd := tc.cmd
 			if tc.errMsg != "" {
-				err := cmd.Run()
+				err := cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			} else {
@@ -111,7 +111,7 @@ func TestCmd(t *testing.T) {
 				tempDir := t.TempDir()
 				cmd.URI = filepath.Join("../../testdata", cmd.URI)
 				cmd.NameFormat = filepath.Join(tempDir, cmd.NameFormat)
-				err := cmd.Run()
+				err := cmd.Run(context.Background())
 				require.NoError(t, err)
 				files, _ := os.ReadDir(tempDir)
 				require.Equal(t, len(files), len(tc.result))
@@ -141,7 +141,7 @@ func TestCmd(t *testing.T) {
 			NameFormat:   filepath.Join(tempDir, "ut-%d.parquet"),
 		}
 
-		err := splitCmd.Run()
+		err := splitCmd.Run(context.Background())
 		require.NoError(t, err)
 		files, _ := os.ReadDir(tempDir)
 		require.Equal(t, 1, len(files))
@@ -154,7 +154,7 @@ func TestCmd(t *testing.T) {
 			URI:          filepath.Join(tempDir, files[0].Name()),
 		}
 		stdout, _ := testutils.CaptureStdoutStderr(func() {
-			require.NoError(t, catCmd.Run())
+			require.NoError(t, catCmd.Run(context.Background()))
 		})
 		require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/split-optional-fields-json.json"), stdout)
 	})
@@ -232,7 +232,7 @@ func TestCmdEncryption(t *testing.T) {
 				NameFormat:   filepath.Join(tempDir, "part-%d.parquet"),
 				URI:          source,
 			}
-			require.NoError(t, cmd.Run())
+			require.NoError(t, cmd.Run(context.Background()))
 
 			files, err := os.ReadDir(tempDir)
 			require.NoError(t, err)
@@ -318,7 +318,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				NameFormat:   filepath.Join(tempDir, "part-%d.parquet"),
 				URI:          source,
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})

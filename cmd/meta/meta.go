@@ -57,9 +57,9 @@ type parquetMeta struct {
 }
 
 // Run does actual meta job
-func (c Cmd) Run() error {
+func (c Cmd) Run(ctx context.Context) error {
 	if c.ShowKeyMetadata {
-		hints, err := pio.ReadEncryptionKeyHints(context.Background(), c.URI, c.ReadOption)
+		hints, err := pio.ReadEncryptionKeyHints(ctx, c.URI, c.ReadOption)
 		if err != nil {
 			return err
 		}
@@ -74,12 +74,12 @@ func (c Cmd) Run() error {
 		return nil
 	}
 
-	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
 
-	schemaRoot, err := pschema.NewSchemaTree(context.Background(), reader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, SkipPageEncoding: true})
+	schemaRoot, err := pschema.NewSchemaTree(ctx, reader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, SkipPageEncoding: true})
 	if err != nil {
 		return err
 	}

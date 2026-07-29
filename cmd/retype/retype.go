@@ -27,7 +27,7 @@ type Cmd struct {
 }
 
 // Run does actual retype job
-func (c Cmd) Run() (retErr error) {
+func (c Cmd) Run(ctx context.Context) (retErr error) {
 	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (c Cmd) Run() (retErr error) {
 	}
 
 	// Open source file
-	fileReader, err := pio.NewParquetFileReader(context.Background(), c.Source, c.ReadOption)
+	fileReader, err := pio.NewParquetFileReader(ctx, c.Source, c.ReadOption)
 	if err != nil {
 		return fmt.Errorf("failed to read from [%s]: %w", c.Source, err)
 	}
@@ -45,7 +45,7 @@ func (c Cmd) Run() (retErr error) {
 	}()
 
 	// Get schema from source
-	schemaTree, err := pschema.NewSchemaTree(context.Background(), fileReader, pschema.SchemaOption{})
+	schemaTree, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{})
 	if err != nil {
 		return err
 	}
@@ -66,12 +66,12 @@ func (c Cmd) Run() (retErr error) {
 	// Create output file with new settings
 	c.ReadOption.FieldDelimiter = c.FieldDelimiter
 	c.WriteOption.FieldDelimiter = c.FieldDelimiter
-	fileWriter, err := pio.NewGenericWriter(context.Background(), c.URI, c.WriteOption, schemaJSON)
+	fileWriter, err := pio.NewGenericWriter(ctx, c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
 	defer func() {
-		if err := fileWriter.WriteStopWithContext(context.Background()); err != nil && retErr == nil {
+		if err := fileWriter.WriteStopWithContext(ctx); err != nil && retErr == nil {
 			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
 		}
 		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
@@ -79,5 +79,5 @@ func (c Cmd) Run() (retErr error) {
 		}
 	}()
 
-	return pio.RunPipeline(context.Background(), fileReader, fileWriter, c.Source, c.URI, c.ReadPageSize, converter.Convert)
+	return pio.RunPipeline(ctx, fileReader, fileWriter, c.Source, c.URI, c.ReadPageSize, converter.Convert)
 }

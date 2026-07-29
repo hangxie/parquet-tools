@@ -1,6 +1,7 @@
 package version
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -56,7 +57,7 @@ func TestCmd(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			stdout, stderr := testutils.CaptureStdoutStderr(func() {
-				require.Nil(t, tc.cmd.Run())
+				require.Nil(t, tc.cmd.Run(context.Background()))
 			})
 			require.Equal(t, tc.stdout, stdout)
 			require.Equal(t, "", stderr)
@@ -81,7 +82,7 @@ func BenchmarkVersionCmd(b *testing.B) {
 	}
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
-			require.NoError(b, cmd.Run())
+			require.NoError(b, cmd.Run(context.Background()))
 		}
 	})
 }

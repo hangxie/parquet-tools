@@ -28,8 +28,8 @@ type Cmd struct {
 }
 
 // Run does actual schema job
-func (c Cmd) Run() error {
-	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+func (c Cmd) Run(ctx context.Context) error {
+	reader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (c Cmd) Run() error {
 		_ = reader.PFile.Close()
 	}()
 
-	schemaRoot, err := pschema.NewSchemaTree(context.Background(), reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding})
+	schemaRoot, err := pschema.NewSchemaTree(ctx, reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding})
 	if err != nil {
 		return err
 	}
