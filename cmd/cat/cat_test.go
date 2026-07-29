@@ -194,6 +194,14 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"},
 			golden: "cat-row-group.jsonl",
 		},
+		"skip-uneven-row-groups": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 3, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"},
+			golden: "cat-row-group-skip-3.jsonl",
+		},
+		"skip-across-uneven-row-groups": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 18, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"},
+			golden: "cat-row-group-skip-18.jsonl",
+		},
 		"dict-page": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "dict-page.parquet"},
 			golden: "cat-dict-page.jsonl",
