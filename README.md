@@ -58,6 +58,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
     - [Container Image](#container-image)
     - [Prebuilt RPM and deb Packages](#prebuilt-rpm-and-deb-packages)
   - [Usage](#usage)
+    - [Canceling a Command](#canceling-a-command)
     - [Obtain Help](#obtain-help)
     - [Parquet File Location](#parquet-file-location)
       - [File System](#file-system)
@@ -229,6 +230,10 @@ Updating / installing...
 ```
 
 ## Usage
+
+### Canceling a Command
+
+Press Ctrl+C to cancel an active command. `parquet-tools` also handles `SIGTERM`, allowing long-running reads, writes, and inspection operations to stop cleanly.
 
 ### Obtain Help
 `parquet-tools` provides help information through `-h` flag, whenever you are not sure about a parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:
