@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-tools/cmd/cat"
+	"github.com/hangxie/parquet-tools/cmd/inspect"
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
 	pio "github.com/hangxie/parquet-tools/io"
 )
@@ -230,6 +231,33 @@ func TestCmd(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestCmdDefaultDataPageVersionWithDictionaryEncoding(t *testing.T) {
+	tempDir := t.TempDir()
+	testdataDir := filepath.Join("..", "..", "testdata")
+	goldenDir := filepath.Join("..", "..", "testdata", "golden")
+	uri := filepath.Join(tempDir, "dictionary.parquet")
+
+	require.NoError(t, (Cmd{
+		Source: filepath.Join(testdataDir, "jsonl.source"),
+		Format: "jsonl",
+		Schema: filepath.Join(testdataDir, "jsonl.schema"),
+		URI:    uri,
+	}).Run(context.Background()))
+
+	stdout, stderr := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, (inspect.Cmd{
+			URI:         uri,
+			RowGroup:    new(0),
+			ColumnChunk: new(1),
+		}).Run(context.Background()))
+	})
+	require.Equal(t,
+		testutils.LoadExpected(t, filepath.Join(goldenDir, "import-dict-page-v2-inspect.json")),
+		stdout,
+	)
+	require.Empty(t, stderr)
 }
 
 func TestCmdEncryption(t *testing.T) {

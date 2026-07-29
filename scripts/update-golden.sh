@@ -89,6 +89,23 @@ assert_all_golden_files_covered() {
 echo "Updating golden files..."
 
 # ============================================================================
+# import command golden files
+# ============================================================================
+echo "  import command..."
+
+IMPORT_TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$IMPORT_TEMP_DIR"' EXIT
+
+$PT import --format jsonl --schema "$TESTDATA_DIR/jsonl.schema" --source "$TESTDATA_DIR/jsonl.source" "$IMPORT_TEMP_DIR/dictionary.parquet"
+
+# import-dict-page-v2-inspect.json
+$PT inspect --row-group 0 --column-chunk 1 "$IMPORT_TEMP_DIR/dictionary.parquet" |
+    format_json > "$GOLDEN_DIR/import-dict-page-v2-inspect.json"
+
+rm -rf "$IMPORT_TEMP_DIR"
+trap - EXIT
+
+# ============================================================================
 # cat command golden files
 # ============================================================================
 echo "  cat command..."
