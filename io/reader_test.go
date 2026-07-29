@@ -242,7 +242,7 @@ func TestNewParquetFileReader(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			_, err := NewParquetFileReader(tc.uri, tc.option)
+			_, err := NewParquetFileReader(context.Background(), tc.uri, tc.option)
 			if tc.errMsg == "" {
 				require.NoError(t, err)
 				return
@@ -387,7 +387,7 @@ func TestNewParquetFileReaderEncryption(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			pr, err := NewParquetFileReader(tc.uri, tc.option)
+			pr, err := NewParquetFileReader(context.Background(), tc.uri, tc.option)
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -538,7 +538,7 @@ func FuzzNewParquetFileReader(f *testing.F) {
 		if err := os.WriteFile(path, data, 0o600); err != nil {
 			t.Skip()
 		}
-		pr, err := NewParquetFileReader(path, ReadOption{})
+		pr, err := NewParquetFileReader(context.Background(), path, ReadOption{})
 		if err != nil {
 			return
 		}

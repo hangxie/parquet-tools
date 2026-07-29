@@ -50,7 +50,7 @@ type WriteOption struct {
 	WriterKeyFile       *string  `name:"writer-key-file" group:"Encryption" help:"path to a JSON file containing encryption keys ({footer_key, column_keys}); CLI flags override file values; --writer-column-key flags merge with file column_keys, CLI wins per path. Recommend chmod 600 on the file."`
 }
 
-func newLocalWriter(u *url.URL) (source.ParquetFileWriter, error) {
+func newLocalWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, error) {
 	fileWriter, err := local.NewLocalFileWriter(u.Path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local file [%s]: %w", u.Path, err)
@@ -58,46 +58,46 @@ func newLocalWriter(u *url.URL) (source.ParquetFileWriter, error) {
 	return fileWriter, nil
 }
 
-func newAWSS3Writer(u *url.URL) (source.ParquetFileWriter, error) {
+func newAWSS3Writer(ctx context.Context, u *url.URL) (source.ParquetFileWriter, error) {
 	s3Client, err := getS3Client(u.Host, false, false)
 	if err != nil {
 		return nil, err
 	}
 
-	fileWriter, err := s3v2.NewS3FileWriterWithClient(context.Background(), s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
+	fileWriter, err := s3v2.NewS3FileWriterWithClient(ctx, s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open S3 object [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
 
-func newGoogleCloudStorageWriter(u *url.URL) (source.ParquetFileWriter, error) {
-	fileWriter, err := gcs.NewGcsFileWriter(context.Background(), "", u.Host, strings.TrimLeft(u.Path, "/"))
+func newGoogleCloudStorageWriter(ctx context.Context, u *url.URL) (source.ParquetFileWriter, error) {
+	fileWriter, err := gcs.NewGcsFileWriter(ctx, "", u.Host, strings.TrimLeft(u.Path, "/"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open GCS object [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
 
-func newAzureStorageBlobWriter(u *url.URL) (source.ParquetFileWriter, error) {
+func newAzureStorageBlobWriter(ctx context.Context, u *url.URL) (source.ParquetFileWriter, error) {
 	// write operation cannot be with anonymous access
 	azURL, cred, err := azureAccessDetail(*u, false, "")
 	if err != nil {
 		return nil, err
 	}
 
-	fileWriter, err := azblob.NewAzBlobFileWriter(context.Background(), azURL, cred, blockblob.ClientOptions{})
+	fileWriter, err := azblob.NewAzBlobFileWriter(ctx, azURL, cred, blockblob.ClientOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open Azure blob object [%s]: %w", u.String(), err)
 	}
 	return fileWriter, nil
 }
 
-func newHTTPWriter(u *url.URL) (source.ParquetFileWriter, error) {
+func newHTTPWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, error) {
 	return nil, fmt.Errorf("writing to [%s] endpoint is not currently supported", u.Scheme)
 }
 
-func newHDFSWriter(u *url.URL) (source.ParquetFileWriter, error) {
+func newHDFSWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, error) {
 	userName := u.User.Username()
 	if userName == "" {
 		osUser, err := user.Current()
@@ -112,8 +112,8 @@ func newHDFSWriter(u *url.URL) (source.ParquetFileWriter, error) {
 	return fileWriter, nil
 }
 
-func NewParquetFileWriter(uri string) (source.ParquetFileWriter, error) {
-	writerFuncTable := map[string]func(*url.URL) (source.ParquetFileWriter, error){
+func NewParquetFileWriter(ctx context.Context, uri string) (source.ParquetFileWriter, error) {
+	writerFuncTable := map[string]func(context.Context, *url.URL) (source.ParquetFileWriter, error){
 		schemeLocal:              newLocalWriter,
 		schemeAWSS3:              newAWSS3Writer,
 		schemeGoogleCloudStorage: newGoogleCloudStorageWriter,
@@ -128,7 +128,7 @@ func NewParquetFileWriter(uri string) (source.ParquetFileWriter, error) {
 		return nil, err
 	}
 	if writerFunc, found := writerFuncTable[u.Scheme]; found {
-		return writerFunc(u)
+		return writerFunc(ctx, u)
 	}
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 }
@@ -167,13 +167,13 @@ func writerOpts(option WriteOption, columnKeys []writerColumnKey) ([]writer.Writ
 	return opts, nil
 }
 
-func NewCSVWriter(uri string, opt WriteOption, schema []string) (*writer.CSVWriter, error) {
+func NewCSVWriter(ctx context.Context, uri string, opt WriteOption, schema []string) (*writer.CSVWriter, error) {
 	opt, err := applyWriterKeyFileOption(opt)
 	if err != nil {
 		return nil, err
 	}
 
-	fileWriter, err := NewParquetFileWriter(uri)
+	fileWriter, err := NewParquetFileWriter(ctx, uri)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func NewCSVWriter(uri string, opt WriteOption, schema []string) (*writer.CSVWrit
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
-	pw, err := writer.NewCSVWriterWithContext(context.Background(), schema, fileWriter, opts...)
+	pw, err := writer.NewCSVWriterWithContext(ctx, schema, fileWriter, opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
@@ -204,13 +204,13 @@ func NewCSVWriter(uri string, opt WriteOption, schema []string) (*writer.CSVWrit
 	return pw, nil
 }
 
-func NewJSONWriter(uri string, opt WriteOption, schema string) (*writer.JSONWriter, error) {
+func NewJSONWriter(ctx context.Context, uri string, opt WriteOption, schema string) (*writer.JSONWriter, error) {
 	opt, err := applyWriterKeyFileOption(opt)
 	if err != nil {
 		return nil, err
 	}
 
-	fileWriter, err := NewParquetFileWriter(uri)
+	fileWriter, err := NewParquetFileWriter(ctx, uri)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func NewJSONWriter(uri string, opt WriteOption, schema string) (*writer.JSONWrit
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
-	pw, err := writer.NewJSONWriterWithContext(context.Background(), schema, fileWriter, opts...)
+	pw, err := writer.NewJSONWriterWithContext(ctx, schema, fileWriter, opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err
@@ -241,13 +241,13 @@ func NewJSONWriter(uri string, opt WriteOption, schema string) (*writer.JSONWrit
 	return pw, nil
 }
 
-func NewGenericWriter(uri string, opt WriteOption, schema string) (*writer.ParquetWriter, error) {
+func NewGenericWriter(ctx context.Context, uri string, opt WriteOption, schema string) (*writer.ParquetWriter, error) {
 	opt, err := applyWriterKeyFileOption(opt)
 	if err != nil {
 		return nil, err
 	}
 
-	fileWriter, err := NewParquetFileWriter(uri)
+	fileWriter, err := NewParquetFileWriter(ctx, uri)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func NewGenericWriter(uri string, opt WriteOption, schema string) (*writer.Parqu
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
-	pw, err := writer.NewParquetWriterWithContext(context.Background(), fileWriter, schema, opts...)
+	pw, err := writer.NewParquetWriterWithContext(ctx, fileWriter, schema, opts...)
 	if err != nil {
 		_ = fileWriter.Close()
 		return nil, err

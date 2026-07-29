@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"testing"
@@ -13,13 +14,13 @@ import (
 func TestJSONSchemaNode(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
+	pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 

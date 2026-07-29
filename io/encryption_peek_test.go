@@ -142,7 +142,7 @@ func TestReadEncryptionKeyHints(t *testing.T) {
 			if tc.setup != nil {
 				uri = tc.setup(t)
 			}
-			hints, err := ReadEncryptionKeyHints(uri, ReadOption{})
+			hints, err := ReadEncryptionKeyHints(context.Background(), uri, ReadOption{})
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)

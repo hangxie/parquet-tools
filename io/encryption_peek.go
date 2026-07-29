@@ -38,8 +38,8 @@ type EncryptionKeyHints struct {
 // ReadEncryptionKeyHints reads key_metadata fields from a parquet file by
 // parsing raw bytes, requiring no decryption keys. Returns nil if the file is
 // not encrypted or carries no key_metadata.
-func ReadEncryptionKeyHints(URI string, option ReadOption) (*EncryptionKeyHints, error) {
-	src, err := newSourceReader(URI, option)
+func ReadEncryptionKeyHints(ctx context.Context, URI string, option ReadOption) (*EncryptionKeyHints, error) {
+	src, err := newSourceReader(ctx, URI, option)
 	if err != nil {
 		return nil, err
 	}

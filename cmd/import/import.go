@@ -83,7 +83,7 @@ func (c Cmd) importCSV() error {
 	}()
 	csvReader := csv.NewReader(csvFile)
 
-	parquetWriter, err := pio.NewCSVWriter(c.URI, c.WriteOption, schema)
+	parquetWriter, err := pio.NewCSVWriter(context.Background(), c.URI, c.WriteOption, schema)
 	if err != nil {
 		return fmt.Errorf("failed to create CSV writer: %w", err)
 	}
@@ -139,7 +139,7 @@ func (c Cmd) importJSON() error {
 		return fmt.Errorf("content of [%s] is not a valid JSON array: %w", c.Source, err)
 	}
 
-	parquetWriter, err := pio.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
+	parquetWriter, err := pio.NewJSONWriter(context.Background(), c.URI, c.WriteOption, string(schemaData))
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
@@ -181,7 +181,7 @@ func (c Cmd) importJSONL() error {
 	scanner := bufio.NewScanner(jsonlFile)
 	scanner.Split(bufio.ScanLines)
 
-	parquetWriter, err := pio.NewJSONWriter(c.URI, c.WriteOption, string(schemaData))
+	parquetWriter, err := pio.NewJSONWriter(context.Background(), c.URI, c.WriteOption, string(schemaData))
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}

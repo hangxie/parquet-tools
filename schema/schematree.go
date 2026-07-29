@@ -16,12 +16,8 @@ import (
 // readFirstDataPageEncoding reads the first data page header to get its encoding.
 // Uses the parquet-go library's GetFirstDataPageHeader which efficiently reads only
 // the first data page, skipping any dictionary pages.
-func readFirstDataPageEncoding(pr *reader.ParquetReader, rowGroupIndex, columnIndex int) (parquet.Encoding, error) {
-	// Use parquet-go's GetFirstDataPageHeader which correctly handles:
-	// - Dictionary pages at DataPageOffset
-	// - Proper offset calculation including header sizes
-	// - CRC and other page header variations
-	headerInfo, err := pr.GetFirstDataPageHeaderWithContext(context.Background(), rowGroupIndex, columnIndex)
+func readFirstDataPageEncoding(ctx context.Context, pr *reader.ParquetReader, rowGroupIndex, columnIndex int) (parquet.Encoding, error) {
+	headerInfo, err := pr.GetFirstDataPageHeaderWithContext(ctx, rowGroupIndex, columnIndex)
 	if err != nil {
 		return 0, fmt.Errorf("read first data page header: %w", err)
 	}
@@ -33,7 +29,7 @@ func readFirstDataPageEncoding(pr *reader.ParquetReader, rowGroupIndex, columnIn
 // For each column, it reads the page header at DataPageOffset to get the actual data page encoding.
 // Note: Parquet files should use consistent encodings across row groups for the same column.
 // This function reads columns in parallel to speed up remote file access.
-func buildEncodingMap(pr *reader.ParquetReader) (map[string]string, error) {
+func buildEncodingMap(ctx context.Context, pr *reader.ParquetReader) (map[string]string, error) {
 	result := make(map[string]string)
 
 	// Use the first row group to extract encodings
@@ -47,7 +43,7 @@ func buildEncodingMap(pr *reader.ParquetReader) (map[string]string, error) {
 	var mu sync.Mutex
 
 	// Process columns in parallel, use runtime.NumCPU() to match available cores
-	g := new(errgroup.Group)
+	g, gctx := errgroup.WithContext(ctx)
 	g.SetLimit(runtime.NumCPU())
 
 	for colIndex, col := range columns {
@@ -75,7 +71,7 @@ func buildEncodingMap(pr *reader.ParquetReader) (map[string]string, error) {
 			}
 
 			// Read just the first data page header to get encoding
-			encoding, err := readFirstDataPageEncoding(clonedReader, 0, colIndex)
+			encoding, err := readFirstDataPageEncoding(gctx, clonedReader, 0, colIndex)
 			if err != nil {
 				return fmt.Errorf("failed to read encoding for column [%s]: %w", pathKey, err)
 			}
@@ -172,12 +168,12 @@ func BloomFilterSizeMap(pr *reader.ParquetReader) map[string]int32 {
 	return result
 }
 
-func NewSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
+func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	// Extract encoding information from the parquet file unless SkipPageEncoding is set
 	var encodingMap map[string]string
 	if !option.SkipPageEncoding {
 		var err error
-		encodingMap, err = buildEncodingMap(reader)
+		encodingMap, err = buildEncodingMap(ctx, reader)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build encoding map: %w", err)
 		}

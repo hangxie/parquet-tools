@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"go/format"
@@ -78,13 +79,13 @@ func TestNewSchemaTree(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			option := pio.ReadOption{}
-			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, option)
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
 			}()
 
-			schemaRoot, err := NewSchemaTree(pr, tc.option)
+			schemaRoot, err := NewSchemaTree(context.Background(), pr, tc.option)
 			if tc.errMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
@@ -115,7 +116,7 @@ func TestNewSchemaTree(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
 
-		pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
@@ -123,7 +124,7 @@ func TestNewSchemaTree(t *testing.T) {
 
 		require.NoError(t, os.Remove(tmpFile))
 
-		_, err = NewSchemaTree(pr, SchemaOption{})
+		_, err = NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to build encoding map")
 	})
@@ -162,13 +163,13 @@ func TestBuildEncodingMap(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			option := pio.ReadOption{}
-			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, option)
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
 			}()
 
-			result, err := buildEncodingMap(pr)
+			result, err := buildEncodingMap(context.Background(), pr)
 			require.NoError(t, err)
 			require.NotNil(t, result)
 
@@ -195,7 +196,7 @@ func TestBuildEncodingMap(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
 
-		pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
@@ -204,7 +205,7 @@ func TestBuildEncodingMap(t *testing.T) {
 		// Delete the file so Clone() cannot re-open it
 		require.NoError(t, os.Remove(tmpFile))
 
-		_, err = buildEncodingMap(pr)
+		_, err = buildEncodingMap(context.Background(), pr)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to clone file")
 	})
@@ -217,7 +218,7 @@ func TestBuildEncodingMap(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
 
-		pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
@@ -226,7 +227,7 @@ func TestBuildEncodingMap(t *testing.T) {
 		// Truncate the file to corrupt data pages while keeping it openable
 		require.NoError(t, os.Truncate(tmpFile, 4))
 
-		_, err = buildEncodingMap(pr)
+		_, err = buildEncodingMap(context.Background(), pr)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to read encoding")
 	})
@@ -235,13 +236,13 @@ func TestBuildEncodingMap(t *testing.T) {
 func TestSchemaNodeGetPathMap(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
+	pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -321,13 +322,13 @@ func TestSchemaNodeGetPathMap(t *testing.T) {
 func TestSchemaNodeGetInExNameMap(t *testing.T) {
 	option := pio.ReadOption{}
 	uri := "../testdata/all-types.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
+	pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -488,13 +489,13 @@ func TestUpdateTagFromConvertedType(t *testing.T) {
 	// Test with nan.parquet which has no converted type annotation
 	option := pio.ReadOption{}
 	uri := "../testdata/nan.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
+	pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -523,13 +524,13 @@ func TestUpdateTagFromLogicalType(t *testing.T) {
 	// Test with nan.parquet which has no logical type annotation
 	option := pio.ReadOption{}
 	uri := "../testdata/nan.parquet"
-	pr, err := pio.NewParquetFileReader(uri, option)
+	pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -568,13 +569,13 @@ func TestUpdateTagFromLogicalType(t *testing.T) {
 
 	// Test with geospatial.parquet which has GEOMETRY and GEOGRAPHY logical types
 	uri = "../testdata/geospatial.parquet"
-	pr, err = pio.NewParquetFileReader(uri, option)
+	pr, err = pio.NewParquetFileReader(context.Background(), uri, option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err = NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err = NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -660,13 +661,13 @@ func TestGoStruct(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			option := pio.ReadOption{}
-			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, option)
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
 			}()
 
-			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 			require.NoError(t, err)
 			require.NotNil(t, schemaRoot)
 
@@ -696,18 +697,18 @@ func TestGoStructAfterJSONSchema(t *testing.T) {
 		// JSONSchema is called first or not.
 		uri := "../testdata/all-types.parquet"
 
-		pr1, err := pio.NewParquetFileReader(uri, pio.ReadOption{})
+		pr1, err := pio.NewParquetFileReader(context.Background(), uri, pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() { _ = pr1.PFile.Close() }()
-		root1, err := NewSchemaTree(pr1, SchemaOption{})
+		root1, err := NewSchemaTree(context.Background(), pr1, SchemaOption{})
 		require.NoError(t, err)
 		expected, err := root1.GoStruct(false)
 		require.NoError(t, err)
 
-		pr2, err := pio.NewParquetFileReader(uri, pio.ReadOption{})
+		pr2, err := pio.NewParquetFileReader(context.Background(), uri, pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() { _ = pr2.PFile.Close() }()
-		root2, err := NewSchemaTree(pr2, SchemaOption{})
+		root2, err := NewSchemaTree(context.Background(), pr2, SchemaOption{})
 		require.NoError(t, err)
 		root2.JSONSchema()
 		actual, err := root2.GoStruct(false)
@@ -720,10 +721,10 @@ func TestGoStructAfterJSONSchema(t *testing.T) {
 		// Children through a shared pointer. GoStruct must return an error
 		// (unsupported type) rather than panic when it processes the now-flattened
 		// inner MAP structure via the else branch in asMap.
-		pr, err := pio.NewParquetFileReader("../testdata/map-value-map.parquet", pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/map-value-map.parquet", pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() { _ = pr.PFile.Close() }()
-		root, err := NewSchemaTree(pr, SchemaOption{})
+		root, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.NoError(t, err)
 		root.JSONSchema()
 		_, err = root.GoStruct(false)
@@ -752,13 +753,13 @@ func TestJSONSchema(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			option := pio.ReadOption{}
-			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, option)
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
 			}()
 
-			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 			require.NoError(t, err)
 			require.NotNil(t, schemaRoot)
 
@@ -805,13 +806,13 @@ func TestCSVSchema(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			option := pio.ReadOption{}
-			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, option)
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
 			}()
 
-			schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+			schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 			require.NoError(t, err)
 			require.NotNil(t, schemaRoot)
 
@@ -857,7 +858,7 @@ func TestBuildCompressionCodecMap(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			option := pio.ReadOption{}
-			pr, err := pio.NewParquetFileReader(tc.uri, option)
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, option)
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
@@ -908,7 +909,7 @@ func TestBuildBloomFilterMap(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr, err := pio.NewParquetFileReader(tc.uri, pio.ReadOption{})
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, pio.ReadOption{})
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
@@ -954,7 +955,7 @@ func TestBloomFilterSizeMap(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr, err := pio.NewParquetFileReader(tc.uri, pio.ReadOption{})
+			pr, err := pio.NewParquetFileReader(context.Background(), tc.uri, pio.ReadOption{})
 			require.NoError(t, err)
 			defer func() {
 				_ = pr.PFile.Close()
@@ -975,7 +976,7 @@ func TestBloomFilterSizeMap(t *testing.T) {
 	}
 
 	t.Run("consistent with buildBloomFilterMap", func(t *testing.T) {
-		pr, err := pio.NewParquetFileReader("../testdata/bloom-filter.parquet", pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/bloom-filter.parquet", pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() {
 			_ = pr.PFile.Close()
@@ -1397,17 +1398,17 @@ func TestIsCompatible(t *testing.T) {
 	}
 	for _, tc := range integrationTests {
 		t.Run(tc.name, func(t *testing.T) {
-			pr1, err := pio.NewParquetFileReader(tc.file1, pio.ReadOption{})
+			pr1, err := pio.NewParquetFileReader(context.Background(), tc.file1, pio.ReadOption{})
 			require.NoError(t, err)
 			defer func() { _ = pr1.PFile.Close() }()
 
-			pr2, err := pio.NewParquetFileReader(tc.file2, pio.ReadOption{})
+			pr2, err := pio.NewParquetFileReader(context.Background(), tc.file2, pio.ReadOption{})
 			require.NoError(t, err)
 			defer func() { _ = pr2.PFile.Close() }()
 
-			tree1, err := NewSchemaTree(pr1, SchemaOption{})
+			tree1, err := NewSchemaTree(context.Background(), pr1, SchemaOption{})
 			require.NoError(t, err)
-			tree2, err := NewSchemaTree(pr2, SchemaOption{})
+			tree2, err := NewSchemaTree(context.Background(), pr2, SchemaOption{})
 			require.NoError(t, err)
 
 			require.Equal(t, tc.expect, tree1.IsCompatible(tree2, tc.option))
@@ -1417,13 +1418,13 @@ func TestIsCompatible(t *testing.T) {
 
 func TestGetTagMapWithCompression(t *testing.T) {
 	option := pio.ReadOption{}
-	pr, err := pio.NewParquetFileReader("../testdata/good.parquet", option)
+	pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/good.parquet", option)
 	require.NoError(t, err)
 	defer func() {
 		_ = pr.PFile.Close()
 	}()
 
-	schemaRoot, err := NewSchemaTree(pr, SchemaOption{})
+	schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 	require.NoError(t, err)
 	require.NotNil(t, schemaRoot)
 
@@ -2316,13 +2317,13 @@ func FuzzNewSchemaTree(f *testing.F) {
 		if err := os.WriteFile(path, data, 0o600); err != nil {
 			t.Skip()
 		}
-		pr, err := pio.NewParquetFileReader(path, pio.ReadOption{})
+		pr, err := pio.NewParquetFileReader(context.Background(), path, pio.ReadOption{})
 		if err != nil {
 			return
 		}
 		defer func() { _ = pr.PFile.Close() }()
 
-		root, err := NewSchemaTree(pr, SchemaOption{})
+		root, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
 		if err != nil {
 			return
 		}

@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"os"
 	"strings"
 	"testing"
@@ -653,14 +654,14 @@ func TestReadPageValuesEdgeCases(t *testing.T) {
 	})
 
 	t.Run("nil-num-values-error", func(t *testing.T) {
-		fileReader, err := pio.NewParquetFileReader("../../testdata/good.parquet", pio.ReadOption{})
+		fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() { _ = fileReader.PFile.Close() }()
 
 		col := fileReader.Footer.RowGroups[0].Columns[0]
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
-		schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{})
+		schemaRoot, err := pschema.NewSchemaTree(context.Background(), fileReader, pschema.SchemaOption{})
 		require.NoError(t, err)
 		schemaNode := schemaRoot.GetPathMap()[pathKey]
 
@@ -678,11 +679,11 @@ func TestReadPagesError(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
 
-	pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+	pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
 	require.NoError(t, err)
 	defer func() { _ = pr.PFile.Close() }()
 
-	schemaRoot, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{SkipPageEncoding: true})
+	schemaRoot, err := pschema.NewSchemaTree(context.Background(), pr, pschema.SchemaOption{SkipPageEncoding: true})
 	require.NoError(t, err)
 
 	pathKey := strings.Join(pr.Footer.RowGroups[0].Columns[0].MetaData.PathInSchema, common.ParGoPathDelimiter)
@@ -711,14 +712,14 @@ func TestReadDictionaryPageValuesError(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
 
-	pr, err := pio.NewParquetFileReader(tmpFile, pio.ReadOption{})
+	pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
 	require.NoError(t, err)
 	defer func() { _ = pr.PFile.Close() }()
 
 	col := pr.Footer.RowGroups[0].Columns[0]
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
-	schemaRoot, err := pschema.NewSchemaTree(pr, pschema.SchemaOption{SkipPageEncoding: true})
+	schemaRoot, err := pschema.NewSchemaTree(context.Background(), pr, pschema.SchemaOption{SkipPageEncoding: true})
 	require.NoError(t, err)
 	schemaNode := schemaRoot.GetPathMap()[pathKey]
 

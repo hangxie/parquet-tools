@@ -1,6 +1,7 @@
 package importcmd
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -223,7 +224,7 @@ func TestCmd(t *testing.T) {
 				err := tc.cmd.Run()
 				require.NoError(t, err)
 
-				reader, err := pio.NewParquetFileReader(tc.cmd.URI, pio.ReadOption{})
+				reader, err := pio.NewParquetFileReader(context.Background(), tc.cmd.URI, pio.ReadOption{})
 				require.NoError(t, err)
 				require.Equal(t, tc.rowCount, reader.GetNumRows())
 			})

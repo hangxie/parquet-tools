@@ -67,7 +67,7 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("unknown format: [%s]", c.Format)
 	}
 
-	fileReader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
+	fileReader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 }
 
 func (c *Cmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
-	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+	schemaRoot, err := pschema.NewSchemaTree(context.Background(), fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +257,7 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 		return err
 	}
 
-	schemaRoot, err := pschema.NewSchemaTree(fileReader, pschema.SchemaOption{})
+	schemaRoot, err := pschema.NewSchemaTree(context.Background(), fileReader, pschema.SchemaOption{})
 	if err != nil {
 		return err
 	}

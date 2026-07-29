@@ -1,6 +1,7 @@
 package rowcount
 
 import (
+	"context"
 	"fmt"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -14,7 +15,7 @@ type Cmd struct {
 
 // Run does actual rowcount job
 func (c Cmd) Run() error {
-	reader, err := pio.NewParquetFileReader(c.URI, c.ReadOption)
+	reader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
