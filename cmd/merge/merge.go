@@ -25,7 +25,7 @@ type Cmd struct {
 }
 
 // Run does actual merge job
-func (c Cmd) Run() (retErr error) {
+func (c Cmd) Run(ctx context.Context) (retErr error) {
 	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (c Cmd) Run() (retErr error) {
 		return fmt.Errorf("needs at least 2 source files")
 	}
 
-	fileReaders, schemaJSON, err := c.openSources()
+	fileReaders, schemaJSON, err := c.openSources(ctx)
 	if err != nil {
 		return err
 	}
@@ -48,12 +48,12 @@ func (c Cmd) Run() (retErr error) {
 
 	c.ReadOption.FieldDelimiter = c.FieldDelimiter
 	c.WriteOption.FieldDelimiter = c.FieldDelimiter
-	fileWriter, err := pio.NewGenericWriter(context.Background(), c.URI, c.WriteOption, schemaJSON)
+	fileWriter, err := pio.NewGenericWriter(ctx, c.URI, c.WriteOption, schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
 	defer func() {
-		if err := fileWriter.WriteStopWithContext(context.Background()); err != nil && retErr == nil {
+		if err := fileWriter.WriteStopWithContext(ctx); err != nil && retErr == nil {
 			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
 		}
 		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
@@ -64,7 +64,7 @@ func (c Cmd) Run() (retErr error) {
 	// Single errgroup so all goroutines share one derived context —
 	// if either writer or any reader fails, gctx is cancelled and the other
 	// side's select on ctx.Done() fires, preventing deadlock.
-	g, gctx := errgroup.WithContext(context.Background())
+	g, gctx := errgroup.WithContext(ctx)
 	writerChan := make(chan any)
 
 	g.Go(func() error {
@@ -90,18 +90,18 @@ func (c Cmd) Run() (retErr error) {
 	return g.Wait()
 }
 
-func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
+func (c Cmd) openSources(ctx context.Context) ([]*reader.ParquetReader, string, error) {
 	var schemaJSON string
 	var rootSchema *pschema.SchemaNode
 	var err error
 	fileReaders := make([]*reader.ParquetReader, len(c.Source))
 	for i, source := range c.Source {
-		fileReaders[i], err = pio.NewParquetFileReader(context.Background(), source, c.ReadOption)
+		fileReaders[i], err = pio.NewParquetFileReader(ctx, source, c.ReadOption)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
 
-		currSchema, err := pschema.NewSchemaTree(context.Background(), fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+		currSchema, err := pschema.NewSchemaTree(ctx, fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 		if err != nil {
 			return nil, "", err
 		}
@@ -109,7 +109,7 @@ func (c Cmd) openSources() ([]*reader.ParquetReader, string, error) {
 		if rootSchema == nil {
 			rootSchema = currSchema
 			// Build a separate tree for JSON since JSONSchema() mutates the tree
-			jsonTree, jsonErr := pschema.NewSchemaTree(context.Background(), fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+			jsonTree, jsonErr := pschema.NewSchemaTree(ctx, fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 			if jsonErr != nil {
 				return nil, "", jsonErr
 			}

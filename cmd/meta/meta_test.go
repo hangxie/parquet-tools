@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -243,12 +244,12 @@ func TestCmd(t *testing.T) {
 				cmd.URI = "../../testdata/" + tc.cmd.URI
 			}
 			if tc.errMsg != "" {
-				err := cmd.Run()
+				err := cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			} else {
 				stdout, stderr := testutils.CaptureStdoutStderr(func() {
-					require.NoError(t, cmd.Run())
+					require.NoError(t, cmd.Run(context.Background()))
 				})
 				require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/"+tc.golden), stdout)
 				require.Equal(t, "", stderr)
@@ -276,12 +277,12 @@ func BenchmarkMetaCmd(b *testing.B) {
 
 	// Warm up the Go runtime before actual benchmark
 	for range 10 {
-		_ = cmd.Run()
+		_ = cmd.Run(context.Background())
 	}
 
 	b.Run("default", func(b *testing.B) {
 		for b.Loop() {
-			require.NoError(b, cmd.Run())
+			require.NoError(b, cmd.Run(context.Background()))
 		}
 	})
 }

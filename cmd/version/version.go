@@ -1,6 +1,7 @@
 package version
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 )
@@ -26,7 +27,7 @@ type Cmd struct {
 }
 
 // Run does actual version job
-func (c Cmd) Run() error {
+func (c Cmd) Run(_ context.Context) error {
 	if c.All {
 		c.BuildTime = true
 		c.Source = true

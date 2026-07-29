@@ -37,12 +37,12 @@ type Cmd struct {
 	current trunkWriter
 }
 
-func (c *Cmd) openReader() (*reader.ParquetReader, error) {
-	parquetReader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+func (c *Cmd) openReader(ctx context.Context) (*reader.ParquetReader, error) {
+	parquetReader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open [%s]: %w", c.URI, err)
 	}
-	schemaRoot, err := pschema.NewSchemaTree(context.Background(), parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+	schemaRoot, err := pschema.NewSchemaTree(ctx, parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		_ = parquetReader.PFile.Close()
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
@@ -61,9 +61,9 @@ func (c *Cmd) openReader() (*reader.ParquetReader, error) {
 	return parquetReader, nil
 }
 
-func (c *Cmd) switchWriter() error {
+func (c *Cmd) switchWriter(ctx context.Context) error {
 	if c.current.writer != nil {
-		if err := c.current.writer.WriteStopWithContext(context.Background()); err != nil {
+		if err := c.current.writer.WriteStopWithContext(ctx); err != nil {
 			return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
 		}
 		if err := c.current.writer.PFile.Close(); err != nil {
@@ -76,7 +76,7 @@ func (c *Cmd) switchWriter() error {
 	c.ReadOption.FieldDelimiter = c.FieldDelimiter
 	c.WriteOption.FieldDelimiter = c.FieldDelimiter
 	c.current.targetFile = fmt.Sprintf(c.NameFormat, c.current.fileIndex)
-	c.current.writer, err = pio.NewGenericWriter(context.Background(), c.current.targetFile, c.WriteOption, c.current.schemaJSON)
+	c.current.writer, err = pio.NewGenericWriter(ctx, c.current.targetFile, c.WriteOption, c.current.schemaJSON)
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.current.targetFile, err)
 	}
@@ -92,7 +92,7 @@ func (c *Cmd) switchWriter() error {
 }
 
 // Run does actual split job
-func (c Cmd) Run() error {
+func (c Cmd) Run(ctx context.Context) error {
 	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("invalid name format [%s]: %w", c.NameFormat, err)
 	}
 
-	parquetReader, err := c.openReader()
+	parquetReader, err := c.openReader(ctx)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (c Cmd) Run() error {
 	c.current.recordCount = c.RecordCount
 
 	for {
-		rows, err := parquetReader.ReadByNumberWithContext(context.Background(), c.ReadPageSize)
+		rows, err := parquetReader.ReadByNumberWithContext(ctx, c.ReadPageSize)
 		if err != nil {
 			return fmt.Errorf("failed to read from [%s]: %w", c.URI, err)
 		}
@@ -129,33 +129,33 @@ func (c Cmd) Run() error {
 		}
 		for _, row := range rows {
 			if c.current.recordCount == c.RecordCount {
-				if err := c.switchWriter(); err != nil {
+				if err := c.switchWriter(ctx); err != nil {
 					return err
 				}
 			}
-			if err := c.current.writer.WriteWithContext(context.Background(), row); err != nil {
+			if err := c.current.writer.WriteWithContext(ctx, row); err != nil {
 				return fmt.Errorf("failed to write data from [%s]: %w", c.current.targetFile, err)
 			}
 			c.current.recordCount++
 		}
 	}
 	for c.current.fileIndex < c.FileCount {
-		if err := c.switchWriter(); err != nil {
+		if err := c.switchWriter(ctx); err != nil {
 			return err
 		}
 	}
-	if err := c.closeWriter(); err != nil {
+	if err := c.closeWriter(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Cmd) closeWriter() error {
+func (c *Cmd) closeWriter(ctx context.Context) error {
 	if c.current.writer == nil {
 		return nil
 	}
-	if err := c.current.writer.WriteStopWithContext(context.Background()); err != nil {
+	if err := c.current.writer.WriteStopWithContext(ctx); err != nil {
 		return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
 	}
 	if err := c.current.writer.PFile.Close(); err != nil {

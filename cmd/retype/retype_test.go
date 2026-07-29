@@ -54,7 +54,7 @@ func TestCmd(t *testing.T) {
 
 		for name, tc := range testCases {
 			t.Run(name, func(t *testing.T) {
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			})
@@ -173,7 +173,7 @@ func TestCmd(t *testing.T) {
 
 		for name, tc := range testCases {
 			t.Run(name, func(t *testing.T) {
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.NoError(t, err)
 
 				stdout, stderr := testutils.CaptureStdoutStderr(func() {
@@ -184,7 +184,7 @@ func TestCmd(t *testing.T) {
 						Format:       "json",
 						URI:          resultFile,
 					}
-					require.NoError(t, cmd.Run())
+					require.NoError(t, cmd.Run(context.Background()))
 				})
 				require.Equal(t, testutils.LoadExpected(t, tc.goldenData), stdout)
 				require.Equal(t, "", stderr)
@@ -195,7 +195,7 @@ func TestCmd(t *testing.T) {
 						Format:     "json",
 						URI:        resultFile,
 					}
-					require.NoError(t, cmd.Run())
+					require.NoError(t, cmd.Run(context.Background()))
 				})
 				require.Equal(t, testutils.LoadExpected(t, tc.goldenSchema), stdout)
 				require.Equal(t, "", stderr)
@@ -276,7 +276,7 @@ func TestCmdEncryption(t *testing.T) {
 				Source:       source,
 				URI:          uri,
 			}
-			require.NoError(t, cmd.Run())
+			require.NoError(t, cmd.Run(context.Background()))
 			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
 
 			reader, err := pio.NewParquetFileReader(context.Background(), uri, tc.readOption)
@@ -352,7 +352,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				Source:       source,
 				URI:          filepath.Join(tempDir, tc.name+".parquet"),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})

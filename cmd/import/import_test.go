@@ -174,7 +174,7 @@ func TestCmd(t *testing.T) {
 		for name, tc := range testCases {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.errMsg)
 			})
@@ -221,7 +221,7 @@ func TestCmd(t *testing.T) {
 				tc.cmd.Schema = filepath.Join("../../testdata", tc.cmd.Schema)
 				tc.cmd.URI = filepath.Join(tempDir, "import-"+name+".parquet")
 
-				err := tc.cmd.Run()
+				err := tc.cmd.Run(context.Background())
 				require.NoError(t, err)
 
 				reader, err := pio.NewParquetFileReader(context.Background(), tc.cmd.URI, pio.ReadOption{})
@@ -249,7 +249,7 @@ func TestCmdEncryption(t *testing.T) {
 		Schema: schema,
 		URI:    plainURI,
 	}
-	require.NoError(t, plainCmd.Run())
+	require.NoError(t, plainCmd.Run(context.Background()))
 	wantOutput := testutils.CommandStdout(t, importTestCatCmd(plainURI, pio.ReadOption{}))
 
 	testCases := []struct {
@@ -377,7 +377,7 @@ func TestCmdEncryption(t *testing.T) {
 				Schema:      schema,
 				URI:         uri,
 			}
-			require.NoError(t, cmd.Run())
+			require.NoError(t, cmd.Run(context.Background()))
 			require.Equal(t, tc.footerMagic, testutils.ParquetFooterMagic(t, uri))
 			require.Equal(t, wantOutput, testutils.CommandStdout(t, importTestCatCmd(uri, tc.readOption)))
 		})
@@ -458,7 +458,7 @@ func TestCmdEncryptionErrors(t *testing.T) {
 				Schema:      filepath.Join("..", "..", "testdata", "csv.schema"),
 				URI:         filepath.Join(tempDir, tc.name+".parquet"),
 			}
-			err := cmd.Run()
+			err := cmd.Run(context.Background())
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tc.errMsg)
 		})
@@ -489,7 +489,7 @@ func TestCmdEncryptionEncryptAllColumns(t *testing.T) {
 			Schema:      schema,
 			URI:         uri,
 		}
-		require.NoError(t, cmd.Run())
+		require.NoError(t, cmd.Run(context.Background()))
 		return uri
 	}
 
@@ -497,7 +497,7 @@ func TestCmdEncryptionEncryptAllColumns(t *testing.T) {
 		t.Helper()
 		var err error
 		_, _ = testutils.CaptureStdoutStderr(func() {
-			err = importTestCatCmd(uri, pio.ReadOption{}).Run()
+			err = importTestCatCmd(uri, pio.ReadOption{}).Run(context.Background())
 		})
 		return err
 	}

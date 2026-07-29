@@ -49,7 +49,7 @@ var delimiter = map[string]struct {
 }
 
 // Run does actual cat job
-func (c Cmd) Run() error {
+func (c Cmd) Run(ctx context.Context) error {
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -67,7 +67,7 @@ func (c Cmd) Run() error {
 		return fmt.Errorf("unknown format: [%s]", c.Format)
 	}
 
-	fileReader, err := pio.NewParquetFileReader(context.Background(), c.URI, c.ReadOption)
+	fileReader, err := pio.NewParquetFileReader(ctx, c.URI, c.ReadOption)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (c Cmd) Run() error {
 		_ = fileReader.PFile.Close()
 	}()
 
-	return c.outputRows(fileReader)
+	return c.outputRows(ctx, fileReader)
 }
 
 func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
@@ -109,8 +109,8 @@ func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	return fieldList, nil
 }
 
-func (c *Cmd) retrieveFieldDef(fileReader *reader.ParquetReader) ([]string, error) {
-	schemaRoot, err := pschema.NewSchemaTree(context.Background(), fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+func (c *Cmd) retrieveFieldDef(ctx context.Context, fileReader *reader.ParquetReader) ([]string, error) {
+	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
 		return nil, err
 	}
@@ -251,20 +251,20 @@ func (c Cmd) printer(ctx context.Context, outputChan chan string) error {
 	}
 }
 
-func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
-	fieldList, err := c.retrieveFieldDef(fileReader)
+func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) error {
+	fieldList, err := c.retrieveFieldDef(ctx, fileReader)
 	if err != nil {
 		return err
 	}
 
-	schemaRoot, err := pschema.NewSchemaTree(context.Background(), fileReader, pschema.SchemaOption{})
+	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{})
 	if err != nil {
 		return err
 	}
 	unknownCols := unknownColumnNames(schemaRoot)
 
 	// skip rows
-	if err := fileReader.SkipRowsWithContext(context.Background(), c.Skip); err != nil {
+	if err := fileReader.SkipRowsWithContext(ctx, c.Skip); err != nil {
 		return err
 	}
 
@@ -276,9 +276,6 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 	}
 
 	// Use a single errgroup for all goroutines
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	g, gctx := errgroup.WithContext(ctx)
 
 	// Use appropriate buffer size
@@ -313,7 +310,7 @@ func (c Cmd) outputRows(fileReader *reader.ParquetReader) error {
 			default:
 			}
 
-			rows, err := fileReader.ReadByNumberWithContext(context.Background(), c.ReadPageSize)
+			rows, err := fileReader.ReadByNumberWithContext(gctx, c.ReadPageSize)
 			if err != nil {
 				return fmt.Errorf("failed to cat: %w", err)
 			}

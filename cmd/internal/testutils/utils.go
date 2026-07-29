@@ -17,7 +17,7 @@ import (
 var stdCaptureMutex sync.Mutex
 
 type runnableCommand interface {
-	Run() error
+	Run(context.Context) error
 }
 
 // HasSameSchema compares the logical schema of two parquet files using structural
@@ -80,7 +80,7 @@ func CommandStdout(t *testing.T, cmd runnableCommand) string {
 	t.Helper()
 
 	stdout, _ := CaptureStdoutStderr(func() {
-		if err := cmd.Run(); err != nil {
+		if err := cmd.Run(context.Background()); err != nil {
 			t.Fatal(err)
 		}
 	})

@@ -10,8 +10,8 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-func (c Cmd) readPages(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
-	pageHeaders, err := pr.GetAllPageHeadersWithContext(context.Background(), rowGroupIndex, columnChunkIndex)
+func (c Cmd) readPages(ctx context.Context, pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, schemaNode *pschema.SchemaNode) ([]PageInfo, error) {
+	pageHeaders, err := pr.GetAllPageHeadersWithContext(ctx, rowGroupIndex, columnChunkIndex)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read page headers: %w", err)
 	}
@@ -76,7 +76,7 @@ func (c Cmd) convertPageHeaderInfo(headerInfo reader.PageHeaderInfo, schemaNode 
 	return pageInfo
 }
 
-func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pages []PageInfo, pageIndex int) ([]any, error) {
+func (c Cmd) readPageValues(ctx context.Context, pr *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pages []PageInfo, pageIndex int) ([]any, error) {
 	meta := col.MetaData
 
 	if pageIndex < 0 || pageIndex >= len(pages) {
@@ -88,7 +88,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	// Handle different page types
 	switch pageInfo.Type {
 	case parquet.PageType_DICTIONARY_PAGE:
-		return c.readDictionaryPageValues(pr, col, schemaNode, pageInfo)
+		return c.readDictionaryPageValues(ctx, pr, col, schemaNode, pageInfo)
 	case parquet.PageType_DATA_PAGE, parquet.PageType_DATA_PAGE_V2:
 		// Continue to process data pages below
 	default:
@@ -103,11 +103,11 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	}
 
 	// Create a fresh column reader to read the entire column
-	freshReader, err := reader.NewParquetColumnReaderWithContext(context.Background(), pr.PFile, reader.WithNP(4))
+	freshReader, err := reader.NewParquetColumnReaderWithContext(ctx, pr.PFile, reader.WithNP(4))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create fresh reader: %w", err)
 	}
-	defer func() { _ = freshReader.ReadStopWithContext(context.Background()) }()
+	defer func() { _ = freshReader.ReadStopWithContext(context.WithoutCancel(ctx)) }()
 
 	// Calculate total number of rows in the file
 	totalRows := int64(0)
@@ -116,7 +116,7 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	}
 
 	// Read ALL values from the entire file for this column
-	allValuesInFile, _, _, err := freshReader.ReadColumnByIndexWithContext(context.Background(), int64(columnChunkIndex), totalRows)
+	allValuesInFile, _, _, err := freshReader.ReadColumnByIndexWithContext(ctx, int64(columnChunkIndex), totalRows)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read column values: %w", err)
 	}
@@ -155,10 +155,10 @@ func (c Cmd) readPageValues(pr *reader.ParquetReader, rowGroupIndex, columnChunk
 	return c.convertValuesToJSON(pageValues, schemaNode), nil
 }
 
-func (c Cmd) readDictionaryPageValues(pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo PageInfo) ([]any, error) {
+func (c Cmd) readDictionaryPageValues(ctx context.Context, pr *reader.ParquetReader, col *parquet.ColumnChunk, schemaNode *pschema.SchemaNode, pageInfo PageInfo) ([]any, error) {
 	meta := col.MetaData
 
-	values, err := pr.ReadDictionaryPageValuesWithContext(context.Background(), pageInfo.Offset, meta.Codec, meta.Type)
+	values, err := pr.ReadDictionaryPageValuesWithContext(ctx, pageInfo.Offset, meta.Codec, meta.Type)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read dictionary page values: %w", err)
 	}

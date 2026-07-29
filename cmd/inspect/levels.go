@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -78,7 +79,7 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 }
 
 // Level 3: Column chunk details and pages with brief info
-func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) error {
+func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -137,7 +138,7 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 	}
 
 	// Read pages - this requires reading the actual data from the file
-	pages, err := c.readPages(reader, rowGroupIndex, columnChunkIndex, schemaNode)
+	pages, err := c.readPages(ctx, reader, rowGroupIndex, columnChunkIndex, schemaNode)
 	if err != nil {
 		return fmt.Errorf("failed to read pages: %w", err)
 	}
@@ -151,7 +152,7 @@ func (c Cmd) inspectColumnChunk(reader *reader.ParquetReader, rowGroupIndex, col
 }
 
 // Level 4: Page details and values
-func (c Cmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex, pageIndex int, pathMap map[string]*pschema.SchemaNode) error {
+func (c Cmd) inspectPage(ctx context.Context, reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex, pageIndex int, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -167,7 +168,7 @@ func (c Cmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChun
 	schemaNode := pathMap[pathKey]
 
 	// Read pages
-	pages, err := c.readPages(reader, rowGroupIndex, columnChunkIndex, schemaNode)
+	pages, err := c.readPages(ctx, reader, rowGroupIndex, columnChunkIndex, schemaNode)
 	if err != nil {
 		return fmt.Errorf("failed to read pages: %w", err)
 	}
@@ -178,7 +179,7 @@ func (c Cmd) inspectPage(reader *reader.ParquetReader, rowGroupIndex, columnChun
 	page := pages[pageIndex]
 
 	// Read page values
-	values, err := c.readPageValues(reader, rowGroupIndex, columnChunkIndex, col, schemaNode, pages, pageIndex)
+	values, err := c.readPageValues(ctx, reader, rowGroupIndex, columnChunkIndex, col, schemaNode, pages, pageIndex)
 	if err != nil {
 		return fmt.Errorf("failed to read page values: %w", err)
 	}
