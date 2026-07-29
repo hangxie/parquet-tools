@@ -1,0 +1,132 @@
+{
+  "columnChunk": {
+    "columnChunkIndex": 1,
+    "compressedSize": 367,
+    "compressionCodec": "SNAPPY",
+    "dataPageOffset": 276,
+    "dictionaryPageOffset": 199,
+    "encodings": [
+      "PLAIN",
+      "RLE",
+      "RLE_DICTIONARY"
+    ],
+    "numValues": 10,
+    "pathInSchema": [
+      "ByteArray"
+    ],
+    "rowGroupIndex": 0,
+    "statistics": {
+      "maxValue": "Qnl0ZUFycmF5LTk=",
+      "minValue": "Qnl0ZUFycmF5LTA=",
+      "nullCount": 0
+    },
+    "type": "BYTE_ARRAY",
+    "uncompressedSize": 454
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 199,
+      "type": "DICTIONARY_PAGE",
+      "compressedSize": 63,
+      "uncompressedSize": 150,
+      "numValues": 10,
+      "encoding": "PLAIN"
+    },
+    {
+      "index": 1,
+      "offset": 276,
+      "type": "DATA_PAGE_V2",
+      "compressedSize": 6,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "RLE_DICTIONARY",
+      "numNulls": 0,
+      "numRows": 2,
+      "definitionLevelsByteLength": 0,
+      "repetitionLevelsByteLength": 0,
+      "isCompressed": false,
+      "statistics": {
+        "maxValue": "Qnl0ZUFycmF5LTE=",
+        "minValue": "Qnl0ZUFycmF5LTA=",
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 2,
+      "offset": 334,
+      "type": "DATA_PAGE_V2",
+      "compressedSize": 6,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "RLE_DICTIONARY",
+      "numNulls": 0,
+      "numRows": 2,
+      "definitionLevelsByteLength": 0,
+      "repetitionLevelsByteLength": 0,
+      "isCompressed": false,
+      "statistics": {
+        "maxValue": "Qnl0ZUFycmF5LTM=",
+        "minValue": "Qnl0ZUFycmF5LTI=",
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 3,
+      "offset": 392,
+      "type": "DATA_PAGE_V2",
+      "compressedSize": 6,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "RLE_DICTIONARY",
+      "numNulls": 0,
+      "numRows": 2,
+      "definitionLevelsByteLength": 0,
+      "repetitionLevelsByteLength": 0,
+      "isCompressed": false,
+      "statistics": {
+        "maxValue": "Qnl0ZUFycmF5LTU=",
+        "minValue": "Qnl0ZUFycmF5LTQ=",
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 4,
+      "offset": 450,
+      "type": "DATA_PAGE_V2",
+      "compressedSize": 6,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "RLE_DICTIONARY",
+      "numNulls": 0,
+      "numRows": 2,
+      "definitionLevelsByteLength": 0,
+      "repetitionLevelsByteLength": 0,
+      "isCompressed": false,
+      "statistics": {
+        "maxValue": "Qnl0ZUFycmF5LTc=",
+        "minValue": "Qnl0ZUFycmF5LTY=",
+        "nullCount": 0
+      }
+    },
+    {
+      "index": 5,
+      "offset": 508,
+      "type": "DATA_PAGE_V2",
+      "compressedSize": 6,
+      "uncompressedSize": 6,
+      "numValues": 2,
+      "encoding": "RLE_DICTIONARY",
+      "numNulls": 0,
+      "numRows": 2,
+      "definitionLevelsByteLength": 0,
+      "repetitionLevelsByteLength": 0,
+      "isCompressed": false,
+      "statistics": {
+        "maxValue": "Qnl0ZUFycmF5LTk=",
+        "minValue": "Qnl0ZUFycmF5LTg=",
+        "nullCount": 0
+      }
+    }
+  ]
+}
