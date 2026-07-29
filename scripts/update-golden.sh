@@ -135,6 +135,12 @@ $PT cat --format jsonl "$TESTDATA_DIR/old-style-list.parquet" | format_jsonl > "
 # cat-row-group.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group.jsonl"
 
+# cat-row-group-skip-3.jsonl
+$PT cat --format jsonl --skip 3 --limit 1 "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group-skip-3.jsonl"
+
+# cat-row-group-skip-18.jsonl
+$PT cat --format jsonl --skip 18 --limit 1 "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group-skip-18.jsonl"
+
 # cat-dict-page.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/dict-page.parquet" | format_jsonl > "$GOLDEN_DIR/cat-dict-page.jsonl"
 
