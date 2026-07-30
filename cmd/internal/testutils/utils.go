@@ -62,11 +62,23 @@ func CaptureStdoutStderr(f func()) (string, string) {
 	rErr, wErr, _ := os.Pipe()
 	os.Stdout = wOut
 	os.Stderr = wErr
+
+	stdoutChan := make(chan []byte, 1)
+	stderrChan := make(chan []byte, 1)
+	go func() {
+		stdout, _ := io.ReadAll(rOut)
+		stdoutChan <- stdout
+	}()
+	go func() {
+		stderr, _ := io.ReadAll(rErr)
+		stderrChan <- stderr
+	}()
+
 	f()
 	_ = wOut.Close()
 	_ = wErr.Close()
-	stdout, _ := io.ReadAll(rOut)
-	stderr, _ := io.ReadAll(rErr)
+	stdout := <-stdoutChan
+	stderr := <-stderrChan
 	_ = rOut.Close()
 	_ = rErr.Close()
 
