@@ -52,12 +52,15 @@ func (n goStructNode) asStruct() (string, error) {
 }
 
 func (n goStructNode) asList() (string, error) {
+	if len(n.Children) == 0 {
+		return "", fmt.Errorf("invalid LIST structure in [%s]", n.Name)
+	}
 	var typeStr string
 	var err error
 	if n.Children[0].LogicalType != nil {
 		// LIST => Element (of scalar type)
 		n.Children[0].Name = "Element"
-		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		n.Children[0].RepetitionType = new(parquet.FieldRepetitionType_REQUIRED)
 		typeStr, err = goStructNode{
 			SchemaNode:     *n.Children[0],
 			ForceCamelCase: n.ForceCamelCase,
@@ -67,7 +70,7 @@ func (n goStructNode) asList() (string, error) {
 		n.Children[0].Name = "Element"
 		n.Children[0].Type = nil
 		n.Children[0].ConvertedType = nil
-		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		n.Children[0].RepetitionType = new(parquet.FieldRepetitionType_REQUIRED)
 		typeStr, err = goStructNode{
 			SchemaNode:     *n.Children[0],
 			ForceCamelCase: n.ForceCamelCase,
@@ -80,6 +83,9 @@ func (n goStructNode) asList() (string, error) {
 			SchemaNode:     *elementNode,
 			ForceCamelCase: n.ForceCamelCase,
 		}.String()
+	} else {
+		// element type cannot be determined
+		return "", fmt.Errorf("invalid LIST structure in [%s]", n.Name)
 	}
 	if err != nil {
 		return "", err
