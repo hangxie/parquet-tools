@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,6 +23,13 @@ var (
 	importEncryptionFooterKey = new("MDEyMzQ1Njc4OTAxMjM0NQ==")
 	importEncryptionColumnKey = "MTIzNDU2Nzg5MDEyMzQ1MA=="
 )
+
+const jsonlLineSizeTestSchema = `{
+	"Tag": "name=parquet_go_root, inname=Parquet_go_root",
+	"Fields": [
+		{"Tag": "name=Value, inname=Value, type=BYTE_ARRAY, convertedtype=UTF8"}
+	]
+}`
 
 type mockParquetFileWriter struct {
 	closeFunc func() error
@@ -234,6 +242,151 @@ func TestCmd(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestCmdJSONLLineSize(t *testing.T) {
+	testCases := []struct {
+		name             string
+		values           []string
+		jsonlMaxLineSize int
+		wantRows         int64
+		wantErr          string
+	}{
+		{
+			name:     "line-over-64-kib",
+			values:   []string{"before", strings.Repeat("x", 70*1024), "after"},
+			wantRows: 3,
+		},
+		{
+			name:             "configured-limit-exceeded",
+			values:           []string{"before", strings.Repeat("x", 2*1024), "after"},
+			jsonlMaxLineSize: 1024,
+			wantErr:          "failed to read JSONL source file",
+		},
+		{
+			name:             "invalid-configured-limit",
+			values:           []string{"value"},
+			jsonlMaxLineSize: -1,
+			wantErr:          "JSONL maximum line size must be greater than zero",
+		},
+		{
+			name:             "configured-limit-too-large",
+			values:           []string{"value"},
+			jsonlMaxLineSize: math.MaxInt,
+			wantErr:          "JSONL maximum line size is too large",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			sourcePath := filepath.Join(tempDir, "source.jsonl")
+			schemaPath := filepath.Join(tempDir, "schema.json")
+			parquetPath := filepath.Join(tempDir, "output.parquet")
+
+			var source strings.Builder
+			encoder := json.NewEncoder(&source)
+			for _, value := range tc.values {
+				require.NoError(t, encoder.Encode(map[string]string{"Value": value}))
+			}
+			require.NoError(t, os.WriteFile(sourcePath, []byte(source.String()), 0o600))
+			require.NoError(t, os.WriteFile(schemaPath, []byte(jsonlLineSizeTestSchema), 0o600))
+
+			err := (Cmd{
+				Source:           sourcePath,
+				Format:           "jsonl",
+				Schema:           schemaPath,
+				JSONLMaxLineSize: tc.jsonlMaxLineSize,
+				URI:              parquetPath,
+			}).Run(context.Background())
+			if tc.wantErr != "" {
+				require.ErrorContains(t, err, tc.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			reader, err := pio.NewParquetFileReader(context.Background(), parquetPath, pio.ReadOption{})
+			require.NoError(t, err)
+			require.Equal(t, tc.wantRows, reader.GetNumRows())
+		})
+	}
+}
+
+func TestCmdJSONLMaxLineSizeBoundary(t *testing.T) {
+	const maxLineSize = 1024
+
+	testCases := []struct {
+		name      string
+		lineSize  int
+		delimiter string
+		wantErr   string
+	}{
+		{
+			name:      "LF-at-limit",
+			lineSize:  maxLineSize,
+			delimiter: "\n",
+		},
+		{
+			name:      "CRLF-at-limit",
+			lineSize:  maxLineSize,
+			delimiter: "\r\n",
+		},
+		{
+			name:     "unterminated-at-limit",
+			lineSize: maxLineSize,
+		},
+		{
+			name:      "LF-over-limit",
+			lineSize:  maxLineSize + 1,
+			delimiter: "\n",
+			wantErr:   "exceeds maximum line size",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			sourcePath := filepath.Join(tempDir, "source.jsonl")
+			schemaPath := filepath.Join(tempDir, "schema.json")
+			parquetPath := filepath.Join(tempDir, "output.parquet")
+
+			emptyRecord, err := json.Marshal(map[string]string{"Value": ""})
+			require.NoError(t, err)
+			require.GreaterOrEqual(t, tc.lineSize, len(emptyRecord))
+			record, err := json.Marshal(map[string]string{
+				"Value": strings.Repeat("x", tc.lineSize-len(emptyRecord)),
+			})
+			require.NoError(t, err)
+			require.Len(t, record, tc.lineSize)
+			require.NoError(t, os.WriteFile(
+				sourcePath,
+				append(record, tc.delimiter...),
+				0o600,
+			))
+			require.NoError(t, os.WriteFile(
+				schemaPath,
+				[]byte(jsonlLineSizeTestSchema),
+				0o600,
+			))
+
+			err = (Cmd{
+				Source:           sourcePath,
+				Format:           "jsonl",
+				Schema:           schemaPath,
+				JSONLMaxLineSize: maxLineSize,
+				URI:              parquetPath,
+			}).Run(context.Background())
+			if tc.wantErr != "" {
+				require.ErrorContains(t, err, tc.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			reader, err := pio.NewParquetFileReader(context.Background(), parquetPath, pio.ReadOption{})
+			require.NoError(t, err)
+			require.Equal(t, int64(1), reader.GetNumRows())
+		})
+	}
 }
 
 func TestCmdDefaultDataPageVersionWithDictionaryEncoding(t *testing.T) {

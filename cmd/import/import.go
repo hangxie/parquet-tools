@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -17,14 +18,20 @@ import (
 	pio "github.com/hangxie/parquet-tools/io"
 )
 
+const (
+	defaultJSONLMaxLineSize = 16 * 1024 * 1024
+	maxJSONLDelimiterSize   = 2
+)
+
 // Cmd is a kong command for import
 type Cmd struct {
-	FieldDelimiter string `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
-	Format         string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
-	Schema         string `required:"" short:"m" predictor:"file" help:"Schema file name."`
-	SkipHeader     bool   `help:"Skip first line of CSV files" default:"false"`
-	Source         string `required:"" short:"s" predictor:"file" help:"Source file name."`
-	URI            string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	FieldDelimiter   string `name:"field-delimiter" help:"Delimiter separating nested field path components in field and column parameters" default:"."`
+	Format           string `help:"Source file formats (csv/json/jsonl)." short:"f" enum:"csv,json,jsonl" default:"csv"`
+	JSONLMaxLineSize int    `name:"jsonl-max-line-size" help:"Maximum JSONL record size in bytes, excluding the line delimiter." default:"16777216"`
+	Schema           string `required:"" short:"m" predictor:"file" help:"Schema file name."`
+	SkipHeader       bool   `help:"Skip first line of CSV files" default:"false"`
+	Source           string `required:"" short:"s" predictor:"file" help:"Source file name."`
+	URI              string `arg:"" predictor:"file" help:"URI of Parquet file."`
 	pio.WriteOption
 }
 
@@ -161,6 +168,17 @@ func (c Cmd) importJSON(ctx context.Context) error {
 }
 
 func (c Cmd) importJSONL(ctx context.Context) error {
+	maxLineSize := c.JSONLMaxLineSize
+	if maxLineSize == 0 {
+		maxLineSize = defaultJSONLMaxLineSize
+	}
+	if maxLineSize < 0 {
+		return errors.New("JSONL maximum line size must be greater than zero")
+	}
+	if maxLineSize > math.MaxInt-maxJSONLDelimiterSize {
+		return errors.New("JSONL maximum line size is too large")
+	}
+
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return fmt.Errorf("failed to load schema from [%s]: %w", c.Schema, err)
@@ -179,6 +197,11 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 		_ = jsonlFile.Close()
 	}()
 	scanner := bufio.NewScanner(jsonlFile)
+	scannerBufferSize := maxLineSize + maxJSONLDelimiterSize
+	scanner.Buffer(
+		make([]byte, 0, min(bufio.MaxScanTokenSize, scannerBufferSize)),
+		scannerBufferSize,
+	)
 	scanner.Split(bufio.ScanLines)
 
 	parquetWriter, err := pio.NewJSONWriter(ctx, c.URI, c.WriteOption, string(schemaData))
@@ -188,6 +211,13 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 
 	for scanner.Scan() {
 		jsonData := scanner.Bytes()
+		if len(jsonData) > maxLineSize {
+			return fmt.Errorf(
+				"JSONL line exceeds maximum line size of %d bytes in [%s]",
+				maxLineSize,
+				c.Source,
+			)
+		}
 		if err := json.Unmarshal(jsonData, &dummy); err != nil {
 			return fmt.Errorf("invalid JSON string: %s", string(jsonData))
 		}
@@ -195,6 +225,14 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 		if err := parquetWriter.WriteWithContext(ctx, string(jsonData)); err != nil {
 			return fmt.Errorf("failed to write to parquet file: %w", err)
 		}
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf(
+			"failed to read JSONL source file [%s] with maximum line size %d bytes: %w",
+			c.Source,
+			maxLineSize,
+			err,
+		)
 	}
 	if err := parquetWriter.WriteStopWithContext(ctx); err != nil {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
