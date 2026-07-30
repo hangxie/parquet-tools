@@ -1145,6 +1145,7 @@ $ parquet-tools row-count /tmp/json.parquet
 #### Import from JSONL
 
 JSONL is [line-delimited JSON streaming format](https://en.wikipedia.org/wiki/JSON_streaming#Line-delimited_JSON), use JSONL if you want to load multiple JSON objects into parquet.
+JSONL records may be up to 16 MiB by default, excluding the line delimiter. Use `--jsonl-max-line-size` to set a different limit in bytes; import fails with an error if a record exceeds the limit.
 
 ```bash
 $ parquet-tools import -f jsonl -s testdata/jsonl.source -m testdata/jsonl.schema /tmp/jsonl.parquet
