@@ -2,8 +2,11 @@ package importcmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	parquetSource "github.com/hangxie/parquet-go/v3/source"
@@ -258,6 +261,111 @@ func TestCmdDefaultDataPageVersionWithDictionaryEncoding(t *testing.T) {
 		stdout,
 	)
 	require.Empty(t, stderr)
+}
+
+func TestCmdHighCardinalityDictionaryFallback(t *testing.T) {
+	const (
+		dictionaryLimit = 1024 * 1024
+		valueCount      = 1400
+	)
+
+	tempDir := t.TempDir()
+	sourcePath := filepath.Join(tempDir, "high-cardinality.jsonl")
+	schemaPath := filepath.Join(tempDir, "high-cardinality.schema")
+	parquetPath := filepath.Join(tempDir, "high-cardinality.parquet")
+
+	source, err := os.Create(sourcePath)
+	require.NoError(t, err)
+	encoder := json.NewEncoder(source)
+	values := make([]string, valueCount)
+	suffix := strings.Repeat("x", 1012)
+	for i := range values {
+		values[i] = fmt.Sprintf("%06d-%s", i, suffix)
+		require.NoError(t, encoder.Encode(map[string]string{"Value": values[i]}))
+	}
+	require.NoError(t, source.Close())
+
+	schema := `{
+		"Tag": "name=parquet_go_root, inname=Parquet_go_root",
+		"Fields": [
+			{"Tag": "name=Value, inname=Value, type=BYTE_ARRAY, convertedtype=UTF8, encoding=RLE_DICTIONARY"}
+		]
+	}`
+	require.NoError(t, os.WriteFile(schemaPath, []byte(schema), 0o600))
+
+	require.NoError(t, (Cmd{
+		WriteOption: pio.WriteOption{
+			CompressionCodec: "UNCOMPRESSED",
+			PageSize:         64 * 1024,
+			RowGroupSize:     8 * 1024 * 1024,
+		},
+		Source: sourcePath,
+		Format: "jsonl",
+		Schema: schemaPath,
+		URI:    parquetPath,
+	}).Run(context.Background()))
+
+	catOutputPath := filepath.Join(tempDir, "cat.json")
+	catOutput, err := os.Create(catOutputPath)
+	require.NoError(t, err)
+	originalStdout := os.Stdout
+	var catErr error
+	func() {
+		os.Stdout = catOutput
+		defer func() { os.Stdout = originalStdout }()
+		catErr = importTestCatCmd(parquetPath, pio.ReadOption{}).Run(context.Background())
+	}()
+	require.NoError(t, catErr)
+	require.NoError(t, catOutput.Close())
+
+	catJSON, err := os.ReadFile(catOutputPath)
+	require.NoError(t, err)
+	var gotValues []struct {
+		Value string
+	}
+	require.NoError(t, json.Unmarshal(catJSON, &gotValues))
+	require.Len(t, gotValues, len(values))
+	for i := range values {
+		require.Equal(t, values[i], gotValues[i].Value)
+	}
+
+	inspectStdout, inspectStderr := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, (inspect.Cmd{
+			URI:         parquetPath,
+			RowGroup:    new(0),
+			ColumnChunk: new(0),
+		}).Run(context.Background()))
+	})
+	require.Empty(t, inspectStderr)
+
+	var inspection struct {
+		ColumnChunk struct {
+			Encodings []string `json:"encodings"`
+		} `json:"columnChunk"`
+		Pages []struct {
+			Type             string `json:"type"`
+			Encoding         string `json:"encoding"`
+			UncompressedSize int32  `json:"uncompressedSize"`
+		} `json:"pages"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(inspectStdout), &inspection))
+	require.Contains(t, inspection.ColumnChunk.Encodings, "RLE_DICTIONARY")
+	require.Contains(t, inspection.ColumnChunk.Encodings, "PLAIN")
+
+	var hasDictionaryPage, hasDictionaryDataPage, hasPlainDataPage bool
+	for _, page := range inspection.Pages {
+		switch page.Type {
+		case "DICTIONARY_PAGE":
+			hasDictionaryPage = true
+			require.LessOrEqual(t, page.UncompressedSize, int32(dictionaryLimit))
+		case "DATA_PAGE", "DATA_PAGE_V2":
+			hasDictionaryDataPage = hasDictionaryDataPage || page.Encoding == "RLE_DICTIONARY"
+			hasPlainDataPage = hasPlainDataPage || page.Encoding == "PLAIN"
+		}
+	}
+	require.True(t, hasDictionaryPage)
+	require.True(t, hasDictionaryDataPage)
+	require.True(t, hasPlainDataPage)
 }
 
 func TestCmdEncryption(t *testing.T) {
