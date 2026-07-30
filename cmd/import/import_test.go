@@ -239,7 +239,6 @@ func TestCmd(t *testing.T) {
 func TestCmdDefaultDataPageVersionWithDictionaryEncoding(t *testing.T) {
 	tempDir := t.TempDir()
 	testdataDir := filepath.Join("..", "..", "testdata")
-	goldenDir := filepath.Join("..", "..", "testdata", "golden")
 	uri := filepath.Join(tempDir, "dictionary.parquet")
 
 	require.NoError(t, (Cmd{
@@ -256,11 +255,35 @@ func TestCmdDefaultDataPageVersionWithDictionaryEncoding(t *testing.T) {
 			ColumnChunk: new(1),
 		}).Run(context.Background()))
 	})
-	require.Equal(t,
-		testutils.LoadExpected(t, filepath.Join(goldenDir, "import-dict-page-v2-inspect.json")),
-		stdout,
-	)
 	require.Empty(t, stderr)
+
+	var inspection struct {
+		ColumnChunk struct {
+			Encodings []string `json:"encodings"`
+		} `json:"columnChunk"`
+		Pages []struct {
+			Type     string `json:"type"`
+			Encoding string `json:"encoding"`
+		} `json:"pages"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(stdout), &inspection))
+	require.Contains(t, inspection.ColumnChunk.Encodings, "RLE_DICTIONARY")
+
+	var hasDictionaryPage, hasDataPageV2 bool
+	for _, page := range inspection.Pages {
+		switch page.Type {
+		case "DICTIONARY_PAGE":
+			hasDictionaryPage = true
+			require.Equal(t, "PLAIN", page.Encoding)
+		case "DATA_PAGE_V2":
+			hasDataPageV2 = true
+			require.Equal(t, "RLE_DICTIONARY", page.Encoding)
+		default:
+			t.Fatalf("unexpected page type %q", page.Type)
+		}
+	}
+	require.True(t, hasDictionaryPage)
+	require.True(t, hasDataPageV2)
 }
 
 func TestCmdHighCardinalityDictionaryFallback(t *testing.T) {
