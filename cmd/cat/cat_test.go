@@ -2,15 +2,73 @@ package cat
 
 import (
 	"context"
+	"encoding/binary"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/hangxie/parquet-go/v3/reader"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
 	pio "github.com/hangxie/parquet-tools/io"
 )
+
+func writeTruncatedColumnChunk(t *testing.T) string {
+	t.Helper()
+
+	const sourcePath = "../../testdata/good.parquet"
+	data, err := os.ReadFile(sourcePath)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(data), 8)
+
+	fileReader, err := pio.NewParquetFileReader(context.Background(), sourcePath, pio.ReadOption{})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, fileReader.PFile.Close()) })
+
+	tempDir := t.TempDir()
+	column := fileReader.Footer.RowGroups[0].Columns[0]
+	chunkStart := column.MetaData.DataPageOffset
+	if column.MetaData.DictionaryPageOffset != nil {
+		chunkStart = *column.MetaData.DictionaryPageOffset
+	}
+	chunkEnd := chunkStart + column.MetaData.TotalCompressedSize
+	require.LessOrEqual(t, chunkEnd, int64(len(data)))
+
+	// Store one real three-row chunk in an external file ending immediately after
+	// its page, then make its metadata declare two additional values.
+	chunkPath := filepath.Join(tempDir, "truncated-column-chunk.bin")
+	externalChunk := append(make([]byte, chunkStart), data[chunkStart:chunkEnd]...)
+	require.NoError(t, os.WriteFile(chunkPath, externalChunk, 0o600))
+	column.FilePath = new(chunkPath)
+	column.MetaData.NumValues += 2
+
+	fileReader.Footer.NumRows += 2
+	rowGroup := fileReader.Footer.RowGroups[0]
+	rowGroup.NumRows += 2
+
+	serializer := thrift.NewTSerializer()
+	serializer.Protocol = thrift.NewTCompactProtocolFactoryConf(
+		&thrift.TConfiguration{},
+	).GetProtocol(serializer.Transport)
+	footer, err := serializer.Write(context.Background(), fileReader.Footer)
+	require.NoError(t, err)
+
+	oldFooterSize := int(binary.LittleEndian.Uint32(data[len(data)-8 : len(data)-4]))
+	bodyEnd := len(data) - oldFooterSize - 8
+	require.GreaterOrEqual(t, bodyEnd, 4)
+
+	truncated := append([]byte(nil), data[:bodyEnd]...)
+	truncated = append(truncated, footer...)
+	truncated = binary.LittleEndian.AppendUint32(truncated, uint32(len(footer)))
+	truncated = append(truncated, data[len(data)-4:]...)
+
+	path := filepath.Join(tempDir, "truncated-column-chunk.parquet")
+	require.NoError(t, os.WriteFile(path, truncated, 0o600))
+	return path
+}
 
 var (
 	encFooterKey = new("MDEyMzQ1Njc4OTAxMjM0NQ==")
@@ -299,6 +357,24 @@ func TestCmdEncrypted(t *testing.T) {
 			require.Equal(t, "", stderr)
 		})
 	}
+}
+
+func TestCmdTruncatedColumnChunk(t *testing.T) {
+	cmd := Cmd{
+		ReadPageSize: 10,
+		SampleRatio:  1.0,
+		Format:       "jsonl",
+		URI:          writeTruncatedColumnChunk(t),
+	}
+
+	var runErr error
+	stdout, stderr := testutils.CaptureStdoutStderr(func() {
+		runErr = cmd.Run(context.Background())
+	})
+
+	require.ErrorContains(t, runErr, "truncated column chunk")
+	require.Empty(t, strings.TrimSpace(stdout))
+	require.Empty(t, stderr)
 }
 
 func TestCmdEncoder(t *testing.T) {
