@@ -1,6 +1,8 @@
 {
   "columnChunk": {
     "columnChunkIndex": 1,
+    "columnIndexLength": 39,
+    "columnIndexOffset": 543,
     "compressedSize": 115,
     "compressionCodec": "SNAPPY",
     "dataPageOffset": 175,
@@ -8,16 +10,49 @@
       "PLAIN",
       "RLE"
     ],
+    "fieldId": 0,
+    "fileOffset": 175,
     "logicalType": "logicaltype=UNKNOWN",
     "numValues": 3,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 29,
+          "firstRowIndex": 0,
+          "offset": 175
+        },
+        {
+          "compressedPageSize": 29,
+          "firstRowIndex": 1,
+          "offset": 204
+        },
+        {
+          "compressedPageSize": 57,
+          "firstRowIndex": 2,
+          "offset": 233
+        }
+      ]
+    },
+    "offsetIndexLength": 27,
+    "offsetIndexOffset": 668,
     "pathInSchema": [
       "unknown_col"
     ],
+    "precision": 0,
+    "repetitionType": "OPTIONAL",
     "rowGroupIndex": 0,
+    "scale": 0,
+    "sizeStatistics": {
+      "definitionLevelHistogram": [
+        2,
+        1
+      ]
+    },
     "statistics": {
       "nullCount": 2
     },
     "type": "INT32",
+    "typeLength": 0,
     "uncompressedSize": 109
   },
   "pages": [

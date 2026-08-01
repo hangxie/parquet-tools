@@ -1,17 +1,54 @@
 {
   "columnChunk": {
     "columnChunkIndex": 0,
+    "columnIndex": {
+      "boundaryOrder": "ASCENDING",
+      "maxValues": [
+        true
+      ],
+      "minValues": [
+        false
+      ],
+      "nullCounts": [
+        0
+      ],
+      "nullPages": [
+        false
+      ]
+    },
+    "columnIndexLength": 49,
+    "columnIndexOffset": 3841,
     "compressedSize": 95,
     "compressionCodec": "SNAPPY",
     "dataPageOffset": 4,
+    "encodingStats": [
+      {
+        "count": 1,
+        "encoding": "RLE",
+        "pageType": "DATA_PAGE"
+      }
+    ],
     "encodings": [
       "RLE"
     ],
     "encryptionMode": "FOOTER_KEY",
+    "fileOffset": 0,
     "numValues": 50,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 95,
+          "firstRowIndex": 0,
+          "offset": 4
+        }
+      ]
+    },
+    "offsetIndexLength": 43,
+    "offsetIndexOffset": 4260,
     "pathInSchema": [
       "boolean_field"
     ],
+    "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
     "statistics": {
       "maxValue": true,

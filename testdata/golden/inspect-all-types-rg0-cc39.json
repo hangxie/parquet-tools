@@ -1,6 +1,8 @@
 {
   "columnChunk": {
     "columnChunkIndex": 39,
+    "columnIndexLength": 23,
+    "columnIndexOffset": 18213,
     "compressedSize": 198,
     "compressionCodec": "GZIP",
     "convertedType": "convertedtype=INTERVAL, length=12",
@@ -9,15 +11,42 @@
       "PLAIN",
       "RLE"
     ],
+    "fieldId": 0,
+    "fileOffset": 10320,
     "numValues": 5,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 70,
+          "firstRowIndex": 0,
+          "offset": 10320
+        },
+        {
+          "compressedPageSize": 70,
+          "firstRowIndex": 2,
+          "offset": 10390
+        },
+        {
+          "compressedPageSize": 58,
+          "firstRowIndex": 4,
+          "offset": 10460
+        }
+      ]
+    },
+    "offsetIndexLength": 32,
+    "offsetIndexOffset": 20521,
     "pathInSchema": [
       "Interval"
     ],
+    "precision": 0,
+    "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
+    "scale": 0,
     "statistics": {
       "nullCount": 0
     },
     "type": "FIXED_LEN_BYTE_ARRAY",
+    "typeLength": 12,
     "uncompressedSize": 123
   },
   "pages": [

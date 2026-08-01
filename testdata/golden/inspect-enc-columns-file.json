@@ -1,7 +1,18 @@
 {
   "fileInfo": {
+    "columnOrders": [
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER"
+    ],
     "compressedSize": 3129,
     "createdBy": "parquet-cpp-arrow version 19.0.0-SNAPSHOT",
+    "encryptionAlgorithm": "AES_GCM_V1",
     "footerKeyMetadata": "a2Y=",
     "numRowGroups": 1,
     "totalRows": 50,
@@ -11,10 +22,13 @@
   "rowGroups": [
     {
       "compressedSize": 3129,
+      "fileOffset": 4,
       "index": 0,
       "numColumns": 8,
       "numRows": 50,
+      "ordinal": 0,
       "totalByteSize": 3816,
+      "totalCompressedSize": 3129,
       "uncompressedSize": 3816
     }
   ]
