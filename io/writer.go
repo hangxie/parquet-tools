@@ -43,6 +43,7 @@ type WriteOption struct {
 	EncryptAllColumns          bool     `name:"encrypt-all-columns" group:"Encryption" help:"encrypt every leaf column. Columns not listed in --writer-column-key use --writer-footer-key. Default: false (only columns listed in --writer-column-key are encrypted)." default:"false"`
 	EncryptionAlgorithm        string   `name:"encryption-algorithm" group:"Encryption" help:"encryption algorithm used when --writer-footer-key is set. AES-GCM-V1 authenticates every module; AES-GCM-CTR-V1 uses AES-CTR for page bodies (lower overhead, page body tampering not detected). Has no effect without --writer-footer-key." enum:"${writer_encryption_algorithms}" default:"AES-GCM-V1"`
 	FieldDelimiter             string   `kong:"-"`
+	MaxDictionarySize          int64    `name:"max-dictionary-size" help:"Maximum encoded dictionary value bytes per column and row group; 0 uses the writer default." default:"0"`
 	PageSize                   int64    `help:"Page size in bytes." default:"1048576"`
 	PlaintextFooter            bool     `name:"plaintext-footer" group:"Encryption" help:"write a PAR1 file with a plaintext footer signed by --writer-footer-key instead of an encrypted PARE footer. Without --encrypt-all-columns or --writer-column-key the footer is signed for integrity only (columns remain plaintext)." default:"false"`
 	RowGroupSize               int64    `help:"Row group size in bytes." default:"134217728"`
@@ -141,6 +142,12 @@ func writerOpts(option WriteOption, columnKeys []writerColumnKey) ([]writer.Writ
 	}
 	if option.BinaryMinMaxTruncateLength > 0 {
 		opts = append(opts, writer.WithBinaryMinMaxTruncateLength(option.BinaryMinMaxTruncateLength))
+	}
+	if option.MaxDictionarySize < 0 {
+		return nil, fmt.Errorf("maximum dictionary size must not be negative: %d", option.MaxDictionarySize)
+	}
+	if option.MaxDictionarySize > 0 {
+		opts = append(opts, writer.WithMaxDictionarySize(option.MaxDictionarySize))
 	}
 	if option.CompressionCodec != "" {
 		codec, err := compressionCodec(option.CompressionCodec)
