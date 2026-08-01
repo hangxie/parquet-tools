@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/hangxie/parquet-go/v3/parquet"
 	parquetschema "github.com/hangxie/parquet-go/v3/schema"
 	"github.com/stretchr/testify/require"
 )
@@ -506,6 +507,40 @@ func TestBinaryMinMaxTruncateLengthRejectsNegativeValue(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, pw)
 	require.Contains(t, err.Error(), "binary min/max truncate length must not be negative")
+}
+
+func TestMaxDictionarySizeFallsBackToPlainEncoding(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "dictionary.parquet")
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=BYTE_ARRAY, convertedtype=UTF8, encoding=RLE_DICTIONARY"}]}`
+	pw, err := NewJSONWriter(ctx, path, WriteOption{
+		CompressionCodec:  "UNCOMPRESSED",
+		DataPageVersion:   2,
+		MaxDictionarySize: 10,
+		PageSize:          5,
+	}, schema)
+	require.NoError(t, err)
+	for _, value := range []string{"alpha", "bravo", "charlie", "delta"} {
+		require.NoError(t, pw.WriteWithContext(ctx, fmt.Sprintf(`{"value":%q}`, value)))
+	}
+	require.NoError(t, pw.WriteStopWithContext(ctx))
+	require.NoError(t, pw.PFile.Close())
+
+	pr, err := NewParquetFileReader(ctx, path, ReadOption{})
+	require.NoError(t, err)
+	defer func() { require.NoError(t, pr.PFile.Close()) }()
+	encodings := pr.Footer.RowGroups[0].Columns[0].MetaData.Encodings
+	require.Contains(t, encodings, parquet.Encoding_RLE_DICTIONARY)
+	require.Contains(t, encodings, parquet.Encoding_PLAIN)
+}
+
+func TestMaxDictionarySizeRejectsNegativeValue(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "dictionary.parquet")
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=BYTE_ARRAY"}]}`
+	pw, err := NewJSONWriter(context.Background(), path, WriteOption{MaxDictionarySize: -1}, schema)
+	require.Error(t, err)
+	require.Nil(t, pw)
+	require.Contains(t, err.Error(), "maximum dictionary size must not be negative")
 }
 
 func TestNewGenericWriter(t *testing.T) {

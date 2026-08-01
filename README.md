@@ -785,6 +785,16 @@ Truncated bounds remain safe for filtering and are marked as inexact in Parquet 
 $ parquet-tools transcode -s input.parquet --binary-min-max-truncate-length 64 output.parquet
 ```
 
+**Maximum Dictionary Size (`--max-dictionary-size`):**
+
+Limits encoded dictionary value bytes per column and row group. The default value `0` uses the writer default of 1 MiB. When a dictionary reaches the limit, dictionary-encoded columns fall back to plain encoding for subsequent values in that row group.
+
+The option is available on `import`, `merge`, `retype`, `split`, and `transcode`.
+
+```bash
+$ parquet-tools transcode -s input.parquet --max-dictionary-size 4194304 output.parquet
+```
+
 **Page Size (`--page-size`):**
 
 Controls the target size of data pages in bytes. Smaller pages allow more granular access but increase metadata overhead. Default is `1048576` (1 MB).
