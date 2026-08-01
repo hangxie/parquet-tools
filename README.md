@@ -773,7 +773,17 @@ Data page version 2 is preferred as it offers better compression efficiency and 
 
 #### Writer Tuning Options
 
-These options allow fine-grained control over how Parquet files are written. They are available for `import` and `transcode` commands.
+These options allow fine-grained control over how Parquet files are written.
+
+**Binary Min/Max Bound Length (`--binary-min-max-truncate-length`):**
+
+Sets a target byte limit for min/max statistics and column-index bounds on unannotated binary columns and STRING/UTF8 columns. The default value `0` leaves bounds untruncated. STRING/UTF8 bounds may exceed the target when a shorter bound would not be valid UTF-8; other annotated binary types are not truncated.
+
+Truncated bounds remain safe for filtering and are marked as inexact in Parquet metadata. The option is available on `import`, `merge`, `retype`, `split`, and `transcode`.
+
+```bash
+$ parquet-tools transcode -s input.parquet --binary-min-max-truncate-length 64 output.parquet
+```
 
 **Page Size (`--page-size`):**
 
