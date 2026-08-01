@@ -1,4 +1,6 @@
 {
+  "Version": 1,
+  "NumRows": 20,
   "NumRowGroups": 1,
   "RowGroups": [
     {
@@ -10,8 +12,13 @@
             "Name"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BIT_PACKED",
             "PLAIN",
@@ -25,6 +32,13 @@
           "NullCount": 0,
           "MaxValue": "Student Name_9",
           "MinValue": "Student Name",
+          "FileOffset": 4,
+          "DataPageOffset": 90,
+          "DictionaryPageOffset": 4,
+          "OffsetIndexOffset": 1892,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 1544,
+          "ColumnIndexLength": 128,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -32,6 +46,11 @@
             "Age"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BIT_PACKED",
             "PLAIN",
@@ -40,6 +59,12 @@
           "CompressedSize": 266,
           "UncompressedSize": 260,
           "NumValues": 20,
+          "FileOffset": 522,
+          "DataPageOffset": 522,
+          "OffsetIndexOffset": 1927,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 1672,
+          "ColumnIndexLength": 53,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -47,6 +72,11 @@
             "Id"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BIT_PACKED",
             "PLAIN",
@@ -55,6 +85,12 @@
           "CompressedSize": 346,
           "UncompressedSize": 404,
           "NumValues": 20,
+          "FileOffset": 788,
+          "DataPageOffset": 788,
+          "OffsetIndexOffset": 1962,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 1725,
+          "ColumnIndexLength": 85,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -62,6 +98,11 @@
             "Weight"
           ],
           "Type": "FLOAT",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BIT_PACKED",
             "PLAIN",
@@ -70,6 +111,12 @@
           "CompressedSize": 266,
           "UncompressedSize": 260,
           "NumValues": 20,
+          "FileOffset": 1134,
+          "DataPageOffset": 1134,
+          "OffsetIndexOffset": 1997,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 1810,
+          "ColumnIndexLength": 53,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -77,6 +124,11 @@
             "Sex"
           ],
           "Type": "BOOLEAN",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BIT_PACKED",
             "PLAIN",
@@ -85,6 +137,12 @@
           "CompressedSize": 144,
           "UncompressedSize": 136,
           "NumValues": 20,
+          "FileOffset": 1400,
+          "DataPageOffset": 1400,
+          "OffsetIndexOffset": 2032,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 1863,
+          "ColumnIndexLength": 29,
           "CompressionCodec": "SNAPPY"
         }
       ]

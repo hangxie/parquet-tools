@@ -1,5 +1,8 @@
 {
+  "Version": 2,
+  "NumRows": 3,
   "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
   "RowGroups": [
     {
       "NumRows": 3,
@@ -10,8 +13,13 @@
             "shoe_brand"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -22,6 +30,12 @@
           "NullCount": 0,
           "MaxValue": "steph_curry",
           "MinValue": "fila",
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 734,
+          "OffsetIndexLength": 29,
+          "ColumnIndexOffset": 592,
+          "ColumnIndexLength": 61,
           "CompressionCodec": "GZIP"
         },
         {
@@ -29,8 +43,13 @@
             "shoe_name"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -41,6 +60,12 @@
           "NullCount": 0,
           "MaxValue": "grant_hill_2",
           "MinValue": "air_griffey",
+          "FileOffset": 273,
+          "DataPageOffset": 273,
+          "OffsetIndexOffset": 763,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 653,
+          "ColumnIndexLength": 81,
           "CompressionCodec": "GZIP"
         }
       ]

@@ -1,5 +1,8 @@
 {
+  "Version": 2,
+  "NumRows": 10,
   "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
   "RowGroups": [
     {
       "NumRows": 10,
@@ -10,7 +13,12 @@
             "Geometry"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "LogicalType": "logicaltype=GEOMETRY",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -27,6 +35,29 @@
             -3,
             -8
           ],
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 867,
+          "OffsetIndexLength": 37,
+          "ColumnIndexOffset": 819,
+          "ColumnIndexLength": 27,
+          "GeospatialStatistics": {
+            "BoundingBox": {
+              "XMin": -3,
+              "XMax": 16,
+              "YMin": -8,
+              "YMax": 11
+            },
+            "GeospatialTypes": [
+              2,
+              3,
+              6,
+              4,
+              5,
+              7,
+              1
+            ]
+          },
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -34,7 +65,12 @@
             "Geography"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "LogicalType": "logicaltype=GEOGRAPHY",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -42,6 +78,12 @@
           "CompressedSize": 393,
           "UncompressedSize": 800,
           "NumValues": 10,
+          "FileOffset": 426,
+          "DataPageOffset": 426,
+          "OffsetIndexOffset": 904,
+          "OffsetIndexLength": 38,
+          "ColumnIndexOffset": 846,
+          "ColumnIndexLength": 21,
           "CompressionCodec": "SNAPPY"
         }
       ]

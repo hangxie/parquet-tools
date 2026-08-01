@@ -1,5 +1,8 @@
 {
+  "Version": 2,
+  "NumRows": 5,
   "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
   "RowGroups": [
     {
       "NumRows": 5,
@@ -10,6 +13,11 @@
             "Bool"
           ],
           "Type": "BOOLEAN",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "RLE"
           ],
@@ -19,6 +27,12 @@
           "NullCount": 0,
           "MaxValue": true,
           "MinValue": false,
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 19359,
+          "OffsetIndexLength": 25,
+          "ColumnIndexOffset": 15554,
+          "ColumnIndexLength": 29,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -26,6 +40,11 @@
             "Int32"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -37,6 +56,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 125,
+          "DataPageOffset": 160,
+          "DictionaryPageOffset": 125,
+          "OffsetIndexOffset": 19384,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 15583,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -44,6 +70,11 @@
             "Int64"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -55,6 +86,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 329,
+          "DataPageOffset": 408,
+          "DictionaryPageOffset": 329,
+          "OffsetIndexOffset": 19411,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 15634,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "GZIP"
         },
         {
@@ -62,6 +100,11 @@
             "Int96"
           ],
           "Type": "INT96",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -72,6 +115,12 @@
           "NullCount": 0,
           "MaxValue": "2022-01-01T04:04:04.004004000Z",
           "MinValue": "2022-01-01T00:00:00.000000000Z",
+          "FileOffset": 694,
+          "DataPageOffset": 694,
+          "OffsetIndexOffset": 19441,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 15709,
+          "ColumnIndexLength": 95,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -79,6 +128,11 @@
             "Float"
           ],
           "Type": "FLOAT",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BYTE_STREAM_SPLIT",
             "RLE"
@@ -89,6 +143,12 @@
           "NullCount": 0,
           "MaxValue": 2,
           "MinValue": 0,
+          "FileOffset": 987,
+          "DataPageOffset": 987,
+          "OffsetIndexOffset": 19471,
+          "OffsetIndexLength": 29,
+          "ColumnIndexOffset": 15804,
+          "ColumnIndexLength": 47,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -96,8 +156,13 @@
             "Float16Val"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 2,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "length=2",
           "LogicalType": "logicaltype=FLOAT16",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -108,6 +173,12 @@
           "NullCount": 0,
           "MaxValue": 2,
           "MinValue": 0,
+          "FileOffset": 1181,
+          "DataPageOffset": 1181,
+          "OffsetIndexOffset": 19500,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 15851,
+          "ColumnIndexLength": 35,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -115,6 +186,11 @@
             "Double"
           ],
           "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "BYTE_STREAM_SPLIT",
             "RLE"
@@ -125,6 +201,12 @@
           "NullCount": 0,
           "MaxValue": 2,
           "MinValue": 0,
+          "FileOffset": 1314,
+          "DataPageOffset": 1314,
+          "OffsetIndexOffset": 19527,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 15886,
+          "ColumnIndexLength": 71,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -132,6 +214,11 @@
             "ByteArray"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -143,6 +230,13 @@
           "NullCount": 0,
           "MaxValue": "Qnl0ZUFycmF5LTQ=",
           "MinValue": "Qnl0ZUFycmF5LTA=",
+          "FileOffset": 1537,
+          "DataPageOffset": 1588,
+          "DictionaryPageOffset": 1537,
+          "OffsetIndexOffset": 19557,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 15957,
+          "ColumnIndexLength": 93,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -150,8 +244,13 @@
             "Enum"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=ENUM",
           "LogicalType": "logicaltype=ENUM",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -163,6 +262,13 @@
           "NullCount": 0,
           "MaxValue": "Enum-4",
           "MinValue": "Enum-0",
+          "FileOffset": 1841,
+          "DataPageOffset": 1930,
+          "DictionaryPageOffset": 1841,
+          "OffsetIndexOffset": 19587,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16050,
+          "ColumnIndexLength": 63,
           "CompressionCodec": "GZIP"
         },
         {
@@ -170,8 +276,13 @@
             "Uuid"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 16,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "length=16",
           "LogicalType": "logicaltype=UUID",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -182,6 +293,12 @@
           "NullCount": 0,
           "MaxValue": "04040404-0404-0404-0404-040404040404",
           "MinValue": "00000000-0000-0000-0000-000000000000",
+          "FileOffset": 2192,
+          "DataPageOffset": 2192,
+          "OffsetIndexOffset": 19617,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16113,
+          "ColumnIndexLength": 119,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -189,8 +306,13 @@
             "Json"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=JSON",
           "LogicalType": "logicaltype=JSON",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -202,6 +324,13 @@
           "NullCount": 0,
           "MaxValue": "{\"4\":4}",
           "MinValue": "{\"0\":0}",
+          "FileOffset": 2523,
+          "DataPageOffset": 2588,
+          "DictionaryPageOffset": 2523,
+          "OffsetIndexOffset": 19647,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16232,
+          "ColumnIndexLength": 69,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -209,8 +338,13 @@
             "Bson"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=BSON",
           "LogicalType": "logicaltype=BSON",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -226,6 +360,13 @@
           "MinValue": {
             "0": 0
           },
+          "FileOffset": 2826,
+          "DataPageOffset": 2874,
+          "DictionaryPageOffset": 2826,
+          "OffsetIndexOffset": 19677,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16301,
+          "ColumnIndexLength": 99,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -233,8 +374,13 @@
             "Json2"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=JSON",
           "LogicalType": "logicaltype=JSON",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -246,6 +392,13 @@
           "NullCount": 0,
           "MaxValue": "{\"4\":4}",
           "MinValue": "{\"0\":0}",
+          "FileOffset": 3145,
+          "DataPageOffset": 3213,
+          "DictionaryPageOffset": 3145,
+          "OffsetIndexOffset": 19707,
+          "OffsetIndexLength": 29,
+          "ColumnIndexOffset": 16400,
+          "ColumnIndexLength": 69,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -253,8 +406,13 @@
             "Bson2"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=BSON",
           "LogicalType": "logicaltype=BSON",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -270,6 +428,13 @@
           "MinValue": {
             "0": 0
           },
+          "FileOffset": 3412,
+          "DataPageOffset": 3471,
+          "DictionaryPageOffset": 3412,
+          "OffsetIndexOffset": 19736,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16469,
+          "ColumnIndexLength": 99,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -278,6 +443,11 @@
             "metadata"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -287,6 +457,13 @@
           "UncompressedSize": 234,
           "NumValues": 5,
           "NullCount": 0,
+          "FileOffset": 3736,
+          "DataPageOffset": 3820,
+          "DictionaryPageOffset": 3736,
+          "OffsetIndexOffset": 19766,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16568,
+          "ColumnIndexLength": 57,
           "CompressionCodec": "GZIP"
         },
         {
@@ -295,6 +472,11 @@
             "value"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -304,6 +486,13 @@
           "UncompressedSize": 387,
           "NumValues": 5,
           "NullCount": 0,
+          "FileOffset": 4070,
+          "DataPageOffset": 4142,
+          "DictionaryPageOffset": 4070,
+          "OffsetIndexOffset": 19796,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16625,
+          "ColumnIndexLength": 111,
           "CompressionCodec": "GZIP"
         },
         {
@@ -311,7 +500,12 @@
             "FixedLenByteArray"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 10,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "length=10",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -323,6 +517,13 @@
           "NullCount": 0,
           "MaxValue": "Rml4ZWQtMDAwNA==",
           "MinValue": "Rml4ZWQtMDAwMA==",
+          "FileOffset": 4500,
+          "DataPageOffset": 4548,
+          "DictionaryPageOffset": 4500,
+          "OffsetIndexOffset": 19826,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16736,
+          "ColumnIndexLength": 87,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -330,8 +531,13 @@
             "Utf8"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -343,6 +549,13 @@
           "NullCount": 0,
           "MaxValue": "UTF8-4",
           "MinValue": "UTF8-0",
+          "FileOffset": 4786,
+          "DataPageOffset": 4837,
+          "DictionaryPageOffset": 4786,
+          "OffsetIndexOffset": 19856,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16823,
+          "ColumnIndexLength": 63,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -350,8 +563,13 @@
             "Utf8_2"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -362,6 +580,12 @@
           "NullCount": 0,
           "MaxValue": "UTF8_2-4",
           "MinValue": "UTF8_2-0",
+          "FileOffset": 5063,
+          "DataPageOffset": 5063,
+          "OffsetIndexOffset": 19886,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 16886,
+          "ColumnIndexLength": 71,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -369,8 +593,13 @@
             "Int_8"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=INT_8",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=true",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -382,6 +611,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 5315,
+          "DataPageOffset": 5348,
+          "DictionaryPageOffset": 5315,
+          "OffsetIndexOffset": 19916,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 16957,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -389,8 +625,13 @@
             "Int_16"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=INT_16",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=true",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -402,6 +643,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 5511,
+          "DataPageOffset": 5546,
+          "DictionaryPageOffset": 5511,
+          "OffsetIndexOffset": 19943,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 17008,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -409,8 +657,13 @@
             "Int_32"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=INT_32",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=true",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -422,6 +675,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 5715,
+          "DataPageOffset": 5773,
+          "DictionaryPageOffset": 5715,
+          "OffsetIndexOffset": 19970,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 17059,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "GZIP"
         },
         {
@@ -429,8 +689,13 @@
             "Int_64"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=INT_64",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=true",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -442,6 +707,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 6011,
+          "DataPageOffset": 6050,
+          "DictionaryPageOffset": 6011,
+          "OffsetIndexOffset": 20000,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 17110,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -449,8 +721,13 @@
             "Uint_8"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UINT_8",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=8, logicaltype.issigned=false",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -462,6 +739,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 6264,
+          "DataPageOffset": 6310,
+          "DictionaryPageOffset": 6264,
+          "OffsetIndexOffset": 20030,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 17185,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -469,8 +753,13 @@
             "Uint_16"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UINT_16",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=16, logicaltype.issigned=false",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -482,6 +771,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 6512,
+          "DataPageOffset": 6541,
+          "DictionaryPageOffset": 6512,
+          "OffsetIndexOffset": 20060,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 17236,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -489,8 +785,13 @@
             "Uint_32"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UINT_32",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=32, logicaltype.issigned=false",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -501,6 +802,12 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 6716,
+          "DataPageOffset": 6716,
+          "OffsetIndexOffset": 20087,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 17287,
+          "ColumnIndexLength": 47,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -508,8 +815,13 @@
             "Uint_64"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UINT_64",
           "LogicalType": "logicaltype=INTEGER, logicaltype.bitwidth=64, logicaltype.issigned=false",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -521,6 +833,13 @@
           "NullCount": 0,
           "MaxValue": 4,
           "MinValue": 0,
+          "FileOffset": 6871,
+          "DataPageOffset": 6909,
+          "DictionaryPageOffset": 6871,
+          "OffsetIndexOffset": 20114,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 17334,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -528,8 +847,13 @@
             "Date"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DATE",
           "LogicalType": "logicaltype=DATE",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -541,6 +865,13 @@
           "NullCount": 0,
           "MaxValue": "1970-01-01",
           "MinValue": "1959-01-19",
+          "FileOffset": 7126,
+          "DataPageOffset": 7184,
+          "DictionaryPageOffset": 7126,
+          "OffsetIndexOffset": 20144,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 17409,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "GZIP"
         },
         {
@@ -548,8 +879,13 @@
             "Date2"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DATE",
           "LogicalType": "logicaltype=DATE",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -561,6 +897,13 @@
           "NullCount": 0,
           "MaxValue": "1980-12-14",
           "MinValue": "1970-01-01",
+          "FileOffset": 7422,
+          "DataPageOffset": 7457,
+          "DictionaryPageOffset": 7422,
+          "OffsetIndexOffset": 20174,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 17460,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -568,8 +911,13 @@
             "TimeMillis"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIME_MILLIS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -581,6 +929,13 @@
           "NullCount": 0,
           "MaxValue": "00:00:04.004",
           "MinValue": "00:00:00.000",
+          "FileOffset": 7623,
+          "DataPageOffset": 7669,
+          "DictionaryPageOffset": 7623,
+          "OffsetIndexOffset": 20201,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 17511,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -588,8 +943,13 @@
             "TimeMillis2"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIME_MILLIS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -601,6 +961,13 @@
           "NullCount": 0,
           "MaxValue": "00:00:04.004",
           "MinValue": "00:00:00.000",
+          "FileOffset": 7871,
+          "DataPageOffset": 7908,
+          "DictionaryPageOffset": 7871,
+          "OffsetIndexOffset": 20231,
+          "OffsetIndexLength": 27,
+          "ColumnIndexOffset": 17562,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -608,8 +975,13 @@
             "TimeMicros"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIME_MICROS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -621,6 +993,13 @@
           "NullCount": 0,
           "MaxValue": "00:00:04.000004",
           "MinValue": "00:00:00.000000",
+          "FileOffset": 8083,
+          "DataPageOffset": 8136,
+          "DictionaryPageOffset": 8083,
+          "OffsetIndexOffset": 20258,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 17613,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -628,8 +1007,13 @@
             "TimeMicros2"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIME_MICROS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -641,6 +1025,13 @@
           "NullCount": 0,
           "MaxValue": "00:00:04.000004",
           "MinValue": "00:00:00.000000",
+          "FileOffset": 8347,
+          "DataPageOffset": 8391,
+          "DictionaryPageOffset": 8347,
+          "OffsetIndexOffset": 20290,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 17688,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -648,7 +1039,12 @@
             "TimeNanos2"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -660,6 +1056,13 @@
           "NullCount": 0,
           "MaxValue": "00:00:04.000000004",
           "MinValue": "00:00:00.000000000",
+          "FileOffset": 8608,
+          "DataPageOffset": 8687,
+          "DictionaryPageOffset": 8608,
+          "OffsetIndexOffset": 20323,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 17763,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "GZIP"
         },
         {
@@ -667,8 +1070,13 @@
             "TimestampMillis"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIMESTAMP_MILLIS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MILLIS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -680,6 +1088,13 @@
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.004Z",
           "MinValue": "2022-01-01T00:00:00.000Z",
+          "FileOffset": 8973,
+          "DataPageOffset": 9015,
+          "DictionaryPageOffset": 8973,
+          "OffsetIndexOffset": 20356,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 17838,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -687,8 +1102,13 @@
             "TimestampMillis2"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIMESTAMP_MILLIS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -700,6 +1120,13 @@
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.004Z",
           "MinValue": "2022-01-01T00:00:00.000Z",
+          "FileOffset": 9229,
+          "DataPageOffset": 9284,
+          "DictionaryPageOffset": 9229,
+          "OffsetIndexOffset": 20389,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 17913,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -707,8 +1134,13 @@
             "TimestampMicros"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIMESTAMP_MICROS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -720,6 +1152,13 @@
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.000004Z",
           "MinValue": "2022-01-01T00:00:00.000000Z",
+          "FileOffset": 9534,
+          "DataPageOffset": 9573,
+          "DictionaryPageOffset": 9534,
+          "OffsetIndexOffset": 20422,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 17988,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -727,8 +1166,13 @@
             "TimestampMicros2"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIMESTAMP_MICROS",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -740,6 +1184,13 @@
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.000004Z",
           "MinValue": "2022-01-01T00:00:00.000000Z",
+          "FileOffset": 9796,
+          "DataPageOffset": 9849,
+          "DictionaryPageOffset": 9796,
+          "OffsetIndexOffset": 20455,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18063,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -747,7 +1198,12 @@
             "TimestampNanos2"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "LogicalType": "logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -759,6 +1215,13 @@
           "NullCount": 0,
           "MaxValue": "2022-01-01T00:00:00.000000004Z",
           "MinValue": "2022-01-01T00:00:00.000000000Z",
+          "FileOffset": 10060,
+          "DataPageOffset": 10103,
+          "DictionaryPageOffset": 10060,
+          "OffsetIndexOffset": 20488,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18138,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -766,7 +1229,12 @@
             "Interval"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 12,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=INTERVAL, length=12",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -775,6 +1243,12 @@
           "UncompressedSize": 123,
           "NumValues": 5,
           "NullCount": 0,
+          "FileOffset": 10320,
+          "DataPageOffset": 10320,
+          "OffsetIndexOffset": 20521,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 18213,
+          "ColumnIndexLength": 23,
           "CompressionCodec": "GZIP"
         },
         {
@@ -782,8 +1256,13 @@
             "Decimal1"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 9,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -795,6 +1274,13 @@
           "NullCount": 0,
           "MaxValue": 44.44,
           "MinValue": 0,
+          "FileOffset": 10518,
+          "DataPageOffset": 10553,
+          "DictionaryPageOffset": 10518,
+          "OffsetIndexOffset": 20553,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 18236,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -802,8 +1288,13 @@
             "Decimal2"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=18",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=18, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 18,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -815,6 +1306,13 @@
           "NullCount": 0,
           "MaxValue": 44.44,
           "MinValue": 0,
+          "FileOffset": 10719,
+          "DataPageOffset": 10770,
+          "DictionaryPageOffset": 10719,
+          "OffsetIndexOffset": 20583,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18287,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -822,8 +1320,13 @@
             "Decimal3"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 12,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 10,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -834,6 +1337,12 @@
           "NullCount": 0,
           "MaxValue": 0.44,
           "MinValue": 0,
+          "FileOffset": 11020,
+          "DataPageOffset": 11020,
+          "OffsetIndexOffset": 20616,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18362,
+          "ColumnIndexLength": 95,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -841,8 +1350,13 @@
             "Decimal4"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=20",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=20, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 20,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -854,6 +1368,13 @@
           "NullCount": 0,
           "MaxValue": 0.44,
           "MinValue": 0,
+          "FileOffset": 11286,
+          "DataPageOffset": 11314,
+          "DictionaryPageOffset": 11286,
+          "OffsetIndexOffset": 20649,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 18457,
+          "ColumnIndexLength": 33,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -861,8 +1382,13 @@
             "decimal5"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=9",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=9, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 9,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -874,6 +1400,13 @@
           "NullCount": 0,
           "MaxValue": 44.44,
           "MinValue": 0,
+          "FileOffset": 11436,
+          "DataPageOffset": 11471,
+          "DictionaryPageOffset": 11436,
+          "OffsetIndexOffset": 20679,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 18490,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -881,8 +1414,13 @@
             "DecimalPointer"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 12,
+          "RepetitionType": "OPTIONAL",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 10,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -894,6 +1432,13 @@
           "NullCount": 3,
           "MaxValue": 0.03,
           "MinValue": 0,
+          "FileOffset": 11640,
+          "DataPageOffset": 11702,
+          "DictionaryPageOffset": 11640,
+          "OffsetIndexOffset": 20709,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 18541,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "GZIP"
         },
         {
@@ -903,8 +1448,13 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -916,6 +1466,13 @@
           "NullCount": 1,
           "MaxValue": "Composite-3",
           "MinValue": "Composite-0",
+          "FileOffset": 11987,
+          "DataPageOffset": 12036,
+          "DictionaryPageOffset": 11987,
+          "OffsetIndexOffset": 20741,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18616,
+          "ColumnIndexLength": 93,
           "CompressionCodec": "LZ4_RAW"
         },
         {
@@ -925,6 +1482,11 @@
             "value"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -936,6 +1498,13 @@
           "NullCount": 1,
           "MaxValue": 3,
           "MinValue": 0,
+          "FileOffset": 12357,
+          "DataPageOffset": 12399,
+          "DictionaryPageOffset": 12357,
+          "OffsetIndexOffset": 20774,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18709,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -945,8 +1514,13 @@
             "element"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -957,6 +1531,12 @@
           "NullCount": 1,
           "MaxValue": "Composite-3",
           "MinValue": "Composite-0",
+          "FileOffset": 12672,
+          "DataPageOffset": 12672,
+          "OffsetIndexOffset": 20807,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18760,
+          "ColumnIndexLength": 89,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -964,6 +1544,11 @@
             "Repeated"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REPEATED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -975,6 +1560,13 @@
           "NullCount": 1,
           "MaxValue": 3,
           "MinValue": 0,
+          "FileOffset": 13051,
+          "DataPageOffset": 13083,
+          "DictionaryPageOffset": 13051,
+          "OffsetIndexOffset": 20840,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18849,
+          "ColumnIndexLength": 51,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -984,8 +1576,13 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -996,6 +1593,12 @@
           "NullCount": 1,
           "MaxValue": "Composite-3",
           "MinValue": "Composite-0",
+          "FileOffset": 13299,
+          "DataPageOffset": 13299,
+          "OffsetIndexOffset": 20873,
+          "OffsetIndexLength": 33,
+          "ColumnIndexOffset": 18900,
+          "ColumnIndexLength": 89,
           "CompressionCodec": "UNCOMPRESSED"
         },
         {
@@ -1008,8 +1611,13 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -1021,6 +1629,13 @@
           "NullCount": 5,
           "MaxValue": "Embedded-2",
           "MinValue": "Embedded-0",
+          "FileOffset": 13718,
+          "DataPageOffset": 13757,
+          "DictionaryPageOffset": 13718,
+          "OffsetIndexOffset": 20906,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 18989,
+          "ColumnIndexLength": 67,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -1033,6 +1648,11 @@
             "value"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -1044,6 +1664,13 @@
           "NullCount": 5,
           "MaxValue": 2,
           "MinValue": 0,
+          "FileOffset": 14024,
+          "DataPageOffset": 14074,
+          "DictionaryPageOffset": 14024,
+          "OffsetIndexOffset": 20938,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 19056,
+          "ColumnIndexLength": 43,
           "CompressionCodec": "GZIP"
         },
         {
@@ -1056,8 +1683,13 @@
             "element"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 10,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -1069,6 +1701,13 @@
           "NullCount": 5,
           "MaxValue": 0,
           "MinValue": 0,
+          "FileOffset": 14364,
+          "DataPageOffset": 14388,
+          "DictionaryPageOffset": 14364,
+          "OffsetIndexOffset": 20970,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 19099,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "BROTLI"
         },
         {
@@ -1081,8 +1720,13 @@
             "key"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -1094,6 +1738,13 @@
           "NullCount": 5,
           "MaxValue": "Embedded-2",
           "MinValue": "Embedded-0",
+          "FileOffset": 14641,
+          "DataPageOffset": 14680,
+          "DictionaryPageOffset": 14641,
+          "OffsetIndexOffset": 21002,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 19174,
+          "ColumnIndexLength": 67,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -1106,6 +1757,11 @@
             "value"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -1117,6 +1773,13 @@
           "NullCount": 5,
           "MaxValue": 2,
           "MinValue": 0,
+          "FileOffset": 14939,
+          "DataPageOffset": 14989,
+          "DictionaryPageOffset": 14939,
+          "OffsetIndexOffset": 21034,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 19241,
+          "ColumnIndexLength": 43,
           "CompressionCodec": "GZIP"
         },
         {
@@ -1129,8 +1792,13 @@
             "element"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=DECIMAL, scale=2, precision=10",
           "LogicalType": "logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2",
+          "Scale": 2,
+          "Precision": 10,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -1142,6 +1810,13 @@
           "NullCount": 5,
           "MaxValue": 0,
           "MinValue": 0,
+          "FileOffset": 15282,
+          "DataPageOffset": 15306,
+          "DictionaryPageOffset": 15282,
+          "OffsetIndexOffset": 21066,
+          "OffsetIndexLength": 32,
+          "ColumnIndexOffset": 19284,
+          "ColumnIndexLength": 75,
           "CompressionCodec": "BROTLI"
         }
       ]

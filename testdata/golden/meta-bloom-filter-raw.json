@@ -1,5 +1,8 @@
 {
+  "Version": 2,
+  "NumRows": 10,
   "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
   "RowGroups": [
     {
       "NumRows": 10,
@@ -10,6 +13,11 @@
             "ID"
           ],
           "Type": "INT64",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -20,8 +28,15 @@
           "NullCount": 0,
           "MaxValue": 9,
           "MinValue": 0,
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 1893,
+          "OffsetIndexLength": 38,
+          "ColumnIndexOffset": 1510,
+          "ColumnIndexLength": 91,
           "BloomFilterOffset": 2082,
           "BloomFilterLength": 1024,
+          "BloomFilterStorageLength": 1040,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -29,8 +44,13 @@
             "Name"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -41,8 +61,15 @@
           "NullCount": 0,
           "MaxValue": "name-9",
           "MinValue": "name-0",
+          "FileOffset": 336,
+          "DataPageOffset": 336,
+          "OffsetIndexOffset": 1931,
+          "OffsetIndexLength": 39,
+          "ColumnIndexOffset": 1601,
+          "ColumnIndexLength": 75,
           "BloomFilterOffset": 3122,
           "BloomFilterLength": 4096,
+          "BloomFilterStorageLength": 4112,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -50,6 +77,11 @@
             "Age"
           ],
           "Type": "INT32",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -60,6 +92,12 @@
           "NullCount": 0,
           "MaxValue": 29,
           "MinValue": 20,
+          "FileOffset": 656,
+          "DataPageOffset": 656,
+          "OffsetIndexOffset": 1970,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 1676,
+          "ColumnIndexLength": 59,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -67,6 +105,11 @@
             "Score"
           ],
           "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -77,8 +120,15 @@
           "NullCount": 0,
           "MaxValue": 13.5,
           "MinValue": 0,
+          "FileOffset": 884,
+          "DataPageOffset": 884,
+          "OffsetIndexOffset": 2005,
+          "OffsetIndexLength": 39,
+          "ColumnIndexOffset": 1735,
+          "ColumnIndexLength": 91,
           "BloomFilterOffset": 7234,
           "BloomFilterLength": 1024,
+          "BloomFilterStorageLength": 1040,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -86,8 +136,13 @@
             "Category"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -98,6 +153,12 @@
           "NullCount": 0,
           "MaxValue": "cat-2",
           "MinValue": "cat-0",
+          "FileOffset": 1216,
+          "DataPageOffset": 1216,
+          "OffsetIndexOffset": 2044,
+          "OffsetIndexLength": 38,
+          "ColumnIndexOffset": 1826,
+          "ColumnIndexLength": 67,
           "CompressionCodec": "SNAPPY"
         }
       ]

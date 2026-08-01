@@ -1,5 +1,8 @@
 {
+  "Version": 2,
+  "NumRows": 20,
   "NumRowGroups": 2,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
   "RowGroups": [
     {
       "NumRows": 17,
@@ -10,8 +13,13 @@
             "brand"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -22,6 +30,12 @@
           "NullCount": 0,
           "MaxValue": "the brand is: 9",
           "MinValue": "the brand is: 0",
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 3942,
+          "OffsetIndexLength": 74,
+          "ColumnIndexOffset": 3178,
+          "ColumnIndexLength": 291,
           "CompressionCodec": "GZIP"
         },
         {
@@ -29,8 +43,13 @@
             "name"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -41,6 +60,12 @@
           "NullCount": 0,
           "MaxValue": "the name is: 9",
           "MinValue": "the name is: 0",
+          "FileOffset": 1267,
+          "DataPageOffset": 1267,
+          "OffsetIndexOffset": 4016,
+          "OffsetIndexLength": 66,
+          "ColumnIndexOffset": 3469,
+          "ColumnIndexLength": 241,
           "CompressionCodec": "GZIP"
         }
       ]
@@ -54,8 +79,13 @@
             "brand"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -66,6 +96,12 @@
           "NullCount": 0,
           "MaxValue": "the brand is: 19",
           "MinValue": "the brand is: 17",
+          "FileOffset": 2365,
+          "DataPageOffset": 2365,
+          "OffsetIndexOffset": 4082,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 3710,
+          "ColumnIndexLength": 119,
           "CompressionCodec": "GZIP"
         },
         {
@@ -73,8 +109,13 @@
             "name"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -85,6 +126,12 @@
           "NullCount": 0,
           "MaxValue": "the name is: 19",
           "MinValue": "the name is: 17",
+          "FileOffset": 2779,
+          "DataPageOffset": 2779,
+          "OffsetIndexOffset": 4112,
+          "OffsetIndexLength": 30,
+          "ColumnIndexOffset": 3829,
+          "ColumnIndexLength": 113,
           "CompressionCodec": "GZIP"
         }
       ]
