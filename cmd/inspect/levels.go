@@ -27,13 +27,15 @@ func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, in
 		columnChunksBrief[i] = c.buildColumnChunkBrief(i, col, inExNameMap, pathMap, bloomSizeMap)
 	}
 
+	rowGroup := map[string]any{
+		"index":         rowGroupIndex,
+		"numRows":       rg.NumRows,
+		"totalByteSize": rg.TotalByteSize,
+		"numColumns":    len(rg.Columns),
+	}
+	addRowGroupMetadata(rowGroup, rg)
 	output := map[string]any{
-		"rowGroup": map[string]any{
-			"index":         rowGroupIndex,
-			"numRows":       rg.NumRows,
-			"totalByteSize": rg.TotalByteSize,
-			"numColumns":    len(rg.Columns),
-		},
+		"rowGroup":     rowGroup,
 		"columnChunks": columnChunksBrief,
 	}
 
@@ -108,15 +110,6 @@ func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReade
 		"numValues":        col.MetaData.NumValues,
 		"compressedSize":   col.MetaData.TotalCompressedSize,
 		"uncompressedSize": col.MetaData.TotalUncompressedSize,
-		"dataPageOffset":   col.MetaData.DataPageOffset,
-	}
-
-	if col.MetaData.DictionaryPageOffset != nil {
-		columnChunkDetails["dictionaryPageOffset"] = *col.MetaData.DictionaryPageOffset
-	}
-
-	if col.MetaData.IndexPageOffset != nil {
-		columnChunkDetails["indexPageOffset"] = *col.MetaData.IndexPageOffset
 	}
 
 	if col.MetaData.IsSetBloomFilterOffset() {
@@ -127,6 +120,10 @@ func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReade
 	}
 
 	c.addTypeInformation(columnChunkDetails, schemaNode)
+	if schemaNode != nil {
+		addSchemaElementMetadata(columnChunkDetails, &schemaNode.SchemaElement)
+	}
+	addColumnMetadata(columnChunkDetails, col)
 	c.addEncryptionInfo(columnChunkDetails, col)
 
 	// Add statistics
@@ -135,6 +132,10 @@ func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReade
 		if len(stats) > 0 {
 			columnChunkDetails["statistics"] = stats
 		}
+	}
+
+	if err := c.addPageIndexes(ctx, reader, rowGroupIndex, columnChunkIndex, columnChunkDetails, schemaNode); err != nil {
+		return err
 	}
 
 	// Read pages - this requires reading the actual data from the file

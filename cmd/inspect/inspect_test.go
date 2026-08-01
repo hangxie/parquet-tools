@@ -318,10 +318,12 @@ func TestBuildStatistics(t *testing.T) {
 	}{
 		"all-fields": {
 			statistics: &parquet.Statistics{
-				NullCount:     new(int64(10)),
-				DistinctCount: new(int64(5)),
-				MinValue:      []byte{1, 0, 0, 0},
-				MaxValue:      []byte{100, 0, 0, 0},
+				NullCount:       new(int64(10)),
+				DistinctCount:   new(int64(5)),
+				MinValue:        []byte{1, 0, 0, 0},
+				MaxValue:        []byte{100, 0, 0, 0},
+				IsMinValueExact: new(false),
+				IsMaxValueExact: new(true),
 			},
 			schemaNode: &pschema.SchemaNode{
 				SchemaElement: parquet.SchemaElement{
@@ -329,10 +331,12 @@ func TestBuildStatistics(t *testing.T) {
 				},
 			},
 			want: map[string]any{
-				"nullCount":     int64(10),
-				"distinctCount": int64(5),
-				"minValue":      int32(1),
-				"maxValue":      int32(100),
+				"nullCount":       int64(10),
+				"distinctCount":   int64(5),
+				"minValue":        int32(1),
+				"maxValue":        int32(100),
+				"isMinValueExact": false,
+				"isMaxValueExact": true,
 			},
 		},
 		"without-distinct-count": {

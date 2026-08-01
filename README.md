@@ -1188,8 +1188,8 @@ The inspect command has hierarchical levels:
 File level inspection shows basic metadata about the parquet file including version, number of row groups, total rows, and compression information:
 
 ```bash
-$ parquet-tools inspect testdata/good.parquet
-{"fileInfo":{"compressedSize":588,"createdBy":"github.com/hangxie/parquet-go v2 latest","numRowGroups":1,"totalRows":3,"uncompressedSize":438,"version":2},"rowGroups":[{"compressedSize":588,"index":0,"numColumns":2,"numRows":3,"totalByteSize":438,"uncompressedSize":438}]}
+$ parquet-tools inspect testdata/good.parquet | jq '.fileInfo'
+{"compressedSize":588,"createdBy":"github.com/hangxie/parquet-go v2 latest","numRowGroups":1,"totalRows":3,"uncompressedSize":438,"version":2}
 ```
 
 #### Inspect Row Group Level
@@ -1197,24 +1197,29 @@ $ parquet-tools inspect testdata/good.parquet
 Row group level inspection shows details of all column chunks within a specific row group, including encodings, compression ratios, and statistics:
 
 ```bash
-$ parquet-tools inspect testdata/good.parquet --row-group 0
-{"columnChunks":[{"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["PLAIN","RLE"],"index":0,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},{"compressedSize":319,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","encodings":["PLAIN","RLE"],"index":1,"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_name"],"statistics":{"maxValue":"grant_hill_2","minValue":"air_griffey","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":244}],"rowGroup":{"index":0,"numColumns":2,"numRows":3,"totalByteSize":438}}
+$ parquet-tools inspect testdata/good.parquet --row-group 0 | jq '.rowGroup'
+{"index":0,"numColumns":2,"numRows":3,"totalByteSize":438}
 ```
 
 #### Inspect Column Chunk Level
 
 Column chunk level inspection shows all pages within a column chunk, including page types, sizes, and encodings:
 
+When present, the `columnIndex` object includes the boundary order and decoded per-page bounds, while `offsetIndex.pageLocations` identifies each data page's file position, compressed size, and first row.
+
 ```bash
-$ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0
-{"columnChunk":{"columnChunkIndex":0,"compressedSize":269,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":4,"encodings":["PLAIN","RLE"],"logicalType":"logicaltype=STRING","numValues":3,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"steph_curry","minValue":"fila","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":194},"pages":[{"index":0,"offset":4,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"nike","nullCount":0}},{"index":1,"offset":82,"type":"DATA_PAGE","compressedSize":33,"uncompressedSize":8,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"fila","minValue":"fila","nullCount":0}},{"index":2,"offset":160,"type":"DATA_PAGE","compressedSize":40,"uncompressedSize":15,"numValues":1,"encoding":"PLAIN","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"steph_curry","minValue":"steph_curry","nullCount":0}}]}
+$ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0 | jq '.columnChunk | {pathInSchema, boundaryOrder: .columnIndex.boundaryOrder, pageLocations: .offsetIndex.pageLocations}'
+{"pathInSchema":["shoe_brand"],"boundaryOrder":"UNORDERED","pageLocations":[{"compressedPageSize":78,"firstRowIndex":0,"offset":4},{"compressedPageSize":78,"firstRowIndex":1,"offset":82},{"compressedPageSize":113,"firstRowIndex":2,"offset":160}]}
 ```
 
 For column chunks with dictionary encoding, you'll also see dictionary page information:
 
 ```bash
-$ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0
-{"columnChunk":{"columnChunkIndex":0,"compressedSize":320,"compressionCodec":"GZIP","convertedType":"convertedtype=UTF8","dataPageOffset":70,"dictionaryPageOffset":4,"encodings":["PLAIN","RLE","RLE_DICTIONARY"],"logicalType":"logicaltype=STRING","numValues":5,"pathInSchema":["shoe_brand"],"rowGroupIndex":0,"statistics":{"maxValue":"reebok","minValue":"adidas","nullCount":0},"type":"BYTE_ARRAY","uncompressedSize":220},"pages":[{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},{"index":1,"offset":70,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"nike","minValue":"adidas","nullCount":0}},{"index":2,"offset":155,"type":"DATA_PAGE","compressedSize":36,"uncompressedSize":11,"numValues":2,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"reebok","minValue":"nike","nullCount":0}},{"index":3,"offset":240,"type":"DATA_PAGE","compressedSize":31,"uncompressedSize":6,"numValues":1,"encoding":"RLE_DICTIONARY","definitionLevelEncoding":"RLE","repetitionLevelEncoding":"RLE","statistics":{"maxValue":"adidas","minValue":"adidas","nullCount":0}}]}
+$ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 0 | jq '.pages[] | {index, type, encoding}'
+{"index":0,"type":"DICTIONARY_PAGE","encoding":"PLAIN"}
+{"index":1,"type":"DATA_PAGE","encoding":"RLE_DICTIONARY"}
+{"index":2,"type":"DATA_PAGE","encoding":"RLE_DICTIONARY"}
+{"index":3,"type":"DATA_PAGE","encoding":"RLE_DICTIONARY"}
 ```
 
 #### Inspect Page Level

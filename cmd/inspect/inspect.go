@@ -115,6 +115,7 @@ func (c Cmd) inspectFile(reader *reader.ParquetReader) error {
 			"compressedSize":   rgCompressed,
 			"uncompressedSize": rgUncompressed,
 		}
+		addRowGroupMetadata(rowGroupsBrief[i], rg)
 
 		totalRows += rg.NumRows
 		compressedSize += rgCompressed
@@ -129,6 +130,7 @@ func (c Cmd) inspectFile(reader *reader.ParquetReader) error {
 		"uncompressedSize": uncompressedSize,
 		"createdBy":        footer.CreatedBy,
 	}
+	addFileMetadata(fileInfo, footer)
 	if fc := reader.FileCrypto; fc != nil {
 		if km := fc.GetKeyMetadata(); len(km) > 0 {
 			fileInfo["footerKeyMetadata"] = base64.StdEncoding.EncodeToString(km)

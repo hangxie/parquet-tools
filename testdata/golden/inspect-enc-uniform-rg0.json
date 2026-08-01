@@ -174,9 +174,12 @@
     }
   ],
   "rowGroup": {
+    "fileOffset": 4,
     "index": 0,
     "numColumns": 8,
     "numRows": 50,
-    "totalByteSize": 4172
+    "ordinal": 0,
+    "totalByteSize": 4172,
+    "totalCompressedSize": 3837
   }
 }

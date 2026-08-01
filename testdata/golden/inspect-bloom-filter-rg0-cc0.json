@@ -2,7 +2,37 @@
   "columnChunk": {
     "bloomFilterLength": 1024,
     "bloomFilterOffset": 2082,
+    "bloomFilterStorageLength": 1040,
     "columnChunkIndex": 0,
+    "columnIndex": {
+      "boundaryOrder": "UNORDERED",
+      "maxValues": [
+        2,
+        5,
+        8,
+        9
+      ],
+      "minValues": [
+        0,
+        3,
+        6,
+        9
+      ],
+      "nullCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "nullPages": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "columnIndexLength": 91,
+    "columnIndexOffset": 1510,
     "compressedSize": 332,
     "compressionCodec": "SNAPPY",
     "dataPageOffset": 4,
@@ -10,17 +40,49 @@
       "PLAIN",
       "RLE"
     ],
+    "fieldId": 0,
+    "fileOffset": 4,
     "numValues": 10,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 87,
+          "firstRowIndex": 0,
+          "offset": 4
+        },
+        {
+          "compressedPageSize": 87,
+          "firstRowIndex": 3,
+          "offset": 91
+        },
+        {
+          "compressedPageSize": 87,
+          "firstRowIndex": 6,
+          "offset": 178
+        },
+        {
+          "compressedPageSize": 71,
+          "firstRowIndex": 9,
+          "offset": 265
+        }
+      ]
+    },
+    "offsetIndexLength": 38,
+    "offsetIndexOffset": 1893,
     "pathInSchema": [
       "ID"
     ],
+    "precision": 0,
+    "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
+    "scale": 0,
     "statistics": {
       "maxValue": 9,
       "minValue": 0,
       "nullCount": 0
     },
     "type": "INT64",
+    "typeLength": 0,
     "uncompressedSize": 324
   },
   "pages": [

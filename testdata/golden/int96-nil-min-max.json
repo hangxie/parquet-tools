@@ -1,5 +1,8 @@
 {
+  "Version": 2,
+  "NumRows": 10,
   "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
   "RowGroups": [
     {
       "NumRows": 10,
@@ -10,8 +13,13 @@
             "Utf8"
           ],
           "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=UTF8",
           "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -23,6 +31,13 @@
           "NullCount": 0,
           "MaxValue": "UTF8-9",
           "MinValue": "UTF8-0",
+          "FileOffset": 4,
+          "DataPageOffset": 67,
+          "DictionaryPageOffset": 4,
+          "OffsetIndexOffset": 651,
+          "OffsetIndexLength": 39,
+          "ColumnIndexOffset": 545,
+          "ColumnIndexLength": 79,
           "CompressionCodec": "ZSTD"
         },
         {
@@ -30,6 +45,11 @@
             "Int96"
           ],
           "Type": "INT96",
+          "TypeLength": 0,
+          "RepetitionType": "OPTIONAL",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
           "Encodings": [
             "PLAIN",
             "RLE"
@@ -38,6 +58,12 @@
           "UncompressedSize": 108,
           "NumValues": 10,
           "NullCount": 10,
+          "FileOffset": 385,
+          "DataPageOffset": 385,
+          "OffsetIndexOffset": 690,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 624,
+          "ColumnIndexLength": 27,
           "CompressionCodec": "ZSTD"
         }
       ]

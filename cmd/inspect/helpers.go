@@ -81,6 +81,12 @@ func (c Cmd) buildStatistics(statistics *parquet.Statistics, schemaNode *pschema
 	if statistics.DistinctCount != nil {
 		stats["distinctCount"] = *statistics.DistinctCount
 	}
+	if statistics.IsMinValueExact != nil {
+		stats["isMinValueExact"] = *statistics.IsMinValueExact
+	}
+	if statistics.IsMaxValueExact != nil {
+		stats["isMaxValueExact"] = *statistics.IsMaxValueExact
+	}
 
 	if schemaNode != nil {
 		min, max := schemaNode.DecodeStatistics(statistics)

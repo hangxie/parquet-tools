@@ -1,6 +1,35 @@
 {
   "columnChunk": {
     "columnChunkIndex": 0,
+    "columnIndex": {
+      "boundaryOrder": "UNORDERED",
+      "maxValues": [
+        "",
+        "nike",
+        "reebok",
+        "adidas"
+      ],
+      "minValues": [
+        "",
+        "adidas",
+        "nike",
+        "adidas"
+      ],
+      "nullCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "nullPages": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "columnIndexLength": 59,
+    "columnIndexOffset": 746,
     "compressedSize": 320,
     "compressionCodec": "GZIP",
     "convertedType": "convertedtype=UTF8",
@@ -11,18 +40,45 @@
       "RLE",
       "RLE_DICTIONARY"
     ],
+    "fieldId": 0,
+    "fileOffset": 4,
     "logicalType": "logicaltype=STRING",
     "numValues": 5,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 85,
+          "firstRowIndex": 0,
+          "offset": 70
+        },
+        {
+          "compressedPageSize": 85,
+          "firstRowIndex": 2,
+          "offset": 155
+        },
+        {
+          "compressedPageSize": 84,
+          "firstRowIndex": 4,
+          "offset": 240
+        }
+      ]
+    },
+    "offsetIndexLength": 30,
+    "offsetIndexOffset": 891,
     "pathInSchema": [
       "shoe_brand"
     ],
+    "precision": 0,
+    "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
+    "scale": 0,
     "statistics": {
       "maxValue": "reebok",
       "minValue": "adidas",
       "nullCount": 0
     },
     "type": "BYTE_ARRAY",
+    "typeLength": 0,
     "uncompressedSize": 220
   },
   "pages": [

@@ -1,21 +1,63 @@
 {
   "columnChunk": {
     "columnChunkIndex": 4,
+    "columnIndex": {
+      "boundaryOrder": "ASCENDING",
+      "maxValues": [
+        53.9
+      ],
+      "minValues": [
+        0
+      ],
+      "nullCounts": [
+        0
+      ],
+      "nullPages": [
+        false
+      ]
+    },
+    "columnIndexLength": 55,
+    "columnIndexOffset": 3204,
     "compressedSize": 412,
     "compressionCodec": "SNAPPY",
     "dataPageOffset": 1989,
     "dictionaryPageOffset": 1705,
+    "encodingStats": [
+      {
+        "count": 1,
+        "encoding": "PLAIN",
+        "pageType": "DICTIONARY_PAGE"
+      },
+      {
+        "count": 1,
+        "encoding": "RLE_DICTIONARY",
+        "pageType": "DATA_PAGE"
+      }
+    ],
     "encodings": [
       "PLAIN",
       "RLE",
       "RLE_DICTIONARY"
     ],
     "encryptionMode": "COLUMN_KEY",
+    "fileOffset": 0,
     "keyMetadata": "a2My",
     "numValues": 50,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 128,
+          "firstRowIndex": 0,
+          "offset": 1989
+        }
+      ]
+    },
+    "offsetIndexLength": 44,
+    "offsetIndexOffset": 3436,
     "pathInSchema": [
       "float_field"
     ],
+    "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
     "statistics": {
       "maxValue": 53.9,

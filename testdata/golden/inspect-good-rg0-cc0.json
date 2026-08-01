@@ -1,6 +1,31 @@
 {
   "columnChunk": {
     "columnChunkIndex": 0,
+    "columnIndex": {
+      "boundaryOrder": "UNORDERED",
+      "maxValues": [
+        "nike",
+        "fila",
+        "steph_curry"
+      ],
+      "minValues": [
+        "nike",
+        "fila",
+        "steph_curry"
+      ],
+      "nullCounts": [
+        0,
+        0,
+        0
+      ],
+      "nullPages": [
+        false,
+        false,
+        false
+      ]
+    },
+    "columnIndexLength": 61,
+    "columnIndexOffset": 592,
     "compressedSize": 269,
     "compressionCodec": "GZIP",
     "convertedType": "convertedtype=UTF8",
@@ -9,18 +34,45 @@
       "PLAIN",
       "RLE"
     ],
+    "fieldId": 0,
+    "fileOffset": 4,
     "logicalType": "logicaltype=STRING",
     "numValues": 3,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 78,
+          "firstRowIndex": 0,
+          "offset": 4
+        },
+        {
+          "compressedPageSize": 78,
+          "firstRowIndex": 1,
+          "offset": 82
+        },
+        {
+          "compressedPageSize": 113,
+          "firstRowIndex": 2,
+          "offset": 160
+        }
+      ]
+    },
+    "offsetIndexLength": 29,
+    "offsetIndexOffset": 734,
     "pathInSchema": [
       "shoe_brand"
     ],
+    "precision": 0,
+    "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
+    "scale": 0,
     "statistics": {
       "maxValue": "steph_curry",
       "minValue": "fila",
       "nullCount": 0
     },
     "type": "BYTE_ARRAY",
+    "typeLength": 0,
     "uncompressedSize": 194
   },
   "pages": [
