@@ -1,16 +1,33 @@
 {
+  "Version": 2,
+  "NumRows": 50,
   "NumRowGroups": 1,
+  "CreatedBy": "parquet-cpp-arrow version 19.0.0-SNAPSHOT",
+  "ColumnOrders": [
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER"
+  ],
   "FooterKeyMetadata": "a2Y=",
   "RowGroups": [
     {
       "NumRows": 50,
       "TotalByteSize": 4172,
+      "FileOffset": 4,
+      "TotalCompressedSize": 3837,
+      "Ordinal": 0,
       "Columns": [
         {
           "PathInSchema": [
             "boolean_field"
           ],
           "Type": "BOOLEAN",
+          "RepetitionType": "REQUIRED",
           "Encodings": [
             "RLE"
           ],
@@ -20,6 +37,19 @@
           "NullCount": 0,
           "MaxValue": true,
           "MinValue": false,
+          "FileOffset": 0,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 4260,
+          "OffsetIndexLength": 43,
+          "ColumnIndexOffset": 3841,
+          "ColumnIndexLength": 49,
+          "EncodingStats": [
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -28,6 +58,7 @@
             "int32_field"
           ],
           "Type": "INT32",
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "convertedtype=TIME_MILLIS",
           "LogicalType": "logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS",
           "Encodings": [
@@ -41,6 +72,25 @@
           "NullCount": 0,
           "MaxValue": "00:00:00.049",
           "MinValue": "00:00:00.000",
+          "FileOffset": 0,
+          "DataPageOffset": 383,
+          "DictionaryPageOffset": 99,
+          "OffsetIndexOffset": 4303,
+          "OffsetIndexLength": 44,
+          "ColumnIndexOffset": 3890,
+          "ColumnIndexLength": 55,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -49,6 +99,7 @@
             "int64_field"
           ],
           "Type": "INT64",
+          "RepetitionType": "REPEATED",
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -60,6 +111,25 @@
           "NullCount": 0,
           "MaxValue": 99000000000000,
           "MinValue": 0,
+          "FileOffset": 0,
+          "DataPageOffset": 1391,
+          "DictionaryPageOffset": 511,
+          "OffsetIndexOffset": 4347,
+          "OffsetIndexLength": 44,
+          "ColumnIndexOffset": 3945,
+          "ColumnIndexLength": 63,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -68,6 +138,7 @@
             "int96_field"
           ],
           "Type": "INT96",
+          "RepetitionType": "REQUIRED",
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -76,6 +147,23 @@
           "CompressedSize": 567,
           "UncompressedSize": 742,
           "NumValues": 50,
+          "FileOffset": 0,
+          "DataPageOffset": 2027,
+          "DictionaryPageOffset": 1588,
+          "OffsetIndexOffset": 4391,
+          "OffsetIndexLength": 44,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -84,6 +172,7 @@
             "float_field"
           ],
           "Type": "FLOAT",
+          "RepetitionType": "REQUIRED",
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -95,6 +184,25 @@
           "NullCount": 0,
           "MaxValue": 53.9,
           "MinValue": 0,
+          "FileOffset": 0,
+          "DataPageOffset": 2439,
+          "DictionaryPageOffset": 2155,
+          "OffsetIndexOffset": 4435,
+          "OffsetIndexLength": 44,
+          "ColumnIndexOffset": 4008,
+          "ColumnIndexLength": 55,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -103,6 +211,7 @@
             "double_field"
           ],
           "Type": "DOUBLE",
+          "RepetitionType": "REQUIRED",
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -114,6 +223,25 @@
           "NullCount": 0,
           "MaxValue": 54.4444439,
           "MinValue": 0,
+          "FileOffset": 0,
+          "DataPageOffset": 2952,
+          "DictionaryPageOffset": 2567,
+          "OffsetIndexOffset": 4479,
+          "OffsetIndexLength": 44,
+          "ColumnIndexOffset": 4063,
+          "ColumnIndexLength": 63,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -122,6 +250,7 @@
             "ba_field"
           ],
           "Type": "BYTE_ARRAY",
+          "RepetitionType": "OPTIONAL",
           "Encodings": [
             "PLAIN",
             "RLE",
@@ -133,6 +262,25 @@
           "NullCount": 25,
           "MaxValue": "cGFycXVldDA0OA==",
           "MinValue": "cGFycXVldDAwMA==",
+          "FileOffset": 0,
+          "DataPageOffset": 3308,
+          "DictionaryPageOffset": 3080,
+          "OffsetIndexOffset": 4523,
+          "OffsetIndexLength": 44,
+          "ColumnIndexOffset": 4126,
+          "ColumnIndexLength": 67,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         },
@@ -141,6 +289,8 @@
             "flba_field"
           ],
           "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 10,
+          "RepetitionType": "REQUIRED",
           "ConvertedType": "length=10",
           "Encodings": [
             "PLAIN",
@@ -153,6 +303,25 @@
           "NullCount": 0,
           "MaxValue": "MTExMTExMTExMQ==",
           "MinValue": "AAAAAAAAAAAAAA==",
+          "FileOffset": 0,
+          "DataPageOffset": 3713,
+          "DictionaryPageOffset": 3424,
+          "OffsetIndexOffset": 4567,
+          "OffsetIndexLength": 44,
+          "ColumnIndexOffset": 4193,
+          "ColumnIndexLength": 67,
+          "EncodingStats": [
+            {
+              "PageType": "DICTIONARY_PAGE",
+              "Encoding": "PLAIN",
+              "Count": 1
+            },
+            {
+              "PageType": "DATA_PAGE",
+              "Encoding": "RLE_DICTIONARY",
+              "Count": 1
+            }
+          ],
           "CompressionCodec": "SNAPPY",
           "EncryptionMode": "FOOTER_KEY"
         }

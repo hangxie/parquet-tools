@@ -23,39 +23,6 @@ type Cmd struct {
 	pio.ReadOption
 }
 
-type columnMeta struct {
-	PathInSchema      []string
-	Type              string
-	ConvertedType     *string `json:",omitempty"`
-	LogicalType       *string `json:",omitempty"`
-	Encodings         []string
-	CompressedSize    int64
-	UncompressedSize  int64
-	NumValues         int64
-	NullCount         *int64  `json:",omitempty"`
-	DistinctCount     *int64  `json:",omitempty"`
-	MaxValue          any     `json:",omitempty"`
-	MinValue          any     `json:",omitempty"`
-	Index             *string `json:",omitempty"`
-	BloomFilterOffset *int64  `json:",omitempty"`
-	BloomFilterLength *int32  `json:",omitempty"`
-	CompressionCodec  string
-	EncryptionMode    *string `json:",omitempty"`
-	KeyMetadata       *string `json:",omitempty"`
-}
-
-type rowGroupMeta struct {
-	NumRows       int64
-	TotalByteSize int64
-	Columns       []columnMeta
-}
-
-type parquetMeta struct {
-	NumRowGroups      int
-	FooterKeyMetadata *string `json:",omitempty"`
-	RowGroups         []rowGroupMeta
-}
-
 // Run does actual meta job
 func (c Cmd) Run(ctx context.Context) error {
 	if c.ShowKeyMetadata {
@@ -94,8 +61,14 @@ func (c Cmd) Run(ctx context.Context) error {
 	}
 
 	meta := parquetMeta{
-		NumRowGroups: len(rowGroups),
-		RowGroups:    rowGroups,
+		Version:             reader.Footer.Version,
+		NumRows:             reader.Footer.NumRows,
+		NumRowGroups:        len(rowGroups),
+		CreatedBy:           reader.Footer.CreatedBy,
+		KeyValueMetadata:    keyValueMetadata(reader.Footer.KeyValueMetadata),
+		ColumnOrders:        columnOrderNames(reader.Footer.ColumnOrders),
+		EncryptionAlgorithm: encryptionAlgorithmName(reader.Footer.EncryptionAlgorithm),
+		RowGroups:           rowGroups,
 	}
 	if fc := reader.FileCrypto; fc != nil {
 		if km := fc.GetKeyMetadata(); len(km) > 0 {
@@ -120,23 +93,28 @@ func (c Cmd) Run(ctx context.Context) error {
 func (c Cmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) ([]rowGroupMeta, error) {
 	result := make([]rowGroupMeta, len(rowGroups))
 	for i, rg := range rowGroups {
-		columns, err := c.buildColumns(rg, inExNameMap, pathMap, bloomSizeMap)
+		sortingColumns := sortingColumnMeta(rg.SortingColumns)
+		columns, err := c.buildColumns(rg, sortingColumns, inExNameMap, pathMap, bloomSizeMap)
 		if err != nil {
 			return nil, err
 		}
 		result[i] = rowGroupMeta{
-			NumRows:       rg.NumRows,
-			TotalByteSize: rg.TotalByteSize,
-			Columns:       columns,
+			NumRows:             rg.NumRows,
+			TotalByteSize:       rg.TotalByteSize,
+			FileOffset:          rg.FileOffset,
+			TotalCompressedSize: rg.TotalCompressedSize,
+			Ordinal:             rg.Ordinal,
+			SortingColumns:      sortingColumns,
+			Columns:             columns,
 		}
 	}
 	return result, nil
 }
 
-func (c Cmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) ([]columnMeta, error) {
+func (c Cmd) buildColumns(rg *parquet.RowGroup, sortingColumns []sortingMeta, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) ([]columnMeta, error) {
 	columns := make([]columnMeta, len(rg.Columns))
 	for i, col := range rg.Columns {
-		column, err := c.buildColumnMeta(col, rg.SortingColumns, i, inExNameMap, pathMap, bloomSizeMap)
+		column, err := c.buildColumnMeta(col, sortingColumns, i, inExNameMap, pathMap, bloomSizeMap)
 		if err != nil {
 			return nil, err
 		}
@@ -145,23 +123,36 @@ func (c Cmd) buildColumns(rg *parquet.RowGroup, inExNameMap map[string][]string,
 	return columns, nil
 }
 
-func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet.SortingColumn, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) (columnMeta, error) {
+func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []sortingMeta, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) (columnMeta, error) {
 	column := columnMeta{
-		PathInSchema:      col.MetaData.PathInSchema,
-		Type:              col.MetaData.Type.String(),
-		ConvertedType:     nil,
-		LogicalType:       nil,
-		Encodings:         pschema.EncodingToString(col.MetaData.Encodings),
-		CompressedSize:    col.MetaData.TotalCompressedSize,
-		UncompressedSize:  col.MetaData.TotalUncompressedSize,
-		NumValues:         col.MetaData.NumValues,
-		MaxValue:          nil,
-		MinValue:          nil,
-		NullCount:         nil,
-		DistinctCount:     nil,
-		Index:             sortingToString(sortingColumns, colIndex),
-		BloomFilterOffset: col.MetaData.BloomFilterOffset,
-		CompressionCodec:  col.MetaData.Codec.String(),
+		PathInSchema:         col.MetaData.PathInSchema,
+		Type:                 col.MetaData.Type.String(),
+		ConvertedType:        nil,
+		LogicalType:          nil,
+		Encodings:            pschema.EncodingToString(col.MetaData.Encodings),
+		CompressedSize:       col.MetaData.TotalCompressedSize,
+		UncompressedSize:     col.MetaData.TotalUncompressedSize,
+		NumValues:            col.MetaData.NumValues,
+		FilePath:             col.FilePath,
+		FileOffset:           col.FileOffset,
+		DataPageOffset:       col.MetaData.DataPageOffset,
+		IndexPageOffset:      col.MetaData.IndexPageOffset,
+		DictionaryPageOffset: col.MetaData.DictionaryPageOffset,
+		OffsetIndexOffset:    col.OffsetIndexOffset,
+		OffsetIndexLength:    col.OffsetIndexLength,
+		ColumnIndexOffset:    col.ColumnIndexOffset,
+		ColumnIndexLength:    col.ColumnIndexLength,
+		KeyValueMetadata:     keyValueMetadata(col.MetaData.KeyValueMetadata),
+		EncodingStats:        encodingStatistics(col.MetaData.EncodingStats),
+		SizeStatistics:       sizeStatistics(col.MetaData.SizeStatistics),
+		GeospatialStatistics: geospatialStatistics(col.MetaData.GeospatialStatistics),
+		MaxValue:             nil,
+		MinValue:             nil,
+		NullCount:            nil,
+		DistinctCount:        nil,
+		Index:                sortingToString(sortingColumns, colIndex),
+		BloomFilterOffset:    col.MetaData.BloomFilterOffset,
+		CompressionCodec:     col.MetaData.Codec.String(),
 	}
 
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
@@ -170,6 +161,7 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 	if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
 		column.BloomFilterLength = &size
 	}
+	column.BloomFilterStorageLength = col.MetaData.BloomFilterLength
 
 	if exPath, found := inExNameMap[pathKey]; found {
 		column.PathInSchema = exPath
@@ -219,6 +211,14 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []*parquet
 }
 
 func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNode) {
+	column.TypeLength = schemaNode.TypeLength
+	if schemaNode.RepetitionType != nil {
+		repetition := schemaNode.RepetitionType.String()
+		column.RepetitionType = &repetition
+	}
+	column.Scale = schemaNode.Scale
+	column.Precision = schemaNode.Precision
+	column.FieldID = schemaNode.FieldID
 	if ct := schemaNode.ConvertedTypeString(); ct != "" {
 		column.ConvertedType = new(ct)
 	}
@@ -230,6 +230,8 @@ func (c Cmd) addTypeInformation(column *columnMeta, schemaNode *pschema.SchemaNo
 func (c Cmd) addStatistics(column *columnMeta, statistics *parquet.Statistics, schemaNode *pschema.SchemaNode) {
 	column.NullCount = statistics.NullCount
 	column.DistinctCount = statistics.DistinctCount
+	column.IsMinValueExact = statistics.IsMinValueExact
+	column.IsMaxValueExact = statistics.IsMaxValueExact
 	column.MinValue, column.MaxValue = schemaNode.DecodeStatistics(statistics)
 	column.MinValue = normalizeNegativeZero(column.MinValue)
 	column.MaxValue = normalizeNegativeZero(column.MaxValue)
@@ -251,13 +253,10 @@ func normalizeNegativeZero(v any) any {
 	return v
 }
 
-func sortingToString(sortingColumns []*parquet.SortingColumn, columnIndex int) *string {
+func sortingToString(sortingColumns []sortingMeta, columnIndex int) *string {
 	for _, indexCol := range sortingColumns {
-		if indexCol.ColumnIdx == int32(columnIndex) {
-			if indexCol.Descending {
-				return new("DESC")
-			}
-			return new("ASC")
+		if indexCol.ColumnIndex == int32(columnIndex) {
+			return new(indexCol.Direction)
 		}
 	}
 	return nil

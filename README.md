@@ -1316,6 +1316,8 @@ You can set `--fail-on-int96` option to fail `merge` command for parquet files t
 
 `meta` command shows meta data of every row group in a parquet file.
 
+In addition to decoded values, `meta` reports footer-level, row-group, column-chunk, encoding, size-statistics, geospatial-statistics, and bound-exactness fields. It reports index locations and lengths; use `inspect --row-group INDEX --column-chunk INDEX` to read the column-index and offset-index payloads themselves.
+
 > [!TIP]
 > `PathInSchema` uses field name from parquet file, same as `cat` command.
 
@@ -1324,8 +1326,8 @@ Use `--skip-page-encoding` to skip reading page encoding information. This can s
 #### Show Meta Data
 
 ```bash
-$ parquet-tools meta testdata/good.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":3,"TotalByteSize":438,"Columns":[{"PathInSchema":["shoe_brand"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE"],"CompressedSize":269,"UncompressedSize":194,"NumValues":3,"NullCount":0,"MaxValue":"steph_curry","MinValue":"fila","CompressionCodec":"GZIP"},{"PathInSchema":["shoe_name"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE"],"CompressedSize":319,"UncompressedSize":244,"NumValues":3,"NullCount":0,"MaxValue":"grant_hill_2","MinValue":"air_griffey","CompressionCodec":"GZIP"}]}]}
+$ parquet-tools meta testdata/good.parquet | jq '{Version, NumRows, NumRowGroups}'
+{"Version":2,"NumRows":3,"NumRowGroups":1}
 ```
 
 > [!NOTE]

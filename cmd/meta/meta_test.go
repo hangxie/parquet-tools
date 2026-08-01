@@ -2,15 +2,20 @@ package meta
 
 import (
 	"context"
+	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/writer"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-go/v3/parquet"
 
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
 	pio "github.com/hangxie/parquet-tools/io"
+	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
 var (
@@ -23,7 +28,7 @@ var (
 
 func TestSortingToString(t *testing.T) {
 	testCases := map[string]struct {
-		sortingColumns []*parquet.SortingColumn
+		sortingColumns []sortingMeta
 		columnIndex    int
 		expected       *string
 	}{
@@ -33,46 +38,46 @@ func TestSortingToString(t *testing.T) {
 			expected:       nil,
 		},
 		"empty-sorting-columns": {
-			sortingColumns: []*parquet.SortingColumn{},
+			sortingColumns: []sortingMeta{},
 			columnIndex:    0,
 			expected:       nil,
 		},
 		"column-not-found": {
-			sortingColumns: []*parquet.SortingColumn{
-				{ColumnIdx: 1, Descending: false},
-				{ColumnIdx: 2, Descending: true},
+			sortingColumns: []sortingMeta{
+				{ColumnIndex: 1, Direction: "ASC"},
+				{ColumnIndex: 2, Direction: "DESC"},
 			},
 			columnIndex: 0,
 			expected:    nil,
 		},
 		"ascending-column-found": {
-			sortingColumns: []*parquet.SortingColumn{
-				{ColumnIdx: 0, Descending: false},
-				{ColumnIdx: 1, Descending: true},
+			sortingColumns: []sortingMeta{
+				{ColumnIndex: 0, Direction: "ASC"},
+				{ColumnIndex: 1, Direction: "DESC"},
 			},
 			columnIndex: 0,
 			expected:    new("ASC"),
 		},
 		"descending-column-found": {
-			sortingColumns: []*parquet.SortingColumn{
-				{ColumnIdx: 0, Descending: false},
-				{ColumnIdx: 1, Descending: true},
+			sortingColumns: []sortingMeta{
+				{ColumnIndex: 0, Direction: "ASC"},
+				{ColumnIndex: 1, Direction: "DESC"},
 			},
 			columnIndex: 1,
 			expected:    new("DESC"),
 		},
 		"multiple-columns-first-match": {
-			sortingColumns: []*parquet.SortingColumn{
-				{ColumnIdx: 2, Descending: true},
-				{ColumnIdx: 1, Descending: false},
-				{ColumnIdx: 2, Descending: false}, // Should not be reached due to first match
+			sortingColumns: []sortingMeta{
+				{ColumnIndex: 2, Direction: "DESC"},
+				{ColumnIndex: 1, Direction: "ASC"},
+				{ColumnIndex: 2, Direction: "ASC"}, // Should not be reached due to first match
 			},
 			columnIndex: 2,
 			expected:    new("DESC"),
 		},
 		"column-index-conversion": {
-			sortingColumns: []*parquet.SortingColumn{
-				{ColumnIdx: 42, Descending: false},
+			sortingColumns: []sortingMeta{
+				{ColumnIndex: 42, Direction: "ASC"},
 			},
 			columnIndex: 42,
 			expected:    new("ASC"),
@@ -91,6 +96,54 @@ func TestSortingToString(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAddStatisticsIncludesBoundExactness(t *testing.T) {
+	column := columnMeta{}
+	(Cmd{}).addStatistics(&column, &parquet.Statistics{
+		MinValue:        []byte{1, 0, 0, 0},
+		MaxValue:        []byte{2, 0, 0, 0},
+		IsMinValueExact: new(false),
+		IsMaxValueExact: new(true),
+	}, &pschema.SchemaNode{SchemaElement: parquet.SchemaElement{Type: parquet.TypePtr(parquet.Type_INT32)}})
+
+	require.Equal(t, new(false), column.IsMinValueExact)
+	require.Equal(t, new(true), column.IsMaxValueExact)
+}
+
+func TestMetaV37MetadataRoundTrip(t *testing.T) {
+	type row struct {
+		Value string `parquet:"name=value, type=BYTE_ARRAY, convertedtype=UTF8"`
+	}
+
+	path := filepath.Join(t.TempDir(), "metadata.parquet")
+	fw, err := local.NewLocalFileWriter(path)
+	require.NoError(t, err)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(row),
+		writer.WithNP(1),
+		writer.WithBinaryMinMaxTruncateLength(4),
+		writer.WithSortingColumns(&parquet.SortingColumn{ColumnIdx: 0, NullsFirst: true}),
+	)
+	require.NoError(t, err)
+	for _, value := range []string{"alphabet", "bravo", "charlie"} {
+		require.NoError(t, pw.WriteWithContext(context.Background(), row{Value: value}))
+	}
+	require.NoError(t, pw.WriteStopWithContext(context.Background()))
+	require.NoError(t, fw.Close())
+
+	stdout, _ := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, (Cmd{URI: path}).Run(context.Background()))
+	})
+	var output struct {
+		RowGroups []struct {
+			SortingColumns []sortingMeta
+			Columns        []columnMeta
+		}
+	}
+	require.NoError(t, json.Unmarshal([]byte(stdout), &output))
+	require.Equal(t, []sortingMeta{{ColumnIndex: 0, Direction: "ASC", NullsFirst: true}}, output.RowGroups[0].SortingColumns)
+	require.Equal(t, new(false), output.RowGroups[0].Columns[0].IsMinValueExact)
+	require.Equal(t, new(false), output.RowGroups[0].Columns[0].IsMaxValueExact)
 }
 
 func TestCmd(t *testing.T) {
