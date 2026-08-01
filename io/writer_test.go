@@ -3,6 +3,7 @@ package io
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -446,6 +447,65 @@ func TestNewJSONWriter(t *testing.T) {
 			require.NotNil(t, pw)
 		})
 	}
+}
+
+func TestBinaryMinMaxTruncateLength(t *testing.T) {
+	ctx := context.Background()
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=BYTE_ARRAY, convertedtype=UTF8"}]}`
+	testCases := map[string]struct {
+		length    int
+		wantMin   string
+		wantMax   string
+		wantExact bool
+	}{
+		"unbounded": {
+			wantMin:   "alphabet",
+			wantMax:   "zulu",
+			wantExact: true,
+		},
+		"bounded": {
+			length:    3,
+			wantMin:   "alp",
+			wantMax:   "zum",
+			wantExact: false,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "bounds.parquet")
+			pw, err := NewJSONWriter(ctx, path, WriteOption{BinaryMinMaxTruncateLength: tc.length}, schema)
+			require.NoError(t, err)
+			for _, value := range []string{"alphabet", "zulu"} {
+				require.NoError(t, pw.WriteWithContext(ctx, fmt.Sprintf(`{"value":%q}`, value)))
+			}
+			require.NoError(t, pw.WriteStopWithContext(ctx))
+			require.NoError(t, pw.PFile.Close())
+
+			pr, err := NewParquetFileReader(ctx, path, ReadOption{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, pr.PFile.Close()) }()
+			statistics := pr.Footer.RowGroups[0].Columns[0].MetaData.Statistics
+			require.Equal(t, tc.wantMin, string(statistics.MinValue))
+			require.Equal(t, tc.wantMax, string(statistics.MaxValue))
+			require.Equal(t, tc.wantExact, statistics.GetIsMinValueExact())
+			require.Equal(t, tc.wantExact, statistics.GetIsMaxValueExact())
+
+			columnIndex, err := pr.ReadColumnIndexWithContext(ctx, 0, 0)
+			require.NoError(t, err)
+			require.Equal(t, tc.wantMin, string(columnIndex.MinValues[0]))
+			require.Equal(t, tc.wantMax, string(columnIndex.MaxValues[len(columnIndex.MaxValues)-1]))
+		})
+	}
+}
+
+func TestBinaryMinMaxTruncateLengthRejectsNegativeValue(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bounds.parquet")
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=BYTE_ARRAY"}]}`
+	pw, err := NewJSONWriter(context.Background(), path, WriteOption{BinaryMinMaxTruncateLength: -1}, schema)
+	require.Error(t, err)
+	require.Nil(t, pw)
+	require.Contains(t, err.Error(), "binary min/max truncate length must not be negative")
 }
 
 func TestNewGenericWriter(t *testing.T) {
