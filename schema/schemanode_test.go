@@ -2308,6 +2308,11 @@ func TestUpdateTagForMapChildAlreadyProcessed(t *testing.T) {
 						ExNamePath:    []string{"key"},
 						InNamePath:    []string{"root", "mymap", "key"},
 					},
+					{
+						SchemaElement: parquet.SchemaElement{Name: "value", Type: &int32Type},
+						ExNamePath:    []string{"value"},
+						InNamePath:    []string{"root", "mymap", "value"},
+					},
 				},
 			},
 		},
