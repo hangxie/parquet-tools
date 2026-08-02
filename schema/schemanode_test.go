@@ -732,6 +732,44 @@ func TestGoStructAfterJSONSchema(t *testing.T) {
 	})
 }
 
+func TestSchemaRenderersDoNotMutate(t *testing.T) {
+	testCases := map[string]func(*SchemaNode){
+		"get tag map": func(root *SchemaNode) {
+			for _, node := range root.GetPathMap() {
+				node.GetTagMap()
+			}
+		},
+		"JSON schema": func(root *SchemaNode) {
+			root.JSONSchema()
+		},
+		"CSV schema": func(root *SchemaNode) {
+			_, _ = root.CSVSchema()
+		},
+		"Go struct": func(root *SchemaNode) {
+			_, _ = root.GoStruct(false)
+		},
+	}
+
+	for name, render := range testCases {
+		t.Run(name, func(t *testing.T) {
+			pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/all-types.parquet", pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { _ = pr.PFile.Close() }()
+
+			root, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
+			require.NoError(t, err)
+			before, err := json.Marshal(root)
+			require.NoError(t, err)
+
+			render(root)
+
+			after, err := json.Marshal(root)
+			require.NoError(t, err)
+			require.JSONEq(t, string(before), string(after))
+		})
+	}
+}
+
 func TestJSONSchema(t *testing.T) {
 	testCases := []struct {
 		name       string
