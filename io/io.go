@@ -116,7 +116,7 @@ func getS3BucketRegion(bucket string, isPublic, ignoreTLS bool) (string, error) 
 		// TLS verification disabled instead of mutating http.DefaultTransport.
 		client = newTLSInsecureHTTPClient()
 	}
-	resp, err := client.Get(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
+	resp, err := client.Head(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
 	if err != nil {
 		return "", fmt.Errorf("unable to get region for S3 bucket %s: %w", bucket, err)
 	}

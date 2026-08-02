@@ -3,9 +3,12 @@ package io
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
@@ -13,6 +16,12 @@ import (
 	"github.com/hangxie/parquet-go/v3/parquet"
 	"github.com/stretchr/testify/require"
 )
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
 
 func TestAzureAccessDetail(t *testing.T) {
 	t.Run("invalid-uri", func(t *testing.T) {
@@ -270,6 +279,32 @@ func TestGetBucketRegion(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetS3BucketRegionUsesHead(t *testing.T) {
+	originalClient := http.DefaultClient
+	t.Cleanup(func() {
+		http.DefaultClient = originalClient
+	})
+
+	var method string
+	http.DefaultClient = &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			method = req.Method
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header: http.Header{
+					"X-Amz-Bucket-Region": []string{"us-west-2"},
+				},
+				Body: io.NopCloser(strings.NewReader("unused bucket listing")),
+			}, nil
+		}),
+	}
+
+	region, err := getS3BucketRegion("example-bucket", true, false)
+	require.NoError(t, err)
+	require.Equal(t, "us-west-2", region)
+	require.Equal(t, http.MethodHead, method)
 }
 
 func TestValidCompressionCodecs(t *testing.T) {
