@@ -119,3 +119,7 @@ func TestParseCompressionLevels(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateCompressionLevelRejectsUnknownCodec(t *testing.T) {
+	require.ErrorContains(t, validateCompressionLevel("unknown", 1), "unknown codec [UNKNOWN]")
+}

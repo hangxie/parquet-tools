@@ -3,6 +3,7 @@ package cat
 import (
 	"context"
 	"encoding/binary"
+	"encoding/csv"
 	"os"
 	"path/filepath"
 	"strings"
@@ -464,6 +465,36 @@ func TestCmdEncoder(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNullifyUnknownColumnsIgnoresNonMapRow(t *testing.T) {
+	nullifyUnknownCols("row", map[string]struct{}{"unknown": {}})
+}
+
+func TestCmdEncoderRejectsUnsupportedFormat(t *testing.T) {
+	fileReader, err := pio.NewParquetFileReader(context.Background(), "file://../../testdata/good.parquet", pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { require.NoError(t, fileReader.PFile.Close()) }()
+
+	rows, err := fileReader.ReadByNumberWithContext(context.Background(), 1)
+	require.NoError(t, err)
+	rowChan := make(chan any, 1)
+	rowChan <- rows[0]
+
+	err = (Cmd{Format: "unsupported"}).encoder(
+		context.Background(), rowChan, make(chan string, 1), fileReader.SchemaHandler, nil, nil,
+	)
+	require.ErrorContains(t, err, "unsupported format: [unsupported]")
+}
+
+func TestValuesToCSVReturnsWriterError(t *testing.T) {
+	builder := new(strings.Builder)
+	writer := csv.NewWriter(builder)
+	writer.Comma = '\n'
+
+	line, err := (&Cmd{}).valuesToCSV([]string{"value"}, builder, writer)
+	require.Empty(t, line)
+	require.ErrorContains(t, err, "invalid field or comment delimiter")
 }
 
 func BenchmarkCatCmd(b *testing.B) {

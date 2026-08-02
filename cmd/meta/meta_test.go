@@ -158,6 +158,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, URI: "file/does/not/exist"},
 			errMsg: "no such file or directory",
 		},
+		"peek-key-non-existent": {
+			cmd:    Cmd{ReadOption: rOpt, ShowKeyMetadata: true, URI: "file/does/not/exist"},
+			errMsg: "no such file or directory",
+		},
 		"encrypted-no-key": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "../../testdata/encrypted-footer.parquet"},
 			errMsg: "decryption key required for footer",
