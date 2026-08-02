@@ -10,7 +10,7 @@ import (
 )
 
 func (s *SchemaNode) GetTagMap() map[string]string {
-	return s.cloneForRendering().getTagMap()
+	return s.getTagMap()
 }
 
 func (s *SchemaNode) getTagMap() map[string]string {
@@ -66,7 +66,7 @@ func (s *SchemaNode) getTagMap() map[string]string {
 }
 
 func (s *SchemaNode) getTagMapWithPrefix(prefix string) map[string]string {
-	tagMap := s.GetTagMap()
+	tagMap := s.getTagMap()
 	ret := map[string]string{}
 	for _, tag := range orderedTags {
 		if tag == "name" || strings.HasPrefix(tag, "key") || strings.HasPrefix(tag, "value") {
@@ -88,32 +88,24 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 
 	if s.Children[0].LogicalType != nil {
 		// LIST => Element (of scalar type)
-		s.Children[0].Name = "Element"
-		s.Children[0].RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
 		maps.Copy(tagMap, s.Children[0].getTagMapWithPrefix("value"))
 		return
 	}
 
 	if len(s.Children[0].Children) > 1 {
 		// LIST => Element (of STRUCT)
-		s.Children[0].Name = "Element"
-		s.Children[0].Type = nil
-		s.Children[0].ConvertedType = nil
-		s.Children[0].RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
 		return
 	}
 
 	if len(s.Children[0].Children) == 1 {
 		// LIST => List => Element
 		maps.Copy(tagMap, s.Children[0].Children[0].getTagMapWithPrefix("value"))
-		s.Children = s.Children[0].Children
-		s.Children[0].Name = "Element"
 		return
 	}
 }
 
 func (s *SchemaNode) updateTagForMap(tagMap map[string]string) {
-	if len(s.Children) == 0 || s.Children[0] == nil || len(s.Children[0].Children) == 0 {
+	if len(s.Children) == 0 || s.Children[0] == nil || len(s.Children[0].Children) < 2 {
 		// meaningless interim layer
 		return
 	}
@@ -126,9 +118,6 @@ func (s *SchemaNode) updateTagForMap(tagMap map[string]string) {
 	// expected output is MAP->(Key, Value)
 	maps.Copy(tagMap, s.Children[0].Children[0].getTagMapWithPrefix("key"))
 	maps.Copy(tagMap, s.Children[0].Children[1].getTagMapWithPrefix("value"))
-	s.Children = s.Children[0].Children[0:2]
-	s.Children[0].Name = "Key"
-	s.Children[1].Name = "Value"
 }
 
 func (s *SchemaNode) updateTagFromConvertedType(tagMap map[string]string) {
