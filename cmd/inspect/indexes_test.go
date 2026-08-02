@@ -68,13 +68,33 @@ func TestColumnIndexMetadataDoesNotDecodeNullPageBounds(t *testing.T) {
 		SchemaElement: parquet.SchemaElement{Type: parquet.TypePtr(parquet.Type_INT32)},
 	}
 	index := &parquet.ColumnIndex{
-		NullPages:     []bool{true, false},
-		MinValues:     [][]byte{{0, 0, 0, 0}, {1, 0, 0, 0}},
-		MaxValues:     [][]byte{{0, 0, 0, 0}, {2, 0, 0, 0}},
-		BoundaryOrder: parquet.BoundaryOrder_ASCENDING,
+		NullPages:                 []bool{true, false},
+		MinValues:                 [][]byte{{0, 0, 0, 0}, {1, 0, 0, 0}},
+		MaxValues:                 [][]byte{{0, 0, 0, 0}, {2, 0, 0, 0}},
+		BoundaryOrder:             parquet.BoundaryOrder_ASCENDING,
+		NullCounts:                []int64{1, 0},
+		RepetitionLevelHistograms: []int64{2, 3},
+		DefinitionLevelHistograms: []int64{4, 5},
 	}
 
 	metadata := cmd.columnIndexMetadata(index, schemaNode)
 	require.Equal(t, []any{nil, int32(1)}, metadata["minValues"])
 	require.Equal(t, []any{nil, int32(2)}, metadata["maxValues"])
+	require.Equal(t, []int64{1, 0}, metadata["nullCounts"])
+	require.Equal(t, []int64{2, 3}, metadata["repetitionLevelHistograms"])
+	require.Equal(t, []int64{4, 5}, metadata["definitionLevelHistograms"])
+}
+
+func TestDecodeIndexBoundsWithoutSchema(t *testing.T) {
+	require.Equal(t, []any{nil}, (Cmd{}).decodeIndexBounds([][]byte{{1}}, nil, true, nil))
+}
+
+func TestOffsetIndexMetadataIncludesUnencodedByteCount(t *testing.T) {
+	metadata := offsetIndexMetadata(&parquet.OffsetIndex{
+		PageLocations:               []*parquet.PageLocation{nil},
+		UnencodedByteArrayDataBytes: []int64{10, 20},
+	})
+
+	require.Empty(t, metadata["pageLocations"])
+	require.Equal(t, []int64{10, 20}, metadata["unencodedByteArrayDataBytes"])
 }
