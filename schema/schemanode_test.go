@@ -764,6 +764,16 @@ func TestSchemaRenderersDoNotMutate(t *testing.T) {
 	}
 }
 
+func TestCloneForRenderingPreservesNilChild(t *testing.T) {
+	root := &SchemaNode{Children: []*SchemaNode{nil}}
+
+	clone := root.cloneForRendering()
+
+	require.NotSame(t, root, clone)
+	require.Len(t, clone.Children, 1)
+	require.Nil(t, clone.Children[0])
+}
+
 func TestJSONSchema(t *testing.T) {
 	testCases := []struct {
 		name       string
