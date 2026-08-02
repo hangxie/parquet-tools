@@ -108,7 +108,7 @@ func newTLSInsecureHTTPClient() *http.Client {
 	}
 }
 
-func getS3BucketRegion(bucket string, isPublic, ignoreTLS bool) (string, error) {
+func getS3BucketRegion(ctx context.Context, bucket string, isPublic, ignoreTLS bool) (string, error) {
 	client := http.DefaultClient
 	if strings.Contains(bucket, ".") && ignoreTLS {
 		// AWS' wildcard cert covers *.s3.amazonaws.com, so if the bucket name
@@ -116,7 +116,11 @@ func getS3BucketRegion(bucket string, isPublic, ignoreTLS bool) (string, error) 
 		// TLS verification disabled instead of mutating http.DefaultTransport.
 		client = newTLSInsecureHTTPClient()
 	}
-	resp, err := client.Head(fmt.Sprintf("https://%s.s3.amazonaws.com", bucket))
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, fmt.Sprintf("https://%s.s3.amazonaws.com", bucket), nil)
+	if err != nil {
+		return "", fmt.Errorf("unable to get region for S3 bucket %s: %w", bucket, err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("unable to get region for S3 bucket %s: %w", bucket, err)
 	}
@@ -139,29 +143,35 @@ func getS3BucketRegion(bucket string, isPublic, ignoreTLS bool) (string, error) 
 	}
 }
 
-func getS3Client(bucket string, isPublic, ignoreTLS bool) (*s3.Client, error) {
-	region, err := getS3BucketRegion(bucket, isPublic, ignoreTLS)
-	if err != nil {
-		return nil, fmt.Errorf("unable to access to [%s]: %w", bucket, err)
-	}
-
+func getS3Client(ctx context.Context, bucket string, isPublic, ignoreTLS bool) (*s3.Client, error) {
 	needCustomHTTP := strings.Contains(bucket, ".") && ignoreTLS
-	if isPublic {
-		cfg := aws.Config{Region: region}
-		if needCustomHTTP {
-			cfg.HTTPClient = newTLSInsecureHTTPClient()
-		}
-		return s3.NewFromConfig(cfg), nil
-	}
-
-	ctx := context.Background()
 	opts := []func(*config.LoadOptions) error{config.WithDefaultRegion("us-east-1")}
+	if isPublic {
+		opts = append(opts, config.WithCredentialsProvider(aws.AnonymousCredentials{}))
+	}
 	if needCustomHTTP {
 		opts = append(opts, config.WithHTTPClient(newTLSInsecureHTTPClient()))
 	}
 	cfg, err := config.LoadDefaultConfig(ctx, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load config to determine bucket region: %w", err)
+		return nil, fmt.Errorf("failed to load AWS config for S3 bucket %s: %w", bucket, err)
+	}
+
+	// Service-specific endpoints such as AWS_ENDPOINT_URL_S3 are resolved while
+	// constructing an S3 client rather than being exposed on aws.Config.
+	configuredClient := s3.NewFromConfig(cfg)
+	if configuredClient.Options().BaseEndpoint != nil {
+		if ignoreTLS && !needCustomHTTP {
+			cfg.HTTPClient = newTLSInsecureHTTPClient()
+		}
+		return s3.NewFromConfig(cfg, func(options *s3.Options) {
+			options.UsePathStyle = true
+		}), nil
+	}
+
+	region, err := getS3BucketRegion(ctx, bucket, isPublic, ignoreTLS)
+	if err != nil {
+		return nil, fmt.Errorf("unable to access to [%s]: %w", bucket, err)
 	}
 	cfg.Region = region
 	return s3.NewFromConfig(cfg), nil

@@ -114,7 +114,7 @@ func newLocalReader(_ context.Context, u *url.URL, _ ReadOption) (source.Parquet
 }
 
 func newAWSS3Reader(ctx context.Context, u *url.URL, option ReadOption) (source.ParquetFileReader, error) {
-	s3Client, err := getS3Client(u.Host, option.Anonymous, option.HTTPIgnoreTLSError)
+	s3Client, err := getS3Client(ctx, u.Host, option.Anonymous, option.HTTPIgnoreTLSError)
 	if err != nil {
 		return nil, err
 	}
