@@ -56,20 +56,22 @@ func (n goStructNode) asList() (string, error) {
 	var err error
 	if n.Children[0].LogicalType != nil {
 		// LIST => Element (of scalar type)
-		n.Children[0].Name = "Element"
-		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		element := *n.Children[0]
+		element.Name = "Element"
+		element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
 		typeStr, err = goStructNode{
-			SchemaNode:     *n.Children[0],
+			SchemaNode:     element,
 			ForceCamelCase: n.ForceCamelCase,
 		}.String()
 	} else if len(n.Children[0].Children) > 1 {
 		// LIST => Element (of STRUCT)
-		n.Children[0].Name = "Element"
-		n.Children[0].Type = nil
-		n.Children[0].ConvertedType = nil
-		*n.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		element := *n.Children[0]
+		element.Name = "Element"
+		element.Type = nil
+		element.ConvertedType = nil
+		element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
 		typeStr, err = goStructNode{
-			SchemaNode:     *n.Children[0],
+			SchemaNode:     element,
 			ForceCamelCase: n.ForceCamelCase,
 		}.String()
 	} else if len(n.Children[0].Children) == 1 {
@@ -88,24 +90,14 @@ func (n goStructNode) asList() (string, error) {
 }
 
 func (n goStructNode) asMap() (string, error) {
-	// Parquet MAP has two possible structures depending on whether GetTagMap has
-	// already been called on this node (which flattens MAP->MAP_KEY_VALUE->[K,V]
-	// to MAP->[K,V] via updateTagForMap). Handle both forms.
-	var keyChild, valueChild *SchemaNode
-	first := n.Children[0]
-	if first.ConvertedType != nil && *first.ConvertedType == parquet.ConvertedType_MAP_KEY_VALUE {
-		if len(first.Children) < 2 {
-			return "", fmt.Errorf("invalid MAP structure in [%s]", n.Name)
-		}
-		keyChild = first.Children[0]
-		valueChild = first.Children[1]
-	} else {
-		if len(n.Children) < 2 {
-			return "", fmt.Errorf("invalid MAP structure in [%s]", n.Name)
-		}
-		keyChild = n.Children[0]
-		valueChild = n.Children[1]
+	if len(n.Children) == 0 || n.Children[0] == nil ||
+		n.Children[0].ConvertedType == nil ||
+		*n.Children[0].ConvertedType != parquet.ConvertedType_MAP_KEY_VALUE ||
+		len(n.Children[0].Children) < 2 {
+		return "", fmt.Errorf("invalid MAP structure in [%s]", n.Name)
 	}
+	keyChild := n.Children[0].Children[0]
+	valueChild := n.Children[0].Children[1]
 
 	keyStr, err := goStructNode{
 		SchemaNode:     *keyChild,

@@ -689,12 +689,8 @@ func TestGoStruct(t *testing.T) {
 }
 
 func TestGoStructAfterJSONSchema(t *testing.T) {
-	// Regression test: JSONSchema mutates inner MAP node children through shared
-	// pointers (via updateTagForMap), so asMap must handle the flattened
-	// MAP->[Key,Value] form as well as the original MAP->MAP_KEY_VALUE->[Key,Value] form.
 	t.Run("simple map consistent output", func(t *testing.T) {
-		// A file without nested MAPs: GoStruct result must be identical whether
-		// JSONSchema is called first or not.
+		// GoStruct output must be identical whether JSONSchema is called first or not.
 		uri := "../testdata/all-types.parquet"
 
 		pr1, err := pio.NewParquetFileReader(context.Background(), uri, pio.ReadOption{})
@@ -717,10 +713,8 @@ func TestGoStructAfterJSONSchema(t *testing.T) {
 	})
 
 	t.Run("nested map no panic", func(t *testing.T) {
-		// A file with a MAP-of-MAP: JSONSchema mutates the inner MAP node's
-		// Children through a shared pointer. GoStruct must return an error
-		// (unsupported type) rather than panic when it processes the now-flattened
-		// inner MAP structure via the else branch in asMap.
+		// A MAP-of-MAP remains intact after JSONSchema, and GoStruct reports the
+		// unsupported nested type without panicking.
 		pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/map-value-map.parquet", pio.ReadOption{})
 		require.NoError(t, err)
 		defer func() { _ = pr.PFile.Close() }()
@@ -2207,7 +2201,7 @@ func TestAsMapEdgeCases(t *testing.T) {
 		require.ErrorContains(t, err, "invalid MAP structure")
 	})
 
-	t.Run("pre-processed MAP with only one child", func(t *testing.T) {
+	t.Run("MAP without key-value layer", func(t *testing.T) {
 		node := goStructNode{SchemaNode: SchemaNode{
 			SchemaElement: parquet.SchemaElement{
 				Name:          "mymap",
@@ -2219,7 +2213,7 @@ func TestAsMapEdgeCases(t *testing.T) {
 						Name: "key",
 						Type: &int32T,
 					},
-					// nil ConvertedType → else branch; only 1 child → error
+					// Missing the required MAP_KEY_VALUE layer.
 				},
 			},
 		}}

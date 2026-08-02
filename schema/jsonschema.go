@@ -12,6 +12,11 @@ type jsonSchemaNode struct {
 }
 
 func (s jsonSchemaNode) Schema() JSONSchema {
+	clone := s.cloneForRendering()
+	return jsonSchemaNode{*clone}.schema()
+}
+
+func (s jsonSchemaNode) schema() JSONSchema {
 	// these are tag/value pairs to be ignored as they are default values
 	type tagValPair struct {
 		tag string
@@ -24,7 +29,7 @@ func (s jsonSchemaNode) Schema() JSONSchema {
 		{"convertedtype", "LIST"}:      {},
 		{"convertedtype", "MAP"}:       {},
 	}
-	tagMap := s.GetTagMap()
+	tagMap := s.getTagMap()
 
 	var annotations []string
 	for _, tag := range orderedTags {
@@ -50,7 +55,7 @@ func (s jsonSchemaNode) Schema() JSONSchema {
 	}
 
 	for index, child := range s.Children {
-		ret.Fields[index] = jsonSchemaNode{*child}.Schema()
+		ret.Fields[index] = jsonSchemaNode{*child}.schema()
 	}
 
 	return ret
