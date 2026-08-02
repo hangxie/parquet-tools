@@ -342,6 +342,27 @@ $ parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_fe
 2405462
 ```
 
+S3-compatible object stores such as MinIO, Ceph, Cloudflare R2, and LocalStack
+can be configured with the standard AWS SDK endpoint environment variables.
+`AWS_ENDPOINT_URL_S3` affects only S3 and takes precedence over the global
+`AWS_ENDPOINT_URL`. When either setting selects a custom endpoint,
+`parquet-tools` uses path-style bucket addressing and does not query Amazon S3
+for the bucket region.
+
+For example, to access a local MinIO server:
+
+```bash
+$ export AWS_ENDPOINT_URL_S3=http://localhost:9000
+$ export AWS_REGION=us-east-1
+$ export AWS_ACCESS_KEY_ID=minioadmin
+$ export AWS_SECRET_ACCESS_KEY=minioadmin
+$ parquet-tools row-count s3://example-bucket/example.parquet
+```
+
+The endpoint and region can also come from the standard AWS shared config
+file. Use `--anonymous` for an S3-compatible endpoint that does not require
+signed requests.
+
 Optionally, you can specify object version by using `--object-version` when you perform read operation (like cat, row-count, schema, etc.) for S3, `parquet-tools` will access current version if this parameter is omitted.
 
 If version for the S3 object does not exist or bucket does not have version enabled, `parquet-tools` will report error:
