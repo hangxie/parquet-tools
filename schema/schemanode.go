@@ -69,6 +69,21 @@ type SchemaOption struct {
 	SkipPageEncoding bool
 }
 
+// cloneForRendering copies the tree nodes and child slices that schema
+// renderers normalize while leaving read-only Parquet metadata shared.
+func (s *SchemaNode) cloneForRendering() *SchemaNode {
+	if s == nil {
+		return nil
+	}
+
+	clone := *s
+	clone.Children = make([]*SchemaNode, len(s.Children))
+	for i, child := range s.Children {
+		clone.Children[i] = child.cloneForRendering()
+	}
+	return &clone
+}
+
 func (s SchemaNode) GoStruct(forceCamelCase bool) (string, error) {
 	goStruct, err := goStructNode{
 		SchemaNode:     s,

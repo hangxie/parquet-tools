@@ -108,12 +108,7 @@ func (c Cmd) openSources(ctx context.Context) ([]*reader.ParquetReader, string, 
 
 		if rootSchema == nil {
 			rootSchema = currSchema
-			// Build a separate tree for JSON since JSONSchema() mutates the tree
-			jsonTree, jsonErr := pschema.NewSchemaTree(ctx, fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
-			if jsonErr != nil {
-				return nil, "", jsonErr
-			}
-			schemaJSON = jsonTree.JSONSchema()
+			schemaJSON = rootSchema.JSONSchema()
 			continue
 		}
 

@@ -10,6 +10,10 @@ import (
 )
 
 func (s *SchemaNode) GetTagMap() map[string]string {
+	return s.cloneForRendering().getTagMap()
+}
+
+func (s *SchemaNode) getTagMap() map[string]string {
 	tagMap := map[string]string{
 		"repetitiontype": repetitionTypeStr(s.SchemaElement),
 		"type":           typeStr(s.SchemaElement),
@@ -85,7 +89,7 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 	if s.Children[0].LogicalType != nil {
 		// LIST => Element (of scalar type)
 		s.Children[0].Name = "Element"
-		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		s.Children[0].RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
 		maps.Copy(tagMap, s.Children[0].getTagMapWithPrefix("value"))
 		return
 	}
@@ -95,7 +99,7 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 		s.Children[0].Name = "Element"
 		s.Children[0].Type = nil
 		s.Children[0].ConvertedType = nil
-		*s.Children[0].RepetitionType = parquet.FieldRepetitionType_REQUIRED
+		s.Children[0].RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
 		return
 	}
 
