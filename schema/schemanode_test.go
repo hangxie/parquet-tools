@@ -774,6 +774,39 @@ func TestCloneForRenderingPreservesNilChild(t *testing.T) {
 	require.Nil(t, clone.Children[0])
 }
 
+func TestCloneForRenderingCopiesMutablePointers(t *testing.T) {
+	typeValue := parquet.Type_BYTE_ARRAY
+	repetitionType := parquet.FieldRepetitionType_OPTIONAL
+	convertedType := parquet.ConvertedType_UTF8
+	root := &SchemaNode{SchemaElement: parquet.SchemaElement{
+		Type:           &typeValue,
+		RepetitionType: &repetitionType,
+		ConvertedType:  &convertedType,
+	}}
+
+	clone := root.cloneForRendering()
+
+	require.NotSame(t, root.Type, clone.Type)
+	require.NotSame(t, root.RepetitionType, clone.RepetitionType)
+	require.NotSame(t, root.ConvertedType, clone.ConvertedType)
+	require.Equal(t, root.SchemaElement, clone.SchemaElement)
+}
+
+func TestGetTagMapAllocationsDoNotScaleWithChildren(t *testing.T) {
+	root := &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "root"}}
+	for range 128 {
+		root.Children = append(root.Children, &SchemaNode{})
+	}
+
+	var tagMap map[string]string
+	allocations := testing.AllocsPerRun(10, func() {
+		tagMap = root.GetTagMap()
+	})
+
+	require.Equal(t, "root", tagMap["name"])
+	require.LessOrEqual(t, allocations, 5.0)
+}
+
 func TestJSONSchema(t *testing.T) {
 	testCases := []struct {
 		name       string
