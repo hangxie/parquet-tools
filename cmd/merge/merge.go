@@ -90,18 +90,27 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 	return g.Wait()
 }
 
-func (c Cmd) openSources(ctx context.Context) ([]*reader.ParquetReader, string, error) {
+func (c Cmd) openSources(ctx context.Context) (_ []*reader.ParquetReader, _ string, retErr error) {
 	var schemaJSON string
 	var rootSchema *pschema.SchemaNode
-	var err error
-	fileReaders := make([]*reader.ParquetReader, len(c.Source))
-	for i, source := range c.Source {
-		fileReaders[i], err = pio.NewParquetFileReader(ctx, source, c.ReadOption)
+	fileReaders := make([]*reader.ParquetReader, 0, len(c.Source))
+	// Close any already-opened readers if we bail out partway through; the
+	// caller only registers its deferred close once openSources succeeds.
+	defer func() {
+		if retErr != nil {
+			for _, fileReader := range fileReaders {
+				_ = fileReader.PFile.Close()
+			}
+		}
+	}()
+	for _, source := range c.Source {
+		fileReader, err := pio.NewParquetFileReader(ctx, source, c.ReadOption)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to read from [%s]: %w", source, err)
 		}
+		fileReaders = append(fileReaders, fileReader)
 
-		currSchema, err := pschema.NewSchemaTree(ctx, fileReaders[i], pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
+		currSchema, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 		if err != nil {
 			return nil, "", err
 		}

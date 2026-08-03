@@ -94,6 +94,14 @@ func (c Cmd) importCSV(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create CSV writer: %w", err)
 	}
+	// Best-effort close (with HDFS retry) on every error path once the writer
+	// exists; disabled once the explicit close below takes over.
+	closed := false
+	defer func() {
+		if !closed {
+			_ = c.closeWriter(parquetWriter.PFile)
+		}
+	}()
 
 	if c.SkipHeader {
 		_, _ = csvReader.Read()
@@ -118,6 +126,7 @@ func (c Cmd) importCSV(ctx context.Context) error {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
 
+	closed = true
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
 		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
 	}
@@ -150,6 +159,14 @@ func (c Cmd) importJSON(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
+	// Best-effort close (with HDFS retry) on every error path once the writer
+	// exists; disabled once the explicit close below takes over.
+	closed := false
+	defer func() {
+		if !closed {
+			_ = c.closeWriter(parquetWriter.PFile)
+		}
+	}()
 
 	for _, record := range records {
 		if err := parquetWriter.WriteWithContext(ctx, string(record)); err != nil {
@@ -160,6 +177,7 @@ func (c Cmd) importJSON(ctx context.Context) error {
 	if err := parquetWriter.WriteStopWithContext(ctx); err != nil {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
+	closed = true
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
 		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
 	}
@@ -208,6 +226,14 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
+	// Best-effort close (with HDFS retry) on every error path once the writer
+	// exists; disabled once the explicit close below takes over.
+	closed := false
+	defer func() {
+		if !closed {
+			_ = c.closeWriter(parquetWriter.PFile)
+		}
+	}()
 
 	for scanner.Scan() {
 		jsonData := scanner.Bytes()
@@ -237,6 +263,7 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 	if err := parquetWriter.WriteStopWithContext(ctx); err != nil {
 		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
 	}
+	closed = true
 	if err := c.closeWriter(parquetWriter.PFile); err != nil {
 		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
 	}
