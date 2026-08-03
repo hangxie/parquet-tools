@@ -45,6 +45,9 @@ func (c Cmd) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		_ = reader.PFile.Close()
+	}()
 
 	schemaRoot, err := pschema.NewSchemaTree(ctx, reader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, SkipPageEncoding: true})
 	if err != nil {
