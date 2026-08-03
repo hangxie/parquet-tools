@@ -69,6 +69,17 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 2, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: trunkWriter{}},
 			result: map[string]int64{"ut-0.parquet": 3, "ut-1.parquet": 2},
 		},
+		// 3 rows / 2 files: base=1, remainder=1 so the padding is against
+		// FileCount, not RecordCount (3%1==0 would wrongly yield 3 files).
+		"file-count-padding": {
+			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 2, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "good.parquet", current: trunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 2, "ut-1.parquet": 1},
+		},
+		// 5 rows / 3 files: base=1, remainder=2, i.e. numRows%FileCount >= numRows/FileCount.
+		"file-count-remainder-ge-base": {
+			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: trunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 2, "ut-1.parquet": 2, "ut-2.parquet": 1},
+		},
 		"file-count-exceeds-rows": {
 			cmd: Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 7, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "all-types.parquet", current: trunkWriter{}},
 			result: map[string]int64{
