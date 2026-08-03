@@ -50,12 +50,13 @@ func (c *Cmd) openReader(ctx context.Context) (*reader.ParquetReader, error) {
 	c.current.schemaJSON = schemaRoot.JSONSchema()
 
 	if c.FileCount != 0 {
+		// Distribute rows across exactly FileCount files: each file holds
+		// numRows/FileCount records, and the first numRows%FileCount files get
+		// one extra record each (the padding). When numRows < FileCount the base
+		// count is 0, numRows%FileCount == numRows, and the remaining files are
+		// emitted empty.
 		c.RecordCount = parquetReader.GetNumRows() / c.FileCount
-		if c.RecordCount == 0 {
-			c.current.paddingCount = parquetReader.GetNumRows()
-		} else {
-			c.current.paddingCount = parquetReader.GetNumRows() % c.RecordCount
-		}
+		c.current.paddingCount = parquetReader.GetNumRows() % c.FileCount
 	}
 
 	return parquetReader, nil
@@ -113,6 +114,14 @@ func (c Cmd) Run(ctx context.Context) error {
 	defer func() {
 		_ = parquetReader.PFile.Close()
 	}()
+	// Best-effort close of the in-flight target writer on any early return
+	// (read/write/switch error). closeWriter clears current.writer on the
+	// success path so this does not double-close.
+	defer func() {
+		if c.current.writer != nil {
+			_ = c.current.writer.PFile.Close()
+		}
+	}()
 
 	c.current.fileIndex = 0
 	c.current.targetFile = ""
@@ -161,6 +170,7 @@ func (c *Cmd) closeWriter(ctx context.Context) error {
 	if err := c.current.writer.PFile.Close(); err != nil {
 		return fmt.Errorf("failed to close [%s]: %w", c.current.targetFile, err)
 	}
+	c.current.writer = nil
 	return nil
 }
 
