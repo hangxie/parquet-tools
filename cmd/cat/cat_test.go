@@ -543,3 +543,40 @@ func BenchmarkCatCmd(b *testing.B) {
 		}
 	})
 }
+
+func TestMapToStrList(t *testing.T) {
+	testCases := map[string]struct {
+		flatValues map[string]any
+		fieldList  []string
+		expected   []string
+	}{
+		"all-present": {
+			flatValues: map[string]any{"a": "x", "b": int64(2), "c": nil},
+			fieldList:  []string{"a", "b", "c"},
+			expected:   []string{"x", "2", ""},
+		},
+		"reordered": {
+			flatValues: map[string]any{"a": "x", "b": "y"},
+			fieldList:  []string{"b", "a"},
+			expected:   []string{"y", "x"},
+		},
+		// output slice must be sized by the header field list, not the row map;
+		// a row map with fewer keys than fields must not panic.
+		"fewer-map-keys": {
+			flatValues: map[string]any{"a": "x"},
+			fieldList:  []string{"a", "b", "c"},
+			expected:   []string{"x", "", ""},
+		},
+		"empty-field-list": {
+			flatValues: map[string]any{"a": "x"},
+			fieldList:  []string{},
+			expected:   []string{},
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tc.expected, mapToStrList(tc.flatValues, tc.fieldList))
+		})
+	}
+}

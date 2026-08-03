@@ -125,7 +125,7 @@ func (c *Cmd) retrieveFieldDef(ctx context.Context, fileReader *reader.ParquetRe
 }
 
 func mapToStrList(flatValues map[string]any, fieldList []string) []string {
-	values := make([]string, len(flatValues))
+	values := make([]string, len(fieldList))
 	for index, field := range fieldList {
 		switch val := flatValues[field].(type) {
 		case nil:
