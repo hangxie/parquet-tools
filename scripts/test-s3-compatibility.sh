@@ -10,7 +10,7 @@ readonly minio_image="docker.io/alpine/minio:RELEASE.2025-10-15T17-29-55Z"
 readonly minio_client_image="quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z"
 readonly ceph_image="quay.io/benjamin_holmes/ceph-aio:v20"
 readonly garage_image="dxflrs/garage:v2.3.0"
-readonly seaweedfs_image="chrislusf/seaweedfs:4.40"
+readonly seaweedfs_image="chrislusf/seaweedfs:4.41"
 
 # S3-compatible endpoints must work without access to Amazon S3. Route any
 # unexpected HTTPS request through a closed local port while allowing the test
