@@ -3,7 +3,10 @@
 set -euo pipefail
 
 readonly bucket="compatibility"
-readonly minio_image="quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z"
+# The MinIO server and client repositories are archived, so these are the final
+# community releases. MinIO's own registry never published an image for the last
+# server release; alpine-docker/minio builds it from the release tag.
+readonly minio_image="docker.io/alpine/minio:RELEASE.2025-10-15T17-29-55Z"
 readonly minio_client_image="quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z"
 readonly ceph_image="quay.io/ceph/demo:main-30dc8b9a-squid-centos-stream9"
 readonly seaweedfs_image="chrislusf/seaweedfs:4.40"
@@ -18,7 +21,7 @@ containers=()
 
 cleanup() {
 	for container in "${containers[@]}"; do
-		docker rm -f "$container" >/dev/null 2>&1 || true
+		docker rm -f -v "$container" >/dev/null 2>&1 || true
 	done
 }
 trap cleanup EXIT
@@ -52,6 +55,18 @@ wait_for_http() {
 	done
 }
 
+make_bucket() {
+	local container=$1
+	local mc_host=$2
+
+	# MC_HOST_* names the target endpoint, which keeps this to a single mc
+	# invocation instead of a shell wrapping `mc alias set`.
+	pull_image "$minio_client_image"
+	docker run --rm --network "container:$container" \
+		-e "MC_HOST_target=$mc_host" \
+		"$minio_client_image" mb "target/$bucket" >/dev/null
+}
+
 verify_parquet_io() {
 	local endpoint=$1
 	local region=$2
@@ -71,20 +86,20 @@ verify_parquet_io() {
 
 test_minio() {
 	local container="parquet-tools-minio-${RANDOM}"
+	# The image declares /data as a volume but runs as a non-root user, and
+	# Docker creates that anonymous volume owned by root, so MinIO cannot format
+	# its backend there. Keep the data outside the volume.
 	pull_image "$minio_image"
 	docker run -d --name "$container" -p 127.0.0.1::9000 \
 		-e MINIO_ROOT_USER=minioadmin \
 		-e MINIO_ROOT_PASSWORD=minioadmin \
-		"$minio_image" server /data >/dev/null
+		"$minio_image" server /tmp/data >/dev/null
 	containers+=("$container")
 
 	local port
 	port=$(container_port "$container" 9000)
 	wait_for_http "$container" "http://127.0.0.1:$port/minio/health/live"
-	pull_image "$minio_client_image"
-	docker run --rm --network "container:$container" --entrypoint /bin/sh \
-		"$minio_client_image" -c \
-		"mc alias set local http://127.0.0.1:9000 minioadmin minioadmin && mc mb local/$bucket" >/dev/null
+	make_bucket "$container" "http://minioadmin:minioadmin@127.0.0.1:9000"
 	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "minioadmin" "minioadmin"
 }
 
