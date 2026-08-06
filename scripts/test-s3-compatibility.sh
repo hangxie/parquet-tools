@@ -9,6 +9,7 @@ readonly bucket="compatibility"
 readonly minio_image="docker.io/alpine/minio:RELEASE.2025-10-15T17-29-55Z"
 readonly minio_client_image="quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z"
 readonly ceph_image="quay.io/benjamin_holmes/ceph-aio:v20"
+readonly garage_image="dxflrs/garage:v2.3.0"
 readonly seaweedfs_image="chrislusf/seaweedfs:4.40"
 
 # S3-compatible endpoints must work without access to Amazon S3. Route any
@@ -18,11 +19,13 @@ export HTTPS_PROXY="http://127.0.0.1:1"
 export NO_PROXY="127.0.0.1,localhost"
 
 containers=()
+work_dir=$(mktemp -d)
 
 cleanup() {
 	for container in "${containers[@]}"; do
 		docker rm -f -v "$container" >/dev/null 2>&1 || true
 	done
+	rm -rf "$work_dir"
 }
 trap cleanup EXIT
 
@@ -143,6 +146,46 @@ test_ceph() {
 	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "cephdemo" "cephdemosecret"
 }
 
+test_garage() {
+	local container="parquet-tools-garage-${RANDOM}"
+	local config="$work_dir/garage.toml"
+	local access_key="garageaccesskey"
+	# Garage rejects secrets shorter than 16 characters.
+	local secret_key="garagesecretkey0"
+
+	# Garage refuses to start without a config file. Single-node mode builds the
+	# cluster layout on its own, and --default-bucket provisions the access key
+	# and the bucket, so no post-start CLI setup is needed.
+	cat >"$config" <<-EOF
+		metadata_dir = "/tmp/meta"
+		data_dir = "/tmp/data"
+		db_engine = "sqlite"
+		replication_factor = 1
+
+		rpc_bind_addr = "[::]:3901"
+		rpc_public_addr = "127.0.0.1:3901"
+		rpc_secret = "$(od -An -tx1 -N32 /dev/urandom | tr -d ' \n')"
+
+		[s3_api]
+		s3_region = "garage"
+		api_bind_addr = "[::]:3900"
+	EOF
+
+	pull_image "$garage_image"
+	docker run -d --name "$container" -p 127.0.0.1::3900 \
+		-v "$config:/etc/garage.toml:ro" \
+		-e GARAGE_DEFAULT_ACCESS_KEY="$access_key" \
+		-e GARAGE_DEFAULT_SECRET_KEY="$secret_key" \
+		-e GARAGE_DEFAULT_BUCKET="$bucket" \
+		"$garage_image" /garage server --single-node --default-bucket >/dev/null
+	containers+=("$container")
+
+	local port
+	port=$(container_port "$container" 3900)
+	wait_for_http "$container" "http://127.0.0.1:$port/"
+	verify_parquet_io "http://127.0.0.1:$port" "garage" "$access_key" "$secret_key"
+}
+
 test_seaweedfs() {
 	local container="parquet-tools-seaweedfs-${RANDOM}"
 	pull_image "$seaweedfs_image"
@@ -163,6 +206,8 @@ echo "==> MinIO endpoint ..."
 test_minio
 echo "==> Ceph RGW endpoint ..."
 test_ceph
+echo "==> Garage endpoint ..."
+test_garage
 echo "==> SeaweedFS endpoint ..."
 test_seaweedfs
 echo "All S3-compatible endpoint tests passed"
