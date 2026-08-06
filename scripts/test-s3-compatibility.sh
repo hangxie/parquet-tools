@@ -8,7 +8,7 @@ readonly bucket="compatibility"
 # server release; alpine-docker/minio builds it from the release tag.
 readonly minio_image="docker.io/alpine/minio:RELEASE.2025-10-15T17-29-55Z"
 readonly minio_client_image="quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z"
-readonly ceph_image="quay.io/ceph/demo:main-30dc8b9a-squid-centos-stream9"
+readonly ceph_image="quay.io/benjamin_holmes/ceph-aio:v20"
 readonly seaweedfs_image="chrislusf/seaweedfs:4.40"
 
 # S3-compatible endpoints must work without access to Amazon S3. Route any
@@ -105,39 +105,42 @@ test_minio() {
 
 test_ceph() {
 	local container="parquet-tools-ceph-${RANDOM}"
-	# The demo image defaults to BlueStore, which needs a block device and native
-	# AIO. MemStore keeps this endpoint compatibility test self-contained.
-	pull_image --platform linux/amd64 "$ceph_image"
-	docker run -d --platform linux/amd64 --name "$container" -p 127.0.0.1::8080 \
-		-e MON_IP=127.0.0.1 \
-		-e CEPH_PUBLIC_NETWORK=0.0.0.0/0 \
-		-e DEMO_DAEMONS=osd,rgw \
-		-e CEPH_DEMO_UID=demo \
-		-e CEPH_DEMO_ACCESS_KEY=demo \
-		-e CEPH_DEMO_SECRET_KEY=demo \
-		--entrypoint /bin/bash "$ceph_image" -lc \
-		"sed -i 's/osd objectstore = bluestore/osd objectstore = memstore/g' /opt/ceph-container/bin/demo && exec /opt/ceph-container/bin/demo" >/dev/null
+	# Only the RADOS gateway matters here, so the dashboard, CephFS, and RBD
+	# subsystems stay off to keep startup fast and the container lean.
+	pull_image "$ceph_image"
+	docker run -d --name "$container" -p 127.0.0.1::8000 \
+		-e ENABLE_DASHBOARD=false \
+		-e ENABLE_CEPHFS=false \
+		-e ENABLE_RBD=false \
+		-e DISABLE_MON_DISK_WARNINGS=true \
+		"$ceph_image" >/dev/null
 	containers+=("$container")
 
-	for attempt in $(seq 1 100); do
-		if docker exec "$container" s3cmd ls >/dev/null 2>&1; then
+	local port
+	port=$(container_port "$container" 8000)
+	wait_for_http "$container" "http://127.0.0.1:$port/"
+
+	# The image ships no S3 user, and the gateway answers before the cluster can
+	# serve writes, so retry until user creation goes through.
+	for attempt in $(seq 1 60); do
+		if docker exec "$container" radosgw-admin user create \
+			--uid=demo --display-name=demo \
+			--access-key=cephdemo --secret-key=cephdemosecret >/dev/null 2>&1; then
 			break
 		fi
 		if ! docker inspect -f '{{.State.Running}}' "$container" | grep -q true; then
 			docker logs "$container"
 			return 1
 		fi
-		if [[ $attempt -eq 100 ]]; then
+		if [[ $attempt -eq 60 ]]; then
 			docker logs "$container"
 			return 1
 		fi
-		sleep 6
+		sleep 5
 	done
 
-	docker exec "$container" s3cmd mb "s3://$bucket" >/dev/null
-	local port
-	port=$(container_port "$container" 8080)
-	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "demo" "demo"
+	make_bucket "$container" "http://cephdemo:cephdemosecret@127.0.0.1:8000"
+	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "cephdemo" "cephdemosecret"
 }
 
 test_seaweedfs() {
