@@ -342,8 +342,9 @@ $ parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_fe
 2405462
 ```
 
-S3-compatible object stores such as MinIO, Ceph, Cloudflare R2, and LocalStack
-can be configured with the standard AWS SDK endpoint environment variables.
+S3-compatible object stores such as MinIO, Ceph, Garage, SeaweedFS, Cloudflare
+R2, and LocalStack can be configured with the standard AWS SDK endpoint
+environment variables.
 `AWS_ENDPOINT_URL_S3` affects only S3 and takes precedence over the global
 `AWS_ENDPOINT_URL`. When either setting selects a custom endpoint,
 `parquet-tools` uses path-style bucket addressing and does not query Amazon S3
