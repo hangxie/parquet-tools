@@ -42,45 +42,44 @@ type geospatialStatisticsMeta struct {
 }
 
 type columnMeta struct {
-	PathInSchema             []string
-	Type                     string
-	TypeLength               *int32  `json:",omitempty"`
-	RepetitionType           *string `json:",omitempty"`
-	ConvertedType            *string `json:",omitempty"`
-	LogicalType              *string `json:",omitempty"`
-	Scale                    *int32  `json:",omitempty"`
-	Precision                *int32  `json:",omitempty"`
-	FieldID                  *int32  `json:",omitempty"`
-	Encodings                []string
-	CompressedSize           int64
-	UncompressedSize         int64
-	NumValues                int64
-	NullCount                *int64  `json:",omitempty"`
-	DistinctCount            *int64  `json:",omitempty"`
-	MaxValue                 any     `json:",omitempty"`
-	MinValue                 any     `json:",omitempty"`
-	IsMaxValueExact          *bool   `json:",omitempty"`
-	IsMinValueExact          *bool   `json:",omitempty"`
-	Index                    *string `json:",omitempty"` // Legacy per-column projection of row-group SortingColumns.
-	FilePath                 *string `json:",omitempty"`
-	FileOffset               int64
-	DataPageOffset           int64
-	IndexPageOffset          *int64                    `json:",omitempty"`
-	DictionaryPageOffset     *int64                    `json:",omitempty"`
-	OffsetIndexOffset        *int64                    `json:",omitempty"`
-	OffsetIndexLength        *int32                    `json:",omitempty"`
-	ColumnIndexOffset        *int64                    `json:",omitempty"`
-	ColumnIndexLength        *int32                    `json:",omitempty"`
-	KeyValueMetadata         []keyValueMeta            `json:",omitempty"`
-	EncodingStats            []encodingStatMeta        `json:",omitempty"`
-	SizeStatistics           *sizeStatisticsMeta       `json:",omitempty"`
-	GeospatialStatistics     *geospatialStatisticsMeta `json:",omitempty"`
-	BloomFilterOffset        *int64                    `json:",omitempty"`
-	BloomFilterLength        *int32                    `json:",omitempty"`
-	BloomFilterStorageLength *int32                    `json:",omitempty"`
-	CompressionCodec         string
-	EncryptionMode           *string `json:",omitempty"`
-	KeyMetadata              *string `json:",omitempty"`
+	PathInSchema         []string
+	Type                 string
+	TypeLength           *int32  `json:",omitempty"`
+	RepetitionType       *string `json:",omitempty"`
+	ConvertedType        *string `json:",omitempty"`
+	LogicalType          *string `json:",omitempty"`
+	Scale                *int32  `json:",omitempty"`
+	Precision            *int32  `json:",omitempty"`
+	FieldID              *int32  `json:",omitempty"`
+	Encodings            []string
+	CompressedSize       int64
+	UncompressedSize     int64
+	NumValues            int64
+	NullCount            *int64  `json:",omitempty"`
+	DistinctCount        *int64  `json:",omitempty"`
+	MaxValue             any     `json:",omitempty"`
+	MinValue             any     `json:",omitempty"`
+	IsMaxValueExact      *bool   `json:",omitempty"`
+	IsMinValueExact      *bool   `json:",omitempty"`
+	Index                *string `json:",omitempty"` // Legacy per-column projection of row-group SortingColumns.
+	FilePath             *string `json:",omitempty"`
+	FileOffset           int64
+	DataPageOffset       int64
+	IndexPageOffset      *int64                    `json:",omitempty"`
+	DictionaryPageOffset *int64                    `json:",omitempty"`
+	OffsetIndexOffset    *int64                    `json:",omitempty"`
+	OffsetIndexLength    *int32                    `json:",omitempty"`
+	ColumnIndexOffset    *int64                    `json:",omitempty"`
+	ColumnIndexLength    *int32                    `json:",omitempty"`
+	KeyValueMetadata     []keyValueMeta            `json:",omitempty"`
+	EncodingStats        []encodingStatMeta        `json:",omitempty"`
+	SizeStatistics       *sizeStatisticsMeta       `json:",omitempty"`
+	GeospatialStatistics *geospatialStatisticsMeta `json:",omitempty"`
+	BloomFilterOffset    *int64                    `json:",omitempty"`
+	BloomFilterLength    *int32                    `json:",omitempty"`
+	CompressionCodec     string
+	EncryptionMode       *string `json:",omitempty"`
+	KeyMetadata          *string `json:",omitempty"`
 }
 
 type rowGroupMeta struct {

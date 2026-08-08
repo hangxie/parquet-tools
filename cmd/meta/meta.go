@@ -56,9 +56,7 @@ func (c Cmd) Run(ctx context.Context) error {
 
 	inExNameMap := schemaRoot.GetInExNameMap()
 	pathMap := schemaRoot.GetPathMap()
-	bloomSizeMap := pschema.BloomFilterSizeMap(reader)
-
-	rowGroups, err := c.buildRowGroups(reader.Footer.RowGroups, inExNameMap, pathMap, bloomSizeMap)
+	rowGroups, err := c.buildRowGroups(reader.Footer.RowGroups, inExNameMap, pathMap)
 	if err != nil {
 		return err
 	}
@@ -93,11 +91,11 @@ func (c Cmd) Run(ctx context.Context) error {
 	return nil
 }
 
-func (c Cmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) ([]rowGroupMeta, error) {
+func (c Cmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]rowGroupMeta, error) {
 	result := make([]rowGroupMeta, len(rowGroups))
 	for i, rg := range rowGroups {
 		sortingColumns := sortingColumnMeta(rg.SortingColumns)
-		columns, err := c.buildColumns(rg, sortingColumns, inExNameMap, pathMap, bloomSizeMap)
+		columns, err := c.buildColumns(rg, sortingColumns, inExNameMap, pathMap)
 		if err != nil {
 			return nil, err
 		}
@@ -114,10 +112,10 @@ func (c Cmd) buildRowGroups(rowGroups []*parquet.RowGroup, inExNameMap map[strin
 	return result, nil
 }
 
-func (c Cmd) buildColumns(rg *parquet.RowGroup, sortingColumns []sortingMeta, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) ([]columnMeta, error) {
+func (c Cmd) buildColumns(rg *parquet.RowGroup, sortingColumns []sortingMeta, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) ([]columnMeta, error) {
 	columns := make([]columnMeta, len(rg.Columns))
 	for i, col := range rg.Columns {
-		column, err := c.buildColumnMeta(col, sortingColumns, i, inExNameMap, pathMap, bloomSizeMap)
+		column, err := c.buildColumnMeta(col, sortingColumns, i, inExNameMap, pathMap)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +124,7 @@ func (c Cmd) buildColumns(rg *parquet.RowGroup, sortingColumns []sortingMeta, in
 	return columns, nil
 }
 
-func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []sortingMeta, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) (columnMeta, error) {
+func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []sortingMeta, colIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) (columnMeta, error) {
 	column := columnMeta{
 		PathInSchema:         col.MetaData.PathInSchema,
 		Type:                 col.MetaData.Type.String(),
@@ -160,11 +158,11 @@ func (c Cmd) buildColumnMeta(col *parquet.ColumnChunk, sortingColumns []sortingM
 
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 
-	// Use the correct bitset-only size from the bloom filter size map
-	if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
-		column.BloomFilterLength = &size
-	}
-	column.BloomFilterStorageLength = col.MetaData.BloomFilterLength
+	// The footer records this per chunk, so it is the size that belongs in a
+	// per-row-group view. It counts the Thrift header along with the bitset, and
+	// is optional, so a writer that omits it leaves the filter reported by offset
+	// alone.
+	column.BloomFilterLength = col.MetaData.BloomFilterLength
 
 	if exPath, found := inExNameMap[pathKey]; found {
 		column.PathInSchema = exPath
