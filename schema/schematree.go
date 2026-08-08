@@ -25,18 +25,57 @@ func readFirstDataPageEncoding(ctx context.Context, pr *reader.ParquetReader, ro
 	return headerInfo.Encoding, nil
 }
 
-// buildEncodingMap extracts encoding information from row groups by reading the first data page header.
-// For each column, it reads the page header at DataPageOffset to get the actual data page encoding.
-// Note: Parquet files should use consistent encodings across row groups for the same column.
-// This function reads columns in parallel to speed up remote file access.
+// firstNonEmptyChunk returns the first row group holding values for a column.
+func firstNonEmptyChunk(rowGroups []*parquet.RowGroup, colIndex int) (int, *parquet.ColumnChunk, bool) {
+	// An empty chunk has no data page, and its DataPageOffset of 0 would aim a
+	// read at the file magic.
+	for rgIndex, rowGroup := range rowGroups {
+		if colIndex >= len(rowGroup.Columns) {
+			continue
+		}
+		chunk := rowGroup.Columns[colIndex]
+		if chunk == nil || chunk.MetaData == nil || chunk.MetaData.GetNumValues() == 0 {
+			continue
+		}
+		return rgIndex, chunk, true
+	}
+	return 0, nil, false
+}
+
+// representativeChunk returns the chunk that speaks for a column, or fallback when
+// every chunk is empty. A schema leaf holds one value, so per-chunk metadata is sampled.
+func representativeChunk(rowGroups []*parquet.RowGroup, colIndex int, fallback *parquet.ColumnChunk) *parquet.ColumnChunk {
+	if _, chunk, ok := firstNonEmptyChunk(rowGroups, colIndex); ok {
+		return chunk
+	}
+	return fallback
+}
+
+// firstChunkWithBloomFilter returns the first chunk carrying a bloom filter offset.
+func firstChunkWithBloomFilter(rowGroups []*parquet.RowGroup, colIndex int) (*parquet.ColumnChunk, bool) {
+	for _, rowGroup := range rowGroups {
+		if colIndex >= len(rowGroup.Columns) {
+			continue
+		}
+		chunk := rowGroup.Columns[colIndex]
+		if chunk == nil || chunk.MetaData == nil || !chunk.MetaData.IsSetBloomFilterOffset() {
+			continue
+		}
+		return chunk, true
+	}
+	return nil, false
+}
+
+// buildEncodingMap maps each column path to the encoding of its first data page.
+// Encodings are consistent across row groups, so one chunk speaks for the column.
 func buildEncodingMap(ctx context.Context, pr *reader.ParquetReader) (map[string]string, error) {
 	result := make(map[string]string)
 
-	// Use the first row group to extract encodings
 	if len(pr.Footer.RowGroups) == 0 {
 		return result, nil
 	}
 
+	// Row group 0 supplies the column list only.
 	columns := pr.Footer.RowGroups[0].Columns
 
 	// Use a mutex to protect concurrent writes to the result map
@@ -48,8 +87,15 @@ func buildEncodingMap(ctx context.Context, pr *reader.ParquetReader) (map[string
 
 	for colIndex, col := range columns {
 		g.Go(func() error {
+			// Without metadata there is no column path, and a panic here would
+			// take down the process from inside the goroutine.
+			if col == nil || col.MetaData == nil {
+				return nil
+			}
 			pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
-			if col.GetCryptoMetadata() != nil {
+
+			rgIndex, chunk, ok := firstNonEmptyChunk(pr.Footer.RowGroups, colIndex)
+			if !ok || chunk.GetCryptoMetadata() != nil {
 				return nil
 			}
 
@@ -71,7 +117,7 @@ func buildEncodingMap(ctx context.Context, pr *reader.ParquetReader) (map[string
 			}
 
 			// Read just the first data page header to get encoding
-			encoding, err := readFirstDataPageEncoding(gctx, clonedReader, 0, colIndex)
+			encoding, err := readFirstDataPageEncoding(gctx, clonedReader, rgIndex, colIndex)
 			if err != nil {
 				return fmt.Errorf("failed to read encoding for column [%s]: %w", pathKey, err)
 			}
@@ -89,8 +135,8 @@ func buildEncodingMap(ctx context.Context, pr *reader.ParquetReader) (map[string
 	return result, nil
 }
 
-// buildCompressionCodecMap extracts compression codec information from the footer metadata.
-// This is a fast operation as it only reads from the already-loaded footer.
+// buildCompressionCodecMap maps each column path to the codec of its representative
+// chunk, read from the already-loaded footer. Files write one codec per column.
 func buildCompressionCodecMap(pr *reader.ParquetReader) map[string]string {
 	result := make(map[string]string)
 
@@ -98,11 +144,14 @@ func buildCompressionCodecMap(pr *reader.ParquetReader) map[string]string {
 		return result
 	}
 
-	// Use the first row group to extract compression codecs
-	columns := pr.Footer.RowGroups[0].Columns
-	for _, col := range columns {
+	for colIndex, col := range pr.Footer.RowGroups[0].Columns {
+		if col == nil || col.MetaData == nil {
+			continue
+		}
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
-		result[pathKey] = col.MetaData.Codec.String()
+		// An empty chunk records a codec no data was written with.
+		chunk := representativeChunk(pr.Footer.RowGroups, colIndex, col)
+		result[pathKey] = chunk.MetaData.Codec.String()
 	}
 
 	return result
@@ -114,9 +163,8 @@ type bloomFilterInfo struct {
 	Size    int32
 }
 
-// buildBloomFilterMap extracts bloom filter information using the correct bitset-only
-// size from SchemaHandler.Infos (populated by the library's detectBloomFilters), rather
-// than raw metadata which includes Thrift header overhead.
+// buildBloomFilterMap reports which columns carry a bloom filter, sized in bitset bytes.
+// The offset is per chunk, so a column filtered in any row group counts as filtered.
 func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
 	result := make(map[string]bloomFilterInfo)
 
@@ -125,13 +173,16 @@ func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
 	}
 
 	rootName := pr.SchemaHandler.GetRootInName()
-	columns := pr.Footer.RowGroups[0].Columns
-	for _, col := range columns {
-		if !col.MetaData.IsSetBloomFilterOffset() {
+	for colIndex, col := range pr.Footer.RowGroups[0].Columns {
+		if col == nil || col.MetaData == nil {
+			continue
+		}
+		if _, ok := firstChunkWithBloomFilter(pr.Footer.RowGroups, colIndex); !ok {
 			continue
 		}
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
+		// The library sizes filters in row group 0 only; 0 reads as absent.
 		info := bloomFilterInfo{Enabled: true}
 		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
 			info.Size = pr.SchemaHandler.Infos[idx].BloomFilterSize
@@ -142,26 +193,16 @@ func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
 	return result
 }
 
-// BloomFilterSizeMap returns a map from column path (PathInSchema joined) to the correct
-// bloom filter bitset size in bytes, as detected by the parquet-go library from the actual
-// file header (not from metadata which includes Thrift header overhead).
+// BloomFilterSizeMap maps each column path to its bloom filter bitset size in bytes.
+// Sizes come from row group 0 alone and exclude the Thrift header.
 func BloomFilterSizeMap(pr *reader.ParquetReader) map[string]int32 {
 	result := make(map[string]int32)
 
-	if len(pr.Footer.RowGroups) == 0 {
-		return result
-	}
-
-	rootName := pr.SchemaHandler.GetRootInName()
-	columns := pr.Footer.RowGroups[0].Columns
-	for _, col := range columns {
-		if !col.MetaData.IsSetBloomFilterOffset() {
-			continue
-		}
-		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
-		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
-		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
-			result[pathKey] = pr.SchemaHandler.Infos[idx].BloomFilterSize
+	// Derived from the same scan so the two cannot drift. An unsized filter is
+	// left out rather than recorded as zero bytes.
+	for pathKey, info := range buildBloomFilterMap(pr) {
+		if info.Size > 0 {
+			result[pathKey] = info.Size
 		}
 	}
 
