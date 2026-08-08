@@ -35,8 +35,7 @@
           "ColumnIndexOffset": 1510,
           "ColumnIndexLength": 91,
           "BloomFilterOffset": 2082,
-          "BloomFilterLength": 1024,
-          "BloomFilterStorageLength": 1040,
+          "BloomFilterLength": 1040,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -68,8 +67,7 @@
           "ColumnIndexOffset": 1601,
           "ColumnIndexLength": 75,
           "BloomFilterOffset": 3122,
-          "BloomFilterLength": 4096,
-          "BloomFilterStorageLength": 4112,
+          "BloomFilterLength": 4112,
           "CompressionCodec": "SNAPPY"
         },
         {
@@ -127,8 +125,7 @@
           "ColumnIndexOffset": 1735,
           "ColumnIndexLength": 91,
           "BloomFilterOffset": 7234,
-          "BloomFilterLength": 1024,
-          "BloomFilterStorageLength": 1040,
+          "BloomFilterLength": 1040,
           "CompressionCodec": "SNAPPY"
         },
         {
