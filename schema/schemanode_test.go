@@ -1060,12 +1060,20 @@ func TestBloomFilterSizeMap(t *testing.T) {
 		sizeMap := BloomFilterSizeMap(pr)
 		infoMap := buildBloomFilterMap(pr)
 
-		require.Equal(t, len(infoMap), len(sizeMap))
+		// The key sets diverge by design: a filter the library could not size is
+		// reported by buildBloomFilterMap but carries no entry in a map of sizes.
+		sized := 0
 		for key, info := range infoMap {
 			size, found := sizeMap[key]
+			if info.Size == 0 {
+				require.False(t, found, "unsized filter %q must not appear in BloomFilterSizeMap", key)
+				continue
+			}
+			sized++
 			require.True(t, found, "key %q in buildBloomFilterMap but not in BloomFilterSizeMap", key)
 			require.Equal(t, info.Size, size)
 		}
+		require.Equal(t, sized, len(sizeMap))
 	})
 }
 
