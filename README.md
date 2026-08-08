@@ -1383,6 +1383,16 @@ $ parquet-tools meta testdata/bloom-filter.parquet | jq -c '.RowGroups[0].Column
 >
 > `BloomFilterLength` is optional in the Parquet format, so a writer that omits it leaves the filter reported by `BloomFilterOffset` alone, with no length field at all. Both fields come from the chunk in the row group being reported, so a writer that sizes filters per row group, such as parquet-mr, shows a different length in each.
 
+`schema` reports the filter as a writer directive rather than as file state, so `bloomfiltersize` is the bitset size the `bloomfilter`/`bloomfiltersize` tags configure. Sizing it reads the filter header, which an encrypted column yields only to a key you supply. Without that key the column keeps `bloomfilter=true` and drops `bloomfiltersize` rather than failing the command:
+
+```bash
+$ parquet-tools schema --format go testdata/encrypted-bloom-filter.parquet | grep -E 'ID|Footer'
+	ID     int64   `parquet:"name=ID, type=INT64, compression=SNAPPY, bloomfilter=true"`
+	Footer float64 `parquet:"name=Footer, type=DOUBLE, compression=SNAPPY, bloomfilter=true"`
+```
+
+Supplying the keys sizes them, so `transcode` carries the configured size over instead of replacing it with the writer default.
+
 #### Meta Encryption
 
 When reading an encrypted file with all required keys, `meta` shows encryption metadata alongside regular column metadata:

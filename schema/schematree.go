@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -51,9 +52,9 @@ func representativeChunk(rowGroups []*parquet.RowGroup, colIndex int, fallback *
 	return fallback
 }
 
-// firstChunkWithBloomFilter returns the first chunk carrying a bloom filter offset.
-func firstChunkWithBloomFilter(rowGroups []*parquet.RowGroup, colIndex int) (*parquet.ColumnChunk, bool) {
-	for _, rowGroup := range rowGroups {
+// firstChunkWithBloomFilter returns the first row group carrying a bloom filter offset.
+func firstChunkWithBloomFilter(rowGroups []*parquet.RowGroup, colIndex int) (int, *parquet.ColumnChunk, bool) {
+	for rgIndex, rowGroup := range rowGroups {
 		if colIndex >= len(rowGroup.Columns) {
 			continue
 		}
@@ -61,9 +62,9 @@ func firstChunkWithBloomFilter(rowGroups []*parquet.RowGroup, colIndex int) (*pa
 		if chunk == nil || chunk.MetaData == nil || !chunk.MetaData.IsSetBloomFilterOffset() {
 			continue
 		}
-		return chunk, true
+		return rgIndex, chunk, true
 	}
-	return nil, false
+	return 0, nil, false
 }
 
 // buildEncodingMap maps each column path to the encoding of its first data page.
@@ -165,48 +166,36 @@ type bloomFilterInfo struct {
 
 // buildBloomFilterMap reports which columns carry a bloom filter, sized in bitset bytes.
 // The offset is per chunk, so a column filtered in any row group counts as filtered.
-func buildBloomFilterMap(pr *reader.ParquetReader) map[string]bloomFilterInfo {
+func buildBloomFilterMap(ctx context.Context, pr *reader.ParquetReader) (map[string]bloomFilterInfo, error) {
 	result := make(map[string]bloomFilterInfo)
 
 	if len(pr.Footer.RowGroups) == 0 {
-		return result
+		return result, nil
 	}
 
-	rootName := pr.SchemaHandler.GetRootInName()
 	for colIndex, col := range pr.Footer.RowGroups[0].Columns {
 		if col == nil || col.MetaData == nil {
 			continue
 		}
-		if _, ok := firstChunkWithBloomFilter(pr.Footer.RowGroups, colIndex); !ok {
+		rgIndex, _, ok := firstChunkWithBloomFilter(pr.Footer.RowGroups, colIndex)
+		if !ok {
 			continue
 		}
 		pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
-		fullPath := common.PathToStr(append([]string{rootName}, col.MetaData.GetPathInSchema()...))
-		// The library sizes filters in row group 0 only; 0 reads as absent.
 		info := bloomFilterInfo{Enabled: true}
-		if idx, ok := pr.SchemaHandler.MapIndex[fullPath]; ok {
-			info.Size = pr.SchemaHandler.Infos[idx].BloomFilterSize
+		// Sizing reads the filter header, which an encrypted column yields only to a
+		// key the caller may not hold. Presence came from the footer, so leave it unsized.
+		size, err := pr.BloomFilterSize(ctx, pathKey, rgIndex)
+		switch {
+		case err == nil:
+			info.Size = size
+		case !errors.Is(err, reader.ErrColumnKeyRequired):
+			return nil, fmt.Errorf("failed to read bloom filter size for column [%s]: %w", pathKey, err)
 		}
 		result[pathKey] = info
 	}
 
-	return result
-}
-
-// BloomFilterSizeMap maps each column path to its bloom filter bitset size in bytes.
-// Sizes come from row group 0 alone and exclude the Thrift header.
-func BloomFilterSizeMap(pr *reader.ParquetReader) map[string]int32 {
-	result := make(map[string]int32)
-
-	// Derived from the same scan so the two cannot drift. An unsized filter is
-	// left out rather than recorded as zero bytes.
-	for pathKey, info := range buildBloomFilterMap(pr) {
-		if info.Size > 0 {
-			result[pathKey] = info.Size
-		}
-	}
-
-	return result
+	return result, nil
 }
 
 func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
@@ -222,8 +211,10 @@ func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option Sch
 
 	compressionCodecMap := buildCompressionCodecMap(reader)
 
-	// Always extract bloom filter information from footer metadata
-	bloomFilterMap := buildBloomFilterMap(reader)
+	bloomFilterMap, err := buildBloomFilterMap(ctx, reader)
+	if err != nil {
+		return nil, err
+	}
 
 	schemas := reader.SchemaHandler.SchemaElements
 	root := &SchemaNode{
