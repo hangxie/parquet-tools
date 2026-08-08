@@ -1,8 +1,7 @@
 {
   "columnChunk": {
-    "bloomFilterLength": 1024,
+    "bloomFilterLength": 1040,
     "bloomFilterOffset": 2082,
-    "bloomFilterStorageLength": 1040,
     "columnChunkIndex": 0,
     "columnIndex": {
       "boundaryOrder": "UNORDERED",

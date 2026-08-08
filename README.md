@@ -1230,6 +1230,8 @@ Column chunk level inspection shows all pages within a column chunk, including p
 
 When present, the `columnIndex` object includes the boundary order and decoded per-page bounds, while `offsetIndex.pageLocations` identifies each data page's file position, compressed size, and first row.
 
+Bloom filters appear as `bloomFilterOffset` and `bloomFilterLength`; see [Bloom Filter Sizes](#bloom-filter-sizes) for what that length measures.
+
 ```bash
 $ parquet-tools inspect testdata/good.parquet --row-group 0 --column-chunk 0 | jq '.columnChunk | {pathInSchema, boundaryOrder: .columnIndex.boundaryOrder, pageLocations: .offsetIndex.pageLocations}'
 {"pathInSchema":["shoe_brand"],"boundaryOrder":"UNORDERED","pageLocations":[{"compressedPageSize":78,"firstRowIndex":0,"offset":4},{"compressedPageSize":78,"firstRowIndex":1,"offset":82},{"compressedPageSize":113,"firstRowIndex":2,"offset":160}]}
@@ -1367,7 +1369,7 @@ parquet-tools: error: field Int96 has type INT96 which is not supported
 
 #### Bloom Filter Sizes
 
-A column chunk that carries a bloom filter reports `BloomFilterOffset`, and `BloomFilterLength` when the writer recorded one.
+A column chunk that carries a bloom filter reports `BloomFilterOffset`, and `BloomFilterLength` when the writer recorded one. `inspect` reports the same pair as `bloomFilterOffset` and `bloomFilterLength` in its row group and column chunk levels.
 
 ```bash
 $ parquet-tools meta testdata/bloom-filter.parquet | jq -c '.RowGroups[0].Columns[0] | {PathInSchema, BloomFilterOffset, BloomFilterLength}'
