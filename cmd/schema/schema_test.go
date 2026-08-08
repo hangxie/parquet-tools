@@ -22,6 +22,9 @@ var (
 
 func TestCmd(t *testing.T) {
 	rOpt := pio.ReadOption{}
+	// Same keys testdata/gen/encrypted-bloom-filter writes the fixture with.
+	encFooterKey := "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	encColumnKey := "MTIzNDU2Nzg5MDEyMzQ1MA=="
 	testCases := map[string]struct {
 		cmd    schema.Cmd
 		golden string
@@ -163,6 +166,28 @@ func TestCmd(t *testing.T) {
 		"bloom-filter-go": {
 			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "bloom-filter.parquet"},
 			golden: "schema-bloom-filter-go.txt",
+		},
+		// Without the column key the filter cannot be sized, so it keeps
+		// bloomfilter and loses bloomfiltersize rather than failing the command.
+		"encrypted-bloom-filter-json": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "encrypted-bloom-filter.parquet"},
+			golden: "schema-encrypted-bloom-filter-json.json",
+		},
+		// The footer key sizes the footer-key column; ID needs its own and degrades.
+		"encrypted-bloom-filter-footer-key-json": {
+			cmd: schema.Cmd{
+				ReadOption: pio.ReadOption{FooterKey: &encFooterKey},
+				Format:     "json", URI: "encrypted-bloom-filter.parquet",
+			},
+			golden: "schema-encrypted-bloom-filter-footer-key-json.json",
+		},
+		// The same file with every key at hand sizes every filter.
+		"encrypted-bloom-filter-keyed-json": {
+			cmd: schema.Cmd{
+				ReadOption: pio.ReadOption{FooterKey: &encFooterKey, ColumnKeys: []string{"ID=" + encColumnKey}},
+				Format:     "json", URI: "encrypted-bloom-filter.parquet",
+			},
+			golden: "schema-encrypted-bloom-filter-keyed-json.json",
 		},
 	}
 

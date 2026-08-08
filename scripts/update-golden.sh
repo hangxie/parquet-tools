@@ -221,6 +221,17 @@ $PT schema --format json "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$
 # schema-bloom-filter-go.txt
 $PT schema --format go "$TESTDATA_DIR/bloom-filter.parquet" > "$GOLDEN_DIR/schema-bloom-filter-go.txt"
 
+# schema-encrypted-bloom-filter-json.json, no column key: the encrypted column
+# keeps bloomfilter but loses bloomfiltersize
+$PT schema --format json "$TESTDATA_DIR/encrypted-bloom-filter.parquet" | format_json > "$GOLDEN_DIR/schema-encrypted-bloom-filter-json.json"
+
+# schema-encrypted-bloom-filter-footer-key-json.json, footer key only: the
+# footer-key column is sized, the column-key one is not
+$PT schema --format json --footer-key "$ENC_FOOTER_KEY" "$TESTDATA_DIR/encrypted-bloom-filter.parquet" | format_json > "$GOLDEN_DIR/schema-encrypted-bloom-filter-footer-key-json.json"
+
+# schema-encrypted-bloom-filter-keyed-json.json, every key: nothing degrades
+$PT schema --format json --footer-key "$ENC_FOOTER_KEY" --column-key "ID=$ENC_DOUBLE_KEY" "$TESTDATA_DIR/encrypted-bloom-filter.parquet" | format_json > "$GOLDEN_DIR/schema-encrypted-bloom-filter-keyed-json.json"
+
 # schema-good-skip-page-encoding-raw.json
 $PT schema --format raw --skip-page-encoding "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/schema-good-skip-page-encoding-raw.json"
 
