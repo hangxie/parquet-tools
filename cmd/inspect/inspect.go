@@ -70,7 +70,6 @@ func (c Cmd) Run(ctx context.Context) error {
 	// Build schema maps for name resolution
 	inExNameMap := schemaRoot.GetInExNameMap()
 	pathMap := schemaRoot.GetPathMap()
-	bloomSizeMap := pschema.BloomFilterSizeMap(reader)
 
 	// Determine which level to inspect
 	switch {
@@ -79,10 +78,10 @@ func (c Cmd) Run(ctx context.Context) error {
 		return c.inspectPage(ctx, reader, *c.RowGroup, *c.ColumnChunk, *c.Page, pathMap)
 	case c.ColumnChunk != nil:
 		// Level 3: Show column chunk details and pages
-		return c.inspectColumnChunk(ctx, reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap, bloomSizeMap)
+		return c.inspectColumnChunk(ctx, reader, *c.RowGroup, *c.ColumnChunk, inExNameMap, pathMap)
 	case c.RowGroup != nil:
 		// Level 2: Show row group details and column chunks
-		return c.inspectRowGroup(reader, *c.RowGroup, inExNameMap, pathMap, bloomSizeMap)
+		return c.inspectRowGroup(reader, *c.RowGroup, inExNameMap, pathMap)
 	default:
 		// Level 1: Show file info and row groups
 		return c.inspectFile(reader)

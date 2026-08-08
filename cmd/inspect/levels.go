@@ -12,7 +12,7 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) error {
+func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -24,7 +24,7 @@ func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, in
 	// Build column chunks brief info
 	columnChunksBrief := make([]map[string]any, len(rg.Columns))
 	for i, col := range rg.Columns {
-		columnChunksBrief[i] = c.buildColumnChunkBrief(i, col, inExNameMap, pathMap, bloomSizeMap)
+		columnChunksBrief[i] = c.buildColumnChunkBrief(i, col, inExNameMap, pathMap)
 	}
 
 	rowGroup := map[string]any{
@@ -42,7 +42,7 @@ func (c Cmd) inspectRowGroup(reader *reader.ParquetReader, rowGroupIndex int, in
 	return c.printJSON(output)
 }
 
-func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) map[string]any {
+func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) map[string]any {
 	pathKey := strings.Join(col.MetaData.PathInSchema, common.ParGoPathDelimiter)
 	pathInSchema := c.resolvePathInSchema(col.MetaData.PathInSchema, inExNameMap)
 	schemaNode := pathMap[pathKey]
@@ -61,12 +61,11 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 	c.addTypeInformation(columnChunk, schemaNode)
 	c.addEncryptionInfo(columnChunk, col)
 
-	// Add bloom filter info if available, using correct bitset-only size
+	// Recorded per chunk, counting the Thrift header along with the bitset. It is
+	// optional, so a writer that omits it leaves the filter reported by offset alone.
 	if col.MetaData.IsSetBloomFilterOffset() {
 		columnChunk["bloomFilterOffset"] = col.MetaData.GetBloomFilterOffset()
-		if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
-			columnChunk["bloomFilterLength"] = size
-		}
+		addOptional(columnChunk, "bloomFilterLength", col.MetaData.BloomFilterLength)
 	}
 
 	// Add statistics if available
@@ -81,7 +80,7 @@ func (c Cmd) buildColumnChunkBrief(index int, col *parquet.ColumnChunk, inExName
 }
 
 // Level 3: Column chunk details and pages with brief info
-func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode, bloomSizeMap map[string]int32) error {
+func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReader, rowGroupIndex, columnChunkIndex int, inExNameMap map[string][]string, pathMap map[string]*pschema.SchemaNode) error {
 	footer := reader.Footer
 
 	if rowGroupIndex < 0 || rowGroupIndex >= len(footer.RowGroups) {
@@ -114,9 +113,7 @@ func (c Cmd) inspectColumnChunk(ctx context.Context, reader *reader.ParquetReade
 
 	if col.MetaData.IsSetBloomFilterOffset() {
 		columnChunkDetails["bloomFilterOffset"] = col.MetaData.GetBloomFilterOffset()
-		if size, ok := bloomSizeMap[pathKey]; ok && size > 0 {
-			columnChunkDetails["bloomFilterLength"] = size
-		}
+		addOptional(columnChunkDetails, "bloomFilterLength", col.MetaData.BloomFilterLength)
 	}
 
 	c.addTypeInformation(columnChunkDetails, schemaNode)

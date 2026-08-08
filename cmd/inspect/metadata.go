@@ -61,7 +61,6 @@ func addColumnMetadata(output map[string]any, column *parquet.ColumnChunk) {
 	addOptional(output, "offsetIndexLength", column.OffsetIndexLength)
 	addOptional(output, "columnIndexOffset", column.ColumnIndexOffset)
 	addOptional(output, "columnIndexLength", column.ColumnIndexLength)
-	addOptional(output, "bloomFilterStorageLength", metadata.BloomFilterLength)
 	addKeyValueMetadata(output, metadata.KeyValueMetadata)
 
 	if len(metadata.EncodingStats) > 0 {
