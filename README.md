@@ -105,6 +105,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
     - [merge Command](#merge-command)
     - [meta Command](#meta-command)
       - [Show Meta Data](#show-meta-data)
+      - [Bloom Filter Sizes](#bloom-filter-sizes)
       - [Meta Encryption](#meta-encryption)
       - [Discovering KMS Key IDs](#discovering-kms-key-ids)
     - [retype Command](#retype-command)
@@ -1363,6 +1364,22 @@ $ parquet-tools meta testdata/int96-nil-min-max.parquet
 $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
+
+#### Bloom Filter Sizes
+
+A column chunk that carries a bloom filter reports `BloomFilterOffset`, and `BloomFilterLength` when the writer recorded one.
+
+```bash
+$ parquet-tools meta testdata/bloom-filter.parquet | jq -c '.RowGroups[0].Columns[0] | {PathInSchema, BloomFilterOffset, BloomFilterLength}'
+{"PathInSchema":["ID"],"BloomFilterOffset":2082,"BloomFilterLength":1040}
+```
+
+> [!NOTE]
+> `BloomFilterLength` measures the whole stored filter, not the bitset alone. A Thrift-encoded `BloomFilterHeader` precedes the bitset on disk, and an encrypted column adds AES-GCM framing around both, so the number is larger than the filter you configured — the 1024-byte bitset above is stored in 1040 bytes, and the same 1024-byte bitset in an encrypted column takes 1104.
+>
+> That overhead is not a fixed amount to subtract. Use `schema` for the bitset size itself, whose `bloomfiltersize` tag is in bitset bytes.
+>
+> `BloomFilterLength` is optional in the Parquet format, so a writer that omits it leaves the filter reported by `BloomFilterOffset` alone, with no length field at all. Both fields come from the chunk in the row group being reported, so a writer that sizes filters per row group, such as parquet-mr, shows a different length in each.
 
 #### Meta Encryption
 
