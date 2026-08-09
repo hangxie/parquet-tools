@@ -1467,7 +1467,7 @@ $ parquet cat /tmp/timestamp.parquet
 
 #### Convert BSON to String
 
-BSON is a binary format that some tools (e.g., DuckDB) do not support. You can use `--bson-to-string` to convert BSON columns to plain strings with STRING logical type. The BSON data is decoded and re-encoded as JSON strings.
+BSON is a binary format that some tools (e.g., DuckDB and hyparquet) do not support. You can use `--bson-to-string` to convert BSON columns to plain strings with STRING logical type. The BSON data is decoded and re-encoded as JSON strings.
 
 ```bash
 $ parquet-tools retype --bson-to-string -s testdata/all-types.parquet /tmp/bson-to-string.parquet
