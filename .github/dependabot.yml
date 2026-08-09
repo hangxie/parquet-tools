@@ -7,3 +7,8 @@ updates:
     schedule:
       interval: weekly
       day: friday
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      day: friday
