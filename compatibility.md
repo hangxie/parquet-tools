@@ -7,6 +7,7 @@ This document tracks known compatibility issues between parquet-tools and other 
 - [Apache parquet-cli / PySpark](#apache-parquet-cli--pyspark)
 - [arrow-rs/parquet](#arrow-rsparquet)
 - [DuckDB](#duckdb)
+- [hyparquet](#hyparquet)
 - [pandas](#pandas)
 - [Polars](#polars)
 - [PyArrow](#pyarrow)
@@ -98,6 +99,36 @@ Unsupported converted type (20)
 ```
 
 **Workaround:** Use `parquet-tools retype --bson-to-string` to convert BSON columns to string representation before reading with DuckDB.
+
+## hyparquet
+
+[hyparquet](https://github.com/hyparam/hyparquet) is a dependency-free TypeScript Parquet reader for the browser and Node. Verified against version 1.28.1.
+
+**Known Issues:**
+
+#### 1. Compression Codecs Are Not Bundled
+
+hyparquet itself decodes only uncompressed and Snappy data (`parquet unsupported compression codec: GZIP`).
+
+**Workaround:** Pass the companion [hyparquet-compressors](https://github.com/hyparam/hyparquet-compressors) package as the reader's `compressors` option.
+
+#### 2. LZ4 and LZ4_RAW Decode Failures
+
+Some LZ4 and LZ4_RAW files fail even with hyparquet-compressors (`lz4 offset out of range`), while others of the same codec read cleanly.
+
+**Workaround:** Use `parquet-tools transcode -z SNAPPY` to rewrite with a codec that round-trips reliably.
+
+#### 3. BSON and INTERVAL Types
+
+hyparquet supports neither converted type (`parquet bson not supported`, `parquet interval not supported`).
+
+**Workaround:** Use `parquet-tools retype --bson-to-string` for BSON. There is no conversion for INTERVAL, so that column has to be dropped.
+
+#### 4. Modular Encryption
+
+hyparquet cannot read encrypted files at all: an encrypted footer no longer ends with the `PAR1` magic it expects (`parquet file invalid (footer != PAR1)`), and encrypted columns fail once page headers cannot be parsed.
+
+**Workaround:** Use `parquet-tools transcode --key-file` to write a plaintext copy. A footer key alone is not enough when columns carry their own keys.
 
 ## pandas
 
