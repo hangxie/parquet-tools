@@ -50,7 +50,7 @@ jobs:
       - name: Include coverage CSV in Pages artifact
         run: cp build/coverage.csv build/pages/coverage.csv
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-pages
           path: build/pages/
@@ -71,7 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.STAR_HISTORY_TOKEN }}
         run: make pages-star
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: star-pages
           path: build/pages/
