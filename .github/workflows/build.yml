@@ -61,7 +61,7 @@ jobs:
           test "$(./build/parquet-tools size -j https://dpla-provider-export.s3.amazonaws.com/2021/04/all.parquet/part-00000-471427c6-8097-428d-9703-a751a6572cca-c000.snappy.parquet)" == '{"Raw":4632041101}'
 
           echo "==> HDFS endpoint ..."
-          docker run -dq --rm --name hadoop -p 9000:9000 -p 9866:9866 hangxie/hadoop-all-in-one && sleep 10
+          docker run -dq --rm --name hadoop -p 9000:9000 -p 9866:9866 hangxie/hadoop-all-in-one:3.5.0-v0.6.0 && sleep 10
           docker exec hadoop hdfs dfs -mkdir /temp && sleep 3
           ./build/parquet-tools import -f jsonl -m testdata/jsonl.schema -s testdata/jsonl.source hdfs://root@localhost:9000/temp/good.parquet
           test "$(./build/parquet-tools row-count hdfs://localhost:9000/temp/good.parquet)" == '10'
