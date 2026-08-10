@@ -12,3 +12,8 @@ updates:
     schedule:
       interval: weekly
       day: friday
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: friday
