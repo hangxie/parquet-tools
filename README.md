@@ -1263,6 +1263,8 @@ $ parquet-tools inspect testdata/dict-page.parquet --row-group 0 --column-chunk 
 {"page":{"index":0,"offset":4,"type":"DICTIONARY_PAGE","compressedSize":53,"uncompressedSize":28,"numValues":3,"encoding":"PLAIN"},"values":["nike","adidas","reebok"]}
 ```
 
+Only the rows the page covers are decoded, which keeps page inspection cheap on large or remote files. The page's row range comes from the offset index, or from its value count when the column has no repeated field in its path. With an offset index the earlier pages are seeked past without being fetched; without one they may still be read to find where the rows start. When neither source gives a row range — a repeated column in a file written without a page index — the target row group is read and the page is cut out of it. Other row groups are skipped from metadata alone in every case.
+
 #### Inspect Encryption
 
 When reading an encrypted file with all required keys, `inspect` includes encryption metadata alongside regular output:
@@ -1294,6 +1296,9 @@ $ parquet-tools inspect \
 
 > [!NOTE]
 > Column-chunk level inspection (showing page headers) also works on encrypted columns when the corresponding key is supplied — page headers are transparently decrypted using the configured `--footer-key` or `--column-key`. Without the key for that column, the request fails with `decryption key required for column <name>`.
+
+> [!NOTE]
+> Page level inspection of an encrypted column shows the values of a data page when its key is supplied. Dictionary pages are the exception: `--page` on one reports `dictionary page inspection is not supported for encrypted columns`, so read the data pages of such a column instead — their values are already dictionary-decoded.
 
 > [!TIP]
 > Use `inspect` to:
