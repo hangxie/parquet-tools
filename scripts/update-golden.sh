@@ -402,6 +402,21 @@ $PT inspect --row-group 0 --column-chunk 0 --page 5 "$TESTDATA_DIR/row-group.par
 # inspect-crc32-rg0-cc0-pg0
 $PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/crc32.parquet" | format_json > "$GOLDEN_DIR/inspect-crc32-rg0-cc0-pg0.json"
 
+# inspect-enc-columns-rg0-cc4-pg1.json - data page values of a column-key encrypted column
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --row-group 0 --column-chunk 4 --page 1 "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-columns-rg0-cc4-pg1.json"
+
+# inspect-enc-uniform-rg0-cc0-pg0.json - data page values of a footer-key encrypted column
+$PT inspect --footer-key "$ENC_FOOTER_KEY" --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/uniform-encryption.parquet" | format_json > "$GOLDEN_DIR/inspect-enc-uniform-rg0-cc0-pg0.json"
+
+# inspect-repeated-row-group-rg1-cc1.json
+$PT inspect --row-group 1 --column-chunk 1 "$TESTDATA_DIR/repeated-row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-repeated-row-group-rg1-cc1.json"
+
+# inspect-repeated-row-group-rg1-cc1-pg1.json - page spanning two rows of a repeated column
+$PT inspect --row-group 1 --column-chunk 1 --page 1 "$TESTDATA_DIR/repeated-row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-repeated-row-group-rg1-cc1-pg1.json"
+
+# inspect-repeated-row-group-rg2-cc1-pg0.json
+$PT inspect --row-group 2 --column-chunk 1 --page 0 "$TESTDATA_DIR/repeated-row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-repeated-row-group-rg2-cc1-pg0.json"
+
 # inspect-unknown-type-rg0.json
 $PT inspect --row-group 0 "$TESTDATA_DIR/unknown-type.parquet" | format_json > "$GOLDEN_DIR/inspect-unknown-type-rg0.json"
 

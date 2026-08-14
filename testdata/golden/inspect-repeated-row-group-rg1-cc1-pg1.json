@@ -1,0 +1,25 @@
+{
+  "page": {
+    "index": 1,
+    "offset": 904,
+    "type": "DATA_PAGE",
+    "compressedSize": 46,
+    "uncompressedSize": 141,
+    "numValues": 3,
+    "encoding": "PLAIN",
+    "definitionLevelEncoding": "RLE",
+    "repetitionLevelEncoding": "RLE",
+    "statistics": {
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
+      "maxValue": "tag-7-1-pad-pad-pad-pad-pad-pad-pad-pad",
+      "minValue": "tag-6-0-pad-pad-pad-pad-pad-pad-pad-pad",
+      "nullCount": 0
+    }
+  },
+  "values": [
+    "tag-6-0-pad-pad-pad-pad-pad-pad-pad-pad",
+    "tag-7-0-pad-pad-pad-pad-pad-pad-pad-pad",
+    "tag-7-1-pad-pad-pad-pad-pad-pad-pad-pad"
+  ]
+}

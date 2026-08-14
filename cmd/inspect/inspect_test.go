@@ -159,6 +159,10 @@ func TestInspect(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0), ColumnChunk: new(0)},
 			golden: "inspect-bloom-filter-rg0-cc0.json",
 		},
+		"column-chunk/repeated-row-group-rg1-col-1": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "repeated-row-group.parquet", RowGroup: new(1), ColumnChunk: new(1)},
+			golden: "inspect-repeated-row-group-rg1-cc1.json",
+		},
 		"column-chunk/negative-column-index": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1)},
 			errMsg: "column chunk index -1 out of range",
@@ -211,6 +215,30 @@ func TestInspect(t *testing.T) {
 		"page/row-group-page-5": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(5)},
 			golden: "inspect-row-group-rg0-cc0-pg5.json",
+		},
+		"page/encrypted-columns-cc4-page-1": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4), Page: new(1)},
+			golden: "inspect-enc-columns-rg0-cc4-pg1.json",
+		},
+		"page/encrypted-columns-cc4-dictionary": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4), Page: new(0)},
+			errMsg: "dictionary page inspection is not supported for encrypted columns",
+		},
+		"page/encrypted-columns-cc4-no-key": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4), Page: new(1)},
+			errMsg: "decryption key required for column",
+		},
+		"page/encrypted-uniform-cc0-page-0": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey}, URI: "uniform-encryption.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-enc-uniform-rg0-cc0-pg0.json",
+		},
+		"page/repeated-row-group-rg1-page-1": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "repeated-row-group.parquet", RowGroup: new(1), ColumnChunk: new(1), Page: new(1)},
+			golden: "inspect-repeated-row-group-rg1-cc1-pg1.json",
+		},
+		"page/repeated-row-group-rg2-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "repeated-row-group.parquet", RowGroup: new(2), ColumnChunk: new(1), Page: new(0)},
+			golden: "inspect-repeated-row-group-rg2-cc1-pg0.json",
 		},
 		"page/negative-page-index": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(-1)},
