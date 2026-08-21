@@ -38,6 +38,7 @@ func TestCmd(t *testing.T) {
 	t.Run("error", testCmdError)
 	t.Run("good", testCmdGood)
 	t.Run("verify-data", testCmdVerifyData)
+	t.Run("compression-level", testCmdCompressionLevel)
 	t.Run("schema-modification", testCmdSchemaModification)
 	t.Run("page-sizes", testCmdPageSizes)
 	t.Run("edge-cases", testCmdEdgeCases)
@@ -310,6 +311,59 @@ func testCmdVerifyData(t *testing.T) {
 
 	require.Equal(t, originalOutput, transcodedOutput)
 	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
+}
+
+func testCmdCompressionLevel(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	source := "../../testdata/good.parquet"
+	testCases := map[string]struct {
+		compression string
+		level       []string
+		errMsg      string
+	}{
+		"lz4-level-1":     {"LZ4", []string{"LZ4=1"}, ""},
+		"lz4-level-9":     {"LZ4", []string{"LZ4=9"}, ""},
+		"lz4-raw-level-0": {"LZ4_RAW", []string{"LZ4_RAW=0"}, ""},
+		"lz4-level-0":     {"LZ4", []string{"LZ4=0"}, "out of range for [LZ4]: expected 1-9"},
+		"lz4-level-10":    {"LZ4", []string{"LZ4=10"}, "out of range for [LZ4]: expected 1-9"},
+	}
+
+	tempDir := t.TempDir()
+	original, _ := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, transcodeTestCatCmd(source, rOpt).Run(context.Background()))
+	})
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := Cmd{
+				ReadOption: rOpt,
+				WriteOption: pio.WriteOption{
+					CompressionCodec: tc.compression,
+					CompressionLevel: tc.level,
+					DataPageVersion:  1,
+					PageSize:         1024 * 1024,
+					RowGroupSize:     128 * 1024 * 1024,
+				},
+				ReadPageSize: 10,
+				Source:       source,
+				URI:          filepath.Join(tempDir, name+".parquet"),
+			}
+
+			err := cmd.Run(context.Background())
+			if tc.errMsg != "" {
+				require.ErrorContains(t, err, tc.errMsg)
+				return
+			}
+			require.NoError(t, err)
+
+			// Reading the rows back proves the level reached the codec and that what it
+			// wrote decompresses, which the row count in the footer alone would not show.
+			transcoded, _ := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, transcodeTestCatCmd(cmd.URI, rOpt).Run(context.Background()))
+			})
+			require.Equal(t, original, transcoded)
+		})
+	}
 }
 
 func testCmdSchemaModification(t *testing.T) {
