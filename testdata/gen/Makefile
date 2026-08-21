@@ -15,14 +15,9 @@ gen:  ## Generate all test parquet files
 	@echo === old-style-list ===
 	@(cd old-style-list; ./run-build.sh)
 
-	@# gen in python
-	@echo === unknown-type ===
-	@(cd unknown-type; uv run main.py)
-
 clean:  ## Clean up generated parquet files
 	@echo "==> Cleaning up build dirs"
 	@find . -name \*.parquet | xargs -r rm -f
-	@find . -name .venv | xargs -r rm -fr
 	@(cd old-style-list; ./run-clean.sh)
 
 help:  ## Print list of Makefile targets
