@@ -346,6 +346,21 @@ func TestBuildBloomFilterMap(t *testing.T) {
 	}
 }
 
+func TestNewSchemaTreeBloomFilterError(t *testing.T) {
+	pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/bloom-filter.parquet", pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { require.NoError(t, pr.PFile.Close()) }()
+
+	// Page encoding is skipped so the bloom filter read is the first one the
+	// cancelled context can fail.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	root, err := NewSchemaTree(ctx, pr, SchemaOption{SkipPageEncoding: true})
+	require.Nil(t, root)
+	require.ErrorContains(t, err, "bloom filter size")
+}
+
 func TestNewSchemaTreeSkipBloomFilter(t *testing.T) {
 	testCases := map[string]struct {
 		option      SchemaOption

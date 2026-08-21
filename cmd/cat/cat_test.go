@@ -514,6 +514,24 @@ func TestOutputRowsSkipsUnusedSchemaMetadata(t *testing.T) {
 	}
 }
 
+func TestOutputRowsSkipRowsError(t *testing.T) {
+	fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { require.NoError(t, fileReader.PFile.Close()) }()
+
+	// Building the schema tree reads nothing now, so skipping rows is the first
+	// step a cancelled context can fail.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	cmd := Cmd{Skip: 1, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl"}
+	stdout, stderr := testutils.CaptureStdoutStderr(func() {
+		require.ErrorIs(t, cmd.outputRows(ctx, fileReader), context.Canceled)
+	})
+	require.Empty(t, strings.TrimSpace(stdout))
+	require.Empty(t, stderr)
+}
+
 func TestNullifyUnknownColumnsIgnoresNonMapRow(t *testing.T) {
 	nullifyUnknownCols("row", map[string]struct{}{"unknown": {}})
 }
