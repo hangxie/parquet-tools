@@ -108,6 +108,10 @@ func TestParseCompressionLevels(t *testing.T) {
 			input:       []string{"LZ4_RAW=0"},
 			expectedLen: 1,
 		},
+		"lz4-level-one": {
+			input:       []string{"LZ4=1"},
+			expectedLen: 1,
+		},
 	}
 
 	for name, tc := range testCases {
