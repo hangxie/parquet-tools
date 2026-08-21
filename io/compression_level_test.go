@@ -100,6 +100,14 @@ func TestParseCompressionLevels(t *testing.T) {
 			input:  []string{"GZIP=99"},
 			errMsg: "out of range",
 		},
+		"lz4-out-of-range": {
+			input:  []string{"LZ4=0"},
+			errMsg: "out of range",
+		},
+		"lz4-raw-level-zero": {
+			input:       []string{"LZ4_RAW=0"},
+			expectedLen: 1,
+		},
 	}
 
 	for name, tc := range testCases {

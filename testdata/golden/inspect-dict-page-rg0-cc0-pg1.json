@@ -3,13 +3,15 @@
     "index": 1,
     "offset": 70,
     "type": "DATA_PAGE",
-    "compressedSize": 36,
-    "uncompressedSize": 11,
+    "compressedSize": 29,
+    "uncompressedSize": 4,
     "numValues": 2,
     "encoding": "RLE_DICTIONARY",
     "definitionLevelEncoding": "RLE",
     "repetitionLevelEncoding": "RLE",
     "statistics": {
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
       "maxValue": "nike",
       "minValue": "adidas",
       "nullCount": 0

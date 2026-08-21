@@ -726,7 +726,7 @@ The default codec is used only for columns that do not already specify a codec t
 * `ZSTD` - Excellent compression ratio with good speed
 
 **Deprecated compression codecs:**
-* `LZ4` - Deprecated in Parquet format. Use `LZ4_RAW` instead for LZ4 compression
+* `LZ4` - Deprecated in Parquet format. Use `LZ4_RAW` instead for LZ4 compression. Written with the Hadoop block framing that parquet-mr and Arrow read; files written by parquet-tools v1.54.3 and earlier carry the LZ4 frame format instead, and both are still read
 
 **Unsupported codecs:**
 * `LZO` - Not supported. See [parquet-go#150](https://github.com/hangxie/parquet-go/issues/150) for details.
@@ -779,7 +779,7 @@ Level validation:
 | `GZIP`   | `1`-`9`         | Parsed and range-checked             |
 | `ZSTD`   | `1`-`22`        | Parsed and range-checked             |
 | `BROTLI` | `0`-`11`        | Parsed and range-checked             |
-| `LZ4`    | `0`-`9`         | Deprecated Parquet codec             |
+| `LZ4`    | `1`-`9`         | Deprecated Parquet codec             |
 | `LZ4_RAW` | `0`-`9`         | Parsed and range-checked             |
 
 `SNAPPY` and `UNCOMPRESSED` do not accept compression levels. Invalid formats, unsupported codecs, and out-of-range values fail before writing output.
@@ -1361,13 +1361,13 @@ $ parquet-tools meta testdata/good.parquet | jq '{Version, NumRows, NumRowGroups
 ```
 
 > [!NOTE]
-> MinValue, MaxValue and NullCount are optional, if they do not show up in output then it means parquet file does not have that section.
+> MinValue, MaxValue, NullCount and DistinctCount are optional, if they do not show up in output then it means parquet file does not have that section. `parquet-tools` writes DistinctCount for a column chunk whose data pages are all dictionary encoded, except for the types listed under [Control Statistics](#control-statistics).
 
 You can set `--fail-on-int96` option to fail `meta` command for parquet files that contain fields with INT96 type, which is [deprecated](https://issues.apache.org/jira/browse/PARQUET-323), default value for this option is `false` so you can still read INT96 type, but this behavior may change in the future.
 
 ```bash
 $ parquet-tools meta testdata/int96-nil-min-max.parquet
-{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":488,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE","RLE_DICTIONARY"],"CompressedSize":381,"UncompressedSize":380,"NumValues":10,"NullCount":0,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["PLAIN","RLE"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
+{"NumRowGroups":1,"RowGroups":[{"NumRows":10,"TotalByteSize":402,"Columns":[{"PathInSchema":["Utf8"],"Type":"BYTE_ARRAY","ConvertedType":"convertedtype=UTF8","LogicalType":"logicaltype=STRING","Encodings":["PLAIN","RLE","RLE_DICTIONARY"],"CompressedSize":295,"UncompressedSize":294,"NumValues":10,"NullCount":0,"DistinctCount":10,"MaxValue":"UTF8-9","MinValue":"UTF8-0","CompressionCodec":"ZSTD"},{"PathInSchema":["Int96"],"Type":"INT96","Encodings":["PLAIN","RLE"],"CompressedSize":160,"UncompressedSize":108,"NumValues":10,"NullCount":10,"CompressionCodec":"ZSTD"}]}]}
 $ parquet-tools meta --fail-on-int96 testdata/int96-nil-min-max.parquet
 parquet-tools: error: field Int96 has type INT96 which is not supported
 ```
@@ -1883,6 +1883,18 @@ $ parquet-tools transcode -s input.parquet --omit-stats false output.parquet
 * `false` - Include statistics (enables predicate pushdown for query optimization)
 * (empty) - Keep original statistics setting from source file
 
+Statistics can also include `distinct_count`. A column chunk gets one when every data page is dictionary encoded, because the dictionary then holds one entry per distinct non-null value.
+
+It is left out when that count would be wrong:
+
+* The dictionary outgrew `--max-dictionary-size`, so the rest of the chunk fell back to `PLAIN` pages.
+* `FLOAT`/`DOUBLE` holding a NaN, which never matches itself and so takes a fresh entry every time.
+* `DECIMAL` backed by `BYTE_ARRAY`, where one value has several encodings. `FIXED_LEN_BYTE_ARRAY` decimals are fine.
+* `FLOAT16`, where `-0.0` and `+0.0` are two entries but one value.
+* `GEOMETRY`/`GEOGRAPHY`, where the byte-order flag in WKB gives one geometry two encodings.
+
+`--omit-stats true` drops it along with the rest.
+
 #### Field-Specific Compression
 
 Use the `--field-compression` parameter to apply different compression codecs to specific fields. Field-specific compression takes precedence over the file-level default set by `--compression`.
@@ -1921,7 +1933,7 @@ $ parquet-tools schema /tmp/mixed-compression.parquet
 * `UNCOMPRESSED` - No compression (fastest read/write, largest file size)
 * `SNAPPY` - Fast compression with reasonable ratio (default)
 * `GZIP` - Good compression ratio, slower than SNAPPY
-* `LZ4` - Deprecated in Parquet format; use `LZ4_RAW` instead
+* `LZ4` - Deprecated in Parquet format; use `LZ4_RAW` instead (Hadoop block framing)
 * `LZ4_RAW` - LZ4 without frame format
 * `ZSTD` - Excellent compression ratio with good speed
 * `BROTLI` - High compression ratio, slower compression speed

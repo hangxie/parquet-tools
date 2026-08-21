@@ -4,13 +4,11 @@
     "columnIndex": {
       "boundaryOrder": "UNORDERED",
       "maxValues": [
-        "",
         "nike",
         "reebok",
         "adidas"
       ],
       "minValues": [
-        "",
         "adidas",
         "nike",
         "adidas"
@@ -18,19 +16,17 @@
       "nullCounts": [
         0,
         0,
-        0,
         0
       ],
       "nullPages": [
         false,
         false,
-        false,
         false
       ]
     },
-    "columnIndexLength": 59,
-    "columnIndexOffset": 746,
-    "compressedSize": 320,
+    "columnIndexLength": 55,
+    "columnIndexOffset": 614,
+    "compressedSize": 266,
     "compressionCodec": "GZIP",
     "convertedType": "convertedtype=UTF8",
     "dataPageOffset": 70,
@@ -47,24 +43,24 @@
     "offsetIndex": {
       "pageLocations": [
         {
-          "compressedPageSize": 85,
+          "compressedPageSize": 66,
           "firstRowIndex": 0,
           "offset": 70
         },
         {
-          "compressedPageSize": 85,
+          "compressedPageSize": 66,
           "firstRowIndex": 2,
-          "offset": 155
+          "offset": 136
         },
         {
-          "compressedPageSize": 84,
+          "compressedPageSize": 68,
           "firstRowIndex": 4,
-          "offset": 240
+          "offset": 202
         }
       ]
     },
     "offsetIndexLength": 30,
-    "offsetIndexOffset": 891,
+    "offsetIndexOffset": 751,
     "pathInSchema": [
       "shoe_brand"
     ],
@@ -72,14 +68,20 @@
     "repetitionType": "REQUIRED",
     "rowGroupIndex": 0,
     "scale": 0,
+    "sizeStatistics": {
+      "unencodedByteArrayDataBytes": 0
+    },
     "statistics": {
+      "distinctCount": 3,
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
       "maxValue": "reebok",
       "minValue": "adidas",
       "nullCount": 0
     },
     "type": "BYTE_ARRAY",
     "typeLength": 0,
-    "uncompressedSize": 220
+    "uncompressedSize": 166
   },
   "pages": [
     {
@@ -95,13 +97,15 @@
       "index": 1,
       "offset": 70,
       "type": "DATA_PAGE",
-      "compressedSize": 36,
-      "uncompressedSize": 11,
+      "compressedSize": 29,
+      "uncompressedSize": 4,
       "numValues": 2,
       "encoding": "RLE_DICTIONARY",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "nike",
         "minValue": "adidas",
         "nullCount": 0
@@ -109,15 +113,17 @@
     },
     {
       "index": 2,
-      "offset": 155,
+      "offset": 136,
       "type": "DATA_PAGE",
-      "compressedSize": 36,
-      "uncompressedSize": 11,
+      "compressedSize": 29,
+      "uncompressedSize": 4,
       "numValues": 2,
       "encoding": "RLE_DICTIONARY",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "reebok",
         "minValue": "nike",
         "nullCount": 0
@@ -125,15 +131,17 @@
     },
     {
       "index": 3,
-      "offset": 240,
+      "offset": 202,
       "type": "DATA_PAGE",
-      "compressedSize": 31,
-      "uncompressedSize": 6,
+      "compressedSize": 29,
+      "uncompressedSize": 4,
       "numValues": 1,
       "encoding": "RLE_DICTIONARY",
       "definitionLevelEncoding": "RLE",
       "repetitionLevelEncoding": "RLE",
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "adidas",
         "minValue": "adidas",
         "nullCount": 0
