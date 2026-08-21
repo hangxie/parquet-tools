@@ -237,8 +237,14 @@ func (c Cmd) printer(ctx context.Context, outputChan chan string) error {
 }
 
 func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) error {
-	// cat never reports encoding, so skip the per-column data page header reads.
-	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, SkipPageEncoding: true})
+	// cat reports neither encoding nor bloom filters, so skip the per-column
+	// page and bloom filter header reads that populating them would cost.
+	schemaOption := pschema.SchemaOption{
+		FailOnInt96:      c.FailOnInt96,
+		SkipPageEncoding: true,
+		SkipBloomFilter:  true,
+	}
+	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, schemaOption)
 	if err != nil {
 		return err
 	}

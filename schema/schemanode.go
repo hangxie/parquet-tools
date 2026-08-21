@@ -67,6 +67,7 @@ type SchemaNode struct {
 type SchemaOption struct {
 	FailOnInt96      bool
 	SkipPageEncoding bool
+	SkipBloomFilter  bool
 }
 
 // cloneForRendering copies the tree state that schema renderers normalize.

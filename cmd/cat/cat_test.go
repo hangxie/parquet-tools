@@ -469,8 +469,9 @@ func TestCmdEncoder(t *testing.T) {
 	}
 }
 
-// cloneCountingFile counts Clone calls, which only the per-column page header
-// reads make, so a nonzero count means cat paid for encoding information.
+// cloneCountingFile counts Clone calls, which in cat's path only the per-column
+// page header and bloom filter header reads make, so a nonzero count means cat
+// paid for schema metadata it never outputs.
 type cloneCountingFile struct {
 	source.ParquetFileReader
 	clones *atomic.Int64
@@ -485,24 +486,31 @@ func (f *cloneCountingFile) Clone() (source.ParquetFileReader, error) {
 	return &cloneCountingFile{ParquetFileReader: cloned, clones: f.clones}, nil
 }
 
-func TestOutputRowsSkipsPageEncoding(t *testing.T) {
-	for _, format := range []string{"json", "csv"} {
-		t.Run(format, func(t *testing.T) {
-			fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
-			require.NoError(t, err)
-			defer func() { require.NoError(t, fileReader.PFile.Close()) }()
+func TestOutputRowsSkipsUnusedSchemaMetadata(t *testing.T) {
+	fixtures := map[string]string{
+		"plain":        "../../testdata/good.parquet",
+		"bloom-filter": "../../testdata/bloom-filter.parquet",
+	}
 
-			clones := new(atomic.Int64)
-			fileReader.PFile = &cloneCountingFile{ParquetFileReader: fileReader.PFile, clones: clones}
+	for name, uri := range fixtures {
+		for _, format := range []string{"json", "csv"} {
+			t.Run(name+"/"+format, func(t *testing.T) {
+				fileReader, err := pio.NewParquetFileReader(context.Background(), uri, pio.ReadOption{})
+				require.NoError(t, err)
+				defer func() { require.NoError(t, fileReader.PFile.Close()) }()
 
-			cmd := Cmd{Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: format}
-			stdout, stderr := testutils.CaptureStdoutStderr(func() {
-				require.NoError(t, cmd.outputRows(context.Background(), fileReader))
+				clones := new(atomic.Int64)
+				fileReader.PFile = &cloneCountingFile{ParquetFileReader: fileReader.PFile, clones: clones}
+
+				cmd := Cmd{Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: format}
+				stdout, stderr := testutils.CaptureStdoutStderr(func() {
+					require.NoError(t, cmd.outputRows(context.Background(), fileReader))
+				})
+				require.NotEmpty(t, strings.TrimSpace(stdout))
+				require.Empty(t, stderr)
+				require.Zero(t, clones.Load(), "cat outputs neither encoding nor bloom filter, it should not read their headers")
 			})
-			require.NotEmpty(t, strings.TrimSpace(stdout))
-			require.Empty(t, stderr)
-			require.Zero(t, clones.Load(), "cat does not use page encoding, it should not read data page headers")
-		})
+		}
 	}
 }
 
