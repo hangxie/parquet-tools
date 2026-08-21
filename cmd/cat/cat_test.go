@@ -7,10 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/hangxie/parquet-go/v3/reader"
+	"github.com/hangxie/parquet-go/v3/source"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-tools/cmd/internal/testutils"
@@ -463,6 +465,43 @@ func TestCmdEncoder(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
+
+// cloneCountingFile counts Clone calls, which only the per-column page header
+// reads make, so a nonzero count means cat paid for encoding information.
+type cloneCountingFile struct {
+	source.ParquetFileReader
+	clones *atomic.Int64
+}
+
+func (f *cloneCountingFile) Clone() (source.ParquetFileReader, error) {
+	f.clones.Add(1)
+	cloned, err := f.ParquetFileReader.Clone()
+	if err != nil {
+		return nil, err
+	}
+	return &cloneCountingFile{ParquetFileReader: cloned, clones: f.clones}, nil
+}
+
+func TestOutputRowsSkipsPageEncoding(t *testing.T) {
+	for _, format := range []string{"json", "csv"} {
+		t.Run(format, func(t *testing.T) {
+			fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, fileReader.PFile.Close()) }()
+
+			clones := new(atomic.Int64)
+			fileReader.PFile = &cloneCountingFile{ParquetFileReader: fileReader.PFile, clones: clones}
+
+			cmd := Cmd{Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: format}
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, cmd.outputRows(context.Background(), fileReader))
+			})
+			require.NotEmpty(t, strings.TrimSpace(stdout))
+			require.Empty(t, stderr)
+			require.Zero(t, clones.Load(), "cat does not use page encoding, it should not read data page headers")
 		})
 	}
 }

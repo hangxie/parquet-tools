@@ -109,21 +109,6 @@ func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 	return fieldList, nil
 }
 
-func (c *Cmd) retrieveFieldDef(ctx context.Context, fileReader *reader.ParquetReader) ([]string, error) {
-	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
-	if err != nil {
-		return nil, err
-	}
-
-	// CSV and TSV do not support nested schema
-	fieldList, err := c.outputHeader(schemaRoot)
-	if err != nil {
-		return nil, err
-	}
-
-	return fieldList, nil
-}
-
 func mapToStrList(flatValues map[string]any, fieldList []string) []string {
 	values := make([]string, len(fieldList))
 	for index, field := range fieldList {
@@ -252,12 +237,14 @@ func (c Cmd) printer(ctx context.Context, outputChan chan string) error {
 }
 
 func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) error {
-	fieldList, err := c.retrieveFieldDef(ctx, fileReader)
+	// cat never reports encoding, so skip the per-column data page header reads.
+	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96, SkipPageEncoding: true})
 	if err != nil {
 		return err
 	}
 
-	schemaRoot, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{})
+	// CSV and TSV do not support nested schema
+	fieldList, err := c.outputHeader(schemaRoot)
 	if err != nil {
 		return err
 	}
