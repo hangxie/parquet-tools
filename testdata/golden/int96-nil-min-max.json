@@ -1,12 +1,16 @@
 {
-  "Version": 2,
+  "Version": 1,
   "NumRows": 10,
   "NumRowGroups": 1,
-  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
+  "CreatedBy": "github.com/hangxie/parquet-go/v3",
+  "ColumnOrders": [
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER"
+  ],
   "RowGroups": [
     {
       "NumRows": 10,
-      "TotalByteSize": 488,
+      "TotalByteSize": 402,
       "Columns": [
         {
           "PathInSchema": [
@@ -25,19 +29,25 @@
             "RLE",
             "RLE_DICTIONARY"
           ],
-          "CompressedSize": 381,
-          "UncompressedSize": 380,
+          "CompressedSize": 295,
+          "UncompressedSize": 294,
           "NumValues": 10,
           "NullCount": 0,
+          "DistinctCount": 10,
           "MaxValue": "UTF8-9",
           "MinValue": "UTF8-0",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
           "FileOffset": 4,
           "DataPageOffset": 67,
           "DictionaryPageOffset": 4,
-          "OffsetIndexOffset": 651,
-          "OffsetIndexLength": 39,
-          "ColumnIndexOffset": 545,
-          "ColumnIndexLength": 79,
+          "OffsetIndexOffset": 571,
+          "OffsetIndexLength": 35,
+          "ColumnIndexOffset": 459,
+          "ColumnIndexLength": 75,
+          "SizeStatistics": {
+            "UnencodedByteArrayDataBytes": 0
+          },
           "CompressionCodec": "ZSTD"
         },
         {
@@ -58,12 +68,18 @@
           "UncompressedSize": 108,
           "NumValues": 10,
           "NullCount": 10,
-          "FileOffset": 385,
-          "DataPageOffset": 385,
-          "OffsetIndexOffset": 690,
+          "FileOffset": 299,
+          "DataPageOffset": 299,
+          "OffsetIndexOffset": 606,
           "OffsetIndexLength": 35,
-          "ColumnIndexOffset": 624,
-          "ColumnIndexLength": 27,
+          "ColumnIndexOffset": 534,
+          "ColumnIndexLength": 37,
+          "SizeStatistics": {
+            "DefinitionLevelHistogram": [
+              10,
+              0
+            ]
+          },
           "CompressionCodec": "ZSTD"
         }
       ]

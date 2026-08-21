@@ -1,7 +1,7 @@
 {
   "columnChunks": [
     {
-      "compressedSize": 121,
+      "compressedSize": 123,
       "compressionCodec": "UNCOMPRESSED",
       "encodings": [
         "RLE"
@@ -12,15 +12,17 @@
         "Bool"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": true,
         "minValue": false,
         "nullCount": 0
       },
       "type": "BOOLEAN",
-      "uncompressedSize": 121
+      "uncompressedSize": 123
     },
     {
-      "compressedSize": 204,
+      "compressedSize": 197,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
@@ -33,15 +35,18 @@
         "Int32"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 365,
+      "compressedSize": 358,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -54,15 +59,18 @@
         "Int64"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 265
+      "uncompressedSize": 258
     },
     {
-      "compressedSize": 293,
+      "compressedSize": 215,
       "compressionCodec": "LZ4_RAW",
       "encodings": [
         "PLAIN",
@@ -74,15 +82,17 @@
         "Int96"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "2022-01-01T04:04:04.004004000Z",
         "minValue": "2022-01-01T00:00:00.000000000Z",
         "nullCount": 0
       },
       "type": "INT96",
-      "uncompressedSize": 291
+      "uncompressedSize": 213
     },
     {
-      "compressedSize": 194,
+      "compressedSize": 200,
       "compressionCodec": "ZSTD",
       "encodings": [
         "BYTE_STREAM_SPLIT",
@@ -94,15 +104,17 @@
         "Float"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 2,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "FLOAT",
-      "uncompressedSize": 155
+      "uncompressedSize": 161
     },
     {
-      "compressedSize": 133,
+      "compressedSize": 139,
       "compressionCodec": "BROTLI",
       "convertedType": "length=2",
       "encodings": [
@@ -116,15 +128,17 @@
         "Float16Val"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 2,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
-      "uncompressedSize": 121
+      "uncompressedSize": 127
     },
     {
-      "compressedSize": 223,
+      "compressedSize": 229,
       "compressionCodec": "UNCOMPRESSED",
       "encodings": [
         "BYTE_STREAM_SPLIT",
@@ -136,15 +150,17 @@
         "Double"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 2,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "DOUBLE",
-      "uncompressedSize": 223
+      "uncompressedSize": 229
     },
     {
-      "compressedSize": 304,
+      "compressedSize": 219,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
@@ -157,15 +173,18 @@
         "ByteArray"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Qnl0ZUFycmF5LTQ=",
         "minValue": "Qnl0ZUFycmF5LTA=",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 336
+      "uncompressedSize": 251
     },
     {
-      "compressedSize": 351,
+      "compressedSize": 296,
       "compressionCodec": "GZIP",
       "convertedType": "convertedtype=ENUM",
       "encodings": [
@@ -180,15 +199,18 @@
         "Enum"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Enum-4",
         "minValue": "Enum-0",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 251
+      "uncompressedSize": 196
     },
     {
-      "compressedSize": 331,
+      "compressedSize": 229,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "length=16",
       "encodings": [
@@ -202,15 +224,17 @@
         "Uuid"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "04040404-0404-0404-0404-040404040404",
         "minValue": "00000000-0000-0000-0000-000000000000",
         "nullCount": 0
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
-      "uncompressedSize": 359
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 303,
+      "compressedSize": 242,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=JSON",
       "encodings": [
@@ -225,15 +249,18 @@
         "Json"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "{\"4\":4}",
         "minValue": "{\"0\":0}",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 267
+      "uncompressedSize": 206
     },
     {
-      "compressedSize": 319,
+      "compressedSize": 228,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=BSON",
       "encodings": [
@@ -248,6 +275,9 @@
         "Bson"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": {
           "4": 4
         },
@@ -257,10 +287,10 @@
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 353
+      "uncompressedSize": 262
     },
     {
-      "compressedSize": 267,
+      "compressedSize": 206,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=JSON",
       "encodings": [
@@ -275,15 +305,18 @@
         "Json2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "{\"4\":4}",
         "minValue": "{\"0\":0}",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 267
+      "uncompressedSize": 206
     },
     {
-      "compressedSize": 324,
+      "compressedSize": 233,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=BSON",
       "encodings": [
@@ -298,6 +331,9 @@
         "Bson2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": {
           "4": 4
         },
@@ -307,10 +343,10 @@
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 353
+      "uncompressedSize": 262
     },
     {
-      "compressedSize": 334,
+      "compressedSize": 285,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -324,13 +360,16 @@
         "metadata"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 234
+      "uncompressedSize": 185
     },
     {
-      "compressedSize": 430,
+      "compressedSize": 327,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -344,13 +383,16 @@
         "value"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 387
+      "uncompressedSize": 284
     },
     {
-      "compressedSize": 286,
+      "compressedSize": 207,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "length=10",
       "encodings": [
@@ -364,15 +406,18 @@
         "FixedLenByteArray"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Rml4ZWQtMDAwNA==",
         "minValue": "Rml4ZWQtMDAwMA==",
         "nullCount": 0
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
-      "uncompressedSize": 298
+      "uncompressedSize": 219
     },
     {
-      "compressedSize": 277,
+      "compressedSize": 222,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -387,15 +432,18 @@
         "Utf8"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "UTF8-4",
         "minValue": "UTF8-0",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 250
+      "uncompressedSize": 195
     },
     {
-      "compressedSize": 252,
+      "compressedSize": 198,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -409,15 +457,17 @@
         "Utf8_2"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "UTF8_2-4",
         "minValue": "UTF8_2-0",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 243
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 196,
+      "compressedSize": 189,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=INT_8",
       "encodings": [
@@ -432,15 +482,18 @@
         "Int_8"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 204,
+      "compressedSize": 197,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=INT_16",
       "encodings": [
@@ -455,15 +508,18 @@
         "Int_16"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 296,
+      "compressedSize": 289,
       "compressionCodec": "GZIP",
       "convertedType": "convertedtype=INT_32",
       "encodings": [
@@ -478,15 +534,18 @@
         "Int_32"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 253,
+      "compressedSize": 246,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=INT_64",
       "encodings": [
@@ -501,15 +560,18 @@
         "Int_64"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 248,
+      "compressedSize": 205,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=UINT_8",
       "encodings": [
@@ -524,15 +586,18 @@
         "Uint_8"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 153
     },
     {
-      "compressedSize": 204,
+      "compressedSize": 166,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=UINT_16",
       "encodings": [
@@ -547,15 +612,18 @@
         "Uint_16"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 153
     },
     {
-      "compressedSize": 155,
+      "compressedSize": 125,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=UINT_32",
       "encodings": [
@@ -569,15 +637,17 @@
         "Uint_32"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 155
+      "uncompressedSize": 125
     },
     {
-      "compressedSize": 255,
+      "compressedSize": 189,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UINT_64",
       "encodings": [
@@ -592,15 +662,18 @@
         "Uint_64"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 4,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 197
     },
     {
-      "compressedSize": 296,
+      "compressedSize": 289,
       "compressionCodec": "GZIP",
       "convertedType": "convertedtype=DATE",
       "encodings": [
@@ -615,15 +688,18 @@
         "Date"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "1970-01-01",
         "minValue": "1959-01-19",
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 201,
+      "compressedSize": 194,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=DATE",
       "encodings": [
@@ -638,15 +714,18 @@
         "Date2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "1980-12-14",
         "minValue": "1970-01-01",
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 248,
+      "compressedSize": 241,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=TIME_MILLIS",
       "encodings": [
@@ -661,15 +740,18 @@
         "TimeMillis"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "00:00:04.004",
         "minValue": "00:00:00.000",
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 212,
+      "compressedSize": 205,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=TIME_MILLIS",
       "encodings": [
@@ -684,15 +766,18 @@
         "TimeMillis2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "00:00:04.004",
         "minValue": "00:00:00.000",
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 264,
+      "compressedSize": 257,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=TIME_MICROS",
       "encodings": [
@@ -707,15 +792,18 @@
         "TimeMicros"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "00:00:04.000004",
         "minValue": "00:00:00.000000",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 261,
+      "compressedSize": 255,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=TIME_MICROS",
       "encodings": [
@@ -730,15 +818,18 @@
         "TimeMicros2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "00:00:04.000004",
         "minValue": "00:00:00.000000",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 365,
+      "compressedSize": 358,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -752,15 +843,18 @@
         "TimeNanos2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "00:00:04.000000004",
         "minValue": "00:00:00.000000000",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 265
+      "uncompressedSize": 258
     },
     {
-      "compressedSize": 256,
+      "compressedSize": 249,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=TIMESTAMP_MILLIS",
       "encodings": [
@@ -775,15 +869,18 @@
         "TimestampMillis"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "2022-01-01T00:00:00.004Z",
         "minValue": "2022-01-01T00:00:00.000Z",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 305,
+      "compressedSize": 298,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=TIMESTAMP_MILLIS",
       "encodings": [
@@ -798,15 +895,18 @@
         "TimestampMillis2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "2022-01-01T00:00:00.004Z",
         "minValue": "2022-01-01T00:00:00.000Z",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 262,
+      "compressedSize": 255,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=TIMESTAMP_MICROS",
       "encodings": [
@@ -821,15 +921,18 @@
         "TimestampMicros"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "2022-01-01T00:00:00.000004Z",
         "minValue": "2022-01-01T00:00:00.000000Z",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 264,
+      "compressedSize": 257,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=TIMESTAMP_MICROS",
       "encodings": [
@@ -844,15 +947,18 @@
         "TimestampMicros2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "2022-01-01T00:00:00.000004Z",
         "minValue": "2022-01-01T00:00:00.000000Z",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 260,
+      "compressedSize": 253,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
@@ -866,12 +972,15 @@
         "TimestampNanos2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "2022-01-01T00:00:00.000000004Z",
         "minValue": "2022-01-01T00:00:00.000000000Z",
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
       "compressedSize": 198,
@@ -893,7 +1002,7 @@
       "uncompressedSize": 123
     },
     {
-      "compressedSize": 201,
+      "compressedSize": 194,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=9",
       "encodings": [
@@ -908,15 +1017,18 @@
         "Decimal1"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 44.44,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 301,
+      "compressedSize": 298,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=18",
       "encodings": [
@@ -931,15 +1043,18 @@
         "Decimal2"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 44.44,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT64",
-      "uncompressedSize": 264
+      "uncompressedSize": 257
     },
     {
-      "compressedSize": 266,
+      "compressedSize": 272,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
@@ -953,15 +1068,17 @@
         "Decimal3"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 0.44,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
-      "uncompressedSize": 291
+      "uncompressedSize": 297
     },
     {
-      "compressedSize": 150,
+      "compressedSize": 145,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=20",
       "encodings": [
@@ -976,15 +1093,17 @@
         "Decimal4"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 0.44,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 150
+      "uncompressedSize": 145
     },
     {
-      "compressedSize": 204,
+      "compressedSize": 197,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=9",
       "encodings": [
@@ -999,15 +1118,18 @@
         "decimal5"
       ],
       "statistics": {
+        "distinctCount": 5,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 44.44,
         "minValue": 0,
         "nullCount": 0
       },
       "type": "INT32",
-      "uncompressedSize": 196
+      "uncompressedSize": 189
     },
     {
-      "compressedSize": 347,
+      "compressedSize": 341,
       "compressionCodec": "GZIP",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10, length=12",
       "encodings": [
@@ -1022,15 +1144,18 @@
         "DecimalPointer"
       ],
       "statistics": {
+        "distinctCount": 2,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 0.03,
         "minValue": 0,
         "nullCount": 3
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
-      "uncompressedSize": 247
+      "uncompressedSize": 241
     },
     {
-      "compressedSize": 370,
+      "compressedSize": 250,
       "compressionCodec": "LZ4_RAW",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1047,15 +1172,18 @@
         "key"
       ],
       "statistics": {
+        "distinctCount": 4,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Composite-3",
         "minValue": "Composite-0",
         "nullCount": 1
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 391
+      "uncompressedSize": 268
     },
     {
-      "compressedSize": 315,
+      "compressedSize": 270,
       "compressionCodec": "ZSTD",
       "encodings": [
         "PLAIN",
@@ -1070,15 +1198,18 @@
         "value"
       ],
       "statistics": {
+        "distinctCount": 4,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 3,
         "minValue": 0,
         "nullCount": 1
       },
       "type": "INT32",
-      "uncompressedSize": 263
+      "uncompressedSize": 218
     },
     {
-      "compressedSize": 379,
+      "compressedSize": 296,
       "compressionCodec": "ZSTD",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1094,15 +1225,17 @@
         "element"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Composite-3",
         "minValue": "Composite-0",
         "nullCount": 1
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 417
+      "uncompressedSize": 335
     },
     {
-      "compressedSize": 248,
+      "compressedSize": 228,
       "compressionCodec": "BROTLI",
       "encodings": [
         "PLAIN",
@@ -1115,15 +1248,18 @@
         "Repeated"
       ],
       "statistics": {
+        "distinctCount": 4,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 3,
         "minValue": 0,
         "nullCount": 1
       },
       "type": "INT32",
-      "uncompressedSize": 263
+      "uncompressedSize": 218
     },
     {
-      "compressedSize": 419,
+      "compressedSize": 337,
       "compressionCodec": "UNCOMPRESSED",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1139,15 +1275,17 @@
         "key"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Composite-3",
         "minValue": "Composite-0",
         "nullCount": 1
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 419
+      "uncompressedSize": 337
     },
     {
-      "compressedSize": 306,
+      "compressedSize": 211,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1167,15 +1305,18 @@
         "key"
       ],
       "statistics": {
+        "distinctCount": 3,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Embedded-2",
         "minValue": "Embedded-0",
         "nullCount": 5
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 316
+      "uncompressedSize": 221
     },
     {
-      "compressedSize": 340,
+      "compressedSize": 291,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -1193,15 +1334,18 @@
         "value"
       ],
       "statistics": {
+        "distinctCount": 3,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 2,
         "minValue": 0,
         "nullCount": 5
       },
       "type": "INT32",
-      "uncompressedSize": 240
+      "uncompressedSize": 191
     },
     {
-      "compressedSize": 277,
+      "compressedSize": 260,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
@@ -1221,15 +1365,17 @@
         "element"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 0,
         "minValue": 0,
         "nullCount": 5
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 281
+      "uncompressedSize": 255
     },
     {
-      "compressedSize": 298,
+      "compressedSize": 211,
       "compressionCodec": "SNAPPY",
       "convertedType": "convertedtype=UTF8",
       "encodings": [
@@ -1249,15 +1395,18 @@
         "key"
       ],
       "statistics": {
+        "distinctCount": 3,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": "Embedded-2",
         "minValue": "Embedded-0",
         "nullCount": 5
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 319
+      "uncompressedSize": 221
     },
     {
-      "compressedSize": 343,
+      "compressedSize": 291,
       "compressionCodec": "GZIP",
       "encodings": [
         "PLAIN",
@@ -1275,15 +1424,18 @@
         "value"
       ],
       "statistics": {
+        "distinctCount": 3,
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 2,
         "minValue": 0,
         "nullCount": 5
       },
       "type": "INT32",
-      "uncompressedSize": 243
+      "uncompressedSize": 191
     },
     {
-      "compressedSize": 272,
+      "compressedSize": 260,
       "compressionCodec": "BROTLI",
       "convertedType": "convertedtype=DECIMAL, scale=2, precision=10",
       "encodings": [
@@ -1303,18 +1455,20 @@
         "element"
       ],
       "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
         "maxValue": 0,
         "minValue": 0,
         "nullCount": 5
       },
       "type": "BYTE_ARRAY",
-      "uncompressedSize": 279
+      "uncompressedSize": 255
     }
   ],
   "rowGroup": {
     "index": 0,
     "numColumns": 57,
     "numRows": 5,
-    "totalByteSize": 14428
+    "totalByteSize": 12428
   }
 }

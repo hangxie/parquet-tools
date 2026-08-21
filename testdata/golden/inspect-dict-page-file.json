@@ -1,20 +1,24 @@
 {
   "fileInfo": {
-    "compressedSize": 742,
-    "createdBy": "github.com/hangxie/parquet-go v2 latest",
+    "columnOrders": [
+      "TYPE_DEFINED_ORDER",
+      "TYPE_DEFINED_ORDER"
+    ],
+    "compressedSize": 610,
+    "createdBy": "github.com/hangxie/parquet-go/v3",
     "numRowGroups": 1,
     "totalRows": 5,
-    "uncompressedSize": 542,
-    "version": 2
+    "uncompressedSize": 410,
+    "version": 1
   },
   "rowGroups": [
     {
-      "compressedSize": 742,
+      "compressedSize": 610,
       "index": 0,
       "numColumns": 2,
       "numRows": 5,
-      "totalByteSize": 542,
-      "uncompressedSize": 542
+      "totalByteSize": 410,
+      "uncompressedSize": 410
     }
   ]
 }

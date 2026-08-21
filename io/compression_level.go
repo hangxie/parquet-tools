@@ -114,7 +114,10 @@ func validateCompressionLevel(codec string, level int) error {
 		minLevel, maxLevel = 1, 22
 	case "BROTLI":
 		minLevel, maxLevel = 0, 11
-	case "LZ4", "LZ4_RAW":
+	case "LZ4":
+		// The deprecated codec maps levels onto lz4's high compression levels, which start at 1.
+		minLevel, maxLevel = 1, 9
+	case "LZ4_RAW":
 		minLevel, maxLevel = 0, 9
 	default:
 		return fmt.Errorf("unknown codec [%s]", codec)
