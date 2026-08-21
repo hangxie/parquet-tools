@@ -211,9 +211,15 @@ func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option Sch
 
 	compressionCodecMap := buildCompressionCodecMap(reader)
 
-	bloomFilterMap, err := buildBloomFilterMap(ctx, reader)
-	if err != nil {
-		return nil, err
+	// Sizing a bloom filter reads its header, so a caller that does not report
+	// bloom filters can opt out of that read.
+	var bloomFilterMap map[string]bloomFilterInfo
+	if !option.SkipBloomFilter {
+		var err error
+		bloomFilterMap, err = buildBloomFilterMap(ctx, reader)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	schemas := reader.SchemaHandler.SchemaElements

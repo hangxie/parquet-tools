@@ -15,7 +15,7 @@ import (
 
 func TestSchemaOptionZeroValue(t *testing.T) {
 	option := SchemaOption{}
-	if option.FailOnInt96 || option.SkipPageEncoding {
+	if option.FailOnInt96 || option.SkipPageEncoding || option.SkipBloomFilter {
 		t.Fatal("zero-value schema option must leave optional behavior disabled")
 	}
 }
@@ -342,6 +342,39 @@ func TestBuildBloomFilterMap(t *testing.T) {
 			result, err := buildBloomFilterMap(context.Background(), pr)
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestNewSchemaTreeSkipBloomFilter(t *testing.T) {
+	testCases := map[string]struct {
+		option      SchemaOption
+		wantFilters bool
+	}{
+		"default":           {option: SchemaOption{}, wantFilters: true},
+		"skip-bloom-filter": {option: SchemaOption{SkipBloomFilter: true}, wantFilters: false},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/bloom-filter.parquet", pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, pr.PFile.Close()) }()
+
+			root, err := NewSchemaTree(context.Background(), pr, tc.option)
+			require.NoError(t, err)
+
+			filtered := map[string]string{}
+			for _, child := range root.Children {
+				if child.BloomFilter != "" {
+					filtered[child.Name] = child.BloomFilterSize
+				}
+			}
+			if !tc.wantFilters {
+				require.Empty(t, filtered)
+				return
+			}
+			require.Equal(t, map[string]string{"ID": "1024", "Name": "4096", "Score": "1024"}, filtered)
 		})
 	}
 }
