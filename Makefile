@@ -90,7 +90,7 @@ collect-coverage:  ## Run tests and append current coverage to coverage.csv
 pages: pages-coverage pages-star  ## Generate all GitHub Pages content to build/pages/
 
 .PHONY: pages-coverage
-pages-coverage:  ## Collect coverage and generate chart (COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01")
+pages-coverage:  ## Collect coverage and generate chart, report and badge (COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01")
 	@echo "==> Generating coverage history page"
 	@mkdir -p $(PAGES_DIR)
 	@$(PYTHON) scripts/coverage-history.py $(COLLECT_ARGS) $(PAGES_DIR)/coverage-history.html $(COVERAGE_CSV)

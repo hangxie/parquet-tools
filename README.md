@@ -2,7 +2,7 @@
 [![](https://img.shields.io/github/v/tag/hangxie/parquet-tools.svg?color=brightgreen&label=version&sort=semver)](https://github.com/hangxie/parquet-tools/releases)
 [![[parquet-tools]](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml/badge.svg)](https://github.com/hangxie/parquet-tools/actions/workflows/release.yml)
 [![](https://goreportcard.com/badge/github.com/hangxie/parquet-tools)](https://goreportcard.com/report/github.com/hangxie/parquet-tools)
-[![](https://github.com/hangxie/parquet-tools/wiki/coverage.svg)](https://github.com/hangxie/parquet-tools/wiki/Coverage-Report)
+[![](https://hangxie.github.io/parquet-tools/coverage.svg)](https://hangxie.github.io/parquet-tools/coverage-history.html)
 
 # parquet-tools
 A utility to inspect Parquet files.
@@ -2066,7 +2066,7 @@ Run `./scripts/gen-bench.sh <version>` to benchmark a tag or commit three times 
 
 `make pages-star` and `make pages-coverage` generate the project's GitHub Pages charts locally to `build/pages/`. Run both with `make pages`.
 
-`make pages-coverage` collects coverage data and generates the chart. It checks out each day's latest commit, runs `go test`, and writes results to `scripts/coverage.csv` (sorted chronologically). Days with no commits carry forward the previous day's coverage. Days before the first commit with non-zero coverage are skipped.
+`make pages-coverage` collects coverage data and generates the chart. It checks out each day's latest commit, runs `go test`, and appends results to `build/coverage.csv` (sorted chronologically). Days with no commits carry forward the previous day's coverage, and days before the first commit with non-zero coverage are skipped. It also writes the per-package HTML coverage report to `build/pages/coverage.html` and the README coverage badge to `build/pages/coverage.svg`.
 
 ```bash
 make pages-coverage                                                          # last 7 days (default)
@@ -2074,7 +2074,7 @@ make pages-coverage COLLECT_ARGS="--start 2021-05-01"                       # fu
 make pages-coverage COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01"      # explicit range
 ```
 
-These scripts require the Python `matplotlib` module, which is **not** installed automatically. Install it with whichever tool fits your environment:
+The coverage HTML chart and badge need no third-party modules. The companion PNG and `make pages-star` additionally require Python's `matplotlib`, which is **not** installed automatically; without it the coverage PNG is skipped with a warning and the rest of that run still succeeds. Install it with whichever tool fits your environment:
 
 ```bash
 # apt (Debian/Ubuntu)
@@ -2091,6 +2091,8 @@ uv pip install matplotlib
 ```
 
 `make pages-star` also requires a `GITHUB_TOKEN` environment variable to fetch star data from the GitHub API.
+
+The `github-pages` workflow runs the same targets weekly and publishes the result to <https://hangxie.github.io/parquet-tools/>. It seeds `build/coverage.csv` from the previously published copy so history accumulates across runs rather than living in the repository, and the coverage badge in this README is served from the same deployment.
 
 ## Credit
 

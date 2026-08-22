@@ -455,7 +455,14 @@ zone.addEventListener('mouseleave', () => {{ tip.style.display = 'none'; }});
 
 
 def generate_png(points, output_path):
-    import matplotlib
+    # The HTML chart is self-contained SVG; only the PNG needs matplotlib, so a
+    # missing module downgrades to a warning instead of failing the whole run.
+    try:
+        import matplotlib
+    except ImportError:
+        print("matplotlib not installed, skipping PNG chart "
+              "(pip install matplotlib)", file=sys.stderr)
+        return
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
@@ -513,6 +520,73 @@ def generate_png(points, output_path):
 
 
 # ---------------------------------------------------------------------------
+# Badge
+# ---------------------------------------------------------------------------
+
+# Advance widths in tenths of a pixel for Verdana 11px, covering the glyphs a
+# percentage can contain. Only these are needed, so a full metrics table would
+# be dead weight.
+_GLYPH_WIDTH = {".": 35, "%": 125}
+_DIGIT_WIDTH = 70
+
+# shields.io's palette, darkest green first.
+_THRESHOLDS = (
+    (90, "#4b0"),
+    (80, "#97ca00"),
+    (70, "#a4a61d"),
+    (60, "#dfb317"),
+    (50, "#fe7d37"),
+)
+_LOW_COLOR = "#e05d44"
+
+_BADGE = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="20" role="img"'
+    ' aria-label="coverage: {t}"><title>coverage: {t}</title><filter id="blur">'
+    '<feGaussianBlur stdDeviation="16"/></filter><linearGradient id="s" x2="0"'
+    ' y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop'
+    ' offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect'
+    ' width="{w}" height="20" rx="3"/></clipPath><g clip-path="url(#r)"><rect'
+    ' width="61" height="20" fill="#555"/><rect x="61" width="{vw}" height="20"'
+    ' fill="{c}"/><rect width="{w}" height="20" fill="url(#s)"/></g><g fill="#fff"'
+    ' text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif"'
+    ' text-rendering="geometricPrecision" font-size="110"><g transform="scale(.1)">'
+    '<g aria-hidden="true" fill="#010101"><text x="315" y="150" fill-opacity=".8"'
+    ' filter="url(#blur)" textLength="510">coverage</text><text x="315" y="150"'
+    ' fill-opacity=".3" textLength="510">coverage</text></g><text x="315" y="140"'
+    ' textLength="510">coverage</text></g><g transform="scale(.1)"><g'
+    ' aria-hidden="true" fill="#010101"><text x="{vx}" y="150" fill-opacity=".8"'
+    ' filter="url(#blur)" textLength="{vt}">{t}</text><text x="{vx}" y="150"'
+    ' fill-opacity=".3" textLength="{vt}">{t}</text></g><text x="{vx}" y="140"'
+    ' textLength="{vt}">{t}</text></g></g></svg>'
+)
+
+
+def badge_color(coverage):
+    for floor, color in _THRESHOLDS:
+        if coverage >= floor:
+            return color
+    return _LOW_COLOR
+
+
+def generate_badge(coverage, output_path):
+    """Write a shields-style flat coverage badge as a standalone SVG."""
+    text = f"{coverage:.1f}%"
+    text_width = sum(_GLYPH_WIDTH.get(ch, _DIGIT_WIDTH) for ch in text)
+    value_width = text_width // 10 + 10
+    svg = _BADGE.format(
+        w=61 + value_width,
+        vw=value_width,
+        vx=round((61 + value_width / 2) * 10) - 10,
+        vt=text_width,
+        t=text,
+        c=badge_color(coverage),
+    )
+    with open(output_path, "w") as f:
+        f.write(svg)
+    print(f"Generated {output_path} ({text})")
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -549,6 +623,7 @@ def main():
     generate_html(chart_points, args.output)
     if args.output.endswith(".html"):
         generate_png(chart_points, args.output[:-5] + ".png")
+        generate_badge(points[-1][1], str(Path(args.output).parent / "coverage.svg"))
 
 
 if __name__ == "__main__":
