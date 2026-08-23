@@ -29,3 +29,24 @@ func TestTagUpdatesIgnoreAbsentMetadata(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateTagForMapShortKeyValue(t *testing.T) {
+	mapType := parquet.ConvertedType_MAP
+	keyValueType := parquet.ConvertedType_MAP_KEY_VALUE
+	int32Type := parquet.Type_INT32
+	node := SchemaNode{
+		SchemaElement: parquet.SchemaElement{Name: "Map", ConvertedType: &mapType},
+		Children: []*SchemaNode{
+			{
+				SchemaElement: parquet.SchemaElement{Name: "Key_value", ConvertedType: &keyValueType},
+				Children: []*SchemaNode{
+					{SchemaElement: parquet.SchemaElement{Name: "Key", Type: &int32Type}},
+				},
+			},
+		},
+	}
+	tagMap := node.GetTagMap()
+	if tagMap["convertedtype"] != "MAP" {
+		t.Fatalf(`tagMap["convertedtype"] = %q, want MAP`, tagMap["convertedtype"])
+	}
+}
