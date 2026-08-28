@@ -169,6 +169,41 @@ func TestCmd(t *testing.T) {
 		})
 		require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/split-optional-fields-json.json"), stdout)
 	})
+
+	// Splitting rewrites every row, so the non-finite values have to come back
+	// unchanged once the trunks are read in order.
+	t.Run("non-finite", func(t *testing.T) {
+		tempDir := t.TempDir()
+		splitCmd := Cmd{
+			ReadOption:   pio.ReadOption{},
+			ReadPageSize: 1000,
+			URI:          "../../testdata/non-finite.parquet",
+			RecordCount:  2,
+			NameFormat:   filepath.Join(tempDir, "ut-%d.parquet"),
+		}
+		require.NoError(t, splitCmd.Run(context.Background()))
+
+		files, err := os.ReadDir(tempDir)
+		require.NoError(t, err)
+		require.Equal(t, 2, len(files))
+
+		var merged string
+		for _, file := range files {
+			catCmd := cat.Cmd{
+				ReadOption:   pio.ReadOption{},
+				ReadPageSize: 1000,
+				SampleRatio:  1.0,
+				Format:       "jsonl",
+				URI:          filepath.Join(tempDir, file.Name()),
+			}
+			stdout, _ := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, catCmd.Run(context.Background()))
+			})
+			merged += stdout
+		}
+
+		require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/cat-non-finite.jsonl"), merged)
+	})
 }
 
 var (

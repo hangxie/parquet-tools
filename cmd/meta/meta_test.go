@@ -203,10 +203,6 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: true, URI: "../../testdata/all-types.parquet"},
 			errMsg: "type INT96 which is not supported",
 		},
-		"nan-json-error": {
-			cmd:    Cmd{ReadOption: rOpt, URI: "../../testdata/nan.parquet"},
-			errMsg: "json: unsupported value: NaN",
-		},
 		"arrow-gh-41317": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "../../testdata/ARROW-GH-41317.parquet"},
 			errMsg: "schema node not found for column path",
@@ -288,6 +284,15 @@ func TestCmd(t *testing.T) {
 				URI: "encrypted-aad.parquet",
 			},
 			golden: "meta-enc-aad-raw.json",
+		},
+		// Column statistics carry the non-finite values too, quoted the same way.
+		"nan": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "nan.parquet"},
+			golden: "meta-nan-raw.json",
+		},
+		"non-finite": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "non-finite.parquet"},
+			golden: "meta-non-finite-raw.json",
 		},
 	}
 

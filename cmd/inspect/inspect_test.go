@@ -126,6 +126,11 @@ func TestInspect(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, URI: "bloom-filter.parquet", RowGroup: new(0)},
 			golden: "inspect-bloom-filter-rg0.json",
 		},
+		// Non-finite values reach JSON through column statistics as well.
+		"row-group/non-finite": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "non-finite.parquet", RowGroup: new(0)},
+			golden: "inspect-non-finite-rg0.json",
+		},
 		// column chunk level
 		"column-chunk/good-col-0": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0)},
@@ -162,6 +167,10 @@ func TestInspect(t *testing.T) {
 		"column-chunk/repeated-row-group-rg1-col-1": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "repeated-row-group.parquet", RowGroup: new(1), ColumnChunk: new(1)},
 			golden: "inspect-repeated-row-group-rg1-cc1.json",
+		},
+		"column-chunk/non-finite-float16": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "non-finite.parquet", RowGroup: new(0), ColumnChunk: new(3)},
+			golden: "inspect-non-finite-rg0-cc3.json",
 		},
 		"column-chunk/negative-column-index": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(-1)},
@@ -207,6 +216,10 @@ func TestInspect(t *testing.T) {
 		"page/crc32-page-0": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "crc32.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
 			golden: "inspect-crc32-rg0-cc0-pg0.json",
+		},
+		"page/non-finite-page-0": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "non-finite.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-non-finite-rg0-cc0-pg0.json",
 		},
 		"page/good-page-1": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},

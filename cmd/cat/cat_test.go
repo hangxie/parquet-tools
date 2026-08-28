@@ -141,10 +141,6 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 10, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "tsv", NoHeader: true, URI: "../../testdata/geospatial.parquet"},
 			errMsg: "field [Geometry] is not scalar type",
 		},
-		"nan-json-error": {
-			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet"},
-			errMsg: "json: unsupported value: NaN",
-		},
 		"arrow-gh-41321": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-GH-41321.parquet"},
 			errMsg: "failed to cat",
@@ -152,10 +148,6 @@ func TestCmd(t *testing.T) {
 		"concurrent-non-existent": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "file/does/not/exist", Concurrent: true},
 			errMsg: "no such file or directory",
-		},
-		"concurrent-nan-json": {
-			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/nan.parquet", Concurrent: true},
-			errMsg: "json: unsupported value: NaN",
 		},
 		"concurrent-int96": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 0.5, Format: "json", NoHeader: true, URI: "../../testdata/all-types.parquet", Concurrent: true, FailOnInt96: true},
@@ -278,6 +270,28 @@ func TestCmd(t *testing.T) {
 		"unknown-type-raw": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet", RawUnknown: true},
 			golden: "cat-unknown-type-raw.jsonl",
+		},
+		// NaN and infinities have no JSON number form, so they come out as the
+		// quoted strings import already accepts back.
+		"nan": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "nan.parquet"},
+			golden: "cat-nan.json",
+		},
+		"concurrent-nan": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "nan.parquet", Concurrent: true},
+			golden: "cat-nan.json",
+		},
+		"non-finite-json": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "non-finite.parquet"},
+			golden: "cat-non-finite.json",
+		},
+		"non-finite-jsonl": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "non-finite.parquet"},
+			golden: "cat-non-finite.jsonl",
+		},
+		"nan-csv": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: false, URI: "nan.parquet"},
+			golden: "cat-nan-csv.txt",
 		},
 	}
 

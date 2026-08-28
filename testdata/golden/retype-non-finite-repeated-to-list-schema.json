@@ -1,0 +1,52 @@
+{
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
+  "Fields": [
+    {
+      "Tag": "name=dbl, inname=Dbl, type=DOUBLE, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=flt, inname=Flt, type=FLOAT, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=opt_dbl, inname=Opt_dbl, type=DOUBLE, repetitiontype=OPTIONAL, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=half, inname=Half, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16, encoding=PLAIN, compression=SNAPPY"
+    },
+    {
+      "Tag": "name=list, inname=List, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, inname=Element, type=DOUBLE, encoding=PLAIN, compression=SNAPPY"
+        }
+      ]
+    },
+    {
+      "Tag": "name=scores, inname=Scores, type=MAP",
+      "Fields": [
+        {
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=SNAPPY"
+        },
+        {
+          "Tag": "name=value, inname=Value, type=DOUBLE, encoding=PLAIN, compression=SNAPPY"
+        }
+      ]
+    },
+    {
+      "Tag": "name=rep, inname=Rep, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, inname=Element, type=DOUBLE, encoding=PLAIN, compression=SNAPPY"
+        }
+      ]
+    },
+    {
+      "Tag": "name=nested, inname=Nested",
+      "Fields": [
+        {
+          "Tag": "name=inner, inname=Inner, type=FLOAT, encoding=PLAIN, compression=SNAPPY"
+        }
+      ]
+    }
+  ]
+}

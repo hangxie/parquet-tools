@@ -1,0 +1,76 @@
+[
+  {
+    "dbl": "NaN",
+    "flt": "NaN",
+    "half": "NaN",
+    "list": [
+      "NaN",
+      1.5
+    ],
+    "nested": {
+      "inner": "NaN"
+    },
+    "opt_dbl": null,
+    "rep": [
+      1.5
+    ],
+    "scores": {
+      "a": "NaN"
+    }
+  },
+  {
+    "dbl": "Infinity",
+    "flt": "Infinity",
+    "half": "Infinity",
+    "list": [
+      "Infinity"
+    ],
+    "nested": {
+      "inner": "Infinity"
+    },
+    "opt_dbl": "Infinity",
+    "rep": [
+      2.5,
+      3.5
+    ],
+    "scores": {
+      "b": "Infinity"
+    }
+  },
+  {
+    "dbl": "-Infinity",
+    "flt": "-Infinity",
+    "half": "-Infinity",
+    "list": [
+      "-Infinity"
+    ],
+    "nested": {
+      "inner": "-Infinity"
+    },
+    "opt_dbl": "-Infinity",
+    "rep": [
+      4.5
+    ],
+    "scores": {
+      "c": "-Infinity"
+    }
+  },
+  {
+    "dbl": 3.25,
+    "flt": 1.5,
+    "half": 1.5,
+    "list": [
+      2.5
+    ],
+    "nested": {
+      "inner": 9.5
+    },
+    "opt_dbl": 3.25,
+    "rep": [
+      9.5
+    ],
+    "scores": {
+      "d": 4.5
+    }
+  }
+]

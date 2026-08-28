@@ -181,6 +181,21 @@ func TestCmd(t *testing.T) {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, FieldDelimiter: "::", URI: "dummy"},
 				"field delimiter must be a single character",
 			},
+			// Bare NaN/Infinity are not JSON; only the quoted spellings import.
+			"json-bare-non-finite": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/non-finite.bad-source", Format: "json", Schema: "../../testdata/non-finite.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"is not a valid JSON array",
+			},
+			"jsonl-bare-non-finite": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/non-finite-jsonl.bad-source", Format: "jsonl", Schema: "../../testdata/non-finite.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				"invalid JSON string:",
+			},
+			// Infinity takes a sign but NaN does not: ParseFloat matches NaN
+			// before it looks for one, so "+NaN" leaves a bare sign behind.
+			"json-signed-nan": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/non-finite-signed-nan.source", Format: "json", Schema: "../../testdata/non-finite.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				`parse DOUBLE "+NaN"`,
+			},
 		}
 
 		for name, tc := range testCases {
@@ -242,6 +257,31 @@ func TestCmd(t *testing.T) {
 			})
 		}
 	})
+}
+
+// The source spells the non-finite values every way strconv.ParseFloat accepts;
+// cat has to normalize all of them to the canonical quoted form.
+func TestCmdNonFiniteRoundTrip(t *testing.T) {
+	tempDir := t.TempDir()
+	cmd := Cmd{
+		WriteOption: pio.WriteOption{
+			CompressionCodec: "SNAPPY",
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+		},
+		Source: "../../testdata/non-finite.source",
+		Format: "json",
+		Schema: "../../testdata/non-finite.schema",
+		URI:    filepath.Join(tempDir, "non-finite.parquet"),
+	}
+	require.NoError(t, cmd.Run(context.Background()))
+
+	catCmd := importTestCatCmd(cmd.URI, pio.ReadOption{})
+	stdout, stderr := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, catCmd.Run(context.Background()))
+	})
+	require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/cat-non-finite.json"), stdout)
+	require.Equal(t, "", stderr)
 }
 
 func TestCmdJSONLLineSize(t *testing.T) {

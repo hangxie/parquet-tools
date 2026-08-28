@@ -38,6 +38,7 @@ func TestCmd(t *testing.T) {
 	t.Run("error", testCmdError)
 	t.Run("good", testCmdGood)
 	t.Run("verify-data", testCmdVerifyData)
+	t.Run("verify-non-finite", testCmdVerifyNonFinite)
 	t.Run("compression-level", testCmdCompressionLevel)
 	t.Run("schema-modification", testCmdSchemaModification)
 	t.Run("page-sizes", testCmdPageSizes)
@@ -310,6 +311,42 @@ func testCmdVerifyData(t *testing.T) {
 	})
 
 	require.Equal(t, originalOutput, transcodedOutput)
+	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
+}
+
+// Transcoding rewrites every value through the reader and writer, so NaN and
+// the infinities have to survive the trip byte for byte.
+func testCmdVerifyNonFinite(t *testing.T) {
+	rOpt := pio.ReadOption{}
+	tempDir := t.TempDir()
+	const source = "../../testdata/non-finite.parquet"
+
+	cmd := Cmd{
+		ReadOption: rOpt,
+		WriteOption: pio.WriteOption{
+			CompressionCodec: "ZSTD",
+			DataPageVersion:  1,
+			PageSize:         1024 * 1024,
+			RowGroupSize:     128 * 1024 * 1024,
+		},
+		ReadPageSize: 100,
+		Source:       source,
+		URI:          filepath.Join(tempDir, "non-finite.parquet"),
+	}
+	require.NoError(t, cmd.Run(context.Background()))
+
+	catSource := transcodeTestCatCmd(source, rOpt)
+	catTarget := transcodeTestCatCmd(cmd.URI, rOpt)
+
+	sourceOutput, _ := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, catSource.Run(context.Background()))
+	})
+	targetOutput, _ := testutils.CaptureStdoutStderr(func() {
+		require.NoError(t, catTarget.Run(context.Background()))
+	})
+
+	require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/cat-non-finite.json"), sourceOutput)
+	require.Equal(t, sourceOutput, targetOutput)
 	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
 }
 

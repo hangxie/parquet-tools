@@ -1,0 +1,42 @@
+[
+  {
+    "dbl": "NaN",
+    "flt": "nan",
+    "opt_dbl": null,
+    "half": "NaN",
+    "list": ["NaN", 1.5],
+    "scores": {"a": "NaN"},
+    "rep": [1.5],
+    "nested": {"inner": "NaN"}
+  },
+  {
+    "dbl": "Infinity",
+    "flt": "+Inf",
+    "opt_dbl": "inf",
+    "half": "Inf",
+    "list": ["+Inf"],
+    "scores": {"b": "+Inf"},
+    "rep": [2.5, 3.5],
+    "nested": {"inner": "+Inf"}
+  },
+  {
+    "dbl": "-Infinity",
+    "flt": "-Inf",
+    "opt_dbl": "-inf",
+    "half": "-Inf",
+    "list": ["-Inf"],
+    "scores": {"c": "-Inf"},
+    "rep": [4.5],
+    "nested": {"inner": "-Inf"}
+  },
+  {
+    "dbl": 3.25,
+    "flt": 1.5,
+    "opt_dbl": 3.25,
+    "half": 1.5,
+    "list": [2.5],
+    "scores": {"d": 4.5},
+    "rep": [9.5],
+    "nested": {"inner": 9.5}
+  }
+]
