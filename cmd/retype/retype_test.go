@@ -169,6 +169,19 @@ func TestCmd(t *testing.T) {
 				goldenSchema: "../../testdata/golden/retype-geospatial-geo-to-binary-schema.json",
 				goldenData:   "../../testdata/golden/retype-geospatial-geo-to-binary-data.json",
 			},
+			// Rewriting the REPEATED double column moves every non-finite value
+			// into a new LIST group; the values themselves must not change.
+			"non-finite-repeated-to-list": {
+				cmd: Cmd{
+					RepeatedToList: true,
+					ReadOption:     rOpt,
+					ReadPageSize:   100,
+					Source:         "../../testdata/non-finite.parquet",
+					URI:            resultFile,
+				},
+				goldenSchema: "../../testdata/golden/retype-non-finite-repeated-to-list-schema.json",
+				goldenData:   "../../testdata/golden/retype-non-finite-repeated-to-list-data.json",
+			},
 		}
 
 		for name, tc := range testCases {

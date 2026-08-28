@@ -1,0 +1,82 @@
+{
+  "columnChunk": {
+    "columnChunkIndex": 3,
+    "columnIndex": {
+      "boundaryOrder": "ASCENDING",
+      "maxValues": [
+        "Infinity"
+      ],
+      "minValues": [
+        "-Infinity"
+      ],
+      "nullCounts": [
+        0
+      ],
+      "nullPages": [
+        false
+      ]
+    },
+    "columnIndexLength": 19,
+    "columnIndexOffset": 830,
+    "compressedSize": 49,
+    "compressionCodec": "SNAPPY",
+    "convertedType": "length=2",
+    "dataPageOffset": 254,
+    "encodings": [
+      "PLAIN",
+      "RLE"
+    ],
+    "fieldId": 0,
+    "fileOffset": 254,
+    "logicalType": "logicaltype=FLOAT16",
+    "numValues": 4,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 49,
+          "firstRowIndex": 0,
+          "offset": 254
+        }
+      ]
+    },
+    "offsetIndexLength": 11,
+    "offsetIndexOffset": 1049,
+    "pathInSchema": [
+      "half"
+    ],
+    "precision": 0,
+    "repetitionType": "REQUIRED",
+    "rowGroupIndex": 0,
+    "scale": 0,
+    "statistics": {
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
+      "maxValue": "Infinity",
+      "minValue": "-Infinity",
+      "nullCount": 0
+    },
+    "type": "FIXED_LEN_BYTE_ARRAY",
+    "typeLength": 2,
+    "uncompressedSize": 47
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 254,
+      "type": "DATA_PAGE",
+      "compressedSize": 10,
+      "uncompressedSize": 8,
+      "numValues": 4,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "Tag": "name=parquet-go-root",
+  "Fields": [
+    {
+      "Tag": "name=dbl, type=DOUBLE"
+    },
+    {
+      "Tag": "name=flt, type=FLOAT"
+    },
+    {
+      "Tag": "name=opt_dbl, type=DOUBLE, repetitiontype=OPTIONAL"
+    },
+    {
+      "Tag": "name=half, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16"
+    },
+    {
+      "Tag": "name=list, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, type=DOUBLE"
+        }
+      ]
+    },
+    {
+      "Tag": "name=scores, type=MAP",
+      "Fields": [
+        {
+          "Tag": "name=key, type=BYTE_ARRAY, convertedtype=UTF8"
+        },
+        {
+          "Tag": "name=value, type=DOUBLE"
+        }
+      ]
+    },
+    {
+      "Tag": "name=rep, type=DOUBLE, repetitiontype=REPEATED"
+    },
+    {
+      "Tag": "name=nested",
+      "Fields": [
+        {
+          "Tag": "name=inner, type=FLOAT"
+        }
+      ]
+    }
+  ]
+}

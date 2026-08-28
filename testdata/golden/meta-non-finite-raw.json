@@ -1,0 +1,353 @@
+{
+  "Version": 1,
+  "NumRows": 4,
+  "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go/v3",
+  "ColumnOrders": [
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER",
+    "TYPE_DEFINED_ORDER"
+  ],
+  "RowGroups": [
+    {
+      "NumRows": 4,
+      "TotalByteSize": 759,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "dbl"
+          ],
+          "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 90,
+          "UncompressedSize": 95,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 1014,
+          "OffsetIndexLength": 11,
+          "ColumnIndexOffset": 741,
+          "ColumnIndexLength": 31,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "flt"
+          ],
+          "Type": "FLOAT",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 65,
+          "UncompressedSize": 63,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 94,
+          "DataPageOffset": 94,
+          "OffsetIndexOffset": 1025,
+          "OffsetIndexLength": 12,
+          "ColumnIndexOffset": 772,
+          "ColumnIndexLength": 23,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "opt_dbl"
+          ],
+          "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "OPTIONAL",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 95,
+          "UncompressedSize": 93,
+          "NumValues": 4,
+          "NullCount": 1,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 159,
+          "DataPageOffset": 159,
+          "OffsetIndexOffset": 1037,
+          "OffsetIndexLength": 12,
+          "ColumnIndexOffset": 795,
+          "ColumnIndexLength": 35,
+          "SizeStatistics": {
+            "DefinitionLevelHistogram": [
+              1,
+              3
+            ]
+          },
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "half"
+          ],
+          "Type": "FIXED_LEN_BYTE_ARRAY",
+          "TypeLength": 2,
+          "RepetitionType": "REQUIRED",
+          "ConvertedType": "length=2",
+          "LogicalType": "logicaltype=FLOAT16",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 49,
+          "UncompressedSize": 47,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 254,
+          "DataPageOffset": 254,
+          "OffsetIndexOffset": 1049,
+          "OffsetIndexLength": 11,
+          "ColumnIndexOffset": 830,
+          "ColumnIndexLength": 19,
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "list",
+            "list",
+            "element"
+          ],
+          "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 108,
+          "UncompressedSize": 115,
+          "NumValues": 5,
+          "NullCount": 0,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 303,
+          "DataPageOffset": 303,
+          "OffsetIndexOffset": 1060,
+          "OffsetIndexLength": 12,
+          "ColumnIndexOffset": 849,
+          "ColumnIndexLength": 39,
+          "SizeStatistics": {
+            "RepetitionLevelHistogram": [
+              4,
+              1
+            ],
+            "DefinitionLevelHistogram": [
+              0,
+              5
+            ]
+          },
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "scores",
+            "key_value",
+            "key"
+          ],
+          "Type": "BYTE_ARRAY",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "ConvertedType": "convertedtype=UTF8",
+          "LogicalType": "logicaltype=STRING",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 63,
+          "UncompressedSize": 61,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "d",
+          "MinValue": "a",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 411,
+          "DataPageOffset": 411,
+          "OffsetIndexOffset": 1072,
+          "OffsetIndexLength": 11,
+          "ColumnIndexOffset": 888,
+          "ColumnIndexLength": 25,
+          "SizeStatistics": {
+            "UnencodedByteArrayDataBytes": 4,
+            "RepetitionLevelHistogram": [
+              4,
+              0
+            ],
+            "DefinitionLevelHistogram": [
+              0,
+              4
+            ]
+          },
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "scores",
+            "key_value",
+            "value"
+          ],
+          "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 100,
+          "UncompressedSize": 107,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 474,
+          "DataPageOffset": 474,
+          "OffsetIndexOffset": 1083,
+          "OffsetIndexLength": 12,
+          "ColumnIndexOffset": 913,
+          "ColumnIndexLength": 39,
+          "SizeStatistics": {
+            "RepetitionLevelHistogram": [
+              4,
+              0
+            ],
+            "DefinitionLevelHistogram": [
+              0,
+              4
+            ]
+          },
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "rep"
+          ],
+          "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REPEATED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 102,
+          "UncompressedSize": 115,
+          "NumValues": 5,
+          "NullCount": 0,
+          "MaxValue": 9.5,
+          "MinValue": 1.5,
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 574,
+          "DataPageOffset": 574,
+          "OffsetIndexOffset": 1095,
+          "OffsetIndexLength": 12,
+          "ColumnIndexOffset": 952,
+          "ColumnIndexLength": 39,
+          "SizeStatistics": {
+            "RepetitionLevelHistogram": [
+              4,
+              1
+            ],
+            "DefinitionLevelHistogram": [
+              0,
+              5
+            ]
+          },
+          "CompressionCodec": "SNAPPY"
+        },
+        {
+          "PathInSchema": [
+            "nested",
+            "inner"
+          ],
+          "Type": "FLOAT",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 65,
+          "UncompressedSize": 63,
+          "NumValues": 4,
+          "NullCount": 0,
+          "MaxValue": "Infinity",
+          "MinValue": "-Infinity",
+          "IsMaxValueExact": true,
+          "IsMinValueExact": true,
+          "FileOffset": 676,
+          "DataPageOffset": 676,
+          "OffsetIndexOffset": 1107,
+          "OffsetIndexLength": 12,
+          "ColumnIndexOffset": 991,
+          "ColumnIndexLength": 23,
+          "CompressionCodec": "SNAPPY"
+        }
+      ]
+    }
+  ]
+}

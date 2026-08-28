@@ -113,6 +113,26 @@ func TestCmd(t *testing.T) {
 		}
 	})
 
+	// Merging concatenates rows through the same read/write path, so a source
+	// full of NaN and infinities has to come out as itself, twice.
+	t.Run("non-finite", func(t *testing.T) {
+		rOpt := pio.ReadOption{}
+		tempDir := t.TempDir()
+		source := "../../testdata/non-finite.parquet"
+
+		cmd := Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{source, source}, URI: filepath.Join(tempDir, "non-finite.parquet")}
+		require.NoError(t, cmd.Run(context.Background()))
+
+		catCmd := cat.Cmd{ReadOption: rOpt, ReadPageSize: 1000, SampleRatio: 1.0, Format: "jsonl", URI: cmd.URI}
+		stdout, _ := testutils.CaptureStdoutStderr(func() {
+			require.NoError(t, catCmd.Run(context.Background()))
+		})
+
+		expected := testutils.LoadExpected(t, "../../testdata/golden/cat-non-finite.jsonl")
+		require.Equal(t, expected+expected, stdout)
+		require.True(t, testutils.HasSameSchema(source, cmd.URI))
+	})
+
 	t.Run("repeat", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		tempDir := t.TempDir()

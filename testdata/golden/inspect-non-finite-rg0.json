@@ -1,0 +1,219 @@
+{
+  "columnChunks": [
+    {
+      "compressedSize": 90,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 0,
+      "numValues": 4,
+      "pathInSchema": [
+        "dbl"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 95
+    },
+    {
+      "compressedSize": 65,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 1,
+      "numValues": 4,
+      "pathInSchema": [
+        "flt"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      },
+      "type": "FLOAT",
+      "uncompressedSize": 63
+    },
+    {
+      "compressedSize": 95,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 2,
+      "numValues": 4,
+      "pathInSchema": [
+        "opt_dbl"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 1
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 93
+    },
+    {
+      "compressedSize": 49,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "length=2",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 3,
+      "logicalType": "logicaltype=FLOAT16",
+      "numValues": 4,
+      "pathInSchema": [
+        "half"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      },
+      "type": "FIXED_LEN_BYTE_ARRAY",
+      "uncompressedSize": 47
+    },
+    {
+      "compressedSize": 108,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 4,
+      "numValues": 5,
+      "pathInSchema": [
+        "list",
+        "list",
+        "element"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 115
+    },
+    {
+      "compressedSize": 63,
+      "compressionCodec": "SNAPPY",
+      "convertedType": "convertedtype=UTF8",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 5,
+      "logicalType": "logicaltype=STRING",
+      "numValues": 4,
+      "pathInSchema": [
+        "scores",
+        "key_value",
+        "key"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "d",
+        "minValue": "a",
+        "nullCount": 0
+      },
+      "type": "BYTE_ARRAY",
+      "uncompressedSize": 61
+    },
+    {
+      "compressedSize": 100,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 6,
+      "numValues": 4,
+      "pathInSchema": [
+        "scores",
+        "key_value",
+        "value"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 107
+    },
+    {
+      "compressedSize": 102,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 7,
+      "numValues": 5,
+      "pathInSchema": [
+        "rep"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": 9.5,
+        "minValue": 1.5,
+        "nullCount": 0
+      },
+      "type": "DOUBLE",
+      "uncompressedSize": 115
+    },
+    {
+      "compressedSize": 65,
+      "compressionCodec": "SNAPPY",
+      "encodings": [
+        "PLAIN",
+        "RLE"
+      ],
+      "index": 8,
+      "numValues": 4,
+      "pathInSchema": [
+        "nested",
+        "inner"
+      ],
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
+        "nullCount": 0
+      },
+      "type": "FLOAT",
+      "uncompressedSize": 63
+    }
+  ],
+  "rowGroup": {
+    "index": 0,
+    "numColumns": 9,
+    "numRows": 4,
+    "totalByteSize": 759
+  }
+}

@@ -91,6 +91,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [Sampling](#sampling)
       - [Compound Rule](#compound-rule)
       - [Output Format](#output-format)
+      - [Non-finite Floating Point Values](#non-finite-floating-point-values)
       - [UNKNOWN Logical Type](#unknown-logical-type)
     - [import Command](#import-command)
       - [Import from CSV](#import-from-csv)
@@ -1116,6 +1117,25 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 {"shoe_brand":"fila","shoe_name":"grant_hill_2"}
 {"shoe_brand":"steph_curry","shoe_name":"curry7"}
 ```
+
+#### Non-finite Floating Point Values
+
+JSON numbers cannot express `NaN` or infinities, so `FLOAT`, `DOUBLE`, and `FLOAT16` values that hold one come out as the quoted strings `"NaN"`, `"Infinity"`, and `"-Infinity"` in JSON and JSONL output. This applies to `meta` and `inspect` too, where the same values show up in column statistics and column indexes. Finite values are untouched. CSV/TSV output spells them the same way, just unquoted like every other CSV field.
+
+```bash
+$ parquet-tools cat testdata/nan.parquet
+[{"value":"NaN"}]
+$ parquet-tools cat --format csv testdata/nan.parquet
+value
+NaN
+```
+
+`import` accepts those same strings, so the output round-trips back into a parquet file. `NaN`, `Inf`, and `Infinity` are accepted case-insensitively; the infinity spellings may include a leading `+` or `-`. Bare `NaN`/`Infinity` literals are rejected because they are not valid JSON.
+
+> [!NOTE]
+> A JSON consumer sees a string rather than a number for those rows. Use CSV/TSV output if you need the values unquoted.
+>
+> Writers that follow the Parquet spec leave `NaN` out of column statistics, so `meta` and `inspect` usually show an infinity rather than `NaN` as a min/max even when the column contains one.
 
 #### UNKNOWN Logical Type
 

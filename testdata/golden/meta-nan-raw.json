@@ -1,0 +1,42 @@
+{
+  "Version": 2,
+  "NumRows": 1,
+  "NumRowGroups": 1,
+  "CreatedBy": "github.com/hangxie/parquet-go v2 latest",
+  "RowGroups": [
+    {
+      "NumRows": 1,
+      "TotalByteSize": 69,
+      "Columns": [
+        {
+          "PathInSchema": [
+            "value"
+          ],
+          "Type": "DOUBLE",
+          "TypeLength": 0,
+          "RepetitionType": "REQUIRED",
+          "Scale": 0,
+          "Precision": 0,
+          "FieldID": 0,
+          "Encodings": [
+            "PLAIN",
+            "RLE"
+          ],
+          "CompressedSize": 71,
+          "UncompressedSize": 69,
+          "NumValues": 1,
+          "NullCount": 0,
+          "MaxValue": "NaN",
+          "MinValue": "NaN",
+          "FileOffset": 4,
+          "DataPageOffset": 4,
+          "OffsetIndexOffset": 106,
+          "OffsetIndexLength": 11,
+          "ColumnIndexOffset": 75,
+          "ColumnIndexLength": 31,
+          "CompressionCodec": "SNAPPY"
+        }
+      ]
+    }
+  ]
+}

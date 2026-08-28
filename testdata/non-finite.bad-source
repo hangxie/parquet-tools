@@ -1,0 +1,12 @@
+[
+  {
+    "dbl": NaN,
+    "flt": 1.5,
+    "opt_dbl": null,
+    "half": 1.5,
+    "list": [1.5],
+    "scores": {"a": 1.5},
+    "rep": [1.5],
+    "nested": {"inner": 1.5}
+  }
+]

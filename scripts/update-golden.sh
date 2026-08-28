@@ -153,6 +153,18 @@ $PT cat --format jsonl "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$G
 # cat-unknown-type-raw.jsonl
 $PT cat --format jsonl --raw-unknown "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$GOLDEN_DIR/cat-unknown-type-raw.jsonl"
 
+# cat-nan.json
+$PT cat --format json "$TESTDATA_DIR/nan.parquet" | format_json > "$GOLDEN_DIR/cat-nan.json"
+
+# cat-nan-csv.txt
+$PT cat --format csv "$TESTDATA_DIR/nan.parquet" > "$GOLDEN_DIR/cat-nan-csv.txt"
+
+# cat-non-finite.json
+$PT cat --format json "$TESTDATA_DIR/non-finite.parquet" | format_json > "$GOLDEN_DIR/cat-non-finite.json"
+
+# cat-non-finite.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/non-finite.parquet" | format_jsonl > "$GOLDEN_DIR/cat-non-finite.jsonl"
+
 # empty-json.txt
 $PT cat --format json "$TESTDATA_DIR/empty.parquet" > "$GOLDEN_DIR/empty-json.txt"
 
@@ -301,6 +313,12 @@ $PT meta --show-key-metadata "$TESTDATA_DIR/encrypted-aad.parquet" | format_json
 # meta-enc-aad-raw.json
 $PT meta --footer-key "$ENC_FOOTER_KEY" --column-key "double_field=$ENC_DOUBLE_KEY" --column-key "float_field=$ENC_FLOAT_KEY" --aad-prefix "$ENC_AAD_PREFIX" "$TESTDATA_DIR/encrypted-aad.parquet" | format_json > "$GOLDEN_DIR/meta-enc-aad-raw.json"
 
+# meta-nan-raw.json
+$PT meta "$TESTDATA_DIR/nan.parquet" | format_json > "$GOLDEN_DIR/meta-nan-raw.json"
+
+# meta-non-finite-raw.json
+$PT meta "$TESTDATA_DIR/non-finite.parquet" | format_json > "$GOLDEN_DIR/meta-non-finite-raw.json"
+
 # meta-enc-columns-footer-only.json - mixed plaintext/encrypted columns with footer key only
 $PT meta --footer-key "$ENC_FOOTER_KEY" "$TESTDATA_DIR/encrypted-columns.parquet" | format_json > "$GOLDEN_DIR/meta-enc-columns-footer-only.json"
 
@@ -411,6 +429,15 @@ $PT inspect --footer-key "$ENC_FOOTER_KEY" --row-group 0 --column-chunk 0 --page
 # inspect-repeated-row-group-rg1-cc1.json
 $PT inspect --row-group 1 --column-chunk 1 "$TESTDATA_DIR/repeated-row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-repeated-row-group-rg1-cc1.json"
 
+# inspect-non-finite-rg0.json
+$PT inspect --row-group 0 "$TESTDATA_DIR/non-finite.parquet" | format_json > "$GOLDEN_DIR/inspect-non-finite-rg0.json"
+
+# inspect-non-finite-rg0-cc3.json
+$PT inspect --row-group 0 --column-chunk 3 "$TESTDATA_DIR/non-finite.parquet" | format_json > "$GOLDEN_DIR/inspect-non-finite-rg0-cc3.json"
+
+# inspect-non-finite-rg0-cc0-pg0.json
+$PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/non-finite.parquet" | format_json > "$GOLDEN_DIR/inspect-non-finite-rg0-cc0-pg0.json"
+
 # inspect-repeated-row-group-rg1-cc1-pg1.json - page spanning two rows of a repeated column
 $PT inspect --row-group 1 --column-chunk 1 --page 1 "$TESTDATA_DIR/repeated-row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-repeated-row-group-rg1-cc1-pg1.json"
 
@@ -499,6 +526,12 @@ rm -f "$RETYPE_OUTPUT"
 $PT retype --repeated-to-list --source "$TESTDATA_DIR/all-types.parquet" "$RETYPE_OUTPUT"
 $PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-repeated-to-list-schema.json"
 $PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-all-types-repeated-to-list-data.json"
+rm -f "$RETYPE_OUTPUT"
+
+# retype-non-finite-repeated-to-list-schema.json and retype-non-finite-repeated-to-list-data.json
+$PT retype --repeated-to-list --source "$TESTDATA_DIR/non-finite.parquet" "$RETYPE_OUTPUT"
+$PT schema --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-non-finite-repeated-to-list-schema.json"
+$PT cat --format json "$RETYPE_OUTPUT" | format_json > "$GOLDEN_DIR/retype-non-finite-repeated-to-list-data.json"
 rm -f "$RETYPE_OUTPUT"
 
 # retype-geospatial-geo-to-binary-schema.json and retype-geospatial-geo-to-binary-data.json

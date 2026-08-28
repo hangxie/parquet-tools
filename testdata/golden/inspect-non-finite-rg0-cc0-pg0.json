@@ -1,0 +1,26 @@
+{
+  "page": {
+    "index": 0,
+    "offset": 4,
+    "type": "DATA_PAGE",
+    "compressedSize": 27,
+    "uncompressedSize": 32,
+    "numValues": 4,
+    "encoding": "PLAIN",
+    "definitionLevelEncoding": "RLE",
+    "repetitionLevelEncoding": "RLE",
+    "statistics": {
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
+      "maxValue": "Infinity",
+      "minValue": "-Infinity",
+      "nullCount": 0
+    }
+  },
+  "values": [
+    "NaN",
+    "Infinity",
+    "-Infinity",
+    3.25
+  ]
+}
