@@ -165,7 +165,7 @@
       "uncompressedSize": 107
     },
     {
-      "compressedSize": 102,
+      "compressedSize": 98,
       "compressionCodec": "SNAPPY",
       "encodings": [
         "PLAIN",
@@ -179,8 +179,8 @@
       "statistics": {
         "isMaxValueExact": true,
         "isMinValueExact": true,
-        "maxValue": 9.5,
-        "minValue": 1.5,
+        "maxValue": "Infinity",
+        "minValue": "-Infinity",
         "nullCount": 0
       },
       "type": "DOUBLE",

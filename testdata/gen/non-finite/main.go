@@ -13,10 +13,6 @@ import (
 // optional one, a half-precision one, a list element, a map value, a field
 // inside a nested group, and a legacy REPEATED field for retype to rewrite.
 //
-// Rep holds finite values only: as of parquet-go v3.8.1 its JSON conversion
-// looks up a LIST/Element schema path for every slice, which a legacy REPEATED
-// column does not have, so its values never reach the logical type conversion.
-//
 // The writer keeps infinities in column statistics but drops NaN, so this file
 // exercises non-finite statistics while nan.parquet, written before that rule,
 // still covers reading NaN out of min/max.
@@ -50,17 +46,17 @@ func main() {
 		{
 			Dbl: math.NaN(), Flt: float32(math.NaN()), OptDbl: nil, Half: half16NaN,
 			List: []float64{math.NaN(), 1.5}, Scores: map[string]float64{"a": math.NaN()},
-			Rep: []float64{1.5},
+			Rep: []float64{math.NaN()},
 		},
 		{
 			Dbl: posInf, Flt: float32(posInf), OptDbl: &posInf, Half: half16PosInf,
 			List: []float64{posInf}, Scores: map[string]float64{"b": posInf},
-			Rep: []float64{2.5, 3.5},
+			Rep: []float64{posInf, negInf},
 		},
 		{
 			Dbl: negInf, Flt: float32(negInf), OptDbl: &negInf, Half: half16NegInf,
 			List: []float64{negInf}, Scores: map[string]float64{"c": negInf},
-			Rep: []float64{4.5},
+			Rep: []float64{negInf},
 		},
 		{
 			Dbl: finite, Flt: 1.5, OptDbl: &finite, Half: half16Finite,
