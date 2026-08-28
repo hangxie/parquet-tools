@@ -11,7 +11,7 @@
   },
   "opt_dbl": null,
   "rep": [
-    1.5
+    "NaN"
   ],
   "scores": {
     "a": "NaN"
@@ -29,8 +29,8 @@
   },
   "opt_dbl": "Infinity",
   "rep": [
-    2.5,
-    3.5
+    "Infinity",
+    "-Infinity"
   ],
   "scores": {
     "b": "Infinity"
@@ -48,7 +48,7 @@
   },
   "opt_dbl": "-Infinity",
   "rep": [
-    4.5
+    "-Infinity"
   ],
   "scores": {
     "c": "-Infinity"

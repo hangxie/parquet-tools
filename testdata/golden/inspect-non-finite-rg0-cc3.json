@@ -17,7 +17,7 @@
       ]
     },
     "columnIndexLength": 19,
-    "columnIndexOffset": 830,
+    "columnIndexOffset": 826,
     "compressedSize": 49,
     "compressionCodec": "SNAPPY",
     "convertedType": "length=2",
@@ -40,7 +40,7 @@
       ]
     },
     "offsetIndexLength": 11,
-    "offsetIndexOffset": 1049,
+    "offsetIndexOffset": 1045,
     "pathInSchema": [
       "half"
     ],

@@ -6,7 +6,7 @@
     "half": "NaN",
     "list": ["NaN", 1.5],
     "scores": {"a": "NaN"},
-    "rep": [1.5],
+    "rep": ["NaN"],
     "nested": {"inner": "NaN"}
   },
   {
@@ -16,7 +16,7 @@
     "half": "Inf",
     "list": ["+Inf"],
     "scores": {"b": "+Inf"},
-    "rep": [2.5, 3.5],
+    "rep": ["+Inf", "-Inf"],
     "nested": {"inner": "+Inf"}
   },
   {
@@ -26,7 +26,7 @@
     "half": "-Inf",
     "list": ["-Inf"],
     "scores": {"c": "-Inf"},
-    "rep": [4.5],
+    "rep": ["-Inf"],
     "nested": {"inner": "-Inf"}
   },
   {
