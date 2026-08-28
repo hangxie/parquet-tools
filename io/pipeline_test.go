@@ -148,6 +148,24 @@ func TestPipelineReader(t *testing.T) {
 		err := PipelineReader(ctx, pr, writerChan, "good.parquet", 10, nil)
 		require.ErrorIs(t, err, context.Canceled)
 	})
+
+	// Cancelling before the first read leaves it up to the reader whether the
+	// read or the send observes it, so cancel from the transform instead: the
+	// read is already done and nothing drains writerChan, making the send the
+	// only place the cancellation can surface.
+	t.Run("context-cancelled-on-send", func(t *testing.T) {
+		pr := newTestReader(t, goodParquet)
+		writerChan := make(chan any)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		transform := func(row any) (any, error) {
+			cancel()
+			return row, nil
+		}
+
+		err := PipelineReader(ctx, pr, writerChan, "good.parquet", 10, transform)
+		require.ErrorIs(t, err, context.Canceled)
+	})
 }
 
 func TestRunPipeline(t *testing.T) {
