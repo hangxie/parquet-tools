@@ -100,6 +100,28 @@ Unsupported converted type (20)
 
 **Workaround:** Use `parquet-tools retype --bson-to-string` to convert BSON columns to string representation before reading with DuckDB.
 
+#### 2. Non-finite Floats in JSON Output
+
+DuckDB reads `NaN` and the infinities out of a Parquet file correctly, but its JSON export writes them as the bare literals `NaN`, `Infinity`, and `-Infinity`, which JSON does not allow. `parquet-tools import` rejects such a file.
+
+```
+$ duckdb -c "copy (select dbl from read_parquet('non-finite.parquet')) to 'duck.jsonl' (format json)"
+$ parquet-tools import -f jsonl -m schema.json -s duck.jsonl out.parquet
+parquet-tools: error: invalid JSON string: {"dbl":NaN}
+```
+
+**Workaround:** Cast the column to `VARCHAR` in the DuckDB query (`select dbl::varchar`). That writes `"nan"`, `"inf"`, and `"-inf"`, which `import` accepts case-insensitively.
+
+The other direction needs help too: parquet-tools writes those values as the quoted strings `"NaN"`, `"Infinity"`, and `"-Infinity"`, so `read_json` infers a `JSON` column rather than a `DOUBLE` one. Name the types, and DuckDB parses the strings back into non-finite doubles.
+
+```sql
+select * from read_json('cat.jsonl', columns={dbl: 'DOUBLE'});
+```
+
+#### 3. NaN Drops Column Statistics
+
+DuckDB omits min/max altogether from any float column holding a `NaN`, so `parquet-tools meta` and `inspect` report no bounds for it. Columns holding only infinities keep their bounds. Files written by parquet-tools keep the bounds either way, leaving out only the `NaN` itself, so the same data shows `-Infinity`/`Infinity` there. Both are valid: the Parquet specification forbids writing `NaN` as a min or max but says nothing about the remaining values.
+
 ## hyparquet
 
 [hyparquet](https://github.com/hyparam/hyparquet) is a dependency-free TypeScript Parquet reader for the browser and Node. Verified against version 1.28.1.
@@ -130,6 +152,16 @@ hyparquet cannot read encrypted files at all: an encrypted footer no longer ends
 
 **Workaround:** Use `parquet-tools transcode --key-file` to write a plaintext copy. A footer key alone is not enough when columns carry their own keys.
 
+#### 5. Non-finite Floats Serialize as null
+
+hyparquet decodes `NaN` and the infinities into the right JavaScript numbers, but `JSON.stringify` has no way to spell them and writes `null`, which erases the difference between `NaN`, `±Infinity`, and a genuine null.
+
+**Workaround:** Convert them in a replacer, which yields the same spellings parquet-tools uses:
+
+```js
+JSON.stringify(rows, (k, v) => typeof v === 'number' && !Number.isFinite(v) ? String(v) : v)
+```
+
 ## pandas
 
 [pandas](https://pandas.pydata.org/) uses PyArrow or fastparquet for Parquet support.
@@ -151,6 +183,18 @@ import pandas as pd
 df = pd.read_parquet('file.parquet', dtype_backend='pyarrow')
 ```
 
+#### 2. Non-finite Floats Are Lost in JSON and Confused with NULL
+
+`DataFrame.to_json` writes `NaN` and both infinities as `null`, so a JSON dump cannot be told apart from one of a column full of nulls. The default backend also stores a `NaN` and a NULL as the same value: `isna()` is `True` for both. The Arrow backend keeps them apart (`nan` vs `<NA>`), but its `to_json` still collapses everything to `null`.
+
+```python
+df = pd.read_parquet('non-finite.parquet', columns=['dbl'], dtype_backend='pyarrow')
+df.dbl.isna().tolist()      # [False, ...] - the NaN is a value, not a null
+df.to_json(orient='records')  # [{"dbl":null}, ...]
+```
+
+**Workaround:** Use `parquet-tools cat` when the distinction matters; it spells the values `"NaN"`, `"Infinity"`, and `"-Infinity"` and leaves nulls as `null`.
+
 ## Polars
 
 [Polars](https://pola.rs/) is a fast DataFrame library with native Parquet support.
@@ -162,7 +206,9 @@ df = pd.read_parquet('file.parquet', dtype_backend='pyarrow')
 
 [PyArrow](https://arrow.apache.org/docs/python/) is the Python binding for Apache Arrow, commonly used for Parquet I/O.
 
-**Known Issues:** None. PyArrow reads parquet-tools files without issues.
+**Known Issues:** None. PyArrow reads parquet-tools files without issues, non-finite floats included.
+
+Note that `to_pylist()` hands back plain Python floats, so `json.dumps` writes `NaN`, `Infinity`, and `-Infinity` as bare literals, which is not valid JSON and which `parquet-tools import` rejects. Pass `allow_nan=False` to make `json.dumps` raise instead, or map the values to strings to match the parquet-tools spelling.
 
 ```python
 import pyarrow.parquet as pq
