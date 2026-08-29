@@ -134,6 +134,21 @@ def monthly_points(cumulative):
     return [v for _, v in sorted(monthly.items())]
 
 
+def extend_to_today(cumulative):
+    """Carry the running total forward to today.
+
+    Without this the chart stops at the last star event, so a few quiet weeks
+    look identical to the generator having died.
+    """
+    if not cumulative:
+        return cumulative
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    last = max(cumulative)
+    if today <= last:
+        return cumulative
+    return {**cumulative, today: cumulative[last]}
+
+
 def daily_all(cumulative):
     """Return list of (date_str, count) for every day from first star to last, with carry-forward."""
     if not cumulative:
@@ -403,7 +418,7 @@ def main():
     print(f"Fetching stars for {REPO}...", flush=True)
     stars = fetch_stars(token)
     print(f"Total: {len(stars)} stars")
-    cumulative = cumulative_by_date(stars)
+    cumulative = extend_to_today(cumulative_by_date(stars))
     pts = monthly_points(cumulative)
     generate_html(pts, cumulative, out)
     if out.endswith(".html"):
