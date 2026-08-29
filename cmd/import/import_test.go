@@ -916,3 +916,43 @@ func TestCloseWriter(t *testing.T) {
 		require.Equal(t, 2, callCount)
 	})
 }
+
+// FuzzImportJSONL walks the JSONL source path with arbitrary content: the line
+// scanner, the per-line JSON check, and the value conversions the writer does,
+// including the "NaN"/"Infinity" spellings cat emits.
+func FuzzImportJSONL(f *testing.F) {
+	f.Add("{\"dbl\":1.5,\"str\":\"a\",\"num\":3}\n")
+	f.Add("{\"dbl\":\"NaN\",\"str\":\"a\",\"num\":3}\n{\"dbl\":\"-Infinity\",\"str\":\"b\",\"num\":4}\n")
+	f.Add("{\"dbl\":NaN}\n")
+	f.Add("[]\n\n{}\n")
+
+	schema := `{"Tag":"name=root","Fields":[` +
+		`{"Tag":"name=dbl, type=DOUBLE"},` +
+		`{"Tag":"name=str, type=BYTE_ARRAY, convertedtype=UTF8"},` +
+		`{"Tag":"name=num, type=INT64"}]}`
+
+	f.Fuzz(func(t *testing.T, source string) {
+		dir := t.TempDir()
+		schemaFile := filepath.Join(dir, "schema.json")
+		sourceFile := filepath.Join(dir, "source.jsonl")
+		if os.WriteFile(schemaFile, []byte(schema), 0o600) != nil ||
+			os.WriteFile(sourceFile, []byte(source), 0o600) != nil {
+			t.Skip()
+		}
+
+		cmd := Cmd{
+			FieldDelimiter: ".",
+			Format:         "jsonl",
+			Schema:         schemaFile,
+			Source:         sourceFile,
+			URI:            filepath.Join(dir, "output.parquet"),
+			WriteOption: pio.WriteOption{
+				CompressionCodec: "SNAPPY",
+				DataPageVersion:  2,
+				PageSize:         1024,
+				RowGroupSize:     1 << 20,
+			},
+		}
+		_ = cmd.Run(context.Background())
+	})
+}
