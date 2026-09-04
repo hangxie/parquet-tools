@@ -3,7 +3,7 @@ module github.com/hangxie/parquet-tools
 go 1.26.0
 
 require (
-	cloud.google.com/go/storage v1.65.0
+	cloud.google.com/go/storage v1.66.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.8.0
 	github.com/alecthomas/kong v1.16.1
 	github.com/apache/thrift v0.24.0
