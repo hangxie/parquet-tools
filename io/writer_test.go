@@ -108,6 +108,14 @@ func TestNewParquetFileWriter(t *testing.T) {
 			"wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/will-not-create-till-close",
 			"",
 		},
+		"azblob-abfss-good": {
+			"abfss://laborstatisticscontainer@azureopendatastorage.dfs.core.windows.net/will-not-create-till-close",
+			"",
+		},
+		"azblob-az-without-account": {
+			"az://laborstatisticscontainer/will-not-create-till-close",
+			"requires environment variable AZURE_STORAGE_ACCOUNT_NAME",
+		},
 		"http-not-support": {
 			"https://domain.tld/path/to/file",
 			"writing to [https] endpoint is not currently supported",
@@ -126,6 +134,7 @@ func TestNewParquetFileWriter(t *testing.T) {
 	t.Setenv("AWS_PROFILE", "")
 	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
+	t.Setenv("AZURE_STORAGE_ACCOUNT_NAME", "")
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

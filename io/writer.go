@@ -116,13 +116,17 @@ func newHDFSWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, err
 
 func NewParquetFileWriter(ctx context.Context, uri string) (source.ParquetFileWriter, error) {
 	writerFuncTable := map[string]func(context.Context, *url.URL) (source.ParquetFileWriter, error){
-		schemeLocal:              newLocalWriter,
-		schemeAWSS3:              newAWSS3Writer,
-		schemeGoogleCloudStorage: newGoogleCloudStorageWriter,
-		schemeAzureStorageBlob:   newAzureStorageBlobWriter,
-		schemeHTTP:               newHTTPWriter,
-		schemeHTTPS:              newHTTPWriter,
-		schemeHDFS:               newHDFSWriter,
+		schemeLocal:                 newLocalWriter,
+		schemeAWSS3:                 newAWSS3Writer,
+		schemeGoogleCloudStorage:    newGoogleCloudStorageWriter,
+		schemeAzureStorageBlob:      newAzureStorageBlobWriter,
+		schemeAzureStorageBlobAlias: newAzureStorageBlobWriter,
+		schemeAzureDataLake:         newAzureStorageBlobWriter,
+		schemeAzureDataLakeAlias:    newAzureStorageBlobWriter,
+		schemeAzureShorthand:        newAzureStorageBlobWriter,
+		schemeHTTP:                  newHTTPWriter,
+		schemeHTTPS:                 newHTTPWriter,
+		schemeHDFS:                  newHDFSWriter,
 	}
 
 	u, err := parseURI(uri)

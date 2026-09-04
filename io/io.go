@@ -26,6 +26,16 @@ const (
 	schemeHTTPS              string = "https"
 	schemeAWSS3              string = "s3"
 	schemeAzureStorageBlob   string = "wasbs"
+	// wasb and abfs nominally mean plain HTTP in Hadoop, but they are accepted here
+	// as naming aliases only: every Azure scheme talks to the Blob endpoint over HTTPS.
+	schemeAzureStorageBlobAlias string = "wasb"
+	schemeAzureDataLake         string = "abfss"
+	schemeAzureDataLakeAlias    string = "abfs"
+	schemeAzureShorthand        string = "az"
+
+	azureBlobHostSuffix string = ".blob.core.windows.net"
+	azureDFSHostSuffix  string = ".dfs.core.windows.net"
+	azureAccountEnvVar  string = "AZURE_STORAGE_ACCOUNT_NAME"
 )
 
 // ValidateFieldDelimiter rejects values that conflict with field assignments.
@@ -93,7 +103,11 @@ func knownLocationScheme(scheme string) bool {
 		schemeHTTP,
 		schemeHTTPS,
 		schemeAWSS3,
-		schemeAzureStorageBlob:
+		schemeAzureStorageBlob,
+		schemeAzureStorageBlobAlias,
+		schemeAzureDataLake,
+		schemeAzureDataLakeAlias,
+		schemeAzureShorthand:
 		return true
 	default:
 		return false
@@ -177,12 +191,51 @@ func getS3Client(ctx context.Context, bucket string, isPublic, ignoreTLS bool) (
 	return s3.NewFromConfig(cfg), nil
 }
 
-func azureAccessDetail(azURL url.URL, anonymous bool, versionId string) (string, *azblob.SharedKeyCredential, error) {
-	container := azURL.User.Username()
-	if azURL.Host == "" || container == "" || strings.HasSuffix(azURL.Path, "/") {
-		return "", nil, fmt.Errorf("azure blob URI format: wasbs://container@storageaccount.blob.core.windows.net/path/to/blob")
+// azureBlobLocation maps any of the accepted Azure URI spellings to the Blob REST
+// endpoint host and container that the azblob SDK talks to.
+func azureBlobLocation(azURL url.URL) (string, string, error) {
+	host, container := azURL.Host, azURL.User.Username()
+	if azURL.Scheme == schemeAzureShorthand && container == "" {
+		// adlfs shorthand az://container/path carries no account, so it has to
+		// come from the environment; the account-bearing spelling falls through.
+		account := os.Getenv(azureAccountEnvVar)
+		if account == "" {
+			return "", "", fmt.Errorf("%s:// URI without a storage account requires environment variable %s to name it", schemeAzureShorthand, azureAccountEnvVar)
+		}
+		host, container = account+azureBlobHostSuffix, azURL.Host
 	}
-	httpURL := fmt.Sprintf("https://%s/%s%s", azURL.Host, container, azURL.Path)
+
+	// ADLS Gen2 serves the same data on both endpoints, so a DFS host only needs
+	// renaming to reach the Blob API.
+	if account, found := strings.CutSuffix(host, azureDFSHostSuffix); found {
+		host = account + azureBlobHostSuffix
+	}
+	return host, container, nil
+}
+
+// azureURIFormat spells out the expected URI layout for the scheme the user typed.
+func azureURIFormat(scheme string) string {
+	switch scheme {
+	case schemeAzureShorthand:
+		return schemeAzureShorthand + "://container/path/to/blob"
+	case schemeAzureDataLake, schemeAzureDataLakeAlias:
+		return scheme + "://container@storageaccount" + azureDFSHostSuffix + "/path/to/blob"
+	case schemeAzureStorageBlobAlias:
+		return scheme + "://container@storageaccount" + azureBlobHostSuffix + "/path/to/blob"
+	default:
+		return schemeAzureStorageBlob + "://container@storageaccount" + azureBlobHostSuffix + "/path/to/blob"
+	}
+}
+
+func azureAccessDetail(azURL url.URL, anonymous bool, versionId string) (string, *azblob.SharedKeyCredential, error) {
+	host, container, err := azureBlobLocation(azURL)
+	if err != nil {
+		return "", nil, err
+	}
+	if host == "" || container == "" || azURL.Path == "" || strings.HasSuffix(azURL.Path, "/") {
+		return "", nil, fmt.Errorf("azure blob URI format: %s", azureURIFormat(azURL.Scheme))
+	}
+	httpURL := fmt.Sprintf("https://%s/%s%s", host, container, azURL.Path)
 	if versionId != "" {
 		httpURL = fmt.Sprintf("%s?versionid=%s", httpURL, versionId)
 	}
@@ -193,7 +246,7 @@ func azureAccessDetail(azURL url.URL, anonymous bool, versionId string) (string,
 		return httpURL, nil, nil
 	}
 
-	credential, err := azblob.NewSharedKeyCredential(strings.Split(azURL.Host, ".")[0], accessKey)
+	credential, err := azblob.NewSharedKeyCredential(strings.Split(host, ".")[0], accessKey)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to create Azure credential: %w", err)
 	}

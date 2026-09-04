@@ -426,7 +426,7 @@ parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-s
 #### Azure Storage Container
 
 `parquet-tools` uses the [HDFS URL format](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage#access-files-from-within-cluster):
-* starts with `wasbs://` (`wasb://` is not supported), followed by
+* starts with `wasbs://`, followed by
 * container as user name, followed by
 * storage account as host, followed by
 * blob name as path
@@ -439,6 +439,28 @@ means the parquet file is at:
 * storage account `azureopendatastorage`
 * container `laborstatisticscontainer`
 * blob `lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet`
+
+The filesystem-style scheme used by ADLS Gen2, Databricks, Synapse, and Fabric is accepted as well, with the DFS endpoint host translated to the blob endpoint host that the Azure SDK talks to:
+
+> abfss://laborstatisticscontainer@azureopendatastorage.dfs.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+
+So is the `az://` scheme used by [adlfs](https://github.com/fsspec/adlfs), which accepts both the account-bearing form and the shorthand:
+
+> az://laborstatisticscontainer@azureopendatastorage.dfs.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+
+The shorthand form does not name a storage account, so it has to come from the `AZURE_STORAGE_ACCOUNT_NAME` environment variable:
+
+```bash
+$ AZURE_STORAGE_ACCOUNT_NAME=azureopendatastorage parquet-tools row-count --anonymous az://laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+6582726
+$ parquet-tools row-count --anonymous az://laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
+parquet-tools: error: unable to open file [az://laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet]: az:// URI without a storage account requires environment variable AZURE_STORAGE_ACCOUNT_NAME to name it
+```
+
+`wasb://` and `abfs://` are accepted as aliases of `wasbs://` and `abfss://`.
+
+> [!NOTE]
+> Although `wasb://` and `abfs://` mean plain HTTP in Hadoop, `parquet-tools` treats them as naming aliases only: all Azure schemes use HTTPS.
 
 `parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment variable to identify access:
 
