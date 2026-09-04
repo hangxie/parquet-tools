@@ -130,6 +130,139 @@ func TestAzureAccessDetail(t *testing.T) {
 	})
 }
 
+func TestAzureAccessDetailSchemeVariants(t *testing.T) {
+	testCases := map[string]struct {
+		scheme    string
+		host      string
+		container string
+		path      string
+		account   string
+		expected  string
+		errMsg    string
+	}{
+		"wasbs": {
+			scheme:    schemeAzureStorageBlob,
+			host:      "storageaccount.blob.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"wasb-alias-stays-on-https": {
+			scheme:    schemeAzureStorageBlobAlias,
+			host:      "storageaccount.blob.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"abfss-dfs-host-translated": {
+			scheme:    schemeAzureDataLake,
+			host:      "storageaccount.dfs.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"abfs-alias-stays-on-https": {
+			scheme:    schemeAzureDataLakeAlias,
+			host:      "storageaccount.dfs.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"abfss-blob-host-untouched": {
+			scheme:    schemeAzureDataLake,
+			host:      "storageaccount.blob.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"abfss-non-azure-host-untouched": {
+			scheme:    schemeAzureDataLake,
+			host:      "storageaccount.dfs.example.com",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.dfs.example.com/container/path/to/object",
+		},
+		"abfss-missing-container": {
+			scheme: schemeAzureDataLake,
+			host:   "storageaccount.dfs.core.windows.net",
+			path:   "/path/to/object",
+			errMsg: "azure blob URI format: abfss://container@storageaccount.dfs.core.windows.net/path/to/blob",
+		},
+		"az-account-from-env": {
+			scheme:   schemeAzureShorthand,
+			host:     "container",
+			path:     "/path/to/object",
+			account:  "storageaccount",
+			expected: "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"az-without-account": {
+			scheme: schemeAzureShorthand,
+			host:   "container",
+			path:   "/path/to/object",
+			errMsg: "AZURE_STORAGE_ACCOUNT_NAME",
+		},
+		"az-missing-blob": {
+			scheme:  schemeAzureShorthand,
+			host:    "container",
+			account: "storageaccount",
+			errMsg:  "azure blob URI format: az://container/path/to/blob",
+		},
+		"az-trailing-slash": {
+			scheme:  schemeAzureShorthand,
+			host:    "container",
+			path:    "/path/to/",
+			account: "storageaccount",
+			errMsg:  "azure blob URI format: az://container/path/to/blob",
+		},
+		"az-with-blob-host-in-uri": {
+			scheme:    schemeAzureShorthand,
+			host:      "storageaccount.blob.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"az-with-dfs-host-in-uri": {
+			scheme:    schemeAzureShorthand,
+			host:      "storageaccount.dfs.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			expected:  "https://storageaccount.blob.core.windows.net/container/path/to/object",
+		},
+		"az-uri-account-beats-env": {
+			scheme:    schemeAzureShorthand,
+			host:      "uriaccount.blob.core.windows.net",
+			container: "container",
+			path:      "/path/to/object",
+			account:   "envaccount",
+			expected:  "https://uriaccount.blob.core.windows.net/container/path/to/object",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// Cannot use t.Parallel() with t.Setenv()
+			t.Setenv("AZURE_STORAGE_ACCESS_KEY", "")
+			t.Setenv("AZURE_STORAGE_ACCOUNT_NAME", tc.account)
+
+			u := url.URL{Scheme: tc.scheme, Host: tc.host, Path: tc.path}
+			if tc.container != "" {
+				u.User = url.User(tc.container)
+			}
+			uri, cred, err := azureAccessDetail(u, false, "")
+			if tc.errMsg != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errMsg)
+				require.Equal(t, "", uri)
+				require.Nil(t, cred)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, uri)
+			require.Nil(t, cred)
+		})
+	}
+}
+
 func TestNormalizeFieldPath(t *testing.T) {
 	testCases := []struct {
 		name      string

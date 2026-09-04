@@ -117,6 +117,8 @@ func TestNewParquetFileReader(t *testing.T) {
 	s3URL := "s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff"
 	gcsURL := "gs://cloud-samples-data/bigquery/us-states/us-states.parquet"
 	azblobURL := "wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
+	abfssURL := "abfss://laborstatisticscontainer@azureopendatastorage.dfs.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
+	azShorthandURL := "az://laborstatisticscontainer@azureopendatastorage.dfs.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet"
 	httpURL := "https://github.com/hangxie/parquet-tools/raw/refs/heads/main/testdata/good.parquet"
 	testCases := map[string]struct {
 		uri    string
@@ -223,10 +225,30 @@ func TestNewParquetFileReader(t *testing.T) {
 			rOpt,
 			"connection refused",
 		},
+		"azblob-abfss-good": {
+			abfssURL,
+			ReadOption{Anonymous: true},
+			"",
+		},
 		"azblob-invalid-uri1": {
 			"wasbs://bad/url",
 			rOpt,
 			"azure blob URI format:",
+		},
+		"azblob-wasb-invalid-uri": {
+			"wasb://storageaccount.blob.core.windows.net//aa",
+			rOpt,
+			"azure blob URI format: wasb://",
+		},
+		"azblob-az-without-account": {
+			"az://container/path/to/object",
+			rOpt,
+			"requires environment variable AZURE_STORAGE_ACCOUNT_NAME",
+		},
+		"azblob-az-with-account-good": {
+			azShorthandURL,
+			ReadOption{Anonymous: true},
+			"",
 		},
 		"azblob-invalid-uri2": {
 			"wasbs://storageaccount.blob.core.windows.net//aa",
@@ -239,6 +261,7 @@ func TestNewParquetFileReader(t *testing.T) {
 	t.Setenv("AWS_PROFILE", "")
 	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
 	t.Setenv("AZURE_STORAGE_ACCESS_KEY", base64.StdEncoding.EncodeToString(uuid.New().NodeID()))
+	t.Setenv("AZURE_STORAGE_ACCOUNT_NAME", "")
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

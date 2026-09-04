@@ -175,13 +175,17 @@ func newHDFSReader(_ context.Context, u *url.URL, _ ReadOption) (source.ParquetF
 
 func newSourceReader(ctx context.Context, URI string, option ReadOption) (source.ParquetFileReader, error) {
 	readerFuncTable := map[string]func(context.Context, *url.URL, ReadOption) (source.ParquetFileReader, error){
-		schemeLocal:              newLocalReader,
-		schemeAWSS3:              newAWSS3Reader,
-		schemeGoogleCloudStorage: newGoogleCloudStorageReader,
-		schemeAzureStorageBlob:   newAzureStorageBlobReader,
-		schemeHTTP:               newHTTPReader,
-		schemeHTTPS:              newHTTPReader,
-		schemeHDFS:               newHDFSReader,
+		schemeLocal:                 newLocalReader,
+		schemeAWSS3:                 newAWSS3Reader,
+		schemeGoogleCloudStorage:    newGoogleCloudStorageReader,
+		schemeAzureStorageBlob:      newAzureStorageBlobReader,
+		schemeAzureStorageBlobAlias: newAzureStorageBlobReader,
+		schemeAzureDataLake:         newAzureStorageBlobReader,
+		schemeAzureDataLakeAlias:    newAzureStorageBlobReader,
+		schemeAzureShorthand:        newAzureStorageBlobReader,
+		schemeHTTP:                  newHTTPReader,
+		schemeHTTPS:                 newHTTPReader,
+		schemeHDFS:                  newHDFSReader,
 	}
 
 	u, err := parseURI(URI)
