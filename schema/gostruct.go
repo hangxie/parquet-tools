@@ -52,10 +52,16 @@ func (n goStructNode) asStruct() (string, error) {
 }
 
 func (n goStructNode) asList() (string, error) {
+	// a LIST-annotated group holds exactly one repeated field per parquet spec,
+	// in both the standard and the backward compatible encodings
+	if len(n.Children) != 1 || !n.Children[0].isRepeated() {
+		return "", fmt.Errorf("invalid LIST structure in [%s]", n.Name)
+	}
+
 	var typeStr string
 	var err error
 	if n.Children[0].LogicalType != nil {
-		// LIST => Element (of scalar type)
+		// 2-level LIST => Element (of scalar type with logical type)
 		element := *n.Children[0]
 		element.Name = "Element"
 		element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
@@ -82,6 +88,17 @@ func (n goStructNode) asList() (string, error) {
 			SchemaNode:     *elementNode,
 			ForceCamelCase: n.ForceCamelCase,
 		}.String()
+	} else if n.Children[0].isLegacyListElement() {
+		// 2-level LIST => Element (of repeated scalar type)
+		element := *n.Children[0]
+		element.Name = "Element"
+		element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
+		typeStr, err = goStructNode{
+			SchemaNode:     element,
+			ForceCamelCase: n.ForceCamelCase,
+		}.String()
+	} else {
+		return "", fmt.Errorf("invalid LIST structure in [%s]", n.Name)
 	}
 	if err != nil {
 		return "", err

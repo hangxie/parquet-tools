@@ -87,6 +87,18 @@ func (s *SchemaNode) cloneForRendering() *SchemaNode {
 	return &clone
 }
 
+// isRepeated reports whether the node is a REPEATED field.
+func (s *SchemaNode) isRepeated() bool {
+	return s != nil && s.RepetitionType != nil && *s.RepetitionType == parquet.FieldRepetitionType_REPEATED
+}
+
+// isLegacyListElement reports whether the node is the element of a 2-level LIST,
+// ie a repeated scalar sitting directly under the LIST group instead of the
+// 3-level LIST => List => Element layers.
+func (s *SchemaNode) isLegacyListElement() bool {
+	return s != nil && s.Type != nil && s.LogicalType == nil && len(s.Children) == 0 && s.isRepeated()
+}
+
 func copyPointer[T any](value *T) *T {
 	if value == nil {
 		return nil

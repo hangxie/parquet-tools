@@ -179,6 +179,99 @@ func TestGoStructNode(t *testing.T) {
 		require.Contains(t, err.Error(), "go struct does not support LIST of LIST in [Parquet_go_root.Lol]")
 	})
 
+	t.Run("malformed-list", func(t *testing.T) {
+		testCases := map[string]func(*SchemaNode){
+			"no-child": func(list *SchemaNode) {
+				list.Children = nil
+			},
+			"nil-child": func(list *SchemaNode) {
+				list.Children = []*SchemaNode{nil}
+			},
+			"element-without-type": func(list *SchemaNode) {
+				list.Children[0].Children = nil
+				list.Children[0].LogicalType = nil
+				list.Children[0].Type = nil
+			},
+			"multiple-children": func(list *SchemaNode) {
+				list.Children = append(list.Children, list.Children[0])
+			},
+			"logical-type-element-not-repeated": func(list *SchemaNode) {
+				element := list.Children[0].Children[0].Children[0].Children[0]
+				element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_OPTIONAL)
+				list.Children[0] = element
+			},
+			"struct-element-not-repeated": func(list *SchemaNode) {
+				element := list.Children[0]
+				element.Children = append(element.Children, element.Children[0])
+				element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
+			},
+			"interim-layer-not-repeated": func(list *SchemaNode) {
+				list.Children[0].RepetitionType = nil
+			},
+			"scalar-element-not-repeated": func(list *SchemaNode) {
+				list.Children[0].Children = nil
+				list.Children[0].LogicalType = nil
+				list.Children[0].Type = parquet.TypePtr(parquet.Type_INT32)
+				list.Children[0].RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_OPTIONAL)
+			},
+		}
+
+		for name, corrupt := range testCases {
+			t.Run(name, func(t *testing.T) {
+				option := pio.ReadOption{}
+				uri := "../testdata/list-of-list.parquet"
+				pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
+				require.NoError(t, err)
+				defer func() {
+					_ = pr.PFile.Close()
+				}()
+
+				schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
+				require.NoError(t, err)
+				require.NotNil(t, schemaRoot)
+
+				corrupt(schemaRoot.Children[0])
+				_, err = goStructNode{SchemaNode: *schemaRoot}.String()
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "invalid LIST structure in [lol]")
+			})
+		}
+	})
+
+	t.Run("two-level-list", func(t *testing.T) {
+		option := pio.ReadOption{}
+		uri := "../testdata/list-of-list.parquet"
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, option)
+		require.NoError(t, err)
+		defer func() {
+			_ = pr.PFile.Close()
+		}()
+
+		schemaRoot, err := NewSchemaTree(context.Background(), pr, SchemaOption{})
+		require.NoError(t, err)
+		require.NotNil(t, schemaRoot)
+
+		// legacy 2-level LIST: the LIST group holds a repeated scalar element
+		// without any logical type, ie "lol -> element" instead of
+		// "lol -> list -> element"
+		element := schemaRoot.Children[0].Children[0].Children[0]
+		element.Type = parquet.TypePtr(parquet.Type_INT32)
+		element.ConvertedType = nil
+		element.LogicalType = nil
+		element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REPEATED)
+		element.Children = nil
+		schemaRoot.Children[0].Children[0] = element
+
+		fieldStr, err := goStructNode{SchemaNode: *schemaRoot.Children[0]}.stringWithName()
+		require.NoError(t, err)
+		require.Equal(t, "Lol []int32 `parquet:\"name=lol, type=LIST, valuetype=INT32, convertedtype=LIST\"`", fieldStr)
+
+		element.Type = parquet.TypePtr(parquet.Type(999))
+		_, err = goStructNode{SchemaNode: *schemaRoot}.String()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "unknown type: 999")
+	})
+
 	t.Run("as-list", func(t *testing.T) {
 		option := pio.ReadOption{}
 		uri := "../testdata/gostruct-list.parquet"
@@ -192,10 +285,14 @@ func TestGoStructNode(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, root)
 
-		// remove interim layer from schema tree, ie
-		// from "ListName -> list -> element" to "ListName -> element"
-		root.Children[0].Children[0] = root.Children[0].Children[0].Children[0]
-		root.Children[1].Children[0] = root.Children[1].Children[0].Children[0]
+		// remove interim layer from schema tree, ie from
+		// "ListName -> list -> element" to the 2-level "ListName -> element",
+		// whose element is repeated
+		for _, list := range root.Children {
+			element := list.Children[0].Children[0]
+			element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REPEATED)
+			list.Children[0] = element
+		}
 		typeStr, err := goStructNode{SchemaNode: *root}.String()
 		require.NoError(t, err)
 		formatted, err := format.Source([]byte(typeStr))
