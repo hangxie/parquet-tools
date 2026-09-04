@@ -82,12 +82,13 @@ func (s *SchemaNode) getTagMapWithPrefix(prefix string) map[string]string {
 }
 
 func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
-	if len(s.Children) == 0 {
+	// a LIST-annotated group holds exactly one repeated field per parquet spec
+	if len(s.Children) != 1 || !s.Children[0].isRepeated() {
 		return
 	}
 
 	if s.Children[0].LogicalType != nil {
-		// LIST => Element (of scalar type)
+		// 2-level LIST => Element (of scalar type with logical type)
 		maps.Copy(tagMap, s.Children[0].getTagMapWithPrefix("value"))
 		return
 	}
@@ -101,6 +102,14 @@ func (s *SchemaNode) updateTagForList(tagMap map[string]string) {
 		// LIST => List => Element
 		maps.Copy(tagMap, s.Children[0].Children[0].getTagMapWithPrefix("value"))
 		return
+	}
+
+	if s.Children[0].isLegacyListElement() {
+		// 2-level LIST => Element (of repeated scalar type), the element is
+		// rendered as the slice itself so its value type is not repeated
+		element := *s.Children[0]
+		element.RepetitionType = parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REQUIRED)
+		maps.Copy(tagMap, element.getTagMapWithPrefix("value"))
 	}
 }
 
