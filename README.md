@@ -1208,6 +1208,9 @@ Values in CSV and JSON/JSONL are expected to be human-readable format, same as c
 > [!NOTE]
 > For `VARIANT` type, see [Variant Data Type Support](#variant-data-type-support) for more details on the required structure.
 
+> [!WARNING]
+> The `INTERVAL` text form in the table above currently works only with `--format csv`. Through `json` and `jsonl` the value is stored as the raw bytes of the string, so `"2 mon 3 day 4.500 sec"` reads back as `"1869422642 mon 540221550 day 544825.700 sec"`, and a shorter interval string produces a file that cannot be read at all. Import `INTERVAL` columns from CSV until this is fixed upstream, tracked in [#1129](https://github.com/hangxie/parquet-tools/issues/1129).
+
 `UUID`, `FLOAT16`, and `INTERVAL` have their column width fixed by the Parquet specification at 16, 2, and 12 bytes. A schema entry for one of them may leave `length` out and get the fixed width filled in; declaring any other width, `length=0` included, fails the import.
 
 A `UUID` value has to be one of the textual forms below. Any other input, raw 16-byte binary included, fails the import with a `parse UUID` error rather than being written as the bytes of the string itself.

@@ -1143,9 +1143,13 @@ func TestCmdFixedWidthLogicalTypes(t *testing.T) {
 			}
 			require.NoError(t, err)
 
+			// Assert outside the capture: a FailNow inside it would skip the
+			// restore of os.Stdout and os.Stderr, which is not deferred.
+			var catErr error
 			stdout, _ := testutils.CaptureStdoutStderr(func() {
-				require.NoError(t, importTestCatCmd(parquetPath, pio.ReadOption{}).Run(context.Background()))
+				catErr = importTestCatCmd(parquetPath, pio.ReadOption{}).Run(context.Background())
 			})
+			require.NoError(t, catErr)
 			require.JSONEq(t, `[{"Col":`+tc.want+`}]`, stdout)
 		})
 	}
