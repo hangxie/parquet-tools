@@ -956,3 +956,197 @@ func FuzzImportJSONL(f *testing.F) {
 		_ = cmd.Run(context.Background())
 	})
 }
+
+// UUID, FLOAT16, and INTERVAL have their column width fixed by the spec at 16,
+// 2, and 12 bytes. parquet-go v3.8.3 fills that width in when a tag leaves
+// length out, rejects any other width, and parses UUID values instead of
+// writing unparsable input as the raw bytes of the string.
+func TestCmdFixedWidthLogicalTypes(t *testing.T) {
+	const (
+		uuidTag     = "name=Col, type=FIXED_LEN_BYTE_ARRAY, logicaltype=UUID"
+		float16Tag  = "name=Col, type=FIXED_LEN_BYTE_ARRAY, logicaltype=FLOAT16"
+		intervalTag = "name=Col, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL"
+		canonical   = "550e8400-e29b-41d4-a716-446655440000"
+	)
+	// want holds the JSON rendering of the column, which is not a string for
+	// every type involved.
+	canonicalJSON := `"` + canonical + `"`
+
+	testCases := map[string]struct {
+		format  string
+		tag     string
+		value   string
+		wantErr string
+		want    string
+	}{
+		// A width the caller cannot choose is rejected rather than silently
+		// truncating every value the column stores.
+		"uuid-width-too-small": {
+			format:  "csv",
+			tag:     uuidTag + ", length=8",
+			value:   canonical,
+			wantErr: "LogicalType UUID requires FIXED_LEN_BYTE_ARRAY with length 16",
+		},
+		"uuid-width-too-large": {
+			format:  "json",
+			tag:     uuidTag + ", length=32",
+			value:   canonical,
+			wantErr: "LogicalType UUID requires FIXED_LEN_BYTE_ARRAY with length 16",
+		},
+		// An explicit zero in a written-out tag is a declared width, not an
+		// omission, so it is an error rather than something to fill in.
+		"uuid-width-explicit-zero": {
+			format:  "jsonl",
+			tag:     uuidTag + ", length=0",
+			value:   canonical,
+			wantErr: "LogicalType UUID requires FIXED_LEN_BYTE_ARRAY with length 16",
+		},
+		"float16-width-wrong": {
+			format:  "csv",
+			tag:     float16Tag + ", length=4",
+			value:   "1.5",
+			wantErr: "LogicalType FLOAT16 requires FIXED_LEN_BYTE_ARRAY with length 2",
+		},
+		"float16-width-explicit-zero": {
+			format:  "json",
+			tag:     float16Tag + ", length=0",
+			value:   "1.5",
+			wantErr: "LogicalType FLOAT16 requires FIXED_LEN_BYTE_ARRAY with length 2",
+		},
+		"interval-width-wrong": {
+			format:  "jsonl",
+			tag:     intervalTag + ", length=8",
+			value:   "0.000 sec",
+			wantErr: "ConvertedType INTERVAL requires FIXED_LEN_BYTE_ARRAY with length 12",
+		},
+
+		// Unparsable UUID input fails the write; up to v3.8.2 it was written as
+		// the raw bytes of the string, padded or truncated to 16 bytes.
+		"uuid-value-not-a-uuid": {
+			format:  "csv",
+			tag:     uuidTag,
+			value:   "not-a-uuid",
+			wantErr: `parse UUID "not-a-uuid"`,
+		},
+		"uuid-value-json": {
+			format:  "json",
+			tag:     uuidTag,
+			value:   "not-a-uuid",
+			wantErr: `parse UUID "not-a-uuid"`,
+		},
+		"uuid-value-jsonl": {
+			format:  "jsonl",
+			tag:     uuidTag,
+			value:   "not-a-uuid",
+			wantErr: `parse UUID "not-a-uuid"`,
+		},
+		// Braces are the only wrapper the spec-facing forms allow; any other
+		// 38-byte wrapper has to fail rather than reach the column.
+		"uuid-value-bracket-wrapped": {
+			format:  "csv",
+			tag:     uuidTag,
+			value:   "[" + canonical + "]",
+			wantErr: "invalid bracketed UUID format",
+		},
+		// 16 raw bytes are what the column stores, but the string writers take
+		// textual input only, so this is now a parse failure instead of a value
+		// that slipped through unchanged.
+		"uuid-value-raw-16-bytes": {
+			format:  "csv",
+			tag:     uuidTag,
+			value:   "0123456789abcdef",
+			wantErr: `parse UUID "0123456789abcdef": invalid UUID length: 16`,
+		},
+
+		// An omitted length gets the spec width filled in, so these tags are
+		// accepted where v3.8.2 rejected them for having no width at all.
+		"uuid-width-omitted": {
+			format: "csv",
+			tag:    uuidTag,
+			value:  canonical,
+			want:   canonicalJSON,
+		},
+		"float16-width-omitted": {
+			format: "json",
+			tag:    float16Tag,
+			value:  "1.5",
+			want:   "1.5",
+		},
+		// csv only: textual INTERVAL values are corrupted through the JSON and
+		// JSONL writers, https://github.com/hangxie/parquet-go/issues/419.
+		"interval-width-omitted": {
+			format: "csv",
+			tag:    intervalTag,
+			value:  "1 mon 1 day 0.001 sec",
+			want:   `"1 mon 1 day 0.001 sec"`,
+		},
+
+		// Every textual form uuid.Parse accepts lands on the same column value.
+		"uuid-value-undashed": {
+			format: "csv",
+			tag:    uuidTag,
+			value:  strings.ReplaceAll(canonical, "-", ""),
+			want:   canonicalJSON,
+		},
+		"uuid-value-braced": {
+			format: "json",
+			tag:    uuidTag,
+			value:  "{" + canonical + "}",
+			want:   canonicalJSON,
+		},
+		"uuid-value-urn": {
+			format: "jsonl",
+			tag:    uuidTag,
+			value:  "urn:uuid:" + canonical,
+			want:   canonicalJSON,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			tempDir := t.TempDir()
+			schemaPath := filepath.Join(tempDir, "schema")
+			sourcePath := filepath.Join(tempDir, "source")
+			parquetPath := filepath.Join(tempDir, "output.parquet")
+
+			schema := tc.tag
+			if tc.format != "csv" {
+				schema = fmt.Sprintf(`{"Tag":"name=parquet-go-root","Fields":[{"Tag":%q}]}`, tc.tag)
+			}
+			source := tc.value + "\n"
+			if tc.format != "csv" {
+				record, err := json.Marshal(map[string]string{"Col": tc.value})
+				require.NoError(t, err)
+				source = string(record) + "\n"
+				if tc.format == "json" {
+					source = "[" + string(record) + "]"
+				}
+			}
+			require.NoError(t, os.WriteFile(schemaPath, []byte(schema), 0o600))
+			require.NoError(t, os.WriteFile(sourcePath, []byte(source), 0o600))
+
+			err := (Cmd{
+				WriteOption: pio.WriteOption{
+					CompressionCodec: "SNAPPY",
+					PageSize:         1024 * 1024,
+					RowGroupSize:     128 * 1024 * 1024,
+				},
+				Source: sourcePath,
+				Format: tc.format,
+				Schema: schemaPath,
+				URI:    parquetPath,
+			}).Run(context.Background())
+			if tc.wantErr != "" {
+				require.ErrorContains(t, err, tc.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			stdout, _ := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, importTestCatCmd(parquetPath, pio.ReadOption{}).Run(context.Background()))
+			})
+			require.JSONEq(t, `[{"Col":`+tc.want+`}]`, stdout)
+		})
+	}
+}

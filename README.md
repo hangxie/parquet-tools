@@ -1208,6 +1208,17 @@ Values in CSV and JSON/JSONL are expected to be human-readable format, same as c
 > [!NOTE]
 > For `VARIANT` type, see [Variant Data Type Support](#variant-data-type-support) for more details on the required structure.
 
+`UUID`, `FLOAT16`, and `INTERVAL` have their column width fixed by the Parquet specification at 16, 2, and 12 bytes. A schema entry for one of them may leave `length` out and get the fixed width filled in; declaring any other width, `length=0` included, fails the import.
+
+A `UUID` value has to be one of the textual forms below. Any other input, raw 16-byte binary included, fails the import with a `parse UUID` error rather than being written as the bytes of the string itself.
+
+| Form | Example |
+| --- | --- |
+| Canonical dashed | `550e8400-e29b-41d4-a716-446655440000` |
+| Undashed hex | `550e8400e29b41d4a716446655440000` |
+| Braced | `{550e8400-e29b-41d4-a716-446655440000}` |
+| URN | `urn:uuid:550e8400-e29b-41d4-a716-446655440000` |
+
 #### Import from CSV
 
 ```bash
