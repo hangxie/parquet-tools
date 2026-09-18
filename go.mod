@@ -15,7 +15,7 @@ require (
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.12.1
 	github.com/willabides/kongplete v0.4.0
-	go.mongodb.org/mongo-driver/v2 v2.9.0
+	go.mongodb.org/mongo-driver/v2 v2.9.1
 	golang.org/x/sync v0.23.0
 	google.golang.org/api v0.298.0
 )
