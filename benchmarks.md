@@ -4,7 +4,9 @@
 1. Use data set from https://huggingface.co/datasets/hangxie/parquet-tools/tree/main
  * All parquet files have the same schema with testdata/all-types.parquet but with more rows.
  * 10K rows data set was used for all versions.
-2. Run on an Ubuntu 24.04 LTS with Intel i7-8700B CPU (6c/12T) and 32GB memory
+2. Benchmark host changed at v1.49.2, numbers on either side of that cutoff are not comparable:
+ * v1.49.2 and later, since 2026-05-22: a 2024 Apple MacBook Air with M3/24GB running macOS.
+ * v1.49.1 and earlier: an Ubuntu 24.04 LTS with Intel i7-8700B CPU (6c/12T) and 32GB memory.
 3. Run `make benchmark` 3 times, then pick the median number and post here after convert ns/op to ms/op.
 4. Benchmark was added in v1.30.0, old versions need to tweak go benchmarking code to make things work.
 
@@ -12,7 +14,10 @@
 
 | **Tag** | **cat** | **merge** | **meta** | **row-count** | **schema** | **size** | **version** |
 | -------: | -------------------------------------------------------------------------: | -------------------------------------------------------------------------: | -------: | ------------: | ---------: | -------: | ----------: |
-| HEAD | 334 | 816 | 1.279 | 1.062 | 2.672 | 1.073 | 0.013 |
+| HEAD | 347 | 841 | 1.316 | 1.148 | 2.747 | 1.179 | 0.016 |
+| v1.55.2 | 347 | 841 | 1.316 | 1.148 | 2.747 | 1.179 | 0.016 |
+| v1.55.1 | 339 | 821 | 1.353 | 1.162 | 2.831 | 1.157 | 0.016 |
+| v1.55.0 | 348 | 852 | 1.469 | 1.260 | 2.774 | 1.306 | 0.016 |
 | v1.54.5 | 334 | 816 | 1.279 | 1.062 | 2.672 | 1.073 | 0.013 |
 | v1.54.4 | 328 | 805 | 1.238 | 1.091 | 2.673 | 1.078 | 0.013 |
 | v1.54.3 | 352 | 834 | 1.272 | 1.126 | 2.731 | 1.105 | 0.015 |
