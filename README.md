@@ -326,10 +326,10 @@ $ aws sts get-caller-identity
     "Account": "123456789012",
     "Arn": "arn:aws:iam::123456789012:user/redacted"
 }
-aws s3 ls s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
-2024-05-06 08:33:48  362267322 20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
-$ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
-2405462
+aws s3 ls s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff
+2024-11-12 19:26:50  1070476803 20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff
+$ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff
+7124019
 ```
 
 If an S3 object is publicly accessible and you do not have AWS credential, you can use `--anonymous` flag to bypass AWS authentication:
@@ -338,10 +338,10 @@ If an S3 object is publicly accessible and you do not have AWS credential, you c
 $ aws sts get-caller-identity
 
 Unable to locate credentials. You can configure credentials by running "aws configure".
-$ aws s3 --no-sign-request ls s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
-2024-05-06 08:33:48  362267322 20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
-$ parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0
-2405462
+$ aws s3 --no-sign-request ls s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff
+2024-11-12 19:26:50  1070476803 20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff
+$ parquet-tools row-count --anonymous s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff
+7124019
 ```
 
 S3-compatible object stores such as RustFS, MinIO, Ceph, Garage, SeaweedFS,
@@ -371,8 +371,8 @@ Optionally, you can specify object version by using `--object-version` when you 
 If version for the S3 object does not exist or bucket does not have version enabled, `parquet-tools` will report error:
 
 ```bash
-$ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0 --object-version non-existent-version
-parquet-tools: error: failed to open S3 object [s3://daylight-openstreetmap/parquet/osm_features/release=v1.46/type=way/20240506_151445_00143_nanmw_fb5fe2f1-fec8-494f-8c2e-0feb15cedff0] version [non-existent-version]: operation error S3: HeadObject, https response error StatusCode: 400, RequestID: 75GZZ1W5M4KMAK1H, HostID: hgDGBOolDqLgH+CHRuZU+dXZXv4CB+mmSpjEfGxF5fLnKhNkJCWEAZBSS0kbT/k2gFotuoWNLX+zaWNWzHR49w==, api error BadRequest: Bad Request
+$ parquet-tools row-count s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff --object-version non-existent-version
+parquet-tools: error: unable to open file [s3://daylight-openstreetmap/parquet/osm_features/release=v1.58/type=way/20241112_191814_00139_grr7u_0041fe64-a5ba-4375-88bf-ef790dfedfff]: new s3 reader with client: open s3 object: head object: operation error S3: HeadObject, https response error StatusCode: 400, RequestID: TTBSQ5AW6JDA84CR, HostID: I5fmnGiUtkrxDRblY7Nkww10Hu6wc9IyNnk/nA825PEU6Yu7qcZpmXUFoQ7E3nESctHIACjjuEE=, api error BadRequest: Bad Request
 ```
 
 > [!TIP]
@@ -381,7 +381,7 @@ parquet-tools: error: failed to open S3 object [s3://daylight-openstreetmap/parq
 > [!NOTE]
 > S3 bucket names containing dots (e.g., `my.bucket.name`) cause TLS certificate validation failures when accessed via [virtual-hosted style URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html) because AWS's wildcard certificate `*.s3.amazonaws.com` does not cover multi-level subdomains. Use the `--http-ignore-tls-error` flag to access such buckets. AWS has [postponed deprecation of path-style access](https://aws.amazon.com/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story/) multiple times, but virtual-hosted style remains the default for newer buckets.
 
-`parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much faster than downloading the file from S3 bucket and running `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
+`parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much faster than downloading the file from S3 bucket and running `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 1GB, but the `row-count` command takes just several seconds to finish.
 
 #### GCS Bucket
 
@@ -418,7 +418,7 @@ $ parquet-tools row-count --anonymous --object-version=-1 gs://cloud-samples-dat
 
 ```bash
 $ parquet-tools row-count --anonymous --object-version=123 gs://cloud-samples-data/bigquery/us-states/us-states.parquet
-parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-states/us-states.parquet]: failed to create new reader: storage: object doesn't exist: googleapi: Error 404: No such object: cloud-samples-data/bigquery/us-states/us-states.parquet, notFound
+parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-states/us-states.parquet]: create new reader: storage: object doesn't exist: googleapi: Error 404: No such object: cloud-samples-data/bigquery/us-states/us-states.parquet, notFound
 $ parquet-tools row-count --anonymous --object-version=foo-bar gs://cloud-samples-data/bigquery/us-states/us-states.parquet
 parquet-tools: error: unable to open file [gs://cloud-samples-data/bigquery/us-states/us-states.parquet]: invalid GCS generation [foo-bar]: strconv.ParseInt: parsing "foo-bar": invalid syntax
 ```
