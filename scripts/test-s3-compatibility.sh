@@ -3,11 +3,10 @@
 set -euo pipefail
 
 readonly bucket="compatibility"
-# The MinIO server and client repositories are archived, so these are the final
-# community releases. MinIO's own registry never published an image for the last
-# server release; alpine-docker/minio builds it from the release tag.
-readonly minio_image="docker.io/alpine/minio:RELEASE.2025-10-15T17-29-55Z"
-readonly minio_client_image="quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z"
+# RustFS stands in for MinIO, which ended community releases and withdrew every
+# published image, client included. Buckets are created with the AWS CLI below
+# because no store here ships a usable client image.
+readonly rustfs_image="docker.io/rustfs/rustfs:1.0.0"
 readonly ceph_image="quay.io/benjamin_holmes/ceph-aio:v20"
 readonly garage_image="dxflrs/garage:v2.3.0"
 readonly seaweedfs_image="chrislusf/seaweedfs:4.41"
@@ -59,15 +58,15 @@ wait_for_http() {
 }
 
 make_bucket() {
-	local container=$1
-	local mc_host=$2
+	local endpoint=$1
+	local region=$2
+	local access_key=$3
+	local secret_key=$4
 
-	# MC_HOST_* names the target endpoint, which keeps this to a single mc
-	# invocation instead of a shell wrapping `mc alias set`.
-	pull_image "$minio_client_image"
-	docker run --rm --network "container:$container" \
-		-e "MC_HOST_target=$mc_host" \
-		"$minio_client_image" mb "target/$bucket" >/dev/null
+	AWS_REGION=$region \
+		AWS_ACCESS_KEY_ID=$access_key \
+		AWS_SECRET_ACCESS_KEY=$secret_key \
+		aws --endpoint-url "$endpoint" s3api create-bucket --bucket "$bucket" >/dev/null
 }
 
 verify_parquet_io() {
@@ -87,23 +86,27 @@ verify_parquet_io() {
 	test "$(./build/parquet-tools row-count "s3://$bucket/generated.parquet")" = "10"
 }
 
-test_minio() {
-	local container="parquet-tools-minio-${RANDOM}"
+test_rustfs() {
+	local container="parquet-tools-rustfs-${RANDOM}"
+	local access_key="rustfsaccesskey"
+	local secret_key="rustfssecretkey"
+
 	# The image declares /data as a volume but runs as a non-root user, and
-	# Docker creates that anonymous volume owned by root, so MinIO cannot format
-	# its backend there. Keep the data outside the volume.
-	pull_image "$minio_image"
+	# Docker creates that anonymous volume owned by root, so RustFS cannot write
+	# its backend there. RUSTFS_VOLUMES keeps the data outside the volume.
+	pull_image "$rustfs_image"
 	docker run -d --name "$container" -p 127.0.0.1::9000 \
-		-e MINIO_ROOT_USER=minioadmin \
-		-e MINIO_ROOT_PASSWORD=minioadmin \
-		"$minio_image" server /tmp/data >/dev/null
+		-e RUSTFS_VOLUMES=/tmp/data \
+		-e RUSTFS_ACCESS_KEY="$access_key" \
+		-e RUSTFS_SECRET_KEY="$secret_key" \
+		"$rustfs_image" >/dev/null
 	containers+=("$container")
 
 	local port
 	port=$(container_port "$container" 9000)
-	wait_for_http "$container" "http://127.0.0.1:$port/minio/health/live"
-	make_bucket "$container" "http://minioadmin:minioadmin@127.0.0.1:9000"
-	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "minioadmin" "minioadmin"
+	wait_for_http "$container" "http://127.0.0.1:$port/health"
+	make_bucket "http://127.0.0.1:$port" "us-east-1" "$access_key" "$secret_key"
+	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "$access_key" "$secret_key"
 }
 
 test_ceph() {
@@ -142,7 +145,7 @@ test_ceph() {
 		sleep 5
 	done
 
-	make_bucket "$container" "http://cephdemo:cephdemosecret@127.0.0.1:8000"
+	make_bucket "http://127.0.0.1:$port" "us-east-1" "cephdemo" "cephdemosecret"
 	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "cephdemo" "cephdemosecret"
 }
 
@@ -202,8 +205,13 @@ test_seaweedfs() {
 	verify_parquet_io "http://127.0.0.1:$port" "us-east-1" "admin" "secret"
 }
 
-echo "==> MinIO endpoint ..."
-test_minio
+if ! command -v aws >/dev/null; then
+	echo "aws CLI is required to create test buckets" >&2
+	exit 1
+fi
+
+echo "==> RustFS endpoint ..."
+test_rustfs
 echo "==> Ceph RGW endpoint ..."
 test_ceph
 echo "==> Garage endpoint ..."
