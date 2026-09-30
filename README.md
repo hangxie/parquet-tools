@@ -919,6 +919,7 @@ type Parquet_go_root struct {
 * `geojson`: output in [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) format
 * `hex`: output raw data in hex format, plus crs/algorithm
 * `base64`: output raw data in base64 format, plus crs/algorithm
+* `hybrid`: output both `geojson` and `wkb_hex`, plus crs/algorithm
 
 You can use `--geo-format` option to change format of `cat` command output, default is `geojson`.
 
@@ -931,6 +932,9 @@ $ parquet-tools cat --limit 1 --geo-format geojson testdata/geospatial.parquet
 
 $ parquet-tools cat --limit 1 --geo-format hex testdata/geospatial.parquet
 [{"Geography":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"},"Geometry":{"crs":"OGC:CRS84","wkb_hex":"010100000000000000000000000000000000000000"}}]
+
+$ parquet-tools cat --limit 1 --geo-format hybrid testdata/geospatial.parquet
+[{"Geography":{"algorithm":"SPHERICAL","crs":"OGC:CRS84","geojson":{"coordinates":[0,0],"type":"Point"},"wkb_hex":"010100000000000000000000000000000000000000"},"Geometry":{"crs":"OGC:CRS84","geojson":{"coordinates":[0,0],"type":"Point"},"wkb_hex":"010100000000000000000000000000000000000000"}}]
 ```
 
 `MinValue` and `MaxValue` of geospatial columns will be bounding box value if Geospatial Statistics presents, note that `MinValue` and `MaxValue` of underlying `BYTE_ARRAY` value do not make any sense to these columns.

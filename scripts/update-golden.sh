@@ -129,6 +129,9 @@ $PT cat --format jsonl --geo-format base64 "$TESTDATA_DIR/geospatial.parquet" | 
 # cat-geospatial-geojson.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/geospatial.parquet" | format_jsonl > "$GOLDEN_DIR/cat-geospatial-geojson.jsonl"
 
+# cat-geospatial-hybrid.jsonl
+$PT cat --format jsonl --geo-format hybrid "$TESTDATA_DIR/geospatial.parquet" | format_jsonl > "$GOLDEN_DIR/cat-geospatial-hybrid.jsonl"
+
 # cat-old-style-list.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/old-style-list.parquet" | format_jsonl > "$GOLDEN_DIR/cat-old-style-list.jsonl"
 

@@ -239,6 +239,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "geospatial.parquet"},
 			golden: "cat-geospatial-geojson.jsonl",
 		},
+		"geospatial-hybrid": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", GeoFormat: "hybrid", NoHeader: true, URI: "geospatial.parquet"},
+			golden: "cat-geospatial-hybrid.jsonl",
+		},
 		"old-style-list": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet"},
 			golden: "cat-old-style-list.jsonl",
