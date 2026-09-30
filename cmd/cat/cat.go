@@ -3,17 +3,13 @@ package cat
 import (
 	"context"
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"runtime"
 	"strings"
 	"sync"
 
-	"github.com/hangxie/parquet-go/v3/marshal"
 	"github.com/hangxie/parquet-go/v3/reader"
-	"github.com/hangxie/parquet-go/v3/schema"
-	"github.com/hangxie/parquet-go/v3/types"
 	"golang.org/x/sync/errgroup"
 
 	pio "github.com/hangxie/parquet-tools/io"
@@ -33,6 +29,7 @@ type Cmd struct {
 	SampleRatio  float32 `short:"s" help:"Sample ratio (0.0-1.0)." default:"1.0"`
 	Skip         int64   `short:"k" help:"Skip rows before apply other logics." default:"0"`
 	URI          string  `arg:"" predictor:"file" help:"URI of Parquet file."`
+	ValueMode    string  `name:"value-mode" help:"output value representation (interpreted/raw); raw uses physical values and base64 for byte-backed columns, preserving text columns." enum:"interpreted,raw" default:"interpreted"`
 	pio.ReadOption
 }
 
@@ -50,6 +47,9 @@ var delimiter = map[string]struct {
 
 // Run does actual cat job
 func (c Cmd) Run(ctx context.Context) error {
+	if _, err := pio.ParseValueMode(c.ValueMode); err != nil {
+		return err
+	}
 	if c.ReadPageSize < 1 {
 		return fmt.Errorf("invalid read page size %d, needs to be at least 1", c.ReadPageSize)
 	}
@@ -89,7 +89,7 @@ func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
 		if len(child.Children) != 0 {
 			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
-		if child.LogicalType != nil && (child.LogicalType.IsSetGEOGRAPHY() || child.LogicalType.IsSetGEOMETRY()) {
+		if c.ValueMode != "raw" && child.LogicalType != nil && (child.LogicalType.IsSetGEOGRAPHY() || child.LogicalType.IsSetGEOMETRY()) {
 			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
 		fieldList[index] = child.ExNamePath[len(child.ExNamePath)-1]
@@ -144,71 +144,6 @@ func nullifyUnknownCols(rowStruct any, unknownCols map[string]struct{}) {
 	}
 	for col := range unknownCols {
 		m[col] = nil
-	}
-}
-
-func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan string, schemaHandler *schema.SchemaHandler, fieldList []string, unknownCols map[string]struct{}) error {
-	var geoMode types.GeospatialJSONMode
-	switch c.GeoFormat {
-	case "hex":
-		geoMode = types.GeospatialModeHex
-	case "base64":
-		geoMode = types.GeospatialModeBase64
-	case "hybrid":
-		geoMode = types.GeospatialModeHybrid
-	default:
-		geoMode = types.GeospatialModeGeoJSON
-	}
-	geoOpt := marshal.WithGeospatialConfig(types.NewGeospatialConfig(
-		types.WithGeometryJSONMode(geoMode),
-		types.WithGeographyJSONMode(geoMode),
-	))
-
-	strBuilder := new(strings.Builder)
-	csvWriter := csv.NewWriter(strBuilder)
-	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case row, more := <-rowChan:
-			if !more {
-				return nil
-			}
-			rowStruct, err := marshal.ConvertToJSONFriendly(row, schemaHandler, geoOpt)
-			if err != nil {
-				return err
-			}
-			if !c.RawUnknown {
-				nullifyUnknownCols(rowStruct, unknownCols)
-			}
-
-			// Format the row as a string based on the format
-			var formattedRow string
-			switch c.Format {
-			case "json", "jsonl":
-				buf, err := json.Marshal(rowStruct)
-				if err != nil {
-					return err
-				}
-				formattedRow = string(buf)
-			case "csv", "tsv":
-				values := mapToStrList(rowStruct.(map[string]any), fieldList)
-				line, err := c.valuesToCSV(values, strBuilder, csvWriter)
-				if err != nil {
-					return err
-				}
-				formattedRow = strings.TrimRight(line, "\n")
-			default:
-				return fmt.Errorf("unsupported format: [%s]", c.Format)
-			}
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case outputChan <- formattedRow:
-			}
-		}
 	}
 }
 

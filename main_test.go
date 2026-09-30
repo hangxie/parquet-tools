@@ -37,3 +37,36 @@ func TestWriterFinalizationPreservesCancellation(t *testing.T) {
 	})
 	require.NoError(t, err)
 }
+
+func TestParserValueMode(t *testing.T) {
+	for _, command := range []string{"cat", "import"} {
+		for _, mode := range []string{"", "interpreted", "raw", "auto"} {
+			t.Run(command+"/"+mode, func(t *testing.T) {
+				options := []string{command}
+				if command == "import" {
+					options = append(options, "-s", "input.json", "-m", "schema.json")
+				}
+				if mode != "" {
+					options = append(options, "--value-mode", mode)
+				}
+				options = append(options, "file.parquet")
+				args := new(cli)
+				_, err := newParser(args).Parse(options)
+				if mode == "auto" {
+					require.Error(t, err)
+					return
+				}
+				require.NoError(t, err)
+				expected := mode
+				if expected == "" {
+					expected = "interpreted"
+				}
+				if command == "cat" {
+					require.Equal(t, expected, args.Cat.ValueMode)
+				} else {
+					require.Equal(t, expected, args.Import.ValueMode)
+				}
+			})
+		}
+	}
+}

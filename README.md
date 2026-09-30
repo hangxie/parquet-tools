@@ -1157,6 +1157,26 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 {"shoe_brand":"steph_curry","shoe_name":"curry7"}
 ```
 
+#### Value Modes
+
+Both `cat` and `import` accept `--value-mode interpreted|raw`, defaulting to `interpreted`. Interpreted mode uses the human-readable logical formats described below. Raw mode uses the physical representation of each leaf column:
+
+* Byte-backed values, including `INT96`, `UUID`, `FLOAT16`, byte-backed `DECIMAL`, `GEOMETRY`, `GEOGRAPHY`, and `BSON`, use base64 strings.
+* Numeric columns use their underlying numbers. For example, an `INT64` decimal with scale 2 renders as `123` instead of `1.23`, and dates and timestamps use their stored day or tick counts. Unsigned 32/64-bit annotations may render negative physical integers.
+* `STRING`, `UTF8`, `JSON`, and `ENUM` columns remain plain text, even if their contents look like base64. Booleans remain booleans.
+
+Lists and maps retain their structure; their leaf values use the selected mode. `VARIANT` groups retain their decoded JSON representation. Raw mode bypasses `--geo-format` and exposes physical `UNKNOWN` values without requiring `--raw-unknown`.
+
+Use the same mode when exporting and importing. This example preserves the WKB bytes of geospatial columns:
+
+```bash
+$ parquet-tools schema --format json testdata/geospatial.parquet > /tmp/geospatial.schema.json
+$ parquet-tools cat --format json --value-mode raw testdata/geospatial.parquet > /tmp/geospatial.raw.json
+$ parquet-tools import --format json --value-mode raw --source /tmp/geospatial.raw.json --schema /tmp/geospatial.schema.json /tmp/geospatial.roundtrip.parquet
+```
+
+The option applies to JSON, JSONL, and CSV imports and all `cat` output formats. CSV/TSV still require scalar columns; raw geospatial values are scalar base64 strings. Non-finite `FLOAT` and `DOUBLE` values retain their quoted JSON spellings in raw mode.
+
 #### Non-finite Floating Point Values
 
 JSON numbers cannot express `NaN` or infinities, so `FLOAT`, `DOUBLE`, and `FLOAT16` values that hold one come out as the quoted strings `"NaN"`, `"Infinity"`, and `"-Infinity"` in JSON and JSONL output. This applies to `meta` and `inspect` too, where the same values show up in column statistics and column indexes. Finite values are untouched. CSV/TSV output spells them the same way, just unquoted like every other CSV field.
@@ -1205,7 +1225,7 @@ Each source data file format has its own dedicated schema format:
 * JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/json.schema).
 * JSONL: use the same schema as JSON format.
 
-Values in CSV and JSON/JSONL are expected to be human-readable format, same as cat command's output, following their converted or logical types:
+With the default `--value-mode interpreted`, values in CSV and JSON/JSONL are expected to use human-readable formats, matching `cat` output and following their converted or logical types. For physical values, use [`--value-mode raw`](#value-modes) on both commands.
 
 | Type                               | Format                | Examples                               |
 | ---------------------------------- | --------------------- | -------------------------------------- |
@@ -1225,14 +1245,14 @@ Values in CSV and JSON/JSONL are expected to be human-readable format, same as c
 > [!NOTE]
 > For `VARIANT` type, see [Variant Data Type Support](#variant-data-type-support) for more details on the required structure.
 
-JSON and JSONL input must use unquoted numbers for integer columns: `{"intvalue":123}` is accepted, while `{"intvalue":"123"}` fails with a `column takes a JSON number` error. Go's `encoding/json` can accept a quoted number into `json.Number` or an integer field with the `,string` tag, but `parquet-tools import` does not support that coercion. CSV integer fields use plain text, such as `123`.
+In interpreted mode, JSON and JSONL input must use unquoted numbers for integer columns: `{"intvalue":123}` is accepted, while `{"intvalue":"123"}` fails with a `column takes a JSON number` error. Go's `encoding/json` can accept a quoted number into `json.Number` or an integer field with the `,string` tag, but `parquet-tools import` does not support that coercion. CSV integer fields use plain text, such as `123`.
 
 > [!WARNING]
 > The `INTERVAL` text form in the table above currently works only with `--format csv`. Through `json` and `jsonl` the value is stored as the raw bytes of the string, so `"2 mon 3 day 4.500 sec"` reads back as `"1869422642 mon 540221550 day 544825.700 sec"`, and a shorter interval string produces a file that cannot be read at all. Import `INTERVAL` columns from CSV until this is fixed upstream, tracked in [#1129](https://github.com/hangxie/parquet-tools/issues/1129).
 
 `UUID`, `FLOAT16`, and `INTERVAL` have their column width fixed by the Parquet specification at 16, 2, and 12 bytes. A schema entry for one of them may leave `length` out and get the fixed width filled in; declaring any other width, `length=0` included, fails the import.
 
-A `UUID` value has to be one of the textual forms below. Any other input, raw 16-byte binary included, fails the import with a `parse UUID` error rather than being written as the bytes of the string itself.
+In interpreted mode, a `UUID` value has to be one of the textual forms below. Any other input, raw 16-byte binary included, fails the import with a `parse UUID` error rather than being written as the bytes of the string itself. In raw mode, supply the base64 encoding of the 16 bytes.
 
 | Form | Example |
 | --- | --- |
