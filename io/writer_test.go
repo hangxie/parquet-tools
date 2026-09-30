@@ -552,6 +552,41 @@ func TestMaxDictionarySizeRejectsNegativeValue(t *testing.T) {
 	require.Contains(t, err.Error(), "maximum dictionary size must not be negative")
 }
 
+func TestWriteCRC(t *testing.T) {
+	ctx := context.Background()
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=INT64"}]}`
+	testCases := map[string]struct {
+		writeCRC bool
+		wantCRC  bool
+	}{
+		"disabled": {writeCRC: false, wantCRC: false},
+		"enabled":  {writeCRC: true, wantCRC: true},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "crc.parquet")
+			pw, err := NewJSONWriter(ctx, path, WriteOption{WriteCRC: tc.writeCRC, CompressionCodec: "UNCOMPRESSED"}, schema)
+			require.NoError(t, err)
+			for i := int64(0); i < 4; i++ {
+				require.NoError(t, pw.WriteWithContext(ctx, fmt.Sprintf(`{"value":%d}`, i)))
+			}
+			require.NoError(t, pw.WriteStopWithContext(ctx))
+			require.NoError(t, pw.PFile.Close())
+
+			pr, err := NewParquetFileReader(ctx, path, ReadOption{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, pr.PFile.Close()) }()
+			headers, err := pr.GetAllPageHeadersWithContext(ctx, 0, 0)
+			require.NoError(t, err)
+			require.NotEmpty(t, headers)
+			for _, h := range headers {
+				require.Equal(t, tc.wantCRC, h.HasCRC, "page index %d", h.Index)
+			}
+		})
+	}
+}
+
 func TestNewGenericWriter(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "unit-test.parquet")

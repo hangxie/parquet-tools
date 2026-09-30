@@ -854,6 +854,14 @@ Controls the target size of row groups in bytes. Larger row groups improve compr
 $ parquet-tools transcode -s input.parquet --row-group-size 268435456 output.parquet
 ```
 
+**Page Checksums (`--write-crc`):**
+
+Writes a CRC32 checksum into every data and dictionary page header, letting readers detect silent page corruption. Disabled by default. The option is available on `import`, `merge`, `retype`, `split`, and `transcode`.
+
+```bash
+$ parquet-tools transcode -s input.parquet --write-crc output.parquet
+```
+
 > [!TIP]
 > - Use smaller `--page-size` for better random access performance at the cost of higher metadata overhead
 > - Use larger `--row-group-size` for better compression ratios, but ensure sufficient memory is available
