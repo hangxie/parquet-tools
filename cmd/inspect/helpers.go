@@ -27,7 +27,7 @@ func (c Cmd) printJSON(data any) error {
 func (c Cmd) convertValuesToJSON(values []any, schemaNode *pschema.SchemaNode) []any {
 	result := make([]any, len(values))
 	for i, val := range values {
-		result[i] = types.ConvertToJSONType(val, &schemaNode.SchemaElement)
+		result[i], _ = types.ConvertValue(val, &schemaNode.SchemaElement)
 	}
 	return result
 }

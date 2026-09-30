@@ -1,19 +1,15 @@
 [
   {
     "Bool": true,
-    "Bson": {
-      "0": 0
-    },
-    "Bson2": {
-      "0": 0
-    },
+    "Bson": "{\"0\":{\"$numberInt\":\"0\"}}",
+    "Bson2": "{\"0\":{\"$numberInt\":\"0\"}}",
     "ByteArray": "Qnl0ZUFycmF5LTA=",
     "Date": "1970-01-01",
     "Date2": "1970-01-01",
-    "Decimal1": 0,
-    "Decimal2": 0,
-    "Decimal3": 0,
-    "Decimal4": 0,
+    "Decimal1": 0.00,
+    "Decimal2": 0.00,
+    "Decimal3": 0.00,
+    "Decimal4": 0.00,
     "DecimalPointer": null,
     "Double": 0,
     "Enum": "Enum-0",
@@ -55,24 +51,20 @@
     "Variant": {
       "0": 0
     },
-    "decimal5": 0
+    "decimal5": 0.00
   },
   {
     "Bool": false,
-    "Bson": {
-      "1": 1
-    },
-    "Bson2": {
-      "1": 1
-    },
+    "Bson": "{\"1\":{\"$numberInt\":\"1\"}}",
+    "Bson2": "{\"1\":{\"$numberInt\":\"1\"}}",
     "ByteArray": "Qnl0ZUFycmF5LTE=",
     "Date": "1967-04-07",
     "Date2": "1972-09-27",
     "Decimal1": 0.01,
     "Decimal2": 0.01,
-    "Decimal3": 0,
-    "Decimal4": 0,
-    "DecimalPointer": 0,
+    "Decimal3": 0.00,
+    "Decimal4": 0.00,
+    "DecimalPointer": 0.00,
     "Double": 0.5,
     "Enum": "Enum-1",
     "FixedLenByteArray": "Rml4ZWQtMDAwMQ==",
@@ -133,19 +125,15 @@
   },
   {
     "Bool": true,
-    "Bson": {
-      "2": 2
-    },
-    "Bson2": {
-      "2": 2
-    },
+    "Bson": "{\"2\":{\"$numberInt\":\"2\"}}",
+    "Bson2": "{\"2\":{\"$numberInt\":\"2\"}}",
     "ByteArray": "Qnl0ZUFycmF5LTI=",
     "Date": "1964-07-11",
     "Date2": "1975-06-24",
     "Decimal1": 0.22,
     "Decimal2": 0.22,
-    "Decimal3": 0,
-    "Decimal4": 0,
+    "Decimal3": 0.00,
+    "Decimal4": 0.00,
     "DecimalPointer": null,
     "Double": 1,
     "Enum": "Enum-2",
@@ -177,7 +165,7 @@
       },
       {
         "List": [
-          0
+          0.00
         ],
         "Map": {
           "Embedded-0": 0
@@ -191,7 +179,7 @@
       },
       "Composite-1": {
         "List": [
-          0
+          0.00
         ],
         "Map": {
           "Embedded-0": 0
@@ -226,12 +214,8 @@
   },
   {
     "Bool": false,
-    "Bson": {
-      "3": 3
-    },
-    "Bson2": {
-      "3": 3
-    },
+    "Bson": "{\"3\":{\"$numberInt\":\"3\"}}",
+    "Bson2": "{\"3\":{\"$numberInt\":\"3\"}}",
     "ByteArray": "Qnl0ZUFycmF5LTM=",
     "Date": "1961-10-15",
     "Date2": "1978-03-20",
@@ -272,7 +256,7 @@
       },
       {
         "List": [
-          0
+          0.00
         ],
         "Map": {
           "Embedded-0": 0
@@ -280,8 +264,8 @@
       },
       {
         "List": [
-          0,
-          0
+          0.00,
+          0.00
         ],
         "Map": {
           "Embedded-0": 0,
@@ -296,7 +280,7 @@
       },
       "Composite-1": {
         "List": [
-          0
+          0.00
         ],
         "Map": {
           "Embedded-0": 0
@@ -304,8 +288,8 @@
       },
       "Composite-2": {
         "List": [
-          0,
-          0
+          0.00,
+          0.00
         ],
         "Map": {
           "Embedded-0": 0,
@@ -342,12 +326,8 @@
   },
   {
     "Bool": true,
-    "Bson": {
-      "4": 4
-    },
-    "Bson2": {
-      "4": 4
-    },
+    "Bson": "{\"4\":{\"$numberInt\":\"4\"}}",
+    "Bson2": "{\"4\":{\"$numberInt\":\"4\"}}",
     "ByteArray": "Qnl0ZUFycmF5LTQ=",
     "Date": "1959-01-19",
     "Date2": "1980-12-14",
@@ -390,7 +370,7 @@
       },
       {
         "List": [
-          0
+          0.00
         ],
         "Map": {
           "Embedded-0": 0
@@ -398,8 +378,8 @@
       },
       {
         "List": [
-          0,
-          0
+          0.00,
+          0.00
         ],
         "Map": {
           "Embedded-0": 0,
@@ -408,9 +388,9 @@
       },
       {
         "List": [
-          0,
-          0,
-          0
+          0.00,
+          0.00,
+          0.00
         ],
         "Map": {
           "Embedded-0": 0,
@@ -426,7 +406,7 @@
       },
       "Composite-1": {
         "List": [
-          0
+          0.00
         ],
         "Map": {
           "Embedded-0": 0
@@ -434,8 +414,8 @@
       },
       "Composite-2": {
         "List": [
-          0,
-          0
+          0.00,
+          0.00
         ],
         "Map": {
           "Embedded-0": 0,
@@ -444,9 +424,9 @@
       },
       "Composite-3": {
         "List": [
-          0,
-          0,
-          0
+          0.00,
+          0.00,
+          0.00
         ],
         "Map": {
           "Embedded-0": 0,

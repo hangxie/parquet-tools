@@ -91,11 +91,11 @@ func TestCmd(t *testing.T) {
 			},
 			"csv-source": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
-				"failed to read CSV record from",
+				`parse BOOLEAN "["`,
 			},
 			"csv-malformed": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/csv-malformed.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
-				"failed to read CSV record from",
+				`parse BOOLEAN "valid"`,
 			},
 			"csv-target": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "s3://target"},
@@ -190,11 +190,11 @@ func TestCmd(t *testing.T) {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/non-finite-jsonl.bad-source", Format: "jsonl", Schema: "../../testdata/non-finite.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
 				"invalid JSON string:",
 			},
-			// Infinity takes a sign but NaN does not: ParseFloat matches NaN
-			// before it looks for one, so "+NaN" leaves a bare sign behind.
+			// "+NaN" is a JSON string, not a number, and a DOUBLE column takes a
+			// number: the writer rejects the string form rather than parsing it.
 			"json-signed-nan": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/non-finite-signed-nan.source", Format: "json", Schema: "../../testdata/non-finite.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
-				`parse DOUBLE "+NaN"`,
+				`DOUBLE column takes a JSON number, got string "+NaN"`,
 			},
 		}
 
@@ -282,6 +282,47 @@ func TestCmdNonFiniteRoundTrip(t *testing.T) {
 	})
 	require.Equal(t, testutils.LoadExpected(t, "../../testdata/golden/cat-non-finite.json"), stdout)
 	require.Equal(t, "", stderr)
+}
+
+func TestCmdJSONIntegerValues(t *testing.T) {
+	for _, parquetType := range []string{"INT32", "INT64"} {
+		for _, format := range []string{"json", "jsonl"} {
+			for _, tc := range []struct {
+				name    string
+				value   string
+				wantErr string
+			}{
+				{name: "number", value: "123"},
+				{name: "quoted-number", value: `"123"`, wantErr: parquetType + ` column takes a JSON number, got string "123"`},
+			} {
+				t.Run(parquetType+"/"+format+"/"+tc.name, func(t *testing.T) {
+					dir := t.TempDir()
+					schema := fmt.Sprintf(`{"Tag":"name=root","Fields":[{"Tag":"name=intvalue, type=%s"}]}`, parquetType)
+					schemaPath := filepath.Join(dir, "schema.json")
+					require.NoError(t, os.WriteFile(schemaPath, []byte(schema), 0o600))
+					input := fmt.Sprintf(`{"intvalue":%s}`, tc.value)
+					if format == "json" {
+						input = "[" + input + "]"
+					}
+					sourcePath := filepath.Join(dir, "input."+format)
+					require.NoError(t, os.WriteFile(sourcePath, []byte(input), 0o600))
+					cmd := Cmd{Format: format, Schema: schemaPath, Source: sourcePath, URI: filepath.Join(dir, "output.parquet")}
+					err := cmd.Run(context.Background())
+					if tc.wantErr != "" {
+						require.ErrorContains(t, err, tc.wantErr)
+						return
+					}
+					require.NoError(t, err)
+					catCmd := importTestCatCmd(cmd.URI, pio.ReadOption{})
+					stdout, stderr := testutils.CaptureStdoutStderr(func() {
+						require.NoError(t, catCmd.Run(context.Background()))
+					})
+					require.JSONEq(t, `[{"intvalue":123}]`, stdout)
+					require.Empty(t, stderr)
+				})
+			}
+		}
+	}
 }
 
 func TestCmdJSONLLineSize(t *testing.T) {

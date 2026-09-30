@@ -278,12 +278,8 @@
         "distinctCount": 5,
         "isMaxValueExact": true,
         "isMinValueExact": true,
-        "maxValue": {
-          "4": 4
-        },
-        "minValue": {
-          "0": 0
-        },
+        "maxValue": "{\"4\":{\"$numberInt\":\"4\"}}",
+        "minValue": "{\"0\":{\"$numberInt\":\"0\"}}",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
@@ -334,12 +330,8 @@
         "distinctCount": 5,
         "isMaxValueExact": true,
         "isMinValueExact": true,
-        "maxValue": {
-          "4": 4
-        },
-        "minValue": {
-          "0": 0
-        },
+        "maxValue": "{\"4\":{\"$numberInt\":\"4\"}}",
+        "minValue": "{\"0\":{\"$numberInt\":\"0\"}}",
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
@@ -1021,7 +1013,7 @@
         "isMaxValueExact": true,
         "isMinValueExact": true,
         "maxValue": 44.44,
-        "minValue": 0,
+        "minValue": 0.00,
         "nullCount": 0
       },
       "type": "INT32",
@@ -1047,7 +1039,7 @@
         "isMaxValueExact": true,
         "isMinValueExact": true,
         "maxValue": 44.44,
-        "minValue": 0,
+        "minValue": 0.00,
         "nullCount": 0
       },
       "type": "INT64",
@@ -1071,7 +1063,7 @@
         "isMaxValueExact": true,
         "isMinValueExact": true,
         "maxValue": 0.44,
-        "minValue": 0,
+        "minValue": 0.00,
         "nullCount": 0
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -1096,7 +1088,7 @@
         "isMaxValueExact": true,
         "isMinValueExact": true,
         "maxValue": 0.44,
-        "minValue": 0,
+        "minValue": 0.00,
         "nullCount": 0
       },
       "type": "BYTE_ARRAY",
@@ -1122,7 +1114,7 @@
         "isMaxValueExact": true,
         "isMinValueExact": true,
         "maxValue": 44.44,
-        "minValue": 0,
+        "minValue": 0.00,
         "nullCount": 0
       },
       "type": "INT32",
@@ -1148,7 +1140,7 @@
         "isMaxValueExact": true,
         "isMinValueExact": true,
         "maxValue": 0.03,
-        "minValue": 0,
+        "minValue": 0.00,
         "nullCount": 3
       },
       "type": "FIXED_LEN_BYTE_ARRAY",
@@ -1367,8 +1359,8 @@
       "statistics": {
         "isMaxValueExact": true,
         "isMinValueExact": true,
-        "maxValue": 0,
-        "minValue": 0,
+        "maxValue": 0.00,
+        "minValue": 0.00,
         "nullCount": 5
       },
       "type": "BYTE_ARRAY",
@@ -1457,8 +1449,8 @@
       "statistics": {
         "isMaxValueExact": true,
         "isMinValueExact": true,
-        "maxValue": 0,
-        "minValue": 0,
+        "maxValue": 0.00,
+        "minValue": 0.00,
         "nullCount": 5
       },
       "type": "BYTE_ARRAY",

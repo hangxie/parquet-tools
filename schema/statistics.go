@@ -16,6 +16,7 @@ func (node *SchemaNode) DecodeStatistics(stats *parquet.Statistics) (min, max an
 	if err != nil {
 		return nil, nil
 	}
-	return types.ConvertToJSONType(rawMin, &node.SchemaElement),
-		types.ConvertToJSONType(rawMax, &node.SchemaElement)
+	min, _ = types.ConvertValue(rawMin, &node.SchemaElement)
+	max, _ = types.ConvertValue(rawMax, &node.SchemaElement)
+	return min, max
 }

@@ -19,4 +19,8 @@ repos:
       - id: no-commit-to-branch
       - id: pretty-format-json
         args: [--no-sort-keys]
+        # Generated CLI-output fixtures whose number literals (e.g. decimal
+        # "0.00") must match the tool output byte-for-byte; prettier would
+        # normalize them. Validity is still checked by check-json.
+        exclude: ^testdata/golden/
       - id: trailing-whitespace
