@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"os/user"
-	"runtime"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
@@ -16,6 +15,7 @@ import (
 	"github.com/hangxie/parquet-go/v3/source/hdfs"
 	"github.com/hangxie/parquet-go/v3/source/local"
 	"github.com/hangxie/parquet-go/v3/source/s3v2"
+	"github.com/hangxie/parquet-go/v3/types"
 	"github.com/hangxie/parquet-go/v3/writer"
 )
 
@@ -36,22 +36,23 @@ var WriterEncryptionAlgorithms = []string{
 
 // WriteOption includes options for write operation
 type WriteOption struct {
-	BinaryMinMaxTruncateLength int      `name:"binary-min-max-truncate-length" help:"Target byte limit for binary and string min/max statistics and column-index bounds; 0 disables truncation." default:"0"`
-	CompressionCodec           string   `short:"z" name:"compression" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" default:"SNAPPY"`
-	CompressionLevel           []string `help:"Compression level setting." placeholder:"CODEC=LEVEL"`
-	DataPageVersion            int32    `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
-	EncryptAllColumns          bool     `name:"encrypt-all-columns" group:"Encryption" help:"encrypt every leaf column. Columns not listed in --writer-column-key use --writer-footer-key. Default: false (only columns listed in --writer-column-key are encrypted)." default:"false"`
-	EncryptionAlgorithm        string   `name:"encryption-algorithm" group:"Encryption" help:"encryption algorithm used when --writer-footer-key is set. AES-GCM-V1 authenticates every module; AES-GCM-CTR-V1 uses AES-CTR for page bodies (lower overhead, page body tampering not detected). Has no effect without --writer-footer-key." enum:"${writer_encryption_algorithms}" default:"AES-GCM-V1"`
-	FieldDelimiter             string   `kong:"-"`
-	MaxDictionarySize          int64    `name:"max-dictionary-size" help:"Maximum encoded dictionary value bytes per column and row group; 0 uses the writer default." default:"0"`
-	PageSize                   int64    `help:"Page size in bytes." default:"1048576"`
-	PlaintextFooter            bool     `name:"plaintext-footer" group:"Encryption" help:"write a PAR1 file with a plaintext footer signed by --writer-footer-key instead of an encrypted PARE footer. Without --encrypt-all-columns or --writer-column-key the footer is signed for integrity only (columns remain plaintext)." default:"false"`
-	RowGroupSize               int64    `help:"Row group size in bytes." default:"134217728"`
-	WriteCRC                   bool     `name:"write-crc" help:"write CRC32 checksums into data and dictionary page headers. Default: false." default:"false"`
-	EnforceUTF8                bool     `name:"enforce-utf8" help:"reject invalid UTF-8 in STRING/UTF8/JSON/ENUM values when reading JSON or CSV input. Default: false." default:"false"`
-	WriterFooterKey            *string  `name:"writer-footer-key" group:"Encryption" help:"base64-encoded AES-128/192/256 key. Encrypts the footer; also used for columns marked '=@footer-key' and for unlisted columns when --encrypt-all-columns is set. With --plaintext-footer the key signs the footer instead of encrypting it."`
-	WriterColumnKeys           []string `name:"writer-column-key" group:"Encryption" help:"per-column encryption directive 'column.path=VALUE'; repeatable. column.path is the file-schema path of a leaf column without the schema root (e.g. Parent.Child, not parquet_go_root.Parent.Child), separated by --field-delimiter. VALUE is a base64-encoded AES key, or the literal '@footer-key' to encrypt the column with --writer-footer-key. Columns not listed are plaintext unless --encrypt-all-columns is set." placeholder:"column.path=base64key"`
-	WriterKeyFile              *string  `name:"writer-key-file" group:"Encryption" help:"path to a JSON file containing encryption keys ({footer_key, column_keys}); CLI flags override file values; --writer-column-key flags merge with file column_keys, CLI wins per path. Recommend chmod 600 on the file."`
+	BinaryMinMaxTruncateLength int             `name:"binary-min-max-truncate-length" help:"Target byte limit for binary and string min/max statistics and column-index bounds; 0 disables truncation." default:"0"`
+	CompressionCodec           string          `short:"z" name:"compression" help:"compression codec (UNCOMPRESSED/SNAPPY/GZIP/LZ4/LZ4_RAW/ZSTD/BROTLI)" default:"SNAPPY"`
+	CompressionLevel           []string        `help:"Compression level setting." placeholder:"CODEC=LEVEL"`
+	DataPageVersion            int32           `help:"Data page version (1 or 2). Use 1 for legacy DATA_PAGE format." enum:"1,2" default:"2"`
+	EncryptAllColumns          bool            `name:"encrypt-all-columns" group:"Encryption" help:"encrypt every leaf column. Columns not listed in --writer-column-key use --writer-footer-key. Default: false (only columns listed in --writer-column-key are encrypted)." default:"false"`
+	EncryptionAlgorithm        string          `name:"encryption-algorithm" group:"Encryption" help:"encryption algorithm used when --writer-footer-key is set. AES-GCM-V1 authenticates every module; AES-GCM-CTR-V1 uses AES-CTR for page bodies (lower overhead, page body tampering not detected). Has no effect without --writer-footer-key." enum:"${writer_encryption_algorithms}" default:"AES-GCM-V1"`
+	FieldDelimiter             string          `kong:"-"`
+	MaxDictionarySize          int64           `name:"max-dictionary-size" help:"Maximum encoded dictionary value bytes per column and row group; 0 uses the writer default." default:"0"`
+	PageSize                   int64           `help:"Page size in bytes." default:"1048576"`
+	PlaintextFooter            bool            `name:"plaintext-footer" group:"Encryption" help:"write a PAR1 file with a plaintext footer signed by --writer-footer-key instead of an encrypted PARE footer. Without --encrypt-all-columns or --writer-column-key the footer is signed for integrity only (columns remain plaintext)." default:"false"`
+	RowGroupSize               int64           `help:"Row group size in bytes." default:"134217728"`
+	ValueMode                  types.ValueMode `kong:"-"`
+	WriteCRC                   bool            `name:"write-crc" help:"write CRC32 checksums into data and dictionary page headers. Default: false." default:"false"`
+	EnforceUTF8                bool            `name:"enforce-utf8" help:"reject invalid UTF-8 in STRING/UTF8/JSON/ENUM values when reading JSON or CSV input. Default: false." default:"false"`
+	WriterFooterKey            *string         `name:"writer-footer-key" group:"Encryption" help:"base64-encoded AES-128/192/256 key. Encrypts the footer; also used for columns marked '=@footer-key' and for unlisted columns when --encrypt-all-columns is set. With --plaintext-footer the key signs the footer instead of encrypting it."`
+	WriterColumnKeys           []string        `name:"writer-column-key" group:"Encryption" help:"per-column encryption directive 'column.path=VALUE'; repeatable. column.path is the file-schema path of a leaf column without the schema root (e.g. Parent.Child, not parquet_go_root.Parent.Child), separated by --field-delimiter. VALUE is a base64-encoded AES key, or the literal '@footer-key' to encrypt the column with --writer-footer-key. Columns not listed are plaintext unless --encrypt-all-columns is set." placeholder:"column.path=base64key"`
+	WriterKeyFile              *string         `name:"writer-key-file" group:"Encryption" help:"path to a JSON file containing encryption keys ({footer_key, column_keys}); CLI flags override file values; --writer-column-key flags merge with file column_keys, CLI wins per path. Recommend chmod 600 on the file."`
 }
 
 func newLocalWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, error) {
@@ -139,58 +140,6 @@ func NewParquetFileWriter(ctx context.Context, uri string) (source.ParquetFileWr
 		return writerFunc(ctx, u)
 	}
 	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
-}
-
-func writerOpts(option WriteOption, columnKeys []writerColumnKey) ([]writer.WriterOption, error) {
-	var opts []writer.WriterOption
-	if option.BinaryMinMaxTruncateLength < 0 {
-		return nil, fmt.Errorf("binary min/max truncate length must not be negative: %d", option.BinaryMinMaxTruncateLength)
-	}
-	if option.BinaryMinMaxTruncateLength > 0 {
-		opts = append(opts, writer.WithBinaryMinMaxTruncateLength(option.BinaryMinMaxTruncateLength))
-	}
-	if option.MaxDictionarySize < 0 {
-		return nil, fmt.Errorf("maximum dictionary size must not be negative: %d", option.MaxDictionarySize)
-	}
-	if option.MaxDictionarySize > 0 {
-		opts = append(opts, writer.WithMaxDictionarySize(option.MaxDictionarySize))
-	}
-	if option.CompressionCodec != "" {
-		codec, err := compressionCodec(option.CompressionCodec)
-		if err != nil {
-			return nil, err
-		}
-		opts = append(opts, writer.WithCompressionCodec(codec))
-	}
-	compressionLevelOpts, err := ParseCompressionLevels(option.CompressionLevel)
-	if err != nil {
-		return nil, err
-	}
-	opts = append(opts, compressionLevelOpts...)
-	dpv := option.DataPageVersion
-	if dpv == 0 {
-		dpv = 2 // match CLI default and preserve existing writer behavior
-	}
-	opts = append(opts, writer.WithDataPageVersion(dpv))
-	if option.PageSize > 0 {
-		opts = append(opts, writer.WithPageSize(option.PageSize))
-	}
-	if option.RowGroupSize > 0 {
-		opts = append(opts, writer.WithRowGroupSize(option.RowGroupSize))
-	}
-	if option.WriteCRC {
-		opts = append(opts, writer.WithWriteCRC(true))
-	}
-	if option.EnforceUTF8 {
-		opts = append(opts, writer.WithEnforceUTF8(true))
-	}
-	encryptionOpts, err := writerEncryptionOpts(option, columnKeys)
-	if err != nil {
-		return nil, err
-	}
-	opts = append(opts, encryptionOpts...)
-	opts = append(opts, writer.WithNP(int64(runtime.NumCPU())))
-	return opts, nil
 }
 
 func NewCSVWriter(ctx context.Context, uri string, opt WriteOption, schema []string) (*writer.CSVWriter, error) {

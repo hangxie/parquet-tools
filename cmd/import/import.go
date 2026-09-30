@@ -32,11 +32,17 @@ type Cmd struct {
 	SkipHeader       bool   `help:"Skip first line of CSV files" default:"false"`
 	Source           string `required:"" short:"s" predictor:"file" help:"Source file name."`
 	URI              string `arg:"" predictor:"file" help:"URI of Parquet file."`
+	ValueMode        string `name:"value-mode" help:"input value representation (interpreted/raw); raw uses physical values and base64 for byte-backed columns, preserving text columns." enum:"interpreted,raw" default:"interpreted"`
 	pio.WriteOption
 }
 
 // Run does actual import job
 func (c Cmd) Run(ctx context.Context) error {
+	mode, err := pio.ParseValueMode(c.ValueMode)
+	if err != nil {
+		return err
+	}
+	c.WriteOption.ValueMode = mode
 	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
 		return err
 	}
