@@ -48,6 +48,7 @@ type WriteOption struct {
 	PlaintextFooter            bool     `name:"plaintext-footer" group:"Encryption" help:"write a PAR1 file with a plaintext footer signed by --writer-footer-key instead of an encrypted PARE footer. Without --encrypt-all-columns or --writer-column-key the footer is signed for integrity only (columns remain plaintext)." default:"false"`
 	RowGroupSize               int64    `help:"Row group size in bytes." default:"134217728"`
 	WriteCRC                   bool     `name:"write-crc" help:"write CRC32 checksums into data and dictionary page headers. Default: false." default:"false"`
+	EnforceUTF8                bool     `name:"enforce-utf8" help:"reject invalid UTF-8 in STRING/UTF8/JSON/ENUM values when reading JSON or CSV input. Default: false." default:"false"`
 	WriterFooterKey            *string  `name:"writer-footer-key" group:"Encryption" help:"base64-encoded AES-128/192/256 key. Encrypts the footer; also used for columns marked '=@footer-key' and for unlisted columns when --encrypt-all-columns is set. With --plaintext-footer the key signs the footer instead of encrypting it."`
 	WriterColumnKeys           []string `name:"writer-column-key" group:"Encryption" help:"per-column encryption directive 'column.path=VALUE'; repeatable. column.path is the file-schema path of a leaf column without the schema root (e.g. Parent.Child, not parquet_go_root.Parent.Child), separated by --field-delimiter. VALUE is a base64-encoded AES key, or the literal '@footer-key' to encrypt the column with --writer-footer-key. Columns not listed are plaintext unless --encrypt-all-columns is set." placeholder:"column.path=base64key"`
 	WriterKeyFile              *string  `name:"writer-key-file" group:"Encryption" help:"path to a JSON file containing encryption keys ({footer_key, column_keys}); CLI flags override file values; --writer-column-key flags merge with file column_keys, CLI wins per path. Recommend chmod 600 on the file."`
@@ -179,6 +180,9 @@ func writerOpts(option WriteOption, columnKeys []writerColumnKey) ([]writer.Writ
 	}
 	if option.WriteCRC {
 		opts = append(opts, writer.WithWriteCRC(true))
+	}
+	if option.EnforceUTF8 {
+		opts = append(opts, writer.WithEnforceUTF8(true))
 	}
 	encryptionOpts, err := writerEncryptionOpts(option, columnKeys)
 	if err != nil {

@@ -862,6 +862,14 @@ Writes a CRC32 checksum into every data and dictionary page header, letting read
 $ parquet-tools transcode -s input.parquet --write-crc output.parquet
 ```
 
+**Input Validation (`--enforce-utf8`):**
+
+Rejects invalid UTF-8 sequences (such as unpaired surrogate `\uXXXX` escapes or raw non-UTF-8 bytes) in `STRING`, `UTF8`, `JSON`, and `ENUM` values while importing JSON or CSV input. By default invalid sequences are replaced with the Unicode replacement character; with this flag set, the write fails instead. The option only affects text parsing in `import`; it has no effect on commands that read typed Parquet input.
+
+```bash
+$ parquet-tools import -f json -s data.json -m schema.json --enforce-utf8 output.parquet
+```
+
 > [!TIP]
 > - Use smaller `--page-size` for better random access performance at the cost of higher metadata overhead
 > - Use larger `--row-group-size` for better compression ratios, but ensure sufficient memory is available
