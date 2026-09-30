@@ -25,7 +25,7 @@ type Cmd struct {
 	Concurrent   bool    `help:"enable concurrent output" default:"false"`
 	FailOnInt96  bool    `help:"fail command if INT96 data type is present." name:"fail-on-int96" default:"false"`
 	Format       string  `short:"f" help:"output format (json/jsonl/csv/tsv)" enum:"json,jsonl,csv,tsv" default:"json"`
-	GeoFormat    string  `help:"experimental, output format (geojson/hex/base64) for geospatial fields" enum:"geojson,hex,base64" default:"geojson"`
+	GeoFormat    string  `help:"experimental, output format (geojson/hex/base64/hybrid) for geospatial fields" enum:"geojson,hex,base64,hybrid" default:"geojson"`
 	Limit        uint64  `short:"l" help:"Max number of rows to output, 0 means no limit." default:"0"`
 	NoHeader     bool    `help:"(CSV/TSV only) do not output field name as header" default:"false"`
 	RawUnknown   bool    `help:"output actual physical value for UNKNOWN logical type columns instead of null" name:"raw-unknown" default:"false"`
@@ -154,6 +154,8 @@ func (c Cmd) encoder(ctx context.Context, rowChan chan any, outputChan chan stri
 		geoMode = types.GeospatialModeHex
 	case "base64":
 		geoMode = types.GeospatialModeBase64
+	case "hybrid":
+		geoMode = types.GeospatialModeHybrid
 	default:
 		geoMode = types.GeospatialModeGeoJSON
 	}
