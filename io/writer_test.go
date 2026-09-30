@@ -552,6 +552,77 @@ func TestMaxDictionarySizeRejectsNegativeValue(t *testing.T) {
 	require.Contains(t, err.Error(), "maximum dictionary size must not be negative")
 }
 
+func TestEnforceUTF8(t *testing.T) {
+	ctx := context.Background()
+	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=BYTE_ARRAY, convertedtype=UTF8"}]}`
+	// Raw string literals keep the JSON \uXXXX escapes as literal text.
+	invalid := `{"value":"A\ud800B"}`     // unpaired surrogate
+	valid := `{"value":"A\ud83c\udf0dB"}` // valid surrogate pair
+
+	t.Run("rejects unpaired surrogate", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "enc.parquet")
+		pw, err := NewJSONWriter(ctx, path, WriteOption{EnforceUTF8: true}, schema)
+		require.NoError(t, err)
+		err = pw.WriteWithContext(ctx, invalid)
+		if err == nil {
+			err = pw.WriteStopWithContext(ctx)
+		}
+		require.Error(t, err)
+	})
+
+	t.Run("accepts when disabled", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "enc.parquet")
+		pw, err := NewJSONWriter(ctx, path, WriteOption{}, schema)
+		require.NoError(t, err)
+		require.NoError(t, pw.WriteWithContext(ctx, invalid))
+		require.NoError(t, pw.WriteStopWithContext(ctx))
+		require.NoError(t, pw.PFile.Close())
+	})
+
+	t.Run("accepts valid surrogate pair when enabled", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "enc.parquet")
+		pw, err := NewJSONWriter(ctx, path, WriteOption{EnforceUTF8: true}, schema)
+		require.NoError(t, err)
+		require.NoError(t, pw.WriteWithContext(ctx, valid))
+		require.NoError(t, pw.WriteStopWithContext(ctx))
+		require.NoError(t, pw.PFile.Close())
+	})
+}
+
+func TestEnforceUTF8CSV(t *testing.T) {
+	ctx := context.Background()
+	for _, annotation := range []string{"convertedtype=UTF8", "logicaltype=STRING", "convertedtype=JSON", "convertedtype=ENUM"} {
+		t.Run(annotation, func(t *testing.T) {
+			for _, tc := range []struct {
+				name    string
+				value   string
+				enforce bool
+				wantErr string
+			}{
+				{"rejects invalid UTF-8 from CSV", string([]byte{'A', 0xff, 'B'}), true, "invalid UTF-8"},
+				{"accepts invalid UTF-8 when disabled", string([]byte{'A', 0xff, 'B'}), false, ""},
+				{"accepts valid UTF-8 when enabled", "A🌍B", true, ""},
+			} {
+				t.Run(tc.name, func(t *testing.T) {
+					path := filepath.Join(t.TempDir(), "csv.parquet")
+					pw, err := NewCSVWriter(ctx, path, WriteOption{EnforceUTF8: tc.enforce}, []string{"name=value, type=BYTE_ARRAY, " + annotation})
+					require.NoError(t, err)
+					t.Cleanup(func() { require.NoError(t, pw.PFile.Close()) })
+					err = pw.WriteStringWithContext(ctx, []*string{&tc.value})
+					if err == nil {
+						err = pw.WriteStopWithContext(ctx)
+					}
+					if tc.wantErr != "" {
+						require.ErrorContains(t, err, tc.wantErr)
+						return
+					}
+					require.NoError(t, err)
+				})
+			}
+		})
+	}
+}
+
 func TestWriteCRC(t *testing.T) {
 	ctx := context.Background()
 	schema := `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=INT64"}]}`
