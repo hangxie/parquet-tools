@@ -1205,6 +1205,8 @@ Values in CSV and JSON/JSONL are expected to be human-readable format, same as c
 > [!NOTE]
 > For `VARIANT` type, see [Variant Data Type Support](#variant-data-type-support) for more details on the required structure.
 
+JSON and JSONL input must use unquoted numbers for integer columns: `{"intvalue":123}` is accepted, while `{"intvalue":"123"}` fails with a `column takes a JSON number` error. Go's `encoding/json` can accept a quoted number into `json.Number` or an integer field with the `,string` tag, but `parquet-tools import` does not support that coercion. CSV integer fields use plain text, such as `123`.
+
 > [!WARNING]
 > The `INTERVAL` text form in the table above currently works only with `--format csv`. Through `json` and `jsonl` the value is stored as the raw bytes of the string, so `"2 mon 3 day 4.500 sec"` reads back as `"1869422642 mon 540221550 day 544825.700 sec"`, and a shorter interval string produces a file that cannot be read at all. Import `INTERVAL` columns from CSV until this is fixed upstream, tracked in [#1129](https://github.com/hangxie/parquet-tools/issues/1129).
 
