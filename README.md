@@ -1247,8 +1247,7 @@ With the default `--value-mode interpreted`, values in CSV and JSON/JSONL are ex
 
 In interpreted mode, JSON and JSONL input must use unquoted numbers for integer columns: `{"intvalue":123}` is accepted, while `{"intvalue":"123"}` fails with a `column takes a JSON number` error. Go's `encoding/json` can accept a quoted number into `json.Number` or an integer field with the `,string` tag, but `parquet-tools import` does not support that coercion. CSV integer fields use plain text, such as `123`.
 
-> [!WARNING]
-> The `INTERVAL` text form in the table above currently works only with `--format csv`. Through `json` and `jsonl` the value is stored as the raw bytes of the string, so `"2 mon 3 day 4.500 sec"` reads back as `"1869422642 mon 540221550 day 544825.700 sec"`, and a shorter interval string produces a file that cannot be read at all. Import `INTERVAL` columns from CSV until this is fixed upstream, tracked in [#1129](https://github.com/hangxie/parquet-tools/issues/1129).
+The `INTERVAL` text form in the table above is supported in CSV, JSON, and JSONL imports.
 
 `UUID`, `FLOAT16`, and `INTERVAL` have their column width fixed by the Parquet specification at 16, 2, and 12 bytes. A schema entry for one of them may leave `length` out and get the fixed width filled in; declaring any other width, `length=0` included, fails the import.
 
