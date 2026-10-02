@@ -170,6 +170,8 @@ func getS3Client(ctx context.Context, bucket string, isPublic, ignoreTLS bool) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config for S3 bucket %s: %w", bucket, err)
 	}
+	// LoadDefaultConfig installs a debug-level stderr logger; keep only warnings.
+	cfg.Logger = newAWSWarnLogger()
 
 	// Service-specific endpoints such as AWS_ENDPOINT_URL_S3 are resolved while
 	// constructing an S3 client rather than being exposed on aws.Config.
