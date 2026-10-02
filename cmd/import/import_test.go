@@ -1113,13 +1113,35 @@ func TestCmdFixedWidthLogicalTypes(t *testing.T) {
 			value:  "1.5",
 			want:   "1.5",
 		},
-		// csv only: textual INTERVAL values are corrupted through the JSON and
-		// JSONL writers, https://github.com/hangxie/parquet-go/issues/419.
 		"interval-width-omitted": {
 			format: "csv",
 			tag:    intervalTag,
 			value:  "1 mon 1 day 0.001 sec",
 			want:   `"1 mon 1 day 0.001 sec"`,
+		},
+		"interval-value-json": {
+			format: "json",
+			tag:    intervalTag,
+			value:  "2 mon 3 day 4.500 sec",
+			want:   `"2 mon 3 day 4.500 sec"`,
+		},
+		"interval-value-jsonl": {
+			format: "jsonl",
+			tag:    intervalTag,
+			value:  "2 mon 3 day 4.500 sec",
+			want:   `"2 mon 3 day 4.500 sec"`,
+		},
+		"interval-short-value-json": {
+			format: "json",
+			tag:    intervalTag,
+			value:  "0.001 sec",
+			want:   `"0.001 sec"`,
+		},
+		"interval-short-value-jsonl": {
+			format: "jsonl",
+			tag:    intervalTag,
+			value:  "0.001 sec",
+			want:   `"0.001 sec"`,
 		},
 
 		// Every textual form uuid.Parse accepts lands on the same column value.
