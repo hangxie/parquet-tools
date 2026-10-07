@@ -2163,7 +2163,7 @@ Run `./scripts/gen-bench.sh <version>` to benchmark a tag or commit three times 
 `make pages-coverage` collects coverage data and generates the chart. It checks out each day's latest commit, runs `go test`, and appends results to `build/coverage.csv` (sorted chronologically). Days with no commits carry forward the previous day's coverage, and days before the first commit with non-zero coverage are skipped. It also writes the per-package HTML coverage report to `build/pages/coverage.html` and the README coverage badge to `build/pages/coverage.svg`.
 
 ```bash
-make pages-coverage                                                          # last 7 days (default)
+make pages-coverage                                                          # last 7 completed UTC days (default)
 make pages-coverage COLLECT_ARGS="--start 2021-05-01"                       # full history from a date
 make pages-coverage COLLECT_ARGS="--start 2024-01-01 --end 2024-06-01"      # explicit range
 ```

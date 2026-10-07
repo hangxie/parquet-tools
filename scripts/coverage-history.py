@@ -4,9 +4,14 @@
 Backfill test coverage into coverage.csv, then generate an HTML and PNG chart.
 
 For each day in the target range:
-  - If already recorded in coverage.csv, skip it.
+  - If already recorded in coverage.csv, skip it, unless the day is today
+    (UTC): an unfinished day may still get commits, so it is measured again.
   - If a commit exists for that day, check it out and run go test.
-  - If no commit exists, carry the previous day's coverage forward.
+  - If no commit exists, carry the previous day's coverage forward. When the
+    latest earlier commit is newer than the carried value (no entry yet, or a
+    gap in coverage.csv), that commit is measured once first.
+  - A commit where any package fails to build is skipped, since the missing
+    packages would inflate the total.
   - Days before the first commit with meaningful coverage (> 0%) are skipped.
 
 New entries are written only after git HEAD is restored, so mid-loop
@@ -19,11 +24,15 @@ Usage:
     python3 scripts/coverage-history.py [--start YYYY-MM-DD] [--end YYYY-MM-DD]
                                         [output.html] [coverage.csv]
 
-    --start     First day to collect (default: 7 days ago)
-    --end       Last day to collect (default: today)
+    --start     First day to collect (default: 6 days before --end)
+    --end       Last day to collect (default: yesterday, UTC)
+
+The default range is the seven completed UTC days ending yesterday, so a
+weekly run measures every day once it is over.
 """
 
 import argparse
+import bisect
 import csv
 import math
 import os
@@ -66,17 +75,37 @@ def git_checkout(ref):
         raise RuntimeError(f"git checkout {ref} failed: {result.stderr.strip()}")
 
 
-def git_stash():
-    """Stash uncommitted changes; return True if anything was stashed."""
+def stash_ref():
+    """Return the SHA of the latest stash, or None if there is none."""
     result = subprocess.run(
-        ["git", "stash", "--quiet"], capture_output=True, text=True,
+        ["git", "rev-parse", "--quiet", "--verify", "refs/stash"],
+        capture_output=True, text=True,
     )
-    return "No local changes to save" not in result.stdout
+    return result.stdout.strip() or None
 
 
-def git_stash_pop():
-    subprocess.run(["git", "stash", "pop", "--quiet"], check=False,
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+def git_stash():
+    """Stash uncommitted changes; return the new stash SHA, or None if nothing was stashed."""
+    # git prints nothing under --quiet, so compare the stash ref instead of
+    # parsing output; otherwise a clean tree would later pop an older stash.
+    before = stash_ref()
+    subprocess.run(["git", "stash", "push", "--quiet"],
+                   capture_output=True, text=True, check=True)
+    after = stash_ref()
+    return after if after != before else None
+
+
+def git_stash_pop(sha):
+    """Restore the stash this run created, leaving any other stash alone."""
+    if stash_ref() != sha:
+        print(f"warning: stash {sha[:8]} is no longer the latest; "
+              f"restore it with: git stash apply {sha}", file=sys.stderr)
+        return
+    result = subprocess.run(["git", "stash", "pop", "--quiet"],
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"warning: git stash pop failed ({result.stderr.strip()}); "
+              f"restore it with: git stash apply {sha}", file=sys.stderr)
 
 
 def load_commits_by_day():
@@ -100,19 +129,28 @@ def run_coverage(root, build_dir):
 
     Test failures (e.g. flaky network tests hitting dead S3/GCS URLs) do not
     prevent coverage from being measured — go test still writes the profile.
-    Only a build error (no profile produced) raises an exception.
+    A package that fails to build is left out of the profile, which would
+    inflate the total, so any build failure raises an exception.
     """
     build_dir.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "CGO_ENABLED": "1"}
     tmp = build_dir / "coverage.out.tmp"
     out = build_dir / "coverage.out"
+    # A stale profile from the previous commit must not stand in for this one.
+    tmp.unlink(missing_ok=True)
 
-    subprocess.run(
+    result = subprocess.run(
         ["go", "test", "-parallel", "4", "-count", "1", "-trimpath",
          f"-coverprofile={tmp}", "./..."],
-        cwd=str(root), env=env,
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        cwd=str(root), env=env, capture_output=True, text=True,
     )
+    broken = [
+        line.split()[1] for line in result.stdout.splitlines()
+        if line.startswith("FAIL")
+        and line.rstrip().endswith(("[build failed]", "[setup failed]"))
+    ]
+    if broken:
+        raise RuntimeError(f"build failed for {', '.join(broken)}")
     if not tmp.exists():
         raise RuntimeError("go test produced no coverage profile (build error?)")
 
@@ -147,11 +185,24 @@ def load_existing(csv_path):
 
 def write_entries(csv_path, all_entries):
     """Rewrite coverage.csv with all entries sorted chronologically."""
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
     with open(csv_path, "w") as f:
         for date_str in sorted(all_entries):
             d = date.fromisoformat(date_str)
             ts = int(datetime(d.year, d.month, d.day, 23, 59, 59, tzinfo=timezone.utc).timestamp())
             f.write(f"{ts},{all_entries[date_str]:.1f}\n")
+
+
+def measure(root, build_dir, commit):
+    """Check out commit and return its coverage, or None if it cannot be measured."""
+    git_checkout(commit)
+    try:
+        cov = run_coverage(root, build_dir)
+    except Exception as e:
+        print(f"failed ({e}), skipping")
+        return None
+    print(f"{cov:.1f}%")
+    return cov
 
 
 def collect(csv_path, start, end):
@@ -163,12 +214,16 @@ def collect(csv_path, start, end):
 
     existing = load_existing(csv_path)
     ref = current_ref()
+    today = datetime.now(timezone.utc).date().isoformat()
     new_entries = {}
     prev_cov = None
+    prev_day = None  # day prev_cov was measured or recorded for
+    commit_days = sorted(commits_by_day)
+    attempted = set()  # commits measured this run, so failures are not retried
 
     for d_str in sorted(existing):
         if d_str < start.isoformat():
-            prev_cov = existing[d_str]
+            prev_cov, prev_day = existing[d_str], d_str
 
     stashed = git_stash()
     try:
@@ -176,9 +231,9 @@ def collect(csv_path, start, end):
         while cur <= end:
             d_str = cur.isoformat()
 
-            if d_str in existing:
+            if d_str in existing and d_str < today:
                 print(f"  {d_str}: already recorded, skipping")
-                prev_cov = existing[d_str]
+                prev_cov, prev_day = existing[d_str], d_str
                 cur += timedelta(days=1)
                 continue
 
@@ -186,18 +241,31 @@ def collect(csv_path, start, end):
 
             if commit:
                 print(f"  {d_str}: {commit[:8]}", end=" ... ", flush=True)
-                git_checkout(commit)
-                try:
-                    cov = run_coverage(root, build_dir)
-                    print(f"{cov:.1f}%")
-                    if cov > 0:
-                        prev_cov = cov
-                        new_entries[d_str] = cov
-                    else:
-                        print(f"  {d_str}: skipping 0% (no tests yet)")
-                except Exception as e:
-                    print(f"failed ({e}), skipping")
-            elif prev_cov is not None:
+                attempted.add(commit)
+                cov = measure(root, build_dir, commit)
+                if cov:
+                    prev_cov, prev_day = cov, d_str
+                    new_entries[d_str] = cov
+                elif cov == 0:
+                    print(f"  {d_str}: skipping 0% (no tests yet)")
+                cur += timedelta(days=1)
+                continue
+
+            # The carried value must reflect the latest commit before this day;
+            # it predates that commit when nothing is recorded yet or
+            # coverage.csv has a gap, so measure that commit once first.
+            i = bisect.bisect_left(commit_days, d_str)
+            if i:
+                last_day = commit_days[i - 1]
+                last_commit = commits_by_day[last_day]
+                if (prev_day is None or last_day > prev_day) and last_commit not in attempted:
+                    attempted.add(last_commit)
+                    print(f"  refreshing from {last_day}: {last_commit[:8]}", end=" ... ", flush=True)
+                    cov = measure(root, build_dir, last_commit)
+                    if cov:
+                        prev_cov, prev_day = cov, last_day
+
+            if prev_cov is not None:
                 print(f"  {d_str}: no commit, carrying forward {prev_cov:.1f}%")
                 new_entries[d_str] = prev_cov
             else:
@@ -208,7 +276,7 @@ def collect(csv_path, start, end):
     finally:
         git_checkout(ref)
         if stashed:
-            git_stash_pop()
+            git_stash_pop(stashed)
 
     if new_entries:
         merged = {**existing, **new_entries}
@@ -594,18 +662,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--start", metavar="YYYY-MM-DD",
-                        help="first day to collect (default: 7 days ago)")
+                        help="first day to collect (default: 6 days before --end)")
     parser.add_argument("--end", metavar="YYYY-MM-DD",
-                        help="last day to collect (default: today)")
+                        help="last day to collect (default: yesterday, UTC)")
     parser.add_argument("output", nargs="?", default="coverage-history.html",
                         help="output HTML file (default: coverage-history.html)")
     parser.add_argument("csv", nargs="?", default="scripts/coverage.csv",
                         help="coverage CSV file (default: scripts/coverage.csv)")
     args = parser.parse_args()
 
-    today = date.today()
-    start = date.fromisoformat(args.start) if args.start else today - timedelta(days=6)
-    end = date.fromisoformat(args.end) if args.end else today
+    yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
+    end = date.fromisoformat(args.end) if args.end else yesterday
+    start = date.fromisoformat(args.start) if args.start else end - timedelta(days=6)
 
     if start > end:
         parser.error(f"--start {start} is after --end {end}")
