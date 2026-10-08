@@ -156,6 +156,9 @@ $PT cat --format jsonl "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$G
 # cat-unknown-type-raw.jsonl
 $PT cat --format jsonl --raw-unknown "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$GOLDEN_DIR/cat-unknown-type-raw.jsonl"
 
+# cat-repeated-root.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/repeated-root.parquet" | format_jsonl > "$GOLDEN_DIR/cat-repeated-root.jsonl"
+
 # cat-nan.json
 $PT cat --format json "$TESTDATA_DIR/nan.parquet" | format_json > "$GOLDEN_DIR/cat-nan.json"
 

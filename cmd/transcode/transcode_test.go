@@ -589,6 +589,12 @@ func testCmdFieldEncoding(t *testing.T) {
 			errMsg:        "not compatible with field",
 		},
 		{
+			name:          "boolean dictionary encoding fails",
+			source:        "all-types.parquet",
+			fieldEncoding: []string{"Bool=RLE_DICTIONARY"}, // Arrow cannot decode a BOOLEAN dictionary
+			errMsg:        "dictionary encoding is not supported for BOOLEAN",
+		},
+		{
 			name:          "invalid field encoding format",
 			source:        "good.parquet",
 			fieldEncoding: []string{"invalid-format"},
