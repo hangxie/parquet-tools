@@ -169,6 +169,16 @@ func TestCmd(t *testing.T) {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/invalid-logical-type.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
 				"LogicalType DECIMAL can only be used",
 			},
+			// Duplicate siblings collapse onto one column path, so the file would
+			// be written but fail on every later read.
+			"csv-duplicate-column": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/duplicate-column.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				`duplicate column name "A"`,
+			},
+			"json-duplicate-column": {
+				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/duplicate-column-json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
+				`duplicate column name "A"`,
+			},
 			"json-invalid-logical-type": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/invalid-logical-type-json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
 				"LogicalType DECIMAL can only be used",

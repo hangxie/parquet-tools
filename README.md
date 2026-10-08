@@ -889,11 +889,13 @@ Parquet supports various encodings for different data types. Encoding can be spe
 | `DELTA_BYTE_ARRAY`        | BYTE_ARRAY                                        | Delta encoding for strings                                          |
 | `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY                                        | Delta encoding for variable-length byte arrays                      |
 | `BYTE_STREAM_SPLIT`       | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data                           |
-| `RLE_DICTIONARY`          | All types                                         | Dictionary encoding with RLE, efficient for low-cardinality data    |
-| `PLAIN_DICTIONARY`        | All types                                         | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
+| `RLE_DICTIONARY`          | All types except BOOLEAN                          | Dictionary encoding with RLE, efficient for low-cardinality data    |
+| `PLAIN_DICTIONARY`        | All types except BOOLEAN                          | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
 
 > [!NOTE]
 > Encodings must be compatible with the field type. Specifying an incompatible encoding will result in an error.
+>
+> Dictionary encoding on a `BOOLEAN` column is rejected because Arrow-based readers cannot decode it; use `RLE` or `PLAIN` instead. Earlier versions wrote such files without complaint, and `parquet-tools` still reads them.
 
 ### Geo Data Type Support
 

@@ -42,6 +42,25 @@ func TestCmd(t *testing.T) {
 	})
 }
 
+func TestCmdInvalidFooter(t *testing.T) {
+	testCases := map[string]struct {
+		uri    string
+		errMsg string
+	}{
+		"bad-magic":         {"../../testdata/bad-footer-magic.parquet", `invalid footer magic "XXXX"`},
+		"negative-num-rows": {"../../testdata/negative-num-rows.parquet", "file num_rows -1 is negative"},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := &Cmd{}
+			cmd.URI = tc.uri
+			err := cmd.Run(context.Background())
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.errMsg)
+		})
+	}
+}
+
 func TestCmdEncrypted(t *testing.T) {
 	encReadOption := pio.ReadOption{
 		FooterKey:  encFooterKey,

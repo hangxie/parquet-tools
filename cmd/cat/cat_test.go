@@ -97,6 +97,14 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/PARQUET-1481.parquet"},
 			errMsg: "unknown parquet type: <UNSET>",
 		},
+		"bad-footer-magic": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/bad-footer-magic.parquet"},
+			errMsg: `invalid footer magic "XXXX"`,
+		},
+		"negative-num-rows": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/negative-num-rows.parquet"},
+			errMsg: "file num_rows -1 is negative",
+		},
 		"arrow-rs-gh-6229": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"},
 			errMsg: "data page value count 21 exceeds column chunk total 1",
@@ -292,6 +300,12 @@ func TestCmd(t *testing.T) {
 		"non-finite-jsonl": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "non-finite.parquet"},
 			golden: "cat-non-finite.jsonl",
+		},
+		// Some writers mark the schema root REPEATED; rows must not come out
+		// wrapped in one-element arrays.
+		"repeated-root": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "repeated-root.parquet"},
+			golden: "cat-repeated-root.jsonl",
 		},
 		"nan-csv": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: false, URI: "nan.parquet"},
