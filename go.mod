@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.47.1
 	github.com/aws/aws-sdk-go-v2/config v1.33.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.4
-	github.com/aws/smithy-go v1.28.1
+	github.com/aws/smithy-go v1.28.4
 	github.com/google/uuid v1.6.0
 	github.com/hangxie/parquet-go/v3 v3.9.1
 	github.com/posener/complete v1.2.3
