@@ -104,6 +104,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 3, URI: "empty.parquet", current: trunkWriter{}},
 			result: map[string]int64{},
 		},
+		"zero-column-record-count": {
+			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 0, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 2, URI: "zero-column.parquet", current: trunkWriter{}},
+			result: map[string]int64{"ut-0.parquet": 2, "ut-1.parquet": 1},
+		},
 		"empty-file-count": {
 			cmd:    Cmd{ReadOption: rOpt, FailOnInt96: false, FileCount: 3, NameFormat: "ut-%d.parquet", ReadPageSize: 1000, RecordCount: 0, URI: "empty.parquet", current: trunkWriter{}},
 			result: map[string]int64{"ut-0.parquet": 0, "ut-1.parquet": 0, "ut-2.parquet": 0},

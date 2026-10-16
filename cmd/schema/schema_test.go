@@ -127,6 +127,14 @@ func TestCmd(t *testing.T) {
 			cmd:    schema.Cmd{ReadOption: rOpt, Format: "raw", URI: "geospatial.parquet"},
 			golden: "schema-geospatial-raw.json",
 		},
+		"zero-column-json": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "zero-column.parquet"},
+			golden: "schema-zero-column-json.json",
+		},
+		"zero-column-go": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "zero-column.parquet"},
+			golden: "schema-zero-column-go.txt",
+		},
 		"camel-case": {
 			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", CamelCase: true, URI: "good.parquet"},
 			golden: "schema-good-go-camel-case.txt",

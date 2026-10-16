@@ -182,6 +182,13 @@ func testCmdGood(t *testing.T) {
 			"",
 			0,
 		},
+		"zero-column-gzip": {
+			"zero-column.parquet",
+			"GZIP",
+			1,
+			"",
+			3,
+		},
 		"good-v2": {
 			"good.parquet",
 			"SNAPPY",

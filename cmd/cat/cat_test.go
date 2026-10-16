@@ -211,6 +211,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "empty.parquet"},
 			golden: "empty-json.txt",
 		},
+		"zero-column": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 1, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "zero-column.parquet"},
+			golden: "cat-zero-column.json",
+		},
 		"jsonl": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "good.parquet"},
 			golden: "cat-good-jsonl.jsonl",

@@ -174,6 +174,9 @@ $PT cat --format json "$TESTDATA_DIR/non-finite.parquet" | format_json > "$GOLDE
 # cat-non-finite.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/non-finite.parquet" | format_jsonl > "$GOLDEN_DIR/cat-non-finite.jsonl"
 
+# cat-zero-column.json
+$PT cat --format json --skip 1 "$TESTDATA_DIR/zero-column.parquet" | format_json > "$GOLDEN_DIR/cat-zero-column.json"
+
 # empty-json.txt
 $PT cat --format json "$TESTDATA_DIR/empty.parquet" > "$GOLDEN_DIR/empty-json.txt"
 
@@ -190,6 +193,12 @@ $PT schema --format json "$TESTDATA_DIR/all-types.parquet" | format_json > "$GOL
 
 # schema-all-types-go.txt
 $PT schema --format go "$TESTDATA_DIR/all-types.parquet" > "$GOLDEN_DIR/schema-all-types-go.txt"
+
+# schema-zero-column-json.json
+$PT schema --format json "$TESTDATA_DIR/zero-column.parquet" | format_json > "$GOLDEN_DIR/schema-zero-column-json.json"
+
+# schema-zero-column-go.txt
+$PT schema --format go "$TESTDATA_DIR/zero-column.parquet" > "$GOLDEN_DIR/schema-zero-column-go.txt"
 
 # schema-csv-good.txt
 $PT schema --format csv "$TESTDATA_DIR/csv-good.parquet" > "$GOLDEN_DIR/schema-csv-good.txt"

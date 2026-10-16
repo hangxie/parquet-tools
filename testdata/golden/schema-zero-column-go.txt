@@ -1,0 +1,2 @@
+type Parquet_go_root struct {
+}
