@@ -87,6 +87,10 @@ func TestCmd(t *testing.T) {
 				Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 10, Source: []string{"empty.parquet", "empty.parquet"}, URI: ""},
 				0,
 			},
+			"zero-column": {
+				Cmd{ReadOption: rOpt, Concurrent: true, FailOnInt96: false, ReadPageSize: 2, Source: []string{"zero-column.parquet", "zero-column.parquet"}, URI: ""},
+				6,
+			},
 			"top-tag": {
 				Cmd{ReadOption: rOpt, Concurrent: false, FailOnInt96: false, ReadPageSize: 10, Source: []string{"top-level-tag1.parquet", "top-level-tag2.parquet"}, URI: ""},
 				6,

@@ -40,6 +40,16 @@ func TestCmd(t *testing.T) {
 		require.Equal(t, "3\n", stdout)
 		require.Equal(t, "", stderr)
 	})
+
+	t.Run("zero-column", func(t *testing.T) {
+		cmd := &Cmd{}
+		cmd.URI = "../../testdata/zero-column.parquet"
+
+		stdout, _ := testutils.CaptureStdoutStderr(func() {
+			require.Nil(t, cmd.Run(context.Background()))
+		})
+		require.Equal(t, "3\n", stdout)
+	})
 }
 
 func TestCmdInvalidFooter(t *testing.T) {

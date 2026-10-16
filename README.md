@@ -1649,6 +1649,15 @@ $ parquet-tools row-count testdata/good.parquet
 3
 ```
 
+A file whose schema has no columns, such as one written from `pyarrow.table({})`, still counts the rows its footer declares, and `cat` prints one empty object per row:
+
+```bash
+$ parquet-tools row-count testdata/zero-column.parquet
+3
+$ parquet-tools cat testdata/zero-column.parquet
+[{},{},{}]
+```
+
 ### schema Command
 
 `schema` command shows schema of the parquet file in different formats.
