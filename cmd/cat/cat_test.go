@@ -255,6 +255,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "old-style-list.parquet"},
 			golden: "cat-old-style-list.jsonl",
 		},
+		"nested-array": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "nested-array.parquet"},
+			golden: "cat-nested-array.jsonl",
+		},
 		"multi-row-groups": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"},
 			golden: "cat-row-group.jsonl",

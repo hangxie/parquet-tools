@@ -57,7 +57,7 @@ func rawValue(value reflect.Value, path string, handler *schema.SchemaHandler) (
 	case reflect.Map:
 		return rawMap(value, path, handler)
 	case reflect.Struct:
-		return rawStruct(value, path, handler)
+		return rawStruct(value, path, element, handler)
 	default:
 		return nil, fmt.Errorf("raw group %q has unexpected value %T", path, value.Interface())
 	}
@@ -81,8 +81,8 @@ func rawMap(value reflect.Value, path string, handler *schema.SchemaHandler) (an
 	return result, nil
 }
 
-func rawStruct(value reflect.Value, path string, handler *schema.SchemaHandler) (any, error) {
-	if value.NumField() == 1 && value.Type().Field(0).IsExported() &&
+func rawStruct(value reflect.Value, path string, element *parquet.SchemaElement, handler *schema.SchemaHandler) (any, error) {
+	if isListAnnotated(element) && value.NumField() == 1 && value.Type().Field(0).IsExported() &&
 		strings.EqualFold(value.Type().Field(0).Name, "array") && value.Field(0).Kind() == reflect.Slice &&
 		strings.Split(value.Type().Field(0).Tag.Get("json"), ",")[0] != "-" {
 		return rawValue(value.Field(0), path+common.ParGoPathDelimiter+value.Type().Field(0).Name, handler)
@@ -107,4 +107,10 @@ func rawStruct(value reflect.Value, path string, handler *schema.SchemaHandler) 
 		result[name] = converted
 	}
 	return result, nil
+}
+
+// isListAnnotated keeps parquet-mr two-level lists apart from plain groups that merely use the name array.
+func isListAnnotated(element *parquet.SchemaElement) bool {
+	return element.GetConvertedType() == parquet.ConvertedType_LIST ||
+		(element.LogicalType != nil && element.LogicalType.IsSetLIST())
 }

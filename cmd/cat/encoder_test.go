@@ -37,11 +37,15 @@ func TestEncoderValueMode(t *testing.T) {
 }
 
 func TestRawValueModeLegacyList(t *testing.T) {
-	interpreted := Cmd{URI: "../../testdata/old-style-list.parquet", Format: "json", ReadPageSize: 10, SampleRatio: 1}
-	expected := testutils.CommandStdout(t, interpreted)
-	raw := interpreted
-	raw.ValueMode = "raw"
-	require.Equal(t, expected, testutils.CommandStdout(t, raw))
+	for _, fixture := range []string{"old-style-list.parquet", "nested-array.parquet", "nested-array-logical-list.parquet"} {
+		t.Run(fixture, func(t *testing.T) {
+			interpreted := Cmd{URI: "../../testdata/" + fixture, Format: "json", ReadPageSize: 10, SampleRatio: 1}
+			expected := testutils.CommandStdout(t, interpreted)
+			raw := interpreted
+			raw.ValueMode = "raw"
+			require.Equal(t, expected, testutils.CommandStdout(t, raw))
+		})
+	}
 }
 
 func TestRawValueModeFixtures(t *testing.T) {

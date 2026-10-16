@@ -106,3 +106,49 @@ func TestRawStructJSONTags(t *testing.T) {
 		})
 	}
 }
+
+func TestIsListAnnotated(t *testing.T) {
+	testCases := map[string]struct {
+		element *parquet.SchemaElement
+		want    bool
+	}{
+		"none":           {&parquet.SchemaElement{}, false},
+		"converted-list": {&parquet.SchemaElement{ConvertedType: new(parquet.ConvertedType_LIST)}, true},
+		"converted-map":  {&parquet.SchemaElement{ConvertedType: new(parquet.ConvertedType_MAP)}, false},
+		"logical-list":   {&parquet.SchemaElement{LogicalType: &parquet.LogicalType{LIST: parquet.NewListType()}}, true},
+		"logical-map":    {&parquet.SchemaElement{LogicalType: &parquet.LogicalType{MAP: parquet.NewMapType()}}, false},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tc.want, isListAnnotated(tc.element))
+		})
+	}
+}
+
+func TestRawStructArray(t *testing.T) {
+	handler, err := schema.NewSchemaHandlerFromJSON(`{"Tag":"name=root","Fields":[{"Tag":"name=array, type=INT32, repetitiontype=REPEATED"}]}`)
+	require.NoError(t, err)
+	root := handler.GetRootInName()
+	list := &parquet.SchemaElement{ConvertedType: new(parquet.ConvertedType_LIST)}
+	row := struct{ Array []int32 }{Array: []int32{1, 2}}
+
+	testCases := map[string]struct {
+		value   any
+		element *parquet.SchemaElement
+		want    any
+	}{
+		"list-collapses": {row, list, []any{int32(1), int32(2)}},
+		"plain-group":    {row, &parquet.SchemaElement{}, map[string]any{"Array": []any{int32(1), int32(2)}}},
+		"omitted-array": {struct {
+			Array []int32 `json:"-"`
+		}{Array: []int32{1}}, list, map[string]any{}},
+		"unexported-list": {struct{ array []int32 }{array: []int32{1}}, list, map[string]any{}},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			got, err := rawStruct(reflect.ValueOf(tc.value), root, tc.element, handler)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+}
