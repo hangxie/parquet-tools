@@ -135,6 +135,9 @@ $PT cat --format jsonl --geo-format hybrid "$TESTDATA_DIR/geospatial.parquet" | 
 # cat-old-style-list.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/old-style-list.parquet" | format_jsonl > "$GOLDEN_DIR/cat-old-style-list.jsonl"
 
+# cat-nested-array.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/nested-array.parquet" | format_jsonl > "$GOLDEN_DIR/cat-nested-array.jsonl"
+
 # cat-row-group.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group.jsonl"
 
