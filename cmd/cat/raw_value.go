@@ -83,8 +83,8 @@ func rawMap(value reflect.Value, path string, handler *schema.SchemaHandler) (an
 
 func rawStruct(value reflect.Value, path string, element *parquet.SchemaElement, handler *schema.SchemaHandler) (any, error) {
 	if isListAnnotated(element) && value.NumField() == 1 && value.Type().Field(0).IsExported() &&
-		strings.EqualFold(value.Type().Field(0).Name, "array") && value.Field(0).Kind() == reflect.Slice &&
-		strings.Split(value.Type().Field(0).Tag.Get("json"), ",")[0] != "-" {
+		value.Field(0).Kind() == reflect.Slice && strings.Split(value.Type().Field(0).Tag.Get("json"), ",")[0] != "-" &&
+		isLegacyListElement(path+common.ParGoPathDelimiter+value.Type().Field(0).Name, handler) {
 		return rawValue(value.Field(0), path+common.ParGoPathDelimiter+value.Type().Field(0).Name, handler)
 	}
 	result := make(map[string]any, value.NumField())
@@ -107,6 +107,14 @@ func rawStruct(value reflect.Value, path string, element *parquet.SchemaElement,
 		result[name] = converted
 	}
 	return result, nil
+}
+
+// isLegacyListElement reports whether the repeated field at path is the LIST element itself
+// under the spec's backward-compatibility rules, rather than a three-level wrapper.
+func isLegacyListElement(path string, handler *schema.SchemaHandler) bool {
+	index, ok := handler.MapIndex[path]
+	return ok && handler.SchemaElements[index].GetRepetitionType() == parquet.FieldRepetitionType_REPEATED &&
+		!handler.IsListWrapper(index)
 }
 
 // isListAnnotated keeps parquet-mr two-level lists apart from plain groups that merely use the name array.

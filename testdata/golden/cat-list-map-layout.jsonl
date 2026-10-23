@@ -1,0 +1,79 @@
+{
+  "athena": [
+    "a",
+    null,
+    "b"
+  ],
+  "athena_logical": [
+    "c"
+  ],
+  "entries_logical": {
+    "entries": [
+      {
+        "key": "x",
+        "value": 42
+      }
+    ]
+  },
+  "entries_map": {
+    "entries": [
+      {
+        "key": "x",
+        "value": 42
+      }
+    ]
+  },
+  "legacy": [
+    {
+      "element": [
+        1,
+        2
+      ]
+    },
+    {
+      "element": [
+        3
+      ]
+    }
+  ],
+  "logical_list": [
+    1,
+    2,
+    3
+  ],
+  "logical_map": {
+    "x": 1
+  }
+}
+{
+  "athena": [],
+  "athena_logical": [
+    "d",
+    "e"
+  ],
+  "entries_logical": {
+    "entries": [
+      {
+        "key": "y",
+        "value": 1
+      },
+      {
+        "key": "z",
+        "value": 2
+      }
+    ]
+  },
+  "entries_map": {
+    "entries": []
+  },
+  "legacy": [
+    {
+      "element": []
+    }
+  ],
+  "logical_list": [],
+  "logical_map": {
+    "y": 2,
+    "z": 3
+  }
+}
