@@ -137,6 +137,24 @@ func TestCmd(t *testing.T) {
 		require.True(t, testutils.HasSameSchema(source, cmd.URI))
 	})
 
+	// The writer schema comes from the schema renderers, so every LIST and MAP layout
+	// must render the way parquet-go reads it or the merged rows lose their values.
+	t.Run("list-map-layout", func(t *testing.T) {
+		rOpt := pio.ReadOption{}
+		source := "../../testdata/list-map-layout.parquet"
+
+		cmd := Cmd{ReadOption: rOpt, ReadPageSize: 10, Source: []string{source, source}, URI: filepath.Join(t.TempDir(), "list-map-layout.parquet")}
+		require.NoError(t, cmd.Run(context.Background()))
+
+		catCmd := cat.Cmd{ReadOption: rOpt, ReadPageSize: 1000, SampleRatio: 1.0, Format: "jsonl", URI: cmd.URI}
+		stdout, _ := testutils.CaptureStdoutStderr(func() {
+			require.NoError(t, catCmd.Run(context.Background()))
+		})
+
+		expected := testutils.LoadExpected(t, "../../testdata/golden/cat-list-map-layout.jsonl")
+		require.Equal(t, expected+expected, stdout)
+	})
+
 	t.Run("repeat", func(t *testing.T) {
 		rOpt := pio.ReadOption{}
 		tempDir := t.TempDir()

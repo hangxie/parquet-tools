@@ -38,6 +38,9 @@ func (n goStructNode) asStruct() (string, error) {
 	var typeStr strings.Builder
 	typeStr.WriteString("struct {\n")
 	for _, child := range n.Children {
+		if child == nil {
+			return "", fmt.Errorf("invalid schema: nil child in [%s]", n.Name)
+		}
 		structStr, err := goStructNode{
 			SchemaNode:     *child,
 			ForceCamelCase: n.ForceCamelCase,
@@ -106,13 +109,8 @@ func (n goStructNode) asList() (string, error) {
 	return "[]" + typeStr, nil
 }
 
+// asMap renders a node that isMap has already matched to the reader's key_value layout.
 func (n goStructNode) asMap() (string, error) {
-	if len(n.Children) == 0 || n.Children[0] == nil ||
-		n.Children[0].ConvertedType == nil ||
-		*n.Children[0].ConvertedType != parquet.ConvertedType_MAP_KEY_VALUE ||
-		len(n.Children[0].Children) < 2 {
-		return "", fmt.Errorf("invalid MAP structure in [%s]", n.Name)
-	}
 	keyChild := n.Children[0].Children[0]
 	valueChild := n.Children[0].Children[1]
 
@@ -150,12 +148,12 @@ func (n goStructNode) String() (string, error) {
 		if typePrefix == "*" {
 			typePrefix = ""
 		}
-	case n.Type == nil && n.ConvertedType == nil:
-		typeStr, err = n.asStruct()
-	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST:
+	case n.isList():
 		typeStr, err = n.asList()
-	case n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_MAP:
+	case n.isMap():
 		typeStr, err = n.asMap()
+	case n.Type == nil && (n.ConvertedType == nil || n.isUnreadMapGroup()):
+		typeStr, err = n.asStruct()
 	default:
 		typeStr, err = goStructNode{
 			SchemaNode:     n.SchemaNode,
@@ -187,8 +185,7 @@ func (n goStructNode) stringWithName() (string, error) {
 
 func (n goStructNode) getStructTags() (string, error) {
 	tagMap := n.GetTagMap()
-	if _, found := tagMap["valuetype"]; !found &&
-		n.ConvertedType != nil && *n.ConvertedType == parquet.ConvertedType_LIST {
+	if _, found := tagMap["valuetype"]; !found && n.isList() {
 		// make sure LIST always has "valuetype"
 		tagMap["valuetype"] = "STRUCT"
 	}

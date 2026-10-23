@@ -67,14 +67,14 @@ func (s jsonSchemaNode) schema() JSONSchema {
 }
 
 func (s *jsonSchemaNode) normalizeForRendering() {
-	if s.ConvertedType == nil || len(s.Children) == 0 || s.Children[0] == nil {
+	if len(s.Children) == 0 || s.Children[0] == nil {
 		return
 	}
 
-	switch *s.ConvertedType {
-	case parquet.ConvertedType_LIST:
+	switch {
+	case s.isList():
 		s.normalizeListForRendering()
-	case parquet.ConvertedType_MAP:
+	case s.isMap():
 		s.normalizeMapForRendering()
 	}
 }

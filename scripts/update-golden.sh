@@ -215,6 +215,12 @@ $PT schema --format json "$TESTDATA_DIR/map-composite-value.parquet" | format_js
 # schema-map-value-map-json.json
 $PT schema --format json "$TESTDATA_DIR/map-value-map.parquet" | format_json > "$GOLDEN_DIR/schema-map-value-map-json.json"
 
+# schema-list-map-layout-json.json
+$PT schema --format json "$TESTDATA_DIR/list-map-layout.parquet" | format_json > "$GOLDEN_DIR/schema-list-map-layout-json.json"
+
+# schema-list-map-layout-go.txt
+$PT schema --format go "$TESTDATA_DIR/list-map-layout.parquet" > "$GOLDEN_DIR/schema-list-map-layout-go.txt"
+
 # schema-pargo-prefix-flat-go.txt
 $PT schema --format go "$TESTDATA_DIR/pargo-prefix-flat.parquet" > "$GOLDEN_DIR/schema-pargo-prefix-flat-go.txt"
 

@@ -281,44 +281,48 @@ func testCmdVerifyData(t *testing.T) {
 	}
 	tempDir := t.TempDir()
 
-	// Transcode a file
-	cmd := Cmd{
-		ReadOption:   rOpt,
-		WriteOption:  wOpt,
-		ReadPageSize: 100,
-		Source:       "../../testdata/good.parquet",
-		URI:          filepath.Join(tempDir, "transcoded.parquet"),
+	testCases := map[string]struct {
+		source     string
+		sameSchema bool
+	}{
+		"good": {"good.parquet", true},
+		// The writer renames LIST wrappers to list and annotates by converted type.
+		"list-map-layout": {"list-map-layout.parquet", false},
 	}
-	err := cmd.Run(context.Background())
-	require.NoError(t, err)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := Cmd{
+				ReadOption:   rOpt,
+				WriteOption:  wOpt,
+				ReadPageSize: 100,
+				Source:       "../../testdata/" + tc.source,
+				URI:          filepath.Join(tempDir, tc.source),
+			}
+			require.NoError(t, cmd.Run(context.Background()))
 
-	// Verify the data is the same by using cat command
-	catOriginal := cat.Cmd{
-		ReadOption:   rOpt,
-		ReadPageSize: 1000,
-		SampleRatio:  1.0,
-		Format:       "json",
-		GeoFormat:    "geojson",
-		URI:          "../../testdata/good.parquet",
+			// Verify the data is the same by using cat command
+			catOriginal := cat.Cmd{
+				ReadOption:   rOpt,
+				ReadPageSize: 1000,
+				SampleRatio:  1.0,
+				Format:       "json",
+				GeoFormat:    "geojson",
+				URI:          cmd.Source,
+			}
+			catTranscoded := catOriginal
+			catTranscoded.URI = cmd.URI
+
+			originalOutput, _ := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, catOriginal.Run(context.Background()))
+			})
+			transcodedOutput, _ := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, catTranscoded.Run(context.Background()))
+			})
+
+			require.Equal(t, originalOutput, transcodedOutput)
+			require.Equal(t, tc.sameSchema, testutils.HasSameSchema(cmd.Source, cmd.URI))
+		})
 	}
-	catTranscoded := cat.Cmd{
-		ReadOption:   rOpt,
-		ReadPageSize: 1000,
-		SampleRatio:  1.0,
-		Format:       "json",
-		GeoFormat:    "geojson",
-		URI:          cmd.URI,
-	}
-
-	originalOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catOriginal.Run(context.Background()))
-	})
-	transcodedOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catTranscoded.Run(context.Background()))
-	})
-
-	require.Equal(t, originalOutput, transcodedOutput)
-	require.True(t, testutils.HasSameSchema(cmd.Source, cmd.URI))
 }
 
 // Transcoding rewrites every value through the reader and writer, so NaN and

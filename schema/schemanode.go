@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hangxie/parquet-go/v3/common"
 	"github.com/hangxie/parquet-go/v3/parquet"
 )
 
@@ -90,6 +91,63 @@ func (s *SchemaNode) cloneForRendering() *SchemaNode {
 // isRepeated reports whether the node is a REPEATED field.
 func (s *SchemaNode) isRepeated() bool {
 	return s != nil && s.RepetitionType != nil && *s.RepetitionType == parquet.FieldRepetitionType_REPEATED
+}
+
+// isList reports whether the node is a LIST group. converted_type is optional, so a group
+// annotated only by logical type also counts in the layouts parquet-go reads as a list.
+func (s *SchemaNode) isList() bool {
+	if s.GetConvertedType() == parquet.ConvertedType_LIST {
+		return true
+	}
+	return s.LogicalType != nil && s.LogicalType.IsSetLIST() &&
+		len(s.Children) == 1 && s.Children[0].isListWrapper(s)
+}
+
+// isMap reports whether the node is a MAP group that parquet-go reads as a Go map. The reader
+// matches the key_value, key and value names, so any other naming must render as a struct.
+func (s *SchemaNode) isMap() bool {
+	annotated := s.GetConvertedType() == parquet.ConvertedType_MAP || (s.LogicalType != nil && s.LogicalType.IsSetMAP())
+	if !annotated || len(s.Children) != 1 || s.Children[0] == nil {
+		return false
+	}
+	keyValue := s.Children[0]
+	return keyValue.inName() == "Key_value" && len(keyValue.Children) == 2 &&
+		keyValue.Children[0].inName() == "Key" && keyValue.Children[1].inName() == "Value"
+}
+
+// isUnreadMapGroup reports whether the node carries a MAP or MAP_KEY_VALUE converted type
+// on a layout parquet-go does not read as a map.
+func (s *SchemaNode) isUnreadMapGroup() bool {
+	ct := s.GetConvertedType()
+	return s.Type == nil && s.ConvertedType != nil && !s.isMap() &&
+		(ct == parquet.ConvertedType_MAP || ct == parquet.ConvertedType_MAP_KEY_VALUE)
+}
+
+// inName is the reader's internal name for the node, which renderers never rename.
+func (s *SchemaNode) inName() string {
+	if s == nil {
+		return ""
+	}
+	if len(s.InNamePath) != 0 {
+		return s.InNamePath[len(s.InNamePath)-1]
+	}
+	// a tree decoded from raw JSON has no paths; derive the name as the reader does
+	return common.StringToVariableName(s.Name)
+}
+
+// isListWrapper reports whether the node is the repeated wrapper of a 3-level LIST rather than
+// the element itself, per the spec's backward-compatibility rules.
+func (s *SchemaNode) isListWrapper(list *SchemaNode) bool {
+	return s.isRepeated() && len(s.Children) == 1 && !s.Children[0].isRepeated() &&
+		s.exName() != "array" && s.exName() != list.exName()+"_tuple"
+}
+
+// exName is the file's name for the node; renderers may rename Name.
+func (s *SchemaNode) exName() string {
+	if len(s.ExNamePath) != 0 {
+		return s.ExNamePath[len(s.ExNamePath)-1]
+	}
+	return s.Name
 }
 
 // isLegacyListElement reports whether the node is the element of a 2-level LIST,

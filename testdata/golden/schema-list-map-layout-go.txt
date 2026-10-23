@@ -1,0 +1,19 @@
+type Parquet_go_root struct {
+	Athena         []*string        `parquet:"name=athena, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8, valueencoding=PLAIN, valuecompression=UNCOMPRESSED, convertedtype=LIST"`
+	Athena_logical []*string        `parquet:"name=athena_logical, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8, valueencoding=PLAIN, valuecompression=UNCOMPRESSED"`
+	Logical_list   []int32          `parquet:"name=logical_list, type=LIST, valuetype=INT32, valueencoding=PLAIN, valuecompression=UNCOMPRESSED"`
+	Logical_map    map[string]int32 `parquet:"name=logical_map, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, keyencoding=PLAIN, keycompression=UNCOMPRESSED, valuetype=INT32, valueencoding=PLAIN, valuecompression=UNCOMPRESSED"`
+	Legacy         [][]int32        `parquet:"name=legacy, type=LIST, valuetype=INT32, valueencoding=PLAIN, valuecompression=UNCOMPRESSED, convertedtype=LIST"`
+	Entries_map    struct {
+		Entries []struct {
+			Key   string `parquet:"name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=UNCOMPRESSED"`
+			Value int32  `parquet:"name=value, type=INT32, encoding=PLAIN, compression=UNCOMPRESSED"`
+		} `parquet:"name=entries, type=STRUCT, repetitiontype=REPEATED"`
+	} `parquet:"name=entries_map, type=STRUCT"`
+	Entries_logical struct {
+		Entries []struct {
+			Key   string `parquet:"name=key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=UNCOMPRESSED"`
+			Value int32  `parquet:"name=value, type=INT32, encoding=PLAIN, compression=UNCOMPRESSED"`
+		} `parquet:"name=entries, type=STRUCT, repetitiontype=REPEATED"`
+	} `parquet:"name=entries_logical, type=STRUCT"`
+}
