@@ -138,6 +138,9 @@ $PT cat --format jsonl "$TESTDATA_DIR/old-style-list.parquet" | format_jsonl > "
 # cat-nested-array.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/nested-array.parquet" | format_jsonl > "$GOLDEN_DIR/cat-nested-array.jsonl"
 
+# cat-list-map-layout.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/list-map-layout.parquet" | format_jsonl > "$GOLDEN_DIR/cat-list-map-layout.jsonl"
+
 # cat-row-group.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group.jsonl"
 

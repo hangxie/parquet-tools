@@ -37,7 +37,7 @@ func TestEncoderValueMode(t *testing.T) {
 }
 
 func TestRawValueModeLegacyList(t *testing.T) {
-	for _, fixture := range []string{"old-style-list.parquet", "nested-array.parquet", "nested-array-logical-list.parquet"} {
+	for _, fixture := range []string{"old-style-list.parquet", "nested-array.parquet", "nested-array-logical-list.parquet", "list-map-layout.parquet"} {
 		t.Run(fixture, func(t *testing.T) {
 			interpreted := Cmd{URI: "../../testdata/" + fixture, Format: "json", ReadPageSize: 10, SampleRatio: 1}
 			expected := testutils.CommandStdout(t, interpreted)
