@@ -1677,6 +1677,10 @@ Schema will output converted type and logical type when they are present in the 
 * repetitiontype=REQUIRED
 * type=STRUCT
 
+**LIST and MAP:**
+
+A group shows as `type=LIST` or `type=MAP` when either its converted type or its logical type says so, since writers may set only the logical type. A LIST may use any names for its repeated group and element, such as Athena's `bag` and `array_element`. A group annotated only by logical type is treated as LIST or MAP only in the standard layout, the same way `cat` reads it. A MAP whose repeated group and fields are not named `key_value`, `key`, and `value` shows as a struct, since that is how it is read; `transcode` and `merge` keep its values but write it without the MAP annotation. See [Non-standard LIST and MAP Layouts](compatibility.md#non-standard-list-and-map-layouts). Up to v1.56.3, such groups showed as plain structs, and `transcode` and `merge` failed on a MAP annotated only by logical type.
+
 **VARIANT Logical Type:**
 
 The `VARIANT` logical type is generated as `any` in the Go struct format. You can also define your own struct to have more control over compression and encoding. See [Variant Data Type Support](#variant-data-type-support) for more details.

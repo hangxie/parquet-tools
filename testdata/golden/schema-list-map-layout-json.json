@@ -1,0 +1,80 @@
+{
+  "Tag": "name=parquet_go_root, inname=Parquet_go_root",
+  "Fields": [
+    {
+      "Tag": "name=athena, inname=Athena, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=array_element, inname=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL, encoding=PLAIN, compression=UNCOMPRESSED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=athena_logical, inname=Athena_logical, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=array_element, inname=Element, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, repetitiontype=OPTIONAL, encoding=PLAIN, compression=UNCOMPRESSED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=logical_list, inname=Logical_list, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, inname=Element, type=INT32, encoding=PLAIN, compression=UNCOMPRESSED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=logical_map, inname=Logical_map, type=MAP",
+      "Fields": [
+        {
+          "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=UNCOMPRESSED"
+        },
+        {
+          "Tag": "name=value, inname=Value, type=INT32, encoding=PLAIN, compression=UNCOMPRESSED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=legacy, inname=Legacy, type=LIST",
+      "Fields": [
+        {
+          "Tag": "name=element, inname=Element, type=INT32, repetitiontype=REPEATED, encoding=PLAIN, compression=UNCOMPRESSED"
+        }
+      ]
+    },
+    {
+      "Tag": "name=entries_map, inname=Entries_map",
+      "Fields": [
+        {
+          "Tag": "name=entries, inname=Entries, repetitiontype=REPEATED",
+          "Fields": [
+            {
+              "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=UNCOMPRESSED"
+            },
+            {
+              "Tag": "name=value, inname=Value, type=INT32, encoding=PLAIN, compression=UNCOMPRESSED"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Tag": "name=entries_logical, inname=Entries_logical",
+      "Fields": [
+        {
+          "Tag": "name=entries, inname=Entries, repetitiontype=REPEATED",
+          "Fields": [
+            {
+              "Tag": "name=key, inname=Key, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=PLAIN, compression=UNCOMPRESSED"
+            },
+            {
+              "Tag": "name=value, inname=Value, type=INT32, encoding=PLAIN, compression=UNCOMPRESSED"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

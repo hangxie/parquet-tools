@@ -32,6 +32,12 @@ func (s *SchemaNode) getTagMap() map[string]string {
 		return tagMap
 	}
 
+	if s.isUnreadMapGroup() {
+		// parquet-go reads it as a struct, and transcode writes the rows it read
+		tagMap["type"] = "STRUCT"
+		return tagMap
+	}
+
 	if s.Type != nil && *s.Type == parquet.Type_FIXED_LEN_BYTE_ARRAY {
 		tagMap["length"] = fmt.Sprint(*s.TypeLength)
 	}
@@ -60,6 +66,17 @@ func (s *SchemaNode) getTagMap() map[string]string {
 
 	if s.ConvertedType != nil {
 		s.updateTagFromConvertedType(tagMap)
+	}
+
+	if s.ConvertedType == nil {
+		switch {
+		case s.isList():
+			tagMap["type"] = "LIST"
+			s.updateTagForList(tagMap)
+		case s.isMap():
+			tagMap["type"] = "MAP"
+			s.updateTagForMap(tagMap)
+		}
 	}
 
 	return tagMap

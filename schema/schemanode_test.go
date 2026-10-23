@@ -656,6 +656,11 @@ func TestGoStruct(t *testing.T) {
 			camelCase:  false,
 			goldenFile: "../testdata/golden/schema-unknown-type-go.txt",
 		},
+		{
+			name:       "list and map layouts",
+			uri:        "../testdata/list-map-layout.parquet",
+			goldenFile: "../testdata/golden/schema-list-map-layout-go.txt",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -822,6 +827,11 @@ func TestJSONSchema(t *testing.T) {
 			name:       "unknown type",
 			uri:        "../testdata/unknown-type.parquet",
 			goldenFile: "../testdata/golden/schema-unknown-type-json.json",
+		},
+		{
+			name:       "list and map layouts",
+			uri:        "../testdata/list-map-layout.parquet",
+			goldenFile: "../testdata/golden/schema-list-map-layout-json.json",
 		},
 	}
 
@@ -2114,45 +2124,152 @@ func TestAsMapEdgeCases(t *testing.T) {
 	mapKVCT := parquet.ConvertedType_MAP_KEY_VALUE
 	int32T := parquet.Type_INT32
 
-	t.Run("MAP_KEY_VALUE with fewer than two children", func(t *testing.T) {
-		node := goStructNode{SchemaNode: SchemaNode{
-			SchemaElement: parquet.SchemaElement{
-				Name:          "mymap",
-				ConvertedType: &mapCT,
-			},
-			Children: []*SchemaNode{
-				{
-					SchemaElement: parquet.SchemaElement{
-						Name:          "key_value",
-						ConvertedType: &mapKVCT,
-					},
-					Children: []*SchemaNode{}, // fewer than 2 → error path in if-branch
-				},
-			},
-		}}
-		_, err := node.String()
-		require.ErrorContains(t, err, "invalid MAP structure")
-	})
+	stringT := parquet.Type_BYTE_ARRAY
+	repeated := parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REPEATED)
+	node := func(name string, se parquet.SchemaElement, children ...*SchemaNode) *SchemaNode {
+		se.Name = name
+		return &SchemaNode{SchemaElement: se, InNamePath: []string{name}, Children: children}
+	}
+	key := node("Key", parquet.SchemaElement{Type: &stringT})
+	value := node("Value", parquet.SchemaElement{Type: &int32T})
 
-	t.Run("MAP without key-value layer", func(t *testing.T) {
-		node := goStructNode{SchemaNode: SchemaNode{
-			SchemaElement: parquet.SchemaElement{
-				Name:          "mymap",
-				ConvertedType: &mapCT,
-			},
-			Children: []*SchemaNode{
-				{
-					SchemaElement: parquet.SchemaElement{
-						Name: "key",
-						Type: &int32T,
-					},
-					// Missing the required MAP_KEY_VALUE layer.
-				},
-			},
-		}}
-		_, err := node.String()
-		require.ErrorContains(t, err, "invalid MAP structure")
-	})
+	// parquet-go reads a MAP as a Go map only under the Key_value/Key/Value names, so
+	// anything else renders as the struct the reader returns.
+	testCases := map[string]struct {
+		node     *SchemaNode
+		expected string
+	}{
+		"key-value": {
+			node("Mymap", parquet.SchemaElement{ConvertedType: &mapCT},
+				node("Key_value", parquet.SchemaElement{ConvertedType: &mapKVCT, RepetitionType: repeated}, key, value)),
+			"map[string]int32",
+		},
+		"key-value-without-MAP_KEY_VALUE": {
+			node("Mymap", parquet.SchemaElement{ConvertedType: &mapCT},
+				node("Key_value", parquet.SchemaElement{RepetitionType: repeated}, key, value)),
+			"map[string]int32",
+		},
+		"entries-name": {
+			node("Mymap", parquet.SchemaElement{ConvertedType: &mapCT},
+				node("Entries", parquet.SchemaElement{RepetitionType: repeated}, key, value)),
+			"struct {\nEntries []struct {\nKey string `parquet:\"name=Key, type=BYTE_ARRAY\"`\n" +
+				"Value int32 `parquet:\"name=Value, type=INT32\"`\n} `parquet:\"name=Entries, type=STRUCT, repetitiontype=REPEATED\"`\n}",
+		},
+		"MAP_KEY_VALUE-with-fewer-than-two-children": {
+			node("Mymap", parquet.SchemaElement{ConvertedType: &mapCT},
+				node("Key_value", parquet.SchemaElement{ConvertedType: &mapKVCT, RepetitionType: repeated})),
+			"struct {\nKey_value []struct {\n} `parquet:\"name=Key_value, type=STRUCT, repetitiontype=REPEATED\"`\n}",
+		},
+		"without-key-value-layer": {
+			node("Mymap", parquet.SchemaElement{ConvertedType: &mapCT}, key),
+			"struct {\nKey string `parquet:\"name=Key, type=BYTE_ARRAY\"`\n}",
+		},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			typeStr, err := goStructNode{SchemaNode: *tc.node}.String()
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, typeStr)
+		})
+	}
+}
+
+func TestRenderMapWithNilKeyValue(t *testing.T) {
+	mapCT := parquet.ConvertedType_MAP
+	mapLT := &parquet.LogicalType{MAP: parquet.NewMapType()}
+	for name, se := range map[string]parquet.SchemaElement{
+		"converted": {Name: "Mymap", ConvertedType: &mapCT},
+		"logical":   {Name: "Mymap", LogicalType: mapLT},
+	} {
+		t.Run(name, func(t *testing.T) {
+			node := SchemaNode{SchemaElement: se, InNamePath: []string{"Mymap"}, Children: []*SchemaNode{nil}}
+			require.NotPanics(t, func() {
+				_, err := goStructNode{SchemaNode: node}.String()
+				require.ErrorContains(t, err, "nil child in [Mymap]")
+			})
+		})
+	}
+}
+
+func TestListMapAnnotation(t *testing.T) {
+	listCT := parquet.ConvertedType_LIST
+	mapCT := parquet.ConvertedType_MAP
+	listLT := &parquet.LogicalType{LIST: parquet.NewListType()}
+	mapLT := &parquet.LogicalType{MAP: parquet.NewMapType()}
+	int32T := parquet.Type_INT32
+	repeated := parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REPEATED)
+	leaf := func(name string, rt *parquet.FieldRepetitionType) *SchemaNode {
+		return &SchemaNode{SchemaElement: parquet.SchemaElement{Name: name, Type: &int32T, RepetitionType: rt}}
+	}
+	group := func(name string, rt *parquet.FieldRepetitionType, children ...*SchemaNode) *SchemaNode {
+		return &SchemaNode{SchemaElement: parquet.SchemaElement{Name: name, RepetitionType: rt}, Children: children}
+	}
+	annotate := func(node *SchemaNode, ct *parquet.ConvertedType, lt *parquet.LogicalType) *SchemaNode {
+		node.ConvertedType, node.LogicalType = ct, lt
+		return node
+	}
+
+	testCases := map[string]struct {
+		node   *SchemaNode
+		isList bool
+		isMap  bool
+	}{
+		"plain-group":           {group("g", nil, leaf("a", nil)), false, false},
+		"converted-list":        {annotate(group("l", nil, leaf("a", repeated)), &listCT, nil), true, false},
+		"logical-list":          {annotate(group("l", nil, group("list", repeated, leaf("element", nil))), nil, listLT), true, false},
+		"logical-list-any-name": {annotate(group("l", nil, group("bag", repeated, leaf("array_element", nil))), nil, listLT), true, false},
+		"logical-list-2-level":  {annotate(group("l", nil, leaf("a", repeated)), nil, listLT), false, false},
+		"logical-list-array":    {annotate(group("l", nil, group("array", repeated, leaf("x", nil))), nil, listLT), false, false},
+		"logical-list-tuple":    {annotate(group("l", nil, group("l_tuple", repeated, leaf("x", nil))), nil, listLT), false, false},
+		"logical-list-repeated-element": {
+			annotate(group("l", nil, group("list", repeated, leaf("element", repeated))), nil, listLT), false, false,
+		},
+		"logical-list-not-repeated": {annotate(group("l", nil, group("list", nil, leaf("element", nil))), nil, listLT), false, false},
+		"converted-map": {
+			annotate(group("m", nil, group("key_value", repeated, leaf("key", nil), leaf("value", nil))), &mapCT, nil), false, true,
+		},
+		"converted-map-no-children": {annotate(group("m", nil), &mapCT, nil), false, false},
+		"converted-map-entries": {
+			annotate(group("m", nil, group("entries", repeated, leaf("key", nil), leaf("value", nil))), &mapCT, nil), false, false,
+		},
+		"logical-map": {
+			annotate(group("m", nil, group("key_value", repeated, leaf("key", nil), leaf("value", nil))), nil, mapLT), false, true,
+		},
+		"logical-map-entries": {
+			annotate(group("m", nil, group("entries", repeated, leaf("key", nil), leaf("value", nil))), nil, mapLT), false, false,
+		},
+		"logical-map-k-v": {
+			annotate(group("m", nil, group("key_value", repeated, leaf("k", nil), leaf("v", nil))), nil, mapLT), false, false,
+		},
+		"logical-map-one-field":       {annotate(group("m", nil, group("key_value", repeated, leaf("key", nil))), nil, mapLT), false, false},
+		"logical-map-nil-field":       {annotate(group("m", nil, group("key_value", repeated, nil, leaf("value", nil))), nil, mapLT), false, false},
+		"logical-map-nil-key-value":   {annotate(group("m", nil, (*SchemaNode)(nil)), nil, mapLT), false, false},
+		"converted-map-nil-key-value": {annotate(group("m", nil, (*SchemaNode)(nil)), &mapCT, nil), false, false},
+		// The reader matches names only, as parquet-go's isMapSchema does.
+		"logical-map-not-repeated": {
+			annotate(group("m", nil, group("key_value", nil, leaf("key", nil), leaf("value", nil))), nil, mapLT), false, true,
+		},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tc.isList, tc.node.isList())
+			require.Equal(t, tc.isMap, tc.node.isMap())
+		})
+	}
+}
+
+func TestListWrapperUsesFileNames(t *testing.T) {
+	int32T := parquet.Type_INT32
+	// Renderers rename nodes to Element, so the legacy name rules read the file's names.
+	wrapper := &SchemaNode{
+		SchemaElement: parquet.SchemaElement{Name: "Element", RepetitionType: parquet.FieldRepetitionTypePtr(parquet.FieldRepetitionType_REPEATED)},
+		ExNamePath:    []string{"root", "l", "array"},
+		Children:      []*SchemaNode{{SchemaElement: parquet.SchemaElement{Name: "x", Type: &int32T}}},
+	}
+	list := &SchemaNode{SchemaElement: parquet.SchemaElement{Name: "l"}, Children: []*SchemaNode{wrapper}}
+	require.False(t, wrapper.isListWrapper(list))
+	wrapper.ExNamePath = []string{"root", "l", "list"}
+	require.True(t, wrapper.isListWrapper(list))
 }
 
 func TestUpdateTagForMapNilChild(t *testing.T) {
@@ -2271,6 +2388,7 @@ func FuzzNewSchemaTree(f *testing.F) {
 		"list-of-list.parquet",
 		"map-value-map.parquet",
 		"gostruct-list.parquet",
+		"list-map-layout.parquet",
 		"geospatial.parquet",
 		"bloom-filter.parquet",
 		"data-page-v2.parquet",
