@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.5
 	github.com/aws/smithy-go v1.28.6
 	github.com/google/uuid v1.6.0
-	github.com/hangxie/parquet-go/v3 v3.9.4
+	github.com/hangxie/parquet-go/v3 v3.9.5
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.12.1
 	github.com/willabides/kongplete v0.4.0
@@ -39,7 +39,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.24 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.10 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.4 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.16 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.17 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.7 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.7 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.7 // indirect

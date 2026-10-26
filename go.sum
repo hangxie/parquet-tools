@@ -62,8 +62,8 @@ github.com/aws/aws-sdk-go-v2/credentials v1.20.10 h1:ItSjcLk+2M15RnRxO105uVIqLiV
 github.com/aws/aws-sdk-go-v2/credentials v1.20.10/go.mod h1:eO4GlmGXB+gx+zDbhu3IENEFOmjrbVKJtOptJiIhngc=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.4 h1:7ksj/zMap9+831SmNQZkcpmfuATp3DKr4BfLNnBdYXM=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.4/go.mod h1:zhi8vDrD1dj76ysTWS6Ny1y6/EEW1Jrq2y8lzKeoqfs=
-github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.16 h1:q9YuNkYR/7lxflWCcEv3C0cecUt3Zvrh2hn9ZNxieNA=
-github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.16/go.mod h1:3BSeJQF55QQI+dDFHx4WTIjTvX/Lvtk8Jaaf/SGAnBM=
+github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.17 h1:A4oacmRt/hMX2qATy9fnxks8G+bV5PnLV8w61xeAy6Q=
+github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.17/go.mod h1:3BSeJQF55QQI+dDFHx4WTIjTvX/Lvtk8Jaaf/SGAnBM=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.7 h1:fSNAt6hs4qLjb9tMZc6vj3PHlOCYGXK2JjJZ7AW2tf4=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.7/go.mod h1:TMav+EuXQu5kNpZZz/6rIC8xx4mCsW+6AKHrjvOSAsE=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.7 h1:7NS6kqBjkWIN8P/AEdmtyq6eQGAhN1oHTZdzXclpH6Y=
@@ -145,8 +145,8 @@ github.com/gorilla/securecookie v1.1.1 h1:miw7JPhV+b/lAHSXz4qd/nN9jRiAFV5FwjeKyC
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v1.2.1 h1:DHd3rPN5lE3Ts3D8rKkQ8x/0kqfeNmBAaiSi+o7FsgI=
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
-github.com/hangxie/parquet-go/v3 v3.9.4 h1:2JMiL4UGzRiMEQB5pzv/v6nh3VWRpjPZjfP9XQurGTc=
-github.com/hangxie/parquet-go/v3 v3.9.4/go.mod h1:hT+XXR9iEx8WVEqxItdQhJ8EoJ8vpMPzyZV5bVkPgt8=
+github.com/hangxie/parquet-go/v3 v3.9.5 h1:0YBuaVmpWz7JRhPmtyiovHwUhfGGKPsrVGTHa4I1CCc=
+github.com/hangxie/parquet-go/v3 v3.9.5/go.mod h1:n7RcIMAaVSgLFJpVVpTNolNMv8w9m5C7Y9FK2JZZqDE=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
