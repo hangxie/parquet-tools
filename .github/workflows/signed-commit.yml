@@ -1,7 +1,8 @@
 name: Check signed commits in PR
-on:
-  pull_request:
-  pull_request_target:
+# pull_request_target only: the pull_request token cannot comment on fork PRs,
+# and running both triggers doubles the runs. Safe here because the job never
+# checks out or executes PR-authored code.
+on: pull_request_target
 
 jobs:
   check-signed-commits:
@@ -11,5 +12,6 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      # Advisory only; enforcement is the ruleset's required_signatures rule.
       - name: Check signed commits in PR
         uses: 1Password/check-signed-commits-action@v1

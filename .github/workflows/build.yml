@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -22,6 +22,26 @@ jobs:
         run: make format
       - name: Running lint
         run: make lint
+      - name: Checking uncommitted changes
+        run: |
+          git status -s > /tmp/git-status.log
+          if [ -s /tmp/git-status.log ] ; then
+            echo There are uncommitted changes
+            cat /tmp/git-status.log
+            false
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go.sum
+      - name: Installing Dependencies
+        run: make deps
       - name: Running tests
         run: make test
       - name: Checking uncommitted changes
@@ -32,7 +52,32 @@ jobs:
             cat /tmp/git-status.log
             false
           fi
+
+  # README examples hit live endpoints, so they run beside the unit tests rather than after them.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go.sum
+      - name: Installing Dependencies
+        run: make deps
       - name: Ensure build
         run: make build
       - name: Validate README examples
         run: scripts/test-readme-examples.sh
+
+  build-complete:
+    runs-on: ubuntu-latest
+    needs: [lint, test, build]
+    if: always()
+    steps:
+      - name: Check job results
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || [ "${{ needs.test.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
+            echo "::error::One or more jobs failed"
+            exit 1
+          fi
