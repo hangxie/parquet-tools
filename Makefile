@@ -135,7 +135,7 @@ test: deps tools  ## Run unit tests
 		cat coverage.txt
 
 .PHONY: fuzz
-fuzz: deps  ## Run every fuzz test for FUZZTIME each (default 10s)
+fuzz: deps  ## Run every fuzz test for FUZZTIME each (default 10s; runs nightly in CI)
 	@echo "==> Running fuzz tests (FUZZTIME=$(FUZZTIME) each)"
 	@rc=0; \
 	for pkg in $$($(GO) list ./...); do \
