@@ -7,7 +7,11 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
+	"github.com/hangxie/parquet-go/v3/source/local"
+	"github.com/hangxie/parquet-go/v3/types"
+	"github.com/hangxie/parquet-go/v3/writer"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
@@ -385,7 +389,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Timestamp: invalidInt96}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -401,7 +405,7 @@ func TestConverter(t *testing.T) {
 			ts := invalidInt96
 			input := &TestStruct{Name: "test", Timestamp: &ts}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -416,7 +420,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Timestamp: validInt96}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -432,7 +436,7 @@ func TestConverter(t *testing.T) {
 			ts := validInt96
 			input := &TestStruct{Name: "test", Timestamp: &ts}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -447,7 +451,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Timestamp: nil}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -462,7 +466,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Value: 42}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -472,7 +476,7 @@ func TestConverter(t *testing.T) {
 		t.Run("nil-pointer-input", func(t *testing.T) {
 			var input *struct{ Name string }
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -482,7 +486,7 @@ func TestConverter(t *testing.T) {
 		t.Run("non-struct-input", func(t *testing.T) {
 			input := "not a struct"
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -496,7 +500,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Timestamp: 123}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -511,7 +515,7 @@ func TestConverter(t *testing.T) {
 
 			input := TestStruct{Name: "test", Timestamp: validInt96}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -536,7 +540,7 @@ func TestConverter(t *testing.T) {
 				Data:       []byte{1, 2, 3},
 			}
 			rule := RuleRegistry[RuleInt96ToTimestamp]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp1": {}, "Timestamp2": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp1": {}, "Timestamp2": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -558,7 +562,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Data: validBson}
 			rule := RuleRegistry[RuleBsonToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -578,7 +582,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Data: invalidBson}
 			rule := RuleRegistry[RuleBsonToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -594,7 +598,7 @@ func TestConverter(t *testing.T) {
 			data := validBson
 			input := &TestStruct{Name: "test", Data: &data}
 			rule := RuleRegistry[RuleBsonToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -609,7 +613,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Data: nil}
 			rule := RuleRegistry[RuleBsonToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -624,7 +628,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Name: "test", Value: 42}
 			rule := RuleRegistry[RuleBsonToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -638,7 +642,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Data: 123}
 			rule := RuleRegistry[RuleBsonToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -656,7 +660,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Value: validFloat16}
 			rule := RuleRegistry[RuleFloat16ToFloat32]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -676,7 +680,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Value: invalidFloat16}
 			rule := RuleRegistry[RuleFloat16ToFloat32]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -695,7 +699,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Value: validUuid}
 			rule := RuleRegistry[RuleUuidToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -715,7 +719,7 @@ func TestConverter(t *testing.T) {
 
 			input := &TestStruct{Value: invalidUuid}
 			rule := RuleRegistry[RuleUuidToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Value": {}}}, nil)
 
 			_, err := conv.Convert(input)
 			require.Error(t, err)
@@ -731,7 +735,7 @@ func TestConverter(t *testing.T) {
 			inputData := map[string]any{"key": "value", "num": 123}
 			input := &TestStruct{Data: inputData}
 			rule := RuleRegistry[RuleVariantToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -756,7 +760,7 @@ func TestConverter(t *testing.T) {
 			inputData := []any{"item1", 2}
 			input := &TestStruct{Data: inputData}
 			rule := RuleRegistry[RuleVariantToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -778,7 +782,7 @@ func TestConverter(t *testing.T) {
 			}
 			input := &TestStruct{Data: "simple string"}
 			rule := RuleRegistry[RuleVariantToString]
-			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+			conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 			result, err := conv.Convert(input)
 			require.NoError(t, err)
@@ -796,7 +800,7 @@ func TestConverter(t *testing.T) {
 		}
 
 		input := &TestStruct{Name: "test", Value: 42}
-		conv := NewConverter(nil, nil)
+		conv := NewConverter(nil, nil, nil)
 
 		result, err := conv.Convert(input)
 		require.NoError(t, err)
@@ -810,7 +814,7 @@ func TestConverter(t *testing.T) {
 
 		input := &TestStruct{Json: `{"key":"value"}`}
 		rule := RuleRegistry[RuleJsonToString]
-		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Json": {}}})
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Json": {}}}, nil)
 
 		result, err := conv.Convert(input)
 		require.NoError(t, err)
@@ -825,10 +829,10 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		}
 
 		rule := RuleRegistry[RuleInt96ToTimestamp]
-		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 		srcType := reflect.TypeFor[TestStruct]()
-		targetType := conv.getOrCreateTargetType(srcType)
+		targetType := conv.targetType(srcType, "")
 
 		field, ok := targetType.FieldByName("Timestamp")
 		require.True(t, ok)
@@ -841,10 +845,10 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		}
 
 		rule := RuleRegistry[RuleInt96ToTimestamp]
-		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}})
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Timestamp": {}}}, nil)
 
 		srcType := reflect.TypeFor[TestStruct]()
-		targetType := conv.getOrCreateTargetType(srcType)
+		targetType := conv.targetType(srcType, "")
 
 		field, ok := targetType.FieldByName("Timestamp")
 		require.True(t, ok)
@@ -857,10 +861,10 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		}
 
 		rule := RuleRegistry[RuleVariantToString]
-		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}})
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{"Data": {}}}, nil)
 
 		srcType := reflect.TypeFor[TestStruct]()
-		targetType := conv.getOrCreateTargetType(srcType)
+		targetType := conv.targetType(srcType, "")
 
 		field, ok := targetType.FieldByName("Data")
 		require.True(t, ok)
@@ -874,10 +878,10 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		}
 
 		rule := RuleRegistry[RuleInt96ToTimestamp]
-		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}}, nil)
 
 		srcType := reflect.TypeFor[TestStruct]()
-		targetType := conv.getOrCreateTargetType(srcType)
+		targetType := conv.targetType(srcType, "")
 
 		nameField, ok := targetType.FieldByName("Name")
 		require.True(t, ok)
@@ -894,11 +898,11 @@ func TestGetOrCreateTargetType(t *testing.T) {
 		}
 
 		rule := RuleRegistry[RuleInt96ToTimestamp]
-		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}})
+		conv := NewConverter([]*RetypeRule{rule}, []map[string]struct{}{{}}, nil)
 
 		srcType := reflect.TypeFor[UniqueStruct]()
-		targetType1 := conv.getOrCreateTargetType(srcType)
-		targetType2 := conv.getOrCreateTargetType(srcType)
+		targetType1 := conv.targetType(srcType, "")
+		targetType2 := conv.targetType(srcType, "")
 
 		require.Equal(t, targetType1, targetType2)
 	})
@@ -911,7 +915,7 @@ func TestConvertMap(t *testing.T) {
 			Data map[string]string
 		}
 		input := &TestStruct{Name: "test", Data: nil}
-		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{}})
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{}}, nil)
 
 		result, err := conv.Convert(input)
 		require.NoError(t, err)
@@ -923,8 +927,7 @@ func TestConvertMap(t *testing.T) {
 			Data map[string]string
 		}
 		input := &TestStruct{Data: map[string]string{"key": "not-valid-bson"}}
-		// matchedFields has "Value" so findConverterForField("Value") returns BsonToString inside convertMap
-		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleBsonToString]}, []map[string]struct{}{{"Value": {}}})
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleBsonToString]}, []map[string]struct{}{{"Data\x01Key_value\x01Value": {}}}, nil)
 
 		_, err := conv.Convert(input)
 		require.Error(t, err)
@@ -940,11 +943,79 @@ func TestConvertMap(t *testing.T) {
 		}
 		// "c2hvcnQ=" is base64 for "short" (5 bytes), too short to be a valid INT96 (needs 12)
 		input := &TestStruct{Data: map[string]InnerStruct{"key": {Int96: "c2hvcnQ="}}}
-		// matchedFields has "Int96", not "Value", so converter inside convertMap is nil → else branch
-		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{"Int96": {}}})
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{"Data\x01Key_value\x01Value\x01Int96": {}}}, nil)
 
 		_, err := conv.Convert(input)
 		require.Error(t, err)
+	})
+}
+
+func TestConverterMatchesFullPath(t *testing.T) {
+	validInt96 := types.TimeToINT96(time.Unix(0, 0).UTC())
+	type holder struct {
+		Ts string
+	}
+	type row struct {
+		A        holder
+		B        holder
+		List     []holder
+		Repeated []string
+		Map      map[string]*string
+	}
+	input := row{
+		A:        holder{Ts: validInt96},
+		B:        holder{Ts: "123456789012"},
+		List:     []holder{{Ts: validInt96}},
+		Repeated: []string{validInt96, validInt96},
+		Map:      map[string]*string{"k": &validInt96, "nil": nil},
+	}
+	matched := map[string]struct{}{
+		"A\x01Ts":                       {},
+		"List\x01List\x01Element\x01Ts": {},
+		"Repeated":                      {},
+		"Map\x01Key_value\x01Value":     {},
+	}
+	conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{matched}, map[string]struct{}{"List": {}})
+
+	result, err := conv.Convert(input)
+	require.NoError(t, err)
+	got := reflect.ValueOf(result).Elem()
+	require.Equal(t, int64(0), got.FieldByName("A").FieldByName("Ts").Interface())
+	require.Equal(t, "123456789012", got.FieldByName("B").FieldByName("Ts").Interface())
+	require.Equal(t, int64(0), got.FieldByName("List").Index(0).FieldByName("Ts").Interface())
+	require.Equal(t, []int64{0, 0}, got.FieldByName("Repeated").Interface())
+	gotMap := got.FieldByName("Map")
+	require.Equal(t, int64(0), gotMap.MapIndex(reflect.ValueOf("k")).Elem().Interface())
+	require.True(t, gotMap.MapIndex(reflect.ValueOf("nil")).IsNil())
+	// A and B share a Go type but convert differently, so their target types must differ
+	require.NotEqual(t, got.FieldByName("A").Type(), got.FieldByName("B").Type())
+
+	t.Run("nil-slice", func(t *testing.T) {
+		result, err := conv.Convert(row{A: holder{Ts: validInt96}})
+		require.NoError(t, err)
+		require.True(t, reflect.ValueOf(result).Elem().FieldByName("List").IsNil())
+	})
+
+	t.Run("nested-errors", func(t *testing.T) {
+		type wrapper struct {
+			A *holder
+			L []holder
+		}
+		testCases := map[string]struct {
+			input   wrapper
+			matched string
+			err     string
+		}{
+			"pointer-struct": {wrapper{A: &holder{Ts: "short"}}, "A\x01Ts", "failed to convert field [A.Ts]"},
+			"list-element":   {wrapper{L: []holder{{Ts: "short"}}}, "L\x01List\x01Element\x01Ts", "failed to convert list element [0]"},
+		}
+		for name, tc := range testCases {
+			t.Run(name, func(t *testing.T) {
+				conv := NewConverter([]*RetypeRule{RuleRegistry[RuleInt96ToTimestamp]}, []map[string]struct{}{{tc.matched: {}}}, map[string]struct{}{"L": {}})
+				_, err := conv.Convert(tc.input)
+				require.ErrorContains(t, err, tc.err)
+			})
+		}
 	})
 }
 
@@ -978,9 +1049,125 @@ func TestReaderContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	converter := NewConverter(nil, nil)
+	converter := NewConverter(nil, nil, nil)
 	writerChan := make(chan any) // unbuffered, no receiver
 
 	err = pio.PipelineReader(ctx, fileReader, writerChan, "test", 10, converter.Convert)
 	require.ErrorIs(t, err, context.Canceled)
+}
+
+func TestCmdRuleMatchesExactColumn(t *testing.T) {
+	type int96Holder struct {
+		Ts string `parquet:"name=ts, type=INT96"`
+	}
+	type stringHolder struct {
+		Ts string `parquet:"name=ts, type=BYTE_ARRAY, convertedtype=UTF8"`
+	}
+	type row struct {
+		A      int96Holder       `parquet:"name=a"`
+		B      stringHolder      `parquet:"name=b"`
+		Docs   []string          `parquet:"name=docs, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
+		Tags   []string          `parquet:"name=tags, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+		Attrs  map[string]string `parquet:"name=attrs, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
+		Labels map[string]string `parquet:"name=labels, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+		Ids    []string          `parquet:"name=ids, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, repetitiontype=REPEATED"`
+	}
+
+	doc, err := bson.Marshal(bson.M{"k": "v"})
+	require.NoError(t, err)
+	ts, err := time.Parse(time.RFC3339, "2022-01-02T03:04:05Z")
+	require.NoError(t, err)
+
+	source := filepath.Join(t.TempDir(), "source.parquet")
+	fw, err := local.NewLocalFileWriter(source)
+	require.NoError(t, err)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, new(row), writer.WithNP(1))
+	require.NoError(t, err)
+	// a 12-byte string looks like INT96 and would be silently reinterpreted on a name collision
+	require.NoError(t, pw.WriteWithContext(context.Background(), row{
+		A:      int96Holder{Ts: types.TimeToINT96(ts)},
+		B:      stringHolder{Ts: "123456789012"},
+		Docs:   []string{string(doc)},
+		Tags:   []string{"not-bson"},
+		Attrs:  map[string]string{"x": string(doc)},
+		Labels: map[string]string{"y": "not-bson"},
+		Ids:    []string{"0123456789abcdef"},
+	}))
+	require.NoError(t, pw.WriteStopWithContext(context.Background()))
+	require.NoError(t, fw.Close())
+
+	unchanged := []string{`"b":{"ts":"123456789012"}`, `"labels":{"y":"not-bson"}`, `"tags":["not-bson"]`}
+	testCases := map[string]struct {
+		cmd      Cmd
+		expected []string
+	}{
+		"int96-to-timestamp": {
+			cmd:      Cmd{Int96ToTimestamp: true},
+			expected: []string{`{"a":{"ts":"2022-01-02T03:04:05.000000000Z"},`},
+		},
+		"bson-to-string": {
+			cmd:      Cmd{BsonToString: true},
+			expected: []string{`"attrs":{"x":"{\"k\":\"v\"}"},`, `"docs":["{\"k\":\"v\"}"],`},
+		},
+		"uuid-to-string": {
+			cmd:      Cmd{UuidToString: true},
+			expected: []string{`"ids":["30313233-3435-3637-3839-616263646566"]`},
+		},
+		// both rules match ids, so each element is converted before the list is rebuilt
+		"uuid-to-string-and-repeated-to-list": {
+			cmd:      Cmd{UuidToString: true, RepeatedToList: true},
+			expected: []string{`"ids":["30313233-3435-3637-3839-616263646566"]`},
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			tc.cmd.Source = source
+			tc.cmd.URI = filepath.Join(t.TempDir(), "retyped.parquet")
+			tc.cmd.ReadPageSize = 10
+			require.NoError(t, tc.cmd.Run(context.Background()))
+
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				cmd := cat.Cmd{ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", URI: tc.cmd.URI}
+				require.NoError(t, cmd.Run(context.Background()))
+			})
+			require.Empty(t, stderr)
+			for _, expected := range append(tc.expected, unchanged...) {
+				require.Contains(t, stdout, expected)
+			}
+		})
+	}
+}
+
+func TestConverterAppliesRulesInOrder(t *testing.T) {
+	type row struct {
+		Repeated []string
+	}
+	rules := []*RetypeRule{RuleRegistry[RuleInt96ToTimestamp], RuleRegistry[RuleRepeatedToList]}
+	matched := []map[string]struct{}{{"Repeated": {}}, {"Repeated": {}}}
+	conv := NewConverter(rules, matched, nil)
+
+	testCases := map[string]struct {
+		input    row
+		expected listWrapper
+		err      string
+	}{
+		"converted-then-wrapped": {
+			input:    row{Repeated: []string{types.TimeToINT96(time.Unix(0, 0).UTC())}},
+			expected: listWrapper{List: []listElementWrapper{{Element: int64(0)}}},
+		},
+		"nil-slice":   {input: row{}},
+		"bad-element": {input: row{Repeated: []string{"short"}}, err: "failed to convert list element [0]"},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result, err := conv.Convert(tc.input)
+			if tc.err != "" {
+				require.ErrorContains(t, err, tc.err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, reflect.ValueOf(result).Elem().FieldByName("Repeated").Interface())
+		})
+	}
 }
