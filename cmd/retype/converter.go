@@ -5,24 +5,28 @@ import (
 	"reflect"
 )
 
-// FieldConverter pairs a rule with its matched fields.
+// FieldConverter pairs a rule with the column paths it matched.
 type FieldConverter struct {
 	Rule   *RetypeRule
 	Fields map[string]struct{}
 }
 
-// Converter handles data conversion for multiple rules.
-type Converter struct {
-	converters      []*FieldConverter
-	typeCache       map[reflect.Type]reflect.Type
-	needsTypeChange bool
+// typeKey identifies a target type; identical Go types can sit at columns that convert differently.
+type typeKey struct {
+	srcType reflect.Type
+	path    string
 }
 
-// NewConverter creates a converter for the given rules and their matched fields.
-func NewConverter(rules []*RetypeRule, matchedFields []map[string]struct{}) *Converter {
-	converters := make([]*FieldConverter, 0, len(rules))
-	needsTypeChange := false
+// Converter handles data conversion for multiple rules.
+type Converter struct {
+	converters []*FieldConverter
+	listPaths  map[string]struct{}
+	typeCache  map[typeKey]reflect.Type
+}
 
+// NewConverter creates a converter; listPaths are the source LIST groups rows carry as slices.
+func NewConverter(rules []*RetypeRule, matchedFields []map[string]struct{}, listPaths map[string]struct{}) *Converter {
+	converters := make([]*FieldConverter, 0, len(rules))
 	for i, rule := range rules {
 		if rule.ConvertData == nil {
 			continue
@@ -31,15 +35,12 @@ func NewConverter(rules []*RetypeRule, matchedFields []map[string]struct{}) *Con
 			Rule:   rule,
 			Fields: matchedFields[i],
 		})
-		if rule.TargetType != nil {
-			needsTypeChange = true
-		}
 	}
 
 	return &Converter{
-		converters:      converters,
-		typeCache:       make(map[reflect.Type]reflect.Type),
-		needsTypeChange: needsTypeChange,
+		converters: converters,
+		listPaths:  listPaths,
+		typeCache:  make(map[typeKey]reflect.Type),
 	}
 }
 
@@ -48,267 +49,237 @@ func (c *Converter) Convert(row any) (any, error) {
 	if len(c.converters) == 0 {
 		return row, nil
 	}
-	return c.convertValue(reflect.ValueOf(row))
+	srcVal := reflect.ValueOf(row)
+	if !srcVal.IsValid() || (srcVal.Kind() == reflect.Pointer && srcVal.IsNil()) {
+		return nil, nil
+	}
+	if srcVal.Kind() == reflect.Pointer {
+		srcVal = srcVal.Elem()
+	}
+
+	result, err := c.convertValue(srcVal, "")
+	if err != nil {
+		return nil, err
+	}
+	if result.Kind() != reflect.Struct {
+		return result.Interface(), nil
+	}
+	ptr := reflect.New(result.Type())
+	ptr.Elem().Set(result)
+	return ptr.Interface(), nil
 }
 
-// convertValue recursively converts a reflect.Value.
-func (c *Converter) convertValue(srcVal reflect.Value) (any, error) {
-	if srcVal.Kind() == reflect.Pointer {
-		if srcVal.IsNil() {
-			return nil, nil
+// convertValue converts the value found at the column path into its target type.
+func (c *Converter) convertValue(srcVal reflect.Value, path string) (reflect.Value, error) {
+	if rules := c.rulesAt(path); len(rules) != 0 {
+		var err error
+		for _, rule := range rules {
+			if srcVal, err = convertWithRule(srcVal, rule, path); err != nil {
+				return reflect.Value{}, err
+			}
 		}
-		result, err := c.convertValue(srcVal.Elem())
-		if err != nil {
-			return nil, err
-		}
-		if result == nil {
-			return nil, nil
-		}
-		resultVal := reflect.ValueOf(result)
-		if resultVal.Kind() == reflect.Pointer {
-			return result, nil
-		}
-		ptr := reflect.New(resultVal.Type())
-		ptr.Elem().Set(resultVal)
-		return ptr.Interface(), nil
+		return srcVal, nil
 	}
+
+	targetType := c.targetType(srcVal.Type(), path)
 
 	switch srcVal.Kind() {
-	case reflect.Struct:
-		return c.convertStruct(srcVal)
-	case reflect.Slice:
-		return c.convertSlice(srcVal)
-	case reflect.Map:
-		return c.convertMap(srcVal)
-	default:
-		return srcVal.Interface(), nil
-	}
-}
-
-// convertStruct converts a struct value.
-func (c *Converter) convertStruct(srcVal reflect.Value) (any, error) {
-	srcType := srcVal.Type()
-	targetType := c.getOrCreateTargetType(srcType)
-	targetVal := reflect.New(targetType).Elem()
-
-	for i := range srcType.NumField() {
-		srcField := srcType.Field(i)
-		srcFieldVal := srcVal.Field(i)
-		targetFieldVal := targetVal.Field(i)
-
-		converter := c.findConverterForField(srcField.Name)
-		if converter != nil {
-			converted, err := c.convertField(srcFieldVal, converter.Rule, srcField.Name)
-			if err != nil {
-				return nil, err
-			}
-			if converted != nil {
-				convertedVal := reflect.ValueOf(converted)
-				targetFieldVal.Set(convertedVal)
-			}
-		} else {
-			// Recursively convert nested types
-			converted, err := c.convertValue(srcFieldVal)
-			if err != nil {
-				return nil, err
-			}
-			if converted != nil {
-				convertedVal := reflect.ValueOf(converted)
-				if convertedVal.Kind() == reflect.Pointer && targetFieldVal.Kind() != reflect.Pointer {
-					convertedVal = convertedVal.Elem()
-				}
-				targetFieldVal.Set(convertedVal)
-			}
+	case reflect.Pointer:
+		if srcVal.IsNil() {
+			return reflect.Zero(targetType), nil
 		}
+		elem, err := c.convertValue(srcVal.Elem(), path)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		ptr := reflect.New(targetType.Elem())
+		ptr.Elem().Set(elem)
+		return ptr, nil
+	case reflect.Struct:
+		return c.convertStruct(srcVal, path, targetType)
+	case reflect.Slice:
+		return c.convertSlice(srcVal, path, targetType)
+	case reflect.Map:
+		return c.convertMap(srcVal, path, targetType)
+	default:
+		return srcVal, nil
 	}
-
-	return targetVal.Addr().Interface(), nil
 }
 
-// convertField applies a rule's conversion to a single field.
-func (c *Converter) convertField(srcVal reflect.Value, rule *RetypeRule, fieldName string) (any, error) {
+// convertWithRule applies a rule to the value of a column it matched.
+func convertWithRule(srcVal reflect.Value, rule *RetypeRule, path string) (reflect.Value, error) {
+	targetType := ruleTargetType(rule, srcVal.Type())
 	if srcVal.Kind() == reflect.Pointer {
 		if srcVal.IsNil() {
-			return c.nilPointerForRule(rule), nil
+			return reflect.Zero(targetType), nil
 		}
-		// Dereference pointer for conversion, but note that the rule might expect the value itself
-		// For consistency with how we handle primitives, we pass the element value.
-		// However, since we now accept 'any', we can just pass srcVal.Elem().Interface()
-		result, err := rule.ConvertData(srcVal.Elem().Interface())
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert field [%s]: %w", fieldName, err)
+		srcVal = srcVal.Elem()
+	}
+	if convertsElements(rule, srcVal.Type()) {
+		if srcVal.IsNil() {
+			return reflect.Zero(targetType), nil
 		}
-		// Wrap in pointer
-		resultVal := reflect.ValueOf(result)
-		ptr := reflect.New(resultVal.Type())
-		ptr.Elem().Set(resultVal)
-		return ptr.Interface(), nil
+		targetSlice := reflect.MakeSlice(targetType, srcVal.Len(), srcVal.Len())
+		for i := range srcVal.Len() {
+			converted, err := convertWithRule(srcVal.Index(i), rule, path)
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("failed to convert list element [%d]: %w", i, err)
+			}
+			targetSlice.Index(i).Set(converted)
+		}
+		return targetSlice, nil
 	}
 
-	// Direct value conversion (string, or any other type for VARIANT)
 	result, err := rule.ConvertData(srcVal.Interface())
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert field [%s]: %w", fieldName, err)
+		return reflect.Value{}, fmt.Errorf("failed to convert field [%s]: %w", displayPath(path), err)
 	}
-	return result, nil
+	if result == nil {
+		return reflect.Zero(targetType), nil
+	}
+	resultVal := reflect.ValueOf(result)
+	if targetType.Kind() != reflect.Pointer {
+		return resultVal, nil
+	}
+	ptr := reflect.New(targetType.Elem())
+	ptr.Elem().Set(resultVal)
+	return ptr, nil
 }
 
-// nilPointerForRule returns a nil pointer of the appropriate type.
-func (c *Converter) nilPointerForRule(rule *RetypeRule) any {
-	if rule.TargetType != nil {
-		return reflect.Zero(reflect.PointerTo(rule.TargetType)).Interface()
-	}
-	return (*string)(nil)
-}
-
-// convertSlice converts each element of a slice.
-func (c *Converter) convertSlice(srcVal reflect.Value) (any, error) {
-	if srcVal.IsNil() {
-		return nil, nil
-	}
-
-	elemType := c.getOrCreateTargetTypeForField(srcVal.Type().Elem())
-	targetSlice := reflect.MakeSlice(reflect.SliceOf(elemType), srcVal.Len(), srcVal.Len())
-
-	// Check for Element/element fields (Parquet LIST elements)
-	converter := c.findConverterForField("Element")
-	if converter == nil {
-		converter = c.findConverterForField("element")
-	}
-
-	for i := range srcVal.Len() {
-		elem := srcVal.Index(i)
-
-		if converter != nil && (converter.Rule.InputKind == reflect.Invalid || elem.Kind() == converter.Rule.InputKind) {
-			// Rule application
-			valToConvert := elem.Interface()
-			result, err := converter.Rule.ConvertData(valToConvert)
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert list element [%d]: %w", i, err)
-			}
-			targetSlice.Index(i).Set(reflect.ValueOf(result))
-		} else {
-			converted, err := c.convertValue(elem)
-			if err != nil {
-				return nil, err
-			}
-			if converted != nil {
-				convertedVal := reflect.ValueOf(converted)
-				if convertedVal.Kind() == reflect.Pointer && elemType.Kind() != reflect.Pointer {
-					convertedVal = convertedVal.Elem()
-				}
-				targetSlice.Index(i).Set(convertedVal)
-			}
+func (c *Converter) convertStruct(srcVal reflect.Value, path string, targetType reflect.Type) (reflect.Value, error) {
+	targetVal := reflect.New(targetType).Elem()
+	for i := range srcVal.NumField() {
+		converted, err := c.convertValue(srcVal.Field(i), childPath(path, srcVal.Type().Field(i).Name))
+		if err != nil {
+			return reflect.Value{}, err
 		}
+		targetVal.Field(i).Set(converted)
 	}
-
-	return targetSlice.Interface(), nil
+	return targetVal, nil
 }
 
-// convertMap converts each value of a map.
-func (c *Converter) convertMap(srcVal reflect.Value) (any, error) {
+func (c *Converter) convertSlice(srcVal reflect.Value, path string, targetType reflect.Type) (reflect.Value, error) {
 	if srcVal.IsNil() {
-		return nil, nil
+		return reflect.Zero(targetType), nil
 	}
 
-	keyType := srcVal.Type().Key()
-	valueType := c.getOrCreateTargetTypeForField(srcVal.Type().Elem())
-	targetMap := reflect.MakeMap(reflect.MapOf(keyType, valueType))
+	elemPath := c.elemPath(path)
+	targetSlice := reflect.MakeSlice(targetType, srcVal.Len(), srcVal.Len())
+	for i := range srcVal.Len() {
+		converted, err := c.convertValue(srcVal.Index(i), elemPath)
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("failed to convert list element [%d]: %w", i, err)
+		}
+		targetSlice.Index(i).Set(converted)
+	}
+	return targetSlice, nil
+}
 
-	// Check for Value/value fields (Parquet MAP values)
-	converter := c.findConverterForField("Value")
-	if converter == nil {
-		converter = c.findConverterForField("value")
+func (c *Converter) convertMap(srcVal reflect.Value, path string, targetType reflect.Type) (reflect.Value, error) {
+	if srcVal.IsNil() {
+		return reflect.Zero(targetType), nil
 	}
 
+	valuePath := mapValuePath(path)
+	targetMap := reflect.MakeMapWithSize(targetType, srcVal.Len())
 	iter := srcVal.MapRange()
 	for iter.Next() {
-		key := iter.Key()
-		val := iter.Value()
-
-		if converter != nil && (converter.Rule.InputKind == reflect.Invalid || val.Kind() == converter.Rule.InputKind) {
-			// Rule application
-			valToConvert := val.Interface()
-			result, err := converter.Rule.ConvertData(valToConvert)
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert map value [%v]: %w", key.Interface(), err)
-			}
-			targetMap.SetMapIndex(key, reflect.ValueOf(result))
-		} else {
-			converted, err := c.convertValue(val)
-			if err != nil {
-				return nil, err
-			}
-			if converted != nil {
-				convertedVal := reflect.ValueOf(converted)
-				if convertedVal.Kind() == reflect.Pointer && valueType.Kind() != reflect.Pointer {
-					convertedVal = convertedVal.Elem()
-				}
-				targetMap.SetMapIndex(key, convertedVal)
-			}
+		converted, err := c.convertValue(iter.Value(), valuePath)
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("failed to convert map value [%v]: %w", iter.Key().Interface(), err)
 		}
+		targetMap.SetMapIndex(iter.Key(), converted)
 	}
-
-	return targetMap.Interface(), nil
+	return targetMap, nil
 }
 
-// getOrCreateTargetType creates a target struct type with converted field types.
-func (c *Converter) getOrCreateTargetType(srcType reflect.Type) reflect.Type {
-	if cached, ok := c.typeCache[srcType]; ok {
+// targetType returns the Go type a value of srcType at the column path converts to.
+func (c *Converter) targetType(srcType reflect.Type, path string) reflect.Type {
+	key := typeKey{srcType: srcType, path: path}
+	if cached, ok := c.typeCache[key]; ok {
 		return cached
 	}
-
-	fields := make([]reflect.StructField, srcType.NumField())
-	for i := range srcType.NumField() {
-		srcField := srcType.Field(i)
-		fields[i] = srcField
-
-		converter := c.findConverterForField(srcField.Name)
-		if converter != nil && converter.Rule.TargetType != nil {
-			targetType := converter.Rule.TargetType
-			if srcField.Type.Kind() == reflect.Pointer {
-				fields[i].Type = reflect.PointerTo(targetType)
-			} else {
-				fields[i].Type = targetType
-			}
-			// Clear tag to avoid conflicting repetition information (e.g. repetition=repeated on a struct field)
-			fields[i].Tag = ""
-		} else {
-			fields[i].Type = c.getOrCreateTargetTypeForField(srcField.Type)
-		}
-	}
-
-	targetType := reflect.StructOf(fields)
-	c.typeCache[srcType] = targetType
+	targetType := c.buildTargetType(srcType, path)
+	c.typeCache[key] = targetType
 	return targetType
 }
 
-// getOrCreateTargetTypeForField creates target types for nested fields.
-func (c *Converter) getOrCreateTargetTypeForField(srcType reflect.Type) reflect.Type {
+func (c *Converter) buildTargetType(srcType reflect.Type, path string) reflect.Type {
+	if rules := c.rulesAt(path); len(rules) != 0 {
+		for _, rule := range rules {
+			srcType = ruleTargetType(rule, srcType)
+		}
+		return srcType
+	}
+
 	switch srcType.Kind() {
-	case reflect.Struct:
-		return c.getOrCreateTargetType(srcType)
-	case reflect.Slice:
-		elemType := c.getOrCreateTargetTypeForField(srcType.Elem())
-		return reflect.SliceOf(elemType)
-	case reflect.Map:
-		keyType := srcType.Key()
-		valueType := c.getOrCreateTargetTypeForField(srcType.Elem())
-		return reflect.MapOf(keyType, valueType)
 	case reflect.Pointer:
-		elemType := c.getOrCreateTargetTypeForField(srcType.Elem())
-		return reflect.PointerTo(elemType)
+		return reflect.PointerTo(c.targetType(srcType.Elem(), path))
+	case reflect.Struct:
+		fields := make([]reflect.StructField, srcType.NumField())
+		for i := range srcType.NumField() {
+			fields[i] = srcType.Field(i)
+			fieldPath := childPath(path, fields[i].Name)
+			if c.retypes(fieldPath) {
+				// a repetition tag left on a retyped field would conflict with its new shape
+				fields[i].Tag = ""
+			}
+			fields[i].Type = c.targetType(fields[i].Type, fieldPath)
+		}
+		return reflect.StructOf(fields)
+	case reflect.Slice:
+		return reflect.SliceOf(c.targetType(srcType.Elem(), c.elemPath(path)))
+	case reflect.Map:
+		return reflect.MapOf(srcType.Key(), c.targetType(srcType.Elem(), mapValuePath(path)))
 	default:
 		return srcType
 	}
 }
 
-// findConverterForField returns the converter that handles the given field name.
-func (c *Converter) findConverterForField(fieldName string) *FieldConverter {
+// rulesAt returns, in the order they reshaped the schema, the rules that matched the column.
+func (c *Converter) rulesAt(path string) []*RetypeRule {
+	var rules []*RetypeRule
 	for _, conv := range c.converters {
-		if _, ok := conv.Fields[fieldName]; ok {
-			return conv
+		if _, ok := conv.Fields[path]; ok {
+			rules = append(rules, conv.Rule)
 		}
 	}
-	return nil
+	return rules
+}
+
+// retypes reports whether a rule changes the Go type of the column.
+func (c *Converter) retypes(path string) bool {
+	for _, rule := range c.rulesAt(path) {
+		if rule.TargetType != nil {
+			return true
+		}
+	}
+	return false
+}
+
+// ruleTargetType returns the Go type a rule turns a value of srcType into.
+func ruleTargetType(rule *RetypeRule, srcType reflect.Type) reflect.Type {
+	switch {
+	case srcType.Kind() == reflect.Pointer:
+		return reflect.PointerTo(ruleTargetType(rule, srcType.Elem()))
+	case convertsElements(rule, srcType):
+		return reflect.SliceOf(ruleTargetType(rule, srcType.Elem()))
+	case rule.TargetType == nil:
+		return srcType
+	default:
+		return rule.TargetType
+	}
+}
+
+// convertsElements reports whether a rule meant for single values meets a repeated column's slice.
+func convertsElements(rule *RetypeRule, srcType reflect.Type) bool {
+	return srcType.Kind() == reflect.Slice && rule.InputKind != reflect.Invalid && rule.InputKind != reflect.Slice
+}
+
+// elemPath is the column path of a slice's elements: a LIST's element, or the repeated column itself.
+func (c *Converter) elemPath(path string) string {
+	if _, ok := c.listPaths[path]; ok {
+		return childPath(childPath(path, "List"), "Element")
+	}
+	return path
 }

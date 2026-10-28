@@ -87,9 +87,7 @@ type RetypeRule struct {
 	// If nil, the type remains unchanged (string to string conversions).
 	TargetType reflect.Type
 
-	// InputKind enforces the input kind for the rule.
-	// If set to reflect.Invalid (default), any input kind is accepted.
-	// Used to filter out false positive name matches in nested structures.
+	// InputKind is the Go kind ConvertData accepts; reflect.Invalid (default) accepts any.
 	InputKind reflect.Kind
 }
 
@@ -338,6 +336,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			}, nil
 		},
 		TargetType: reflect.TypeFor[listWrapper](),
+		InputKind:  reflect.Slice,
 	},
 	RuleGeoToBinary: {
 		Name: "geo-to-binary",
@@ -354,18 +353,15 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 	},
 }
 
-// applyRule recursively applies a transformation rule to matching schema nodes.
-// Returns a set of field names (external names) that were matched for O(1) lookup during data conversion.
+// applyRule transforms matching schema nodes and returns the full paths of the columns it matched.
 func applyRule(s, parent *pschema.SchemaNode, match func(node, parent *pschema.SchemaNode) bool, transform func(*pschema.SchemaNode)) map[string]struct{} {
 	matchedFields := make(map[string]struct{})
 
 	// Process this node if it matches
 	if match(s, parent) {
 		transform(s)
-		// Record the internal field name; ReadByNumber's dynamic structs use InName as
-		// the Go struct field name, so findConverterForField must match it.
-		if len(s.InNamePath) > 0 {
-			matchedFields[s.InNamePath[len(s.InNamePath)-1]] = struct{}{}
+		if len(s.InNamePath) > 1 {
+			matchedFields[nodePath(s)] = struct{}{}
 		}
 	}
 

@@ -50,6 +50,9 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 		return err
 	}
 
+	// Rules may reshape the tree, so record the source LIST layout first
+	listPaths := collectListPaths(schemaTree)
+
 	// Get active rules and apply them to schema
 	activeRules := c.getActiveRules()
 	matchedFields := make([]map[string]struct{}, len(activeRules))
@@ -58,7 +61,7 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 	}
 
 	// Create converter for data transformation
-	converter := NewConverter(activeRules, matchedFields)
+	converter := NewConverter(activeRules, matchedFields, listPaths)
 
 	// Generate JSON schema from (possibly modified) SchemaTree
 	schemaJSON := schemaTree.JSONSchema()

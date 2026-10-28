@@ -3,7 +3,7 @@ package retype
 import "testing"
 
 func TestConverterWithoutDataRulesReturnsInput(t *testing.T) {
-	converter := NewConverter([]*RetypeRule{{Name: "schema-only"}}, []map[string]struct{}{{}})
+	converter := NewConverter([]*RetypeRule{{Name: "schema-only"}}, []map[string]struct{}{{}}, nil)
 	input := struct{ Value string }{Value: "unchanged"}
 	got, err := converter.Convert(input)
 	if err != nil {
