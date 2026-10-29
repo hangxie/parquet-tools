@@ -180,15 +180,27 @@ func (c *Converter) convertMap(srcVal reflect.Value, path string, targetType ref
 		return reflect.Zero(targetType), nil
 	}
 
-	valuePath := mapValuePath(path)
+	keyPath, valuePath := mapKeyPath(path), mapValuePath(path)
 	targetMap := reflect.MakeMapWithSize(targetType, srcVal.Len())
 	iter := srcVal.MapRange()
 	for iter.Next() {
+		key, err := c.convertValue(iter.Key(), keyPath)
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("failed to convert map key [%v]: %w", iter.Key().Interface(), err)
+		}
+		// the writer looks values up by key, which never finds a NaN key
+		if !key.Equal(key) {
+			return reflect.Value{}, fmt.Errorf("map [%s] has a key that converts to NaN", displayPath(path))
+		}
+		// a lossy key conversion would otherwise silently drop one of the entries
+		if targetMap.MapIndex(key).IsValid() {
+			return reflect.Value{}, fmt.Errorf("map [%s] has keys that both convert to map key [%v]", displayPath(path), key.Interface())
+		}
 		converted, err := c.convertValue(iter.Value(), valuePath)
 		if err != nil {
 			return reflect.Value{}, fmt.Errorf("failed to convert map value [%v]: %w", iter.Key().Interface(), err)
 		}
-		targetMap.SetMapIndex(iter.Key(), converted)
+		targetMap.SetMapIndex(key, converted)
 	}
 	return targetMap, nil
 }
@@ -230,7 +242,7 @@ func (c *Converter) buildTargetType(srcType reflect.Type, path string) reflect.T
 	case reflect.Slice:
 		return reflect.SliceOf(c.targetType(srcType.Elem(), c.elemPath(path)))
 	case reflect.Map:
-		return reflect.MapOf(srcType.Key(), c.targetType(srcType.Elem(), mapValuePath(path)))
+		return reflect.MapOf(c.targetType(srcType.Key(), mapKeyPath(path)), c.targetType(srcType.Elem(), mapValuePath(path)))
 	default:
 		return srcType
 	}

@@ -948,6 +948,70 @@ func TestConvertMap(t *testing.T) {
 		_, err := conv.Convert(input)
 		require.Error(t, err)
 	})
+
+	t.Run("map-keys", func(t *testing.T) {
+		type TestStruct struct {
+			Data map[string]string
+		}
+		matched := []map[string]struct{}{{"Data\x01Key_value\x01Key": {}}}
+		conv := NewConverter([]*RetypeRule{RuleRegistry[RuleFloat16ToFloat32]}, matched, nil)
+		testCases := map[string]struct {
+			input    map[string]string
+			expected map[float32]string
+			err      string
+		}{
+			"converted": {input: map[string]string{"\x00\x3c": "one"}, expected: map[float32]string{1: "one"}},
+			// +0 and -0 are distinct FLOAT16 keys but the same FLOAT key
+			"collision": {input: map[string]string{"\x00\x00": "a", "\x00\x80": "b"}, err: "map [Data] has keys that both convert to map key"},
+			"bad-key":   {input: map[string]string{"x": "v"}, err: "failed to convert map key [x]"},
+			"nan-key":   {input: map[string]string{"\x00\x7e": "v"}, err: "map [Data] has a key that converts to NaN"},
+		}
+		for name, tc := range testCases {
+			t.Run(name, func(t *testing.T) {
+				result, err := conv.Convert(TestStruct{Data: tc.input})
+				if tc.err != "" {
+					require.ErrorContains(t, err, tc.err)
+					return
+				}
+				require.NoError(t, err)
+				require.Equal(t, tc.expected, reflect.ValueOf(result).Elem().FieldByName("Data").Interface())
+			})
+		}
+	})
+}
+
+func TestCmdRejectsNaNMapKey(t *testing.T) {
+	type optionalValue struct {
+		Data map[string]*string `parquet:"name=data, type=MAP, keytype=FIXED_LEN_BYTE_ARRAY, keylength=2, keylogicaltype=FLOAT16, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8, valuerepetitiontype=OPTIONAL"`
+	}
+	type requiredValue struct {
+		Data map[string]string `parquet:"name=data, type=MAP, keytype=FIXED_LEN_BYTE_ARRAY, keylength=2, keylogicaltype=FLOAT16, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	}
+	value := "preserve-me"
+	// a NaN key never equals itself, so the writer cannot look its value back up
+	testCases := map[string]struct {
+		schema any
+		row    any
+	}{
+		"optional-value": {new(optionalValue), optionalValue{Data: map[string]*string{"\x00\x7e": &value}}},
+		"required-value": {new(requiredValue), requiredValue{Data: map[string]string{"\x00\x7e": value}}},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			source := filepath.Join(t.TempDir(), "source.parquet")
+			fw, err := local.NewLocalFileWriter(source)
+			require.NoError(t, err)
+			pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, tc.schema, writer.WithNP(1))
+			require.NoError(t, err)
+			require.NoError(t, pw.WriteWithContext(context.Background(), tc.row))
+			require.NoError(t, pw.WriteStopWithContext(context.Background()))
+			require.NoError(t, fw.Close())
+
+			cmd := Cmd{Float16ToFloat32: true, ReadPageSize: 10, Source: source, URI: filepath.Join(t.TempDir(), "retyped.parquet")}
+			require.ErrorContains(t, cmd.Run(context.Background()), "map [Data] has a key that converts to NaN")
+		})
+	}
 }
 
 func TestConverterMatchesFullPath(t *testing.T) {
@@ -1071,6 +1135,7 @@ func TestCmdRuleMatchesExactColumn(t *testing.T) {
 		Attrs  map[string]string `parquet:"name=attrs, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
 		Labels map[string]string `parquet:"name=labels, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
 		Ids    []string          `parquet:"name=ids, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, repetitiontype=REPEATED"`
+		ByID   map[string]string `parquet:"name=by_id, type=MAP, keytype=FIXED_LEN_BYTE_ARRAY, keylength=16, keylogicaltype=UUID, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
 	}
 
 	doc, err := bson.Marshal(bson.M{"k": "v"})
@@ -1092,6 +1157,7 @@ func TestCmdRuleMatchesExactColumn(t *testing.T) {
 		Attrs:  map[string]string{"x": string(doc)},
 		Labels: map[string]string{"y": "not-bson"},
 		Ids:    []string{"0123456789abcdef"},
+		ByID:   map[string]string{"0123456789abcdef": "v"},
 	}))
 	require.NoError(t, pw.WriteStopWithContext(context.Background()))
 	require.NoError(t, fw.Close())
@@ -1111,12 +1177,12 @@ func TestCmdRuleMatchesExactColumn(t *testing.T) {
 		},
 		"uuid-to-string": {
 			cmd:      Cmd{UuidToString: true},
-			expected: []string{`"ids":["30313233-3435-3637-3839-616263646566"]`},
+			expected: []string{`"ids":["30313233-3435-3637-3839-616263646566"]`, `"by_id":{"30313233-3435-3637-3839-616263646566":"v"}`},
 		},
 		// both rules match ids, so each element is converted before the list is rebuilt
 		"uuid-to-string-and-repeated-to-list": {
 			cmd:      Cmd{UuidToString: true, RepeatedToList: true},
-			expected: []string{`"ids":["30313233-3435-3637-3839-616263646566"]`},
+			expected: []string{`"ids":["30313233-3435-3637-3839-616263646566"]`, `"by_id":{"30313233-3435-3637-3839-616263646566":"v"}`},
 		},
 	}
 

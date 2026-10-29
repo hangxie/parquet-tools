@@ -25,6 +25,10 @@ func childPath(parent, name string) string {
 	return parent + common.ParGoPathDelimiter + name
 }
 
+func mapKeyPath(path string) string {
+	return childPath(childPath(path, "Key_value"), "Key")
+}
+
 func mapValuePath(path string) string {
 	return childPath(childPath(path, "Key_value"), "Value")
 }

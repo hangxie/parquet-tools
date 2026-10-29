@@ -36,7 +36,8 @@ func TestChildPath(t *testing.T) {
 	require.Equal(t, "A\x01Ts", childPath("A", "Ts"))
 }
 
-func TestMapValuePath(t *testing.T) {
+func TestMapPaths(t *testing.T) {
+	require.Equal(t, "M\x01Key_value\x01Key", mapKeyPath("M"))
 	require.Equal(t, "M\x01Key_value\x01Value", mapValuePath("M"))
 }
 

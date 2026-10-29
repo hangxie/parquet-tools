@@ -1544,7 +1544,7 @@ The command returns an error if the file is not encrypted.
 * `--float16-to-float32` - Convert FLOAT16 columns to FLOAT32
 
 > [!NOTE]
-> These options convert all matching fields in the parquet file; there is currently no way to select particular fields for conversion.
+> These options convert all matching fields in the parquet file; there is currently no way to select particular fields for conversion. Map keys and values are converted independently, each when its own type matches; if two keys of one map would become equal after conversion (e.g. FLOAT16 `+0` and `-0`) or a key would become NaN, `retype` stops with an error instead of dropping an entry.
 
 > [!TIP]
 > The `retype` command preserves the original column-level encoding and compression settings from the source file by default. If you need to change compression codecs, compression levels, data page version, page size, row group size, or encodings while retyping, use the `transcode` command before or after retyping.
