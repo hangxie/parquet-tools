@@ -56,7 +56,7 @@ func newParser(cli *cli) *kong.Kong {
 
 func run(kongCtx *kong.Context, ctx context.Context) error {
 	kongCtx.BindTo(ctx, (*context.Context)(nil))
-	return kongCtx.Run()
+	return pio.LimitFlagHint(kongCtx.Run())
 }
 
 func main() {

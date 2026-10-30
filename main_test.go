@@ -21,6 +21,22 @@ func TestParserInjectsCanceledContext(t *testing.T) {
 	require.ErrorIs(t, run(kongCtx, ctx), context.Canceled)
 }
 
+func TestRunNamesLimitFlag(t *testing.T) {
+	parser := newParser(new(cli))
+	kongCtx, err := parser.Parse([]string{"cat", "--format", "jsonl", "testdata/delta-byte-array-bomb.parquet"})
+	require.NoError(t, err)
+
+	err = run(kongCtx, context.Background())
+	require.ErrorContains(t, err, "(see --max-decoded-batch-bytes)")
+	require.NotContains(t, err.Error(), "reader.WithMaxDecodedBatchBytes")
+}
+
+func TestParserLimitFlags(t *testing.T) {
+	parser := newParser(new(cli))
+	_, err := parser.Parse([]string{"cat", "--max-page-size=-1", "--max-decompressed-size", "536870912", "--max-decoded-batch-bytes=-1", "testdata/good.parquet"})
+	require.NoError(t, err)
+}
+
 func TestWriterFinalizationPreservesCancellation(t *testing.T) {
 	err := fs.WalkDir(os.DirFS("cmd"), ".", func(path string, entry fs.DirEntry, err error) error {
 		require.NoError(t, err)

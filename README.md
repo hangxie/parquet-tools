@@ -69,6 +69,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
       - [HTTP Endpoint](#http-endpoint)
     - [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files)
     - [Writing Encrypted Parquet Files](#writing-encrypted-parquet-files)
+    - [Read Limits](#read-limits)
     - [File Format Options](#file-format-options)
       - [Compression Codecs](#compression-codecs)
       - [Compression Levels](#compression-levels)
@@ -723,6 +724,38 @@ $ parquet-tools transcode \
     --writer-key-file ~/.parquet/writer-keys.json \
     re-encrypted-output.parquet
 ```
+
+### Read Limits
+
+Every command that reads Parquet pages guards against pages crafted to exhaust memory, with three limits that each default to 256 MB:
+
+* `--max-page-size` - the size of a page as stored in the file.
+* `--max-decompressed-size` - the size of a page once decompressed, including its levels, whether or not it is compressed.
+* `--max-decoded-batch-bytes` - the `DELTA_BYTE_ARRAY` value bytes decoded per batch of 1,024 values. `DELTA_BYTE_ARRAY` stores each value as the length of a prefix shared with the previous value plus the remaining suffix, so a page of a few hundred bytes can decode to gigabytes of values that keep growing. The limit exists for that expansion; a value that repeats the previous one shares its memory and does not count. It counts only `DELTA_BYTE_ARRAY` and `DELTA_LENGTH_BYTE_ARRAY` values, and values in other encodings are bounded through the page size limits instead.
+
+Parquet itself sets no such limits, so a valid file with very large pages or values can exceed them. A read that hits one fails and names the flag to raise:
+
+```bash
+$ parquet-tools cat --format jsonl testdata/delta-byte-array-bomb.parquet
+parquet-tools: error: failed to cat: read by number: fetch column data: read rows: read page: read data page body: read data page values: byte array of 524288 bytes exceeds remaining batch budget of 262144 bytes under the 268435456-byte limit (see --max-decoded-batch-bytes)
+```
+
+Each flag takes a byte count, `0` for the default, or `-1` to disable the limit, which is unsafe for files you do not trust. Write `-1` with an equals sign so it is not taken for a flag:
+
+```bash
+$ parquet-tools cat --format jsonl --max-decoded-batch-bytes=-1 --limit 1 testdata/delta-byte-array-bomb.parquet | wc -c
+525
+```
+
+Raising one limit can just move the failure to the next, since a large page usually needs both `--max-page-size` and `--max-decompressed-size`. The limits bound individual pages and batches, not the memory of the whole process.
+
+To keep the whole process within a memory budget, such as a container's, set Go's `GOMEMLIMIT` environment variable:
+
+```bash
+$ GOMEMLIMIT=1GiB parquet-tools cat --format jsonl --max-decoded-batch-bytes=-1 large.parquet
+```
+
+It is a soft limit: as memory nears it, the Go runtime collects garbage more often, which can let a read finish that would otherwise be killed for running out of memory. It does not stop a read whose data really needs more memory than that.
 
 ### File Format Options
 

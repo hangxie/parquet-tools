@@ -113,6 +113,27 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "../../testdata/delta-byte-array-bomb.parquet"},
 			errMsg: "exceeds remaining batch budget",
 		},
+		"max-decoded-batch-bytes-lowered": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecodedBatchBytes: 1 << 20}, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "../../testdata/delta-byte-array-bomb.parquet"},
+			errMsg: "under the 1048576-byte limit",
+		},
+		// The largest page in good.parquet is 41 bytes stored and 16 decompressed.
+		"max-page-size-below-largest-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 40}, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "../../testdata/good.parquet"},
+			errMsg: "exceeds limit 40",
+		},
+		"max-decompressed-size-below-largest-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 15}, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "../../testdata/good.parquet"},
+			errMsg: "exceeds maximum allowed size 15",
+		},
+		"large-decompressed-page-default": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "../../testdata/large-decompressed-page.parquet"},
+			errMsg: "exceeds maximum allowed size 268435456",
+		},
+		"max-page-size-invalid": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: -2}, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "../../testdata/good.parquet"},
+			errMsg: "invalid --max-page-size -2",
+		},
 		"invalid-read-page-size": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true},
 			errMsg: "invalid read page size",
@@ -222,6 +243,18 @@ func TestCmd(t *testing.T) {
 		"jsonl": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "good.parquet"},
 			golden: "cat-good-jsonl.jsonl",
+		},
+		"max-page-size-at-largest-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 41}, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-jsonl.jsonl",
+		},
+		"max-decompressed-size-at-largest-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 16}, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: false, URI: "good.parquet"},
+			golden: "cat-good-jsonl.jsonl",
+		},
+		"large-decompressed-page-raised": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 512 << 20}, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "large-decompressed-page.parquet"},
+			golden: "cat-large-decompressed-page.jsonl",
 		},
 		"csv": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "csv", NoHeader: false, URI: "good.parquet"},
@@ -456,6 +489,24 @@ func TestCmdRepeatedDeltaByteArray(t *testing.T) {
 	cmd := Cmd{Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", URI: "../../testdata/delta-byte-array-repeat.parquet"}
 	stdout := testutils.CommandStdout(t, cmd)
 	require.Equal(t, `{"value":"`+strings.Repeat("x", 300*1024)+`"}`, strings.TrimSpace(stdout))
+}
+
+// A one-row read still decodes the first batch of 1,024 values, so it hits the batch budget.
+func TestCmdRaisedDecodedBatchLimit(t *testing.T) {
+	for name, limit := range map[string]int64{"raised": 512 << 20, "disabled": -1} {
+		t.Run(name, func(t *testing.T) {
+			cmd := Cmd{
+				ReadOption:   pio.ReadOption{MaxDecodedBatchBytes: limit},
+				Limit:        1,
+				ReadPageSize: 10,
+				SampleRatio:  1.0,
+				Format:       "jsonl",
+				URI:          "../../testdata/delta-byte-array-bomb.parquet",
+			}
+			stdout := testutils.CommandStdout(t, cmd)
+			require.Equal(t, `{"value":"`+strings.Repeat("x", 512)+`"}`, strings.TrimSpace(stdout))
+		})
+	}
 }
 
 func TestCmdTruncatedColumnChunk(t *testing.T) {
