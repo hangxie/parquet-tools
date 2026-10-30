@@ -120,6 +120,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	defer func() {
 		if c.current.writer != nil {
 			_ = c.current.writer.PFile.Close()
+			pio.DiscardDestination(c.current.targetFile)
 		}
 	}()
 
