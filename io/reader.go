@@ -36,6 +36,9 @@ type ReadOption struct {
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	ObjectVersion          *string           `help:"(S3, GCS, and Azure only) object version."`
 	KeyFile                *string           `name:"key-file" group:"Encryption" help:"path to a JSON file containing decryption keys ({footer_key, aad_prefix, column_keys}); CLI flags override file values."`
+	MaxDecodedBatchBytes   int64             `name:"max-decoded-batch-bytes" group:"Read Limits" help:"Maximum DELTA_BYTE_ARRAY value bytes decoded per 1,024 values; 0 uses the default of 268435456, -1 disables the limit (unsafe for untrusted files)." default:"0"`
+	MaxDecompressedSize    int64             `name:"max-decompressed-size" group:"Read Limits" help:"Maximum decoded page size in bytes; 0 uses the default of 268435456, -1 disables the limit (unsafe for untrusted files)." default:"0"`
+	MaxPageSize            int64             `name:"max-page-size" group:"Read Limits" help:"Maximum stored page size in bytes; 0 uses the default of 268435456, -1 disables the limit (unsafe for untrusted files)." default:"0"`
 }
 
 // decodeBase64 accepts only standard base64 with padding (RFC 4648 §4).
@@ -51,7 +54,10 @@ func decodeBase64(s string) ([]byte, error) {
 }
 
 func buildReaderOptions(opt ReadOption) ([]reader.ReaderOption, error) {
-	var opts []reader.ReaderOption
+	opts, err := buildLimitOptions(opt)
+	if err != nil {
+		return nil, err
+	}
 
 	if opt.FooterKey != nil {
 		key, err := decodeBase64(*opt.FooterKey)

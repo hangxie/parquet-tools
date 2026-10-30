@@ -1,0 +1,88 @@
+{
+  "columnChunk": {
+    "columnChunkIndex": 0,
+    "columnIndex": {
+      "boundaryOrder": "ASCENDING",
+      "maxValues": [
+        "this value repeats in every row so the page compresses to almost nothing at all"
+      ],
+      "minValues": [
+        "this value repeats in every row so the page compresses to almost nothing at all"
+      ],
+      "nullCounts": [
+        0
+      ],
+      "nullPages": [
+        false
+      ]
+    },
+    "columnIndexLength": 173,
+    "columnIndexOffset": 31313,
+    "compressedSize": 31309,
+    "compressionCodec": "ZSTD",
+    "convertedType": "convertedtype=UTF8",
+    "dataPageOffset": 4,
+    "encodings": [
+      "PLAIN",
+      "RLE"
+    ],
+    "fieldId": 0,
+    "fileOffset": 4,
+    "logicalType": "logicaltype=STRING",
+    "numValues": 3500000,
+    "offsetIndex": {
+      "pageLocations": [
+        {
+          "compressedPageSize": 31309,
+          "firstRowIndex": 0,
+          "offset": 4
+        }
+      ],
+      "unencodedByteArrayDataBytes": [
+        276500000
+      ]
+    },
+    "offsetIndexLength": 19,
+    "offsetIndexOffset": 31486,
+    "pathInSchema": [
+      "value"
+    ],
+    "precision": 0,
+    "repetitionType": "REQUIRED",
+    "rowGroupIndex": 0,
+    "scale": 0,
+    "sizeStatistics": {
+      "unencodedByteArrayDataBytes": 276500000
+    },
+    "statistics": {
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
+      "maxValue": "this value repeats in every row so the page compresses to almost nothing at all",
+      "minValue": "this value repeats in every row so the page compresses to almost nothing at all",
+      "nullCount": 0
+    },
+    "type": "BYTE_ARRAY",
+    "typeLength": 0,
+    "uncompressedSize": 290500194
+  },
+  "pages": [
+    {
+      "index": 0,
+      "offset": 4,
+      "type": "DATA_PAGE",
+      "compressedSize": 31115,
+      "uncompressedSize": 290500000,
+      "numValues": 3500000,
+      "encoding": "PLAIN",
+      "definitionLevelEncoding": "RLE",
+      "repetitionLevelEncoding": "RLE",
+      "statistics": {
+        "isMaxValueExact": true,
+        "isMinValueExact": true,
+        "maxValue": "this value repeats in every row so the page compresses to almost nothing at all",
+        "minValue": "this value repeats in every row so the page compresses to almost nothing at all",
+        "nullCount": 0
+      }
+    }
+  ]
+}

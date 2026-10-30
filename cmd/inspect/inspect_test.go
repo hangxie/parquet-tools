@@ -136,6 +136,11 @@ func TestInspect(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0)},
 			golden: "inspect-good-rg0-cc0.json",
 		},
+		// Listing page headers skips page bodies, so it needs no raised limit.
+		"column-chunk/large-decompressed-page": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "large-decompressed-page.parquet", RowGroup: new(0), ColumnChunk: new(0)},
+			golden: "inspect-large-decompressed-page-rg0-cc0.json",
+		},
 		"column-chunk/encrypted-columns-float": {
 			cmd:    Cmd{ReadOption: pio.ReadOption{FooterKey: encFooterKey, ColumnKeys: []string{"double_field=" + encDoubleKey, "float_field=" + encFloatKey}}, URI: "encrypted-columns.parquet", RowGroup: new(0), ColumnChunk: new(4)},
 			golden: "inspect-enc-columns-rg0-cc4.json",
@@ -224,6 +229,55 @@ func TestInspect(t *testing.T) {
 		"page/good-page-1": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
 			golden: "inspect-good-rg0-cc0-pg1.json",
+		},
+		// Each page read honors the limits to the byte: at the page's size it reads, one below it fails.
+		"page/good-page-0-max-page-size-at-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 33}, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-good-rg0-cc0-pg0.json",
+		},
+		"page/good-page-0-max-page-size-below-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 32}, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			errMsg: "exceeds limit 32",
+		},
+		"page/good-page-0-max-decompressed-size-at-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 8}, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-good-rg0-cc0-pg0.json",
+		},
+		"page/good-page-0-max-decompressed-size-below-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 7}, URI: "good.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			errMsg: "exceeds maximum allowed size 7",
+		},
+		"page/dict-page-page-0-max-page-size-at-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 53}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-dict-page-rg0-cc0-pg0.json",
+		},
+		"page/dict-page-page-0-max-page-size-below-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 52}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			errMsg: "exceeds limit 52",
+		},
+		"page/dict-page-page-0-max-decompressed-size-at-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 28}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			golden: "inspect-dict-page-rg0-cc0-pg0.json",
+		},
+		"page/dict-page-page-0-max-decompressed-size-below-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 27}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
+			errMsg: "exceeds maximum allowed size 27",
+		},
+		"page/dict-page-page-1-max-page-size-at-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 53}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
+			golden: "inspect-dict-page-rg0-cc0-pg1.json",
+		},
+		"page/dict-page-page-1-max-page-size-below-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxPageSize: 52}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
+			errMsg: "exceeds limit 52",
+		},
+		"page/dict-page-page-1-max-decompressed-size-at-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 28}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
+			golden: "inspect-dict-page-rg0-cc0-pg1.json",
+		},
+		"page/dict-page-page-1-max-decompressed-size-below-page": {
+			cmd:    Cmd{ReadOption: pio.ReadOption{MaxDecompressedSize: 27}, URI: "dict-page.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(1)},
+			errMsg: "exceeds maximum allowed size 27",
 		},
 		"page/row-group-page-5": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "row-group.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(5)},

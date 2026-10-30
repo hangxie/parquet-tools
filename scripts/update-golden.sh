@@ -162,6 +162,9 @@ $PT cat --format jsonl --skip 1999998 "$TESTDATA_DIR/high-compression.parquet" |
 # cat-high-compression-skip-1020-limit-10.jsonl
 $PT cat --format jsonl --skip 1020 --limit 10 --read-page-size 3 "$TESTDATA_DIR/high-compression.parquet" | format_jsonl > "$GOLDEN_DIR/cat-high-compression-skip-1020-limit-10.jsonl"
 
+# cat-large-decompressed-page.jsonl
+$PT cat --format jsonl --limit 1 --max-decompressed-size 536870912 "$TESTDATA_DIR/large-decompressed-page.parquet" | format_jsonl > "$GOLDEN_DIR/cat-large-decompressed-page.jsonl"
+
 # cat-unknown-type.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/unknown-type.parquet" | format_jsonl > "$GOLDEN_DIR/cat-unknown-type.jsonl"
 
@@ -419,6 +422,9 @@ $PT inspect "$TESTDATA_DIR/bloom-filter.parquet" | format_json > "$GOLDEN_DIR/in
 
 # inspect-good-rg0-cc0.json
 $PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/good.parquet" | format_json > "$GOLDEN_DIR/inspect-good-rg0-cc0.json"
+
+# inspect-large-decompressed-page-rg0-cc0.json
+$PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/large-decompressed-page.parquet" | format_json > "$GOLDEN_DIR/inspect-large-decompressed-page-rg0-cc0.json"
 
 # inspect-dict-page-rg0-cc0.json
 $PT inspect --row-group 0 --column-chunk 0 "$TESTDATA_DIR/dict-page.parquet" | format_json > "$GOLDEN_DIR/inspect-dict-page-rg0-cc0.json"
