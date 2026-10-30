@@ -109,6 +109,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 10, SampleRatio: 1.0, Format: "json", NoHeader: false, URI: "../../testdata/ARROW-RS-GH-6229-LEVELS.parquet"},
 			errMsg: "data page value count 21 exceeds column chunk total 1",
 		},
+		"delta-byte-array-bomb": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "../../testdata/delta-byte-array-bomb.parquet"},
+			errMsg: "exceeds remaining batch budget",
+		},
 		"invalid-read-page-size": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 10, ReadPageSize: 0, SampleRatio: 0.5, Format: "json", NoHeader: false, URI: "does/not/matter", Concurrent: true},
 			errMsg: "invalid read page size",
@@ -287,6 +291,15 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"},
 			golden: "cat-high-compression.jsonl",
 		},
+		// The file is one page of 2M values, decoded 1,024 at a time.
+		"high-compression-skip-into-page": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 1999998, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"},
+			golden: "cat-high-compression-skip-1999998.jsonl",
+		},
+		"high-compression-across-batch": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 1020, Limit: 10, ReadPageSize: 3, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "high-compression.parquet"},
+			golden: "cat-high-compression-skip-1020-limit-10.jsonl",
+		},
 		"unknown-type": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "unknown-type.parquet"},
 			golden: "cat-unknown-type.jsonl",
@@ -404,6 +417,45 @@ func TestCmdEncrypted(t *testing.T) {
 			require.Equal(t, "", stderr)
 		})
 	}
+}
+
+// Runs of 700 repeated values cross the decoder's 1,024-value batches and cat's read pages.
+func TestCmdDeltaByteArrayRuns(t *testing.T) {
+	testCases := map[string]struct {
+		skip         int64
+		limit        uint64
+		readPageSize int
+	}{
+		"full":                {skip: 0, limit: 3000, readPageSize: 1000},
+		"small-read-pages":    {skip: 0, limit: 3000, readPageSize: 7},
+		"skip-across-batch":   {skip: 1020, limit: 10, readPageSize: 3},
+		"skip-into-later-run": {skip: 2047, limit: 800, readPageSize: 100},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := Cmd{
+				Skip:         tc.skip,
+				Limit:        tc.limit,
+				ReadPageSize: tc.readPageSize,
+				SampleRatio:  1.0,
+				Format:       "jsonl",
+				URI:          "../../testdata/delta-byte-array-runs.parquet",
+			}
+			var want strings.Builder
+			for i := tc.skip; i < min(tc.skip+int64(tc.limit), 3000); i++ {
+				want.WriteString(`{"value":"` + strings.Repeat(string(rune('a'+i/700)), 1000) + `"}` + "\n")
+			}
+			require.Equal(t, want.String(), testutils.CommandStdout(t, cmd))
+		})
+	}
+}
+
+// Repeated values share one string, so 300 MB of them stay within the default batch budget.
+func TestCmdRepeatedDeltaByteArray(t *testing.T) {
+	cmd := Cmd{Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", URI: "../../testdata/delta-byte-array-repeat.parquet"}
+	stdout := testutils.CommandStdout(t, cmd)
+	require.Equal(t, `{"value":"`+strings.Repeat("x", 300*1024)+`"}`, strings.TrimSpace(stdout))
 }
 
 func TestCmdTruncatedColumnChunk(t *testing.T) {
