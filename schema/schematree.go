@@ -199,30 +199,11 @@ func buildBloomFilterMap(ctx context.Context, pr *reader.ParquetReader) (map[str
 }
 
 func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
-	// Extract encoding information from the parquet file unless SkipPageEncoding is set
-	var encodingMap map[string]string
-	if !option.SkipPageEncoding {
-		var err error
-		encodingMap, err = buildEncodingMap(ctx, reader)
-		if err != nil {
-			return nil, fmt.Errorf("failed to build encoding map: %w", err)
-		}
-	}
-
-	compressionCodecMap := buildCompressionCodecMap(reader)
-
-	// Sizing a bloom filter reads its header, so a caller that does not report
-	// bloom filters can opt out of that read.
-	var bloomFilterMap map[string]bloomFilterInfo
-	if !option.SkipBloomFilter {
-		var err error
-		bloomFilterMap, err = buildBloomFilterMap(ctx, reader)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+	// The tree is built before any metadata read so a malformed schema is reported, not masked by I/O errors.
 	schemas := reader.SchemaHandler.SchemaElements
+	if len(schemas) == 0 {
+		return nil, fmt.Errorf("malformed schema: schema has no elements")
+	}
 	root := &SchemaNode{
 		SchemaElement: *schemas[0],
 		Children:      []*SchemaNode{},
@@ -237,6 +218,11 @@ func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option Sch
 			return nil, fmt.Errorf("field [%s] has type INT96 which is not supported", node.Name)
 		}
 		if len(node.Children) < int(node.GetNumChildren()) {
+			// parquet-go tolerates child counts that overrun the element list, so check here.
+			if pos >= len(schemas) {
+				return nil, fmt.Errorf("malformed schema: field [%s] declares %d children but schema has only %d elements",
+					node.Name, node.GetNumChildren(), len(schemas))
+			}
 			childNode := &SchemaNode{
 				SchemaElement: *schemas[pos],
 				Children:      []*SchemaNode{},
@@ -258,6 +244,28 @@ func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option Sch
 			if len(node.Children) == 0 {
 				node.Children = nil
 			}
+		}
+	}
+
+	// Extract encoding information from the parquet file unless SkipPageEncoding is set
+	var encodingMap map[string]string
+	if !option.SkipPageEncoding {
+		var err error
+		encodingMap, err = buildEncodingMap(ctx, reader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build encoding map: %w", err)
+		}
+	}
+
+	compressionCodecMap := buildCompressionCodecMap(reader)
+
+	// Sizing a bloom filter reads its header, which SkipBloomFilter avoids.
+	var bloomFilterMap map[string]bloomFilterInfo
+	if !option.SkipBloomFilter {
+		var err error
+		bloomFilterMap, err = buildBloomFilterMap(ctx, reader)
+		if err != nil {
+			return nil, err
 		}
 	}
 
