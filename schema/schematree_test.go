@@ -408,3 +408,41 @@ func TestBuildBloomFilterMapCancelledContext(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "bloom filter size")
 }
+
+func TestNewSchemaTreeMalformedSchema(t *testing.T) {
+	testCases := map[string]struct {
+		truncate func([]*parquet.SchemaElement) []*parquet.SchemaElement
+		errMsg   string
+	}{
+		"no-elements":      {func(s []*parquet.SchemaElement) []*parquet.SchemaElement { return nil }, "schema has no elements"},
+		"root-only":        {func(s []*parquet.SchemaElement) []*parquet.SchemaElement { return s[:1] }, "declares"},
+		"missing-last-one": {func(s []*parquet.SchemaElement) []*parquet.SchemaElement { return s[:len(s)-1] }, "declares"},
+	}
+
+	// A cancelled context fails any metadata read, so it must not mask the schema error.
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	runs := map[string]struct {
+		ctx    context.Context
+		option SchemaOption
+	}{
+		"skip-reads":       {context.Background(), SchemaOption{SkipPageEncoding: true, SkipBloomFilter: true}},
+		"default":          {context.Background(), SchemaOption{}},
+		"default-canceled": {cancelled, SchemaOption{}},
+	}
+
+	for name, tc := range testCases {
+		for runName, run := range runs {
+			t.Run(name+"/"+runName, func(t *testing.T) {
+				pr, err := pio.NewParquetFileReader(context.Background(), "../testdata/good.parquet", pio.ReadOption{})
+				require.NoError(t, err)
+				defer func() { require.NoError(t, pr.PFile.Close()) }()
+
+				pr.SchemaHandler.SchemaElements = tc.truncate(pr.SchemaHandler.SchemaElements)
+				root, err := NewSchemaTree(run.ctx, pr, run.option)
+				require.Nil(t, root)
+				require.ErrorContains(t, err, tc.errMsg)
+			})
+		}
+	}
+}
