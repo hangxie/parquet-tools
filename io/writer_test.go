@@ -905,3 +905,40 @@ func TestWriterKeyFileReadBeforeOpeningDestination(t *testing.T) {
 		})
 	}
 }
+
+func TestWritersRejectInvalidJSONSchema(t *testing.T) {
+	tests := []struct{ name, schema, errMsg string }{
+		{"invalid-json", "{", "unmarshal json schema string"},
+		{"invalid-type", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=INVALID"}]}`, "not a valid Type string"},
+		{"list-missing-element", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=LIST"}]}`, "LIST needs exactly 1 field"},
+		{"list-extra-element", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=LIST","Fields":[{"Tag":"name=a, type=INT32"},{"Tag":"name=b, type=INT32"}]}]}`, "LIST needs exactly 1 field"},
+		{"map-missing-value", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=MAP","Fields":[{"Tag":"name=key, type=INT32"}]}]}`, "MAP needs exactly 2 fields"},
+		{"map-extra-field", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=MAP","Fields":[{"Tag":"name=key, type=INT32"},{"Tag":"name=value, type=INT32"},{"Tag":"name=extra, type=INT32"}]}]}`, "MAP needs exactly 2 fields"},
+		{"duplicate-names", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=INT32"},{"Tag":"name=value, type=INT64"}]}`, "duplicate column name"},
+	}
+	for _, tt := range tests {
+		for _, kind := range []string{"json", "generic"} {
+			t.Run(tt.name+"/"+kind, func(t *testing.T) {
+				path := filepath.Join(t.TempDir(), "invalid.parquet")
+				var err error
+				switch kind {
+				case "json":
+					pw, writerErr := NewJSONWriter(context.Background(), path, WriteOption{}, tt.schema)
+					if pw != nil {
+						require.NoError(t, pw.PFile.Close())
+					}
+					require.Nil(t, pw)
+					err = writerErr
+				case "generic":
+					pw, writerErr := NewGenericWriter(context.Background(), path, WriteOption{}, tt.schema)
+					if pw != nil {
+						require.NoError(t, pw.PFile.Close())
+					}
+					require.Nil(t, pw)
+					err = writerErr
+				}
+				require.ErrorContains(t, err, tt.errMsg)
+			})
+		}
+	}
+}
