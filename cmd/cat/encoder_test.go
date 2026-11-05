@@ -73,3 +73,10 @@ func TestRawValueModeFixtures(t *testing.T) {
 func TestInvalidValueMode(t *testing.T) {
 	require.ErrorContains(t, (Cmd{ValueMode: "auto"}).Run(context.Background()), "invalid value mode")
 }
+
+func TestEncoderCancelledContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	err := (Cmd{Format: "json"}).encoder(ctx, make(chan any), make(chan string), nil, nil, nil)
+	require.ErrorIs(t, err, context.Canceled)
+}

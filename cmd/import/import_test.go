@@ -1227,3 +1227,33 @@ func TestCmdFixedWidthLogicalTypes(t *testing.T) {
 		})
 	}
 }
+
+func TestImportInvalidJSONSchema(t *testing.T) {
+	tests := []struct{ name, schema, errMsg string }{
+		{"invalid-json", "{", "is not a valid schema JSON"},
+		{"invalid-type", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=INVALID"}]}`, "not a valid Type string"},
+		{"list-missing-element", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=LIST"}]}`, "LIST needs exactly 1 field"},
+		{"map-missing-fields", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=MAP"}]}`, "MAP needs exactly 2 fields"},
+		{"duplicate-names", `{"Tag":"name=root","Fields":[{"Tag":"name=value, type=INT32"},{"Tag":"name=value, type=INT64"}]}`, "duplicate column name"},
+	}
+	for _, tt := range tests {
+		for _, format := range []string{"json", "jsonl"} {
+			t.Run(tt.name+"/"+format, func(t *testing.T) {
+				dir := t.TempDir()
+				schemaPath := filepath.Join(dir, "schema.json")
+				require.NoError(t, os.WriteFile(schemaPath, []byte(tt.schema), 0o600))
+				c := Cmd{
+					Format: format,
+					Schema: schemaPath,
+					Source: "../../testdata/" + format + ".source",
+					URI:    filepath.Join(dir, "invalid.parquet"),
+				}
+				err := c.Run(context.Background())
+				require.ErrorContains(t, err, tt.errMsg)
+				if tt.name != "invalid-json" {
+					require.ErrorContains(t, err, "failed to create JSON writer")
+				}
+			})
+		}
+	}
+}

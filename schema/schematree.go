@@ -199,52 +199,9 @@ func buildBloomFilterMap(ctx context.Context, pr *reader.ParquetReader) (map[str
 }
 
 func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
-	// The tree is built before any metadata read so a malformed schema is reported, not masked by I/O errors.
-	schemas := reader.SchemaHandler.SchemaElements
-	if len(schemas) == 0 {
-		return nil, fmt.Errorf("malformed schema: schema has no elements")
-	}
-	root := &SchemaNode{
-		SchemaElement: *schemas[0],
-		Children:      []*SchemaNode{},
-		InNamePath:    []string{schemas[0].Name},
-		ExNamePath:    strings.Split(reader.SchemaHandler.InPathToExPath[schemas[0].Name], common.ParGoPathDelimiter)[:1],
-	}
-	stack := []*SchemaNode{root}
-
-	for pos := 1; len(stack) > 0; {
-		node := stack[len(stack)-1]
-		if option.FailOnInt96 && node.Type != nil && *node.Type == parquet.Type_INT96 {
-			return nil, fmt.Errorf("field [%s] has type INT96 which is not supported", node.Name)
-		}
-		if len(node.Children) < int(node.GetNumChildren()) {
-			// parquet-go tolerates child counts that overrun the element list, so check here.
-			if pos >= len(schemas) {
-				return nil, fmt.Errorf("malformed schema: field [%s] declares %d children but schema has only %d elements",
-					node.Name, node.GetNumChildren(), len(schemas))
-			}
-			childNode := &SchemaNode{
-				SchemaElement: *schemas[pos],
-				Children:      []*SchemaNode{},
-			}
-
-			// append() does not always return new slice, so we need to copy the old slice
-			childNode.InNamePath = make([]string, len(node.InNamePath)+1)
-			copy(childNode.InNamePath, node.InNamePath)
-			childNode.InNamePath[len(node.InNamePath)] = schemas[pos].Name
-
-			inPathKey := strings.Join(childNode.InNamePath, common.ParGoPathDelimiter)
-			childNode.ExNamePath = strings.Split(reader.SchemaHandler.InPathToExPath[inPathKey], common.ParGoPathDelimiter)
-
-			node.Children = append(node.Children, childNode)
-			stack = append(stack, childNode)
-			pos++
-		} else {
-			stack = stack[:len(stack)-1]
-			if len(node.Children) == 0 {
-				node.Children = nil
-			}
-		}
+	root, err := buildSchemaTree(reader, option)
+	if err != nil {
+		return nil, err
 	}
 
 	// Extract encoding information from the parquet file unless SkipPageEncoding is set

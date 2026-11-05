@@ -3,12 +3,16 @@ package io
 import (
 	"context"
 	"encoding/base64"
+	"encoding/binary"
 	"os"
 	"path/filepath"
 	"sort"
 	"testing"
 
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/google/uuid"
+	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/parquet"
 	"github.com/stretchr/testify/require"
 )
 
@@ -567,4 +571,54 @@ func FuzzNewParquetFileReader(f *testing.F) {
 		}
 		defer func() { _ = pr.PFile.Close() }()
 	})
+}
+
+func TestNewParquetFileReaderMalformedSchema(t *testing.T) {
+	ctx := context.Background()
+	data, err := os.ReadFile("../testdata/good.parquet")
+	require.NoError(t, err)
+	start := len(data) - 8 - int(binary.LittleEndian.Uint32(data[len(data)-8:]))
+	tests := []struct {
+		name   string
+		mutate func(*parquet.FileMetaData)
+		errMsg string
+	}{
+		{"trailing-leaf", func(f *parquet.FileMetaData) {
+			f.Schema = append(f.Schema, &parquet.SchemaElement{Name: "extra", Type: common.ToPtr(parquet.Type_INT32)})
+		}, "outside the root subtree"},
+		{"trailing-group", func(f *parquet.FileMetaData) {
+			f.Schema = append(f.Schema, &parquet.SchemaElement{Name: "extra", NumChildren: common.ToPtr(int32(0))})
+		}, "outside the root subtree"},
+		{"root-too-few", func(f *parquet.FileMetaData) { *f.Schema[0].NumChildren-- }, "outside the root subtree"},
+		{"root-too-many", func(f *parquet.FileMetaData) { *f.Schema[0].NumChildren++ }, "unfulfilled child slots"},
+		{"nested-too-many", func(f *parquet.FileMetaData) { f.Schema[1].NumChildren = common.ToPtr(int32(1)) }, "unfulfilled child slots"},
+		{"negative-count", func(f *parquet.FileMetaData) { f.Schema[0].NumChildren = common.ToPtr(int32(-1)) }, "negative num_children"},
+		{"empty-schema", func(f *parquet.FileMetaData) { f.Schema = []*parquet.SchemaElement{} }, "empty schema"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := thrift.NewTDeserializer()
+			d.Protocol = thrift.NewTCompactProtocolFactoryConf(&thrift.TConfiguration{}).GetProtocol(d.Transport)
+			footer := parquet.NewFileMetaData()
+			require.NoError(t, d.Read(ctx, footer, data[start:len(data)-8]))
+			tt.mutate(footer)
+			s := thrift.NewTSerializer()
+			s.Protocol = thrift.NewTCompactProtocolFactoryConf(&thrift.TConfiguration{}).GetProtocol(s.Transport)
+			footerBytes, err := s.Write(ctx, footer)
+			require.NoError(t, err)
+			out := append([]byte(nil), data[:start]...)
+			out = append(out, footerBytes...)
+			out = binary.LittleEndian.AppendUint32(out, uint32(len(footerBytes)))
+			out = append(out, []byte("PAR1")...)
+			path := filepath.Join(t.TempDir(), "malformed.parquet")
+			require.NoError(t, os.WriteFile(path, out, 0o600))
+			pr, err := NewParquetFileReader(ctx, path, ReadOption{})
+			if pr != nil {
+				require.NoError(t, pr.PFile.Close())
+			}
+			require.Nil(t, pr)
+			require.ErrorContains(t, err, "malformed schema")
+			require.ErrorContains(t, err, tt.errMsg)
+		})
+	}
 }

@@ -1693,6 +1693,8 @@ $ parquet-tools cat testdata/zero-column.parquet
 
 ### schema Command
 
+Files whose schema elements do not form one complete root tree are rejected when opened, including trailing elements, missing declared children, and negative child counts.
+
 `schema` command shows schema of the parquet file in different formats.
 
 #### JSON Format
