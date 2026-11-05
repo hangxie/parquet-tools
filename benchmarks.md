@@ -9,12 +9,15 @@
  * v1.49.1 and earlier: an Ubuntu 24.04 LTS with Intel i7-8700B CPU (6c/12T) and 32GB memory.
 3. Run `make benchmark` 3 times, then pick the median number and post here after convert ns/op to ms/op.
 4. Benchmark was added in v1.30.0, old versions need to tweak go benchmarking code to make things work.
+5. The v1.57.1 and v1.57.2 measurements use Go 1.27.3 with `GOWORK=off`. The v1.57.2 and HEAD rows use the proposed release code at [0ba9fe3](https://github.com/hangxie/parquet-tools/commit/0ba9fe3f30d1647a955be8d7778bd2738e21bb89), measured before the v1.57.2 release.
 
 ## Benchmark Comparisons Between Versions
 
 | **Tag** | **cat** | **merge** | **meta** | **row-count** | **schema** | **size** | **version** |
 | -------: | -------------------------------------------------------------------------: | -------------------------------------------------------------------------: | -------: | ------------: | ---------: | -------: | ----------: |
-| HEAD | 331 | 814 | 1.358 | 1.157 | 2.684 | 1.211 | 0.014 |
+| HEAD | 365 | 885 | 1.312 | 1.143 | 2.683 | 1.123 | 0.017 |
+| v1.57.2 | 365 | 885 | 1.312 | 1.143 | 2.683 | 1.123 | 0.017 |
+| v1.57.1 | 365 | 859 | 1.287 | 1.124 | 2.642 | 1.138 | 0.020 |
 | v1.57.0 | 331 | 814 | 1.358 | 1.157 | 2.684 | 1.211 | 0.014 |
 | v1.56.4 | 343 | 830 | 1.308 | 1.155 | 2.729 | 1.171 | 0.014 |
 | v1.56.3 | 350 | 852 | 1.332 | 1.162 | 2.761 | 1.171 | 0.015 |
