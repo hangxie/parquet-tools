@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	cloud.google.com/go/storage v1.70.0
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.8.2
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.8.3
 	github.com/alecthomas/kong v1.16.1
 	github.com/apache/thrift v0.25.0
 	github.com/aws/aws-sdk-go-v2 v1.47.5
