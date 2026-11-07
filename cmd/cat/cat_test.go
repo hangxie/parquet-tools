@@ -1,9 +1,10 @@
 package cat
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
-	"encoding/csv"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -531,18 +532,18 @@ func TestCmdEncoder(t *testing.T) {
 	rOpt := pio.ReadOption{}
 
 	testCases := map[string]struct {
-		setup       func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan string, *reader.ParquetReader, []string)
+		setup       func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan encodedRow, *reader.ParquetReader, []string)
 		wantErr     bool
 		errContains string
 	}{
 		"context-cancelled-in-main-loop": {
-			setup: func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan string, *reader.ParquetReader, []string) {
+			setup: func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan encodedRow, *reader.ParquetReader, []string) {
 				// Create a context that we can cancel
 				ctx, cancel := context.WithCancel(context.Background())
 
 				// Create channels
 				rowChan := make(chan any, 10)
-				outputChan := make(chan string, 10)
+				outputChan := make(chan encodedRow, 10)
 
 				// Open a test parquet file
 				fileReader, err := pio.NewParquetFileReader(context.Background(), "file://../../testdata/good.parquet", rOpt)
@@ -562,13 +563,13 @@ func TestCmdEncoder(t *testing.T) {
 			errContains: "context canceled",
 		},
 		"context-cancelled-before-send": {
-			setup: func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan string, *reader.ParquetReader, []string) {
+			setup: func(t *testing.T) (context.Context, context.CancelFunc, chan any, chan encodedRow, *reader.ParquetReader, []string) {
 				// Create a context that we can cancel
 				ctx, cancel := context.WithCancel(context.Background())
 
 				// Create channels
 				rowChan := make(chan any, 10)
-				outputChan := make(chan string, 1) // Small buffer to test the send path
+				outputChan := make(chan encodedRow, 1) // Small buffer to test the send path
 
 				// Open a test parquet file
 				fileReader, err := pio.NewParquetFileReader(context.Background(), "file://../../testdata/good.parquet", rOpt)
@@ -579,7 +580,7 @@ func TestCmdEncoder(t *testing.T) {
 				require.NoError(t, err)
 
 				// Fill output channel to block sending
-				outputChan <- "blocking"
+				outputChan <- encodedRow{}
 
 				// Send row to process
 				rowChan <- rows[0]
@@ -604,7 +605,7 @@ func TestCmdEncoder(t *testing.T) {
 				Format: "json",
 			}
 
-			err := cmd.encoder(ctx, rowChan, outputChan, fileReader.SchemaHandler, fieldList, nil)
+			err := cmd.encoder(ctx, rowChan, outputChan, newOutputBudget(maxOutputBytes), fileReader.SchemaHandler, fieldList, nil)
 
 			if tc.wantErr {
 				require.Error(t, err)
@@ -651,7 +652,7 @@ func TestOutputRowsSkipsUnusedSchemaMetadata(t *testing.T) {
 
 				cmd := Cmd{Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: format}
 				stdout, stderr := testutils.CaptureStdoutStderr(func() {
-					require.NoError(t, cmd.outputRows(context.Background(), fileReader))
+					require.NoError(t, cmd.outputRows(context.Background(), fileReader, os.Stdout))
 				})
 				require.NotEmpty(t, strings.TrimSpace(stdout))
 				require.Empty(t, stderr)
@@ -673,7 +674,7 @@ func TestOutputRowsSkipRowsError(t *testing.T) {
 
 	cmd := Cmd{Skip: 1, Limit: 1, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl"}
 	stdout, stderr := testutils.CaptureStdoutStderr(func() {
-		require.ErrorIs(t, cmd.outputRows(ctx, fileReader), context.Canceled)
+		require.ErrorIs(t, cmd.outputRows(ctx, fileReader, os.Stdout), context.Canceled)
 	})
 	require.Empty(t, strings.TrimSpace(stdout))
 	require.Empty(t, stderr)
@@ -694,19 +695,43 @@ func TestCmdEncoderRejectsUnsupportedFormat(t *testing.T) {
 	rowChan <- rows[0]
 
 	err = (Cmd{Format: "unsupported"}).encoder(
-		context.Background(), rowChan, make(chan string, 1), fileReader.SchemaHandler, nil, nil,
+		context.Background(), rowChan, make(chan encodedRow, 1), newOutputBudget(maxOutputBytes), fileReader.SchemaHandler, nil, nil,
 	)
 	require.ErrorContains(t, err, "unsupported format: [unsupported]")
 }
 
-func TestValuesToCSVReturnsWriterError(t *testing.T) {
-	builder := new(strings.Builder)
-	writer := csv.NewWriter(builder)
-	writer.Comma = '\n'
+func TestOutputRowsHeader(t *testing.T) {
+	testCases := map[string]struct {
+		cmd  Cmd
+		want string
+	}{
+		"csv":       {Cmd{Format: "csv"}, "shoe_brand,shoe_name\n"},
+		"tsv":       {Cmd{Format: "tsv"}, "shoe_brand\tshoe_name\n"},
+		"no-header": {Cmd{Format: "csv", NoHeader: true}, ""},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, fileReader.PFile.Close()) }()
 
-	line, err := (&Cmd{}).valuesToCSV([]string{"value"}, builder, writer)
-	require.Empty(t, line)
-	require.ErrorContains(t, err, "invalid field or comment delimiter")
+			// No rows, so the header is the only output.
+			tc.cmd.ReadPageSize, tc.cmd.SampleRatio = 10, 1.0
+			var output bytes.Buffer
+			require.NoError(t, tc.cmd.outputRows(context.Background(), fileReader, &output))
+			require.Equal(t, tc.want+"\n", output.String())
+		})
+	}
+}
+
+func TestOutputRowsHeaderWriteError(t *testing.T) {
+	fileReader, err := pio.NewParquetFileReader(context.Background(), "../../testdata/good.parquet", pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { require.NoError(t, fileReader.PFile.Close()) }()
+
+	want := errors.New("write failed")
+	cmd := Cmd{Format: "csv", ReadPageSize: 10, SampleRatio: 1.0}
+	require.ErrorIs(t, cmd.outputRows(context.Background(), fileReader, &failingOutput{failAt: 1, err: want}), want)
 }
 
 func BenchmarkCatCmd(b *testing.B) {

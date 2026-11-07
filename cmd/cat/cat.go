@@ -2,11 +2,11 @@ package cat
 
 import (
 	"context"
-	"encoding/csv"
 	"fmt"
+	"io"
 	"math/rand"
+	"os"
 	"runtime"
-	"strings"
 	"sync"
 
 	"github.com/hangxie/parquet-go/v3/reader"
@@ -75,38 +75,34 @@ func (c Cmd) Run(ctx context.Context) error {
 		_ = fileReader.PFile.Close()
 	}()
 
-	return c.outputRows(ctx, fileReader)
+	return c.outputRows(ctx, fileReader, os.Stdout)
 }
 
-func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, error) {
+func (c *Cmd) outputHeader(schemaRoot *pschema.SchemaNode) ([]string, string, error) {
 	if c.Format != "csv" && c.Format != "tsv" {
 		// only CSV and TSV need header
-		return nil, nil
+		return nil, "", nil
 	}
 
 	fieldList := make([]string, len(schemaRoot.Children))
 	for index, child := range schemaRoot.Children {
 		if len(child.Children) != 0 {
-			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
+			return nil, "", fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
 		if c.ValueMode != "raw" && child.LogicalType != nil && (child.LogicalType.IsSetGEOGRAPHY() || child.LogicalType.IsSetGEOMETRY()) {
-			return nil, fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
+			return nil, "", fmt.Errorf("field [%s] is not scalar type, cannot output in %s format", child.Name, c.Format)
 		}
 		fieldList[index] = child.ExNamePath[len(child.ExNamePath)-1]
 	}
 
-	strBuilder := new(strings.Builder)
-	csvWriter := csv.NewWriter(strBuilder)
-	csvWriter.Comma = delimiter[c.Format].fieldDelimiter
-	line, err := c.valuesToCSV(fieldList, strBuilder, csvWriter)
-	if err != nil {
-		return nil, err
+	if c.NoHeader {
+		return fieldList, "", nil
 	}
-
-	if !c.NoHeader {
-		fmt.Print(line)
+	formatter := newRowFormatter(c.Format)
+	if err := formatter.encodeRecord(fieldList); err != nil {
+		return nil, "", err
 	}
-	return fieldList, nil
+	return fieldList, formatter.buffer.String(), nil
 }
 
 func mapToStrList(flatValues map[string]any, fieldList []string) []string {
@@ -147,33 +143,7 @@ func nullifyUnknownCols(rowStruct any, unknownCols map[string]struct{}) {
 	}
 }
 
-func (c Cmd) printer(ctx context.Context, outputChan chan string) error {
-	fmt.Print(delimiter[c.Format].begin)
-	defer func() {
-		fmt.Print(delimiter[c.Format].end + "\n")
-	}()
-
-	isFirstRow := true
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case formattedRow, more := <-outputChan:
-			if !more {
-				return nil
-			}
-
-			if isFirstRow {
-				isFirstRow = false
-			} else {
-				fmt.Print(delimiter[c.Format].lineDelimiter)
-			}
-			fmt.Print(formattedRow)
-		}
-	}
-}
-
-func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) error {
+func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader, output io.Writer) error {
 	// cat reports neither encoding nor bloom filters, so skip the per-column
 	// page and bloom filter header reads that populating them would cost.
 	schemaOption := pschema.SchemaOption{
@@ -187,7 +157,7 @@ func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) e
 	}
 
 	// CSV and TSV do not support nested schema
-	fieldList, err := c.outputHeader(schemaRoot)
+	fieldList, header, err := c.outputHeader(schemaRoot)
 	if err != nil {
 		return err
 	}
@@ -208,14 +178,14 @@ func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) e
 	// Use a single errgroup for all goroutines
 	g, gctx := errgroup.WithContext(ctx)
 
-	// Use appropriate buffer size
-	bufferSize := concurrency * c.ReadPageSize
-	outputChan := make(chan string, bufferSize)
-	rowChan := make(chan any, bufferSize)
+	// One batch of queue lets the producer decode the next batch while encoders work.
+	rowChan := make(chan any, c.ReadPageSize)
+	outputChan := make(chan encodedRow, concurrency*formatterPoolSize)
+	budget := newOutputBudget(maxOutputBytes)
 
 	// Start printer goroutine (always exactly 1)
 	g.Go(func() error {
-		return c.printer(gctx, outputChan)
+		return c.bufferedPrinter(gctx, outputChan, output, header)
 	})
 
 	// Start encoder goroutines (number is determined by concurrency)
@@ -225,7 +195,7 @@ func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) e
 	for range concurrency {
 		g.Go(func() error {
 			defer encodersWg.Done()
-			return c.encoder(gctx, rowChan, outputChan, fileReader.SchemaHandler, fieldList, unknownCols)
+			return c.encoder(gctx, rowChan, outputChan, budget, fileReader.SchemaHandler, fieldList, unknownCols)
 		})
 	}
 
@@ -269,15 +239,4 @@ func (c Cmd) outputRows(ctx context.Context, fileReader *reader.ParquetReader) e
 
 	// Wait for all goroutines to complete
 	return g.Wait()
-}
-
-func (c *Cmd) valuesToCSV(values []string, strBuilder *strings.Builder, csvWriter *csv.Writer) (string, error) {
-	// there is no standard for CSV, use go's CSV module to maintain minimum compatibility
-	strBuilder.Reset()
-	if err := csvWriter.Write(values); err != nil {
-		// this should never happen
-		return "", err
-	}
-	csvWriter.Flush()
-	return strBuilder.String(), nil
 }
