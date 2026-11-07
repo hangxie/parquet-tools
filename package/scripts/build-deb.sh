@@ -19,7 +19,8 @@ function build() {
     esac
 
     DEB_VER=$(echo ${VERSION} | cut -f 1 -d \- | tr -d 'a-z')
-    PKG_NAME=parquet-tools
+    PKG_NAME=go-parquet-tools
+    BIN_NAME=parquet-tools
     DOCKER_NAME=deb-build-${BIN_ARCH}
     SOURCE_DIR=$(dirname $0)/../..
 
@@ -28,7 +29,7 @@ function build() {
     docker run -di --rm --name ${DOCKER_NAME} debian:13-slim
 
     # CCI does not support volume mount, so use docker cp instead
-    docker cp ${SOURCE_DIR}/build/release/${PKG_NAME}-${VERSION}-linux-${BIN_ARCH}.gz ${DOCKER_NAME}:/tmp/${PKG_NAME}.gz
+    docker cp ${SOURCE_DIR}/build/release/${BIN_NAME}-${VERSION}-linux-${BIN_ARCH}.gz ${DOCKER_NAME}:/tmp/${BIN_NAME}.gz
     docker cp ${SOURCE_DIR}/package/deb ${DOCKER_NAME}:/tmp/
     cat ${SOURCE_DIR}/package/deb/DEBIAN/control \
 	| sed "s/^Version:.*/Version: ${DEB_VER}/; s/^Architecture:.*/Architecture: ${PKG_ARCH}/" > /tmp/control
@@ -38,8 +39,8 @@ function build() {
     docker exec -t ${DOCKER_NAME} bash -c "
         set -euo pipefail;
         mkdir -p /tmp/deb/usr/bin;
-        gunzip /tmp/${PKG_NAME}.gz;
-        mv /tmp/${PKG_NAME} /tmp/deb/usr/bin/${PKG_NAME};
+        gunzip /tmp/${BIN_NAME}.gz;
+        mv /tmp/${BIN_NAME} /tmp/deb/usr/bin/${BIN_NAME};
         cd /tmp;
         dpkg-deb --build /tmp/deb;
     "

@@ -211,26 +211,34 @@ v1.47.7
 
 ### Prebuilt RPM and deb Packages
 
-RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases), only amd64/x86_64 and arm64/aarch64 arch are available at this moment, download the proper package and run corresponding installation command:
+The `go-parquet-tools` RPM and DEB packages are available on the [release page](https://github.com/hangxie/parquet-tools/releases) for amd64/x86_64 and arm64/aarch64. The installed command remains `parquet-tools` at `/usr/bin/parquet-tools`.
 
-* On Debian/Ubuntu:
-
-```bash
-$ sudo dpkg -i parquet-tools_1.47.7_amd64.deb
-Preparing to unpack parquet-tools_1.47.7_amd64.deb ...
-Unpacking parquet-tools (1.47.7) ...
-Setting up parquet-tools (1.47.7) ...
-```
-
-* On CentOS/Fedora:
+Download the package for your architecture, then install it (replace the example version with the release you downloaded):
 
 ```bash
-$ sudo rpm -Uhv parquet-tools-1.47.7-1.x86_64.rpm
-Verifying...                         ################################# [100%]
-Preparing...                         ################################# [100%]
-Updating / installing...
-   1:parquet-tools-1.47.7-1          ################################# [100%]
+# Debian / Ubuntu
+$ sudo apt install ./go-parquet-tools_1.57.2_amd64.deb
+
+# RPM-based distributions
+$ sudo rpm -Uhv go-parquet-tools-1.57.2-1.x86_64.rpm
+
+$ parquet-tools version
 ```
+
+#### Migrating from the old package name
+
+The package name changed from `parquet-tools` to `go-parquet-tools` to avoid a collision with Ubuntu's Apache Arrow package. This is a new package identity, not an in-place upgrade of the old name. If you installed an older DEB or RPM from this project, remove it **before** installing the renamed package, since both own `/usr/bin/parquet-tools`:
+
+```bash
+# Only if parquet-tools is an older package from this project:
+$ sudo apt remove parquet-tools
+# Or, on RPM-based distributions:
+$ sudo rpm -e parquet-tools
+```
+
+Check `apt show parquet-tools` or `rpm -qi parquet-tools` first to identify the installed package. Ubuntu's Apache Arrow `parquet-tools` package is independent: it supplies commands such as `parquet-reader` and `parquet-scan`, has no installed-file conflicts with this package, and can stay installed alongside `go-parquet-tools`. The renamed package does not replace, obsolete, or provide the distro package.
+
+For future upgrades, install a newer `go-parquet-tools` release using the same installation command above. To uninstall, use `sudo apt remove go-parquet-tools` or `sudo rpm -e go-parquet-tools`; this leaves the distro's `parquet-tools` package installed.
 
 ## Usage
 
