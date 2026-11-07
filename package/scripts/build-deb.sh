@@ -40,7 +40,7 @@ function build() {
         set -euo pipefail;
         mkdir -p /tmp/deb/usr/bin;
         gunzip /tmp/${BIN_NAME}.gz;
-        mv /tmp/${BIN_NAME} /tmp/deb/usr/bin/${BIN_NAME};
+        install -m 0755 /tmp/${BIN_NAME} /tmp/deb/usr/bin/${BIN_NAME};
         cd /tmp;
         dpkg-deb --build /tmp/deb;
     "
