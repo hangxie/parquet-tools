@@ -1,7 +1,9 @@
 Package: go-parquet-tools
 Version: CHANGEME
-Section: development
+Section: utils
 Priority: optional
 Architecture: CHANGEME
 Maintainer: 7977860+hangxie@users.noreply.github.com
-Description: Utility to deal with Parquet data, for change log visit https://github.com/hangxie/parquet-tools/releases
+Homepage: https://github.com/hangxie/parquet-tools
+Description: Command-line tools for Parquet files
+ Inspect, query, and transform Parquet files on local and remote storage.
