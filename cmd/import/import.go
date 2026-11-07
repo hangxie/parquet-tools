@@ -106,6 +106,7 @@ func (c Cmd) importCSV(ctx context.Context) error {
 	defer func() {
 		if !closed {
 			_ = c.closeWriter(parquetWriter.PFile)
+			pio.DiscardDestination(c.URI)
 		}
 	}()
 
@@ -171,6 +172,7 @@ func (c Cmd) importJSON(ctx context.Context) error {
 	defer func() {
 		if !closed {
 			_ = c.closeWriter(parquetWriter.PFile)
+			pio.DiscardDestination(c.URI)
 		}
 	}()
 
@@ -238,6 +240,7 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 	defer func() {
 		if !closed {
 			_ = c.closeWriter(parquetWriter.PFile)
+			pio.DiscardDestination(c.URI)
 		}
 	}()
 

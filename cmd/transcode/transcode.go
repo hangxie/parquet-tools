@@ -260,12 +260,7 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
 	defer func() {
-		if err := fileWriter.WriteStopWithContext(ctx); err != nil && retErr == nil {
-			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
-		}
-		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
-			retErr = fmt.Errorf("failed to close [%s]: %w", c.URI, err)
-		}
+		retErr = pio.FinalizeWriter(ctx, fileWriter, c.URI, retErr)
 	}()
 
 	return pio.RunPipeline(ctx, fileReader, fileWriter, c.Source, c.URI, c.ReadPageSize, nil)
