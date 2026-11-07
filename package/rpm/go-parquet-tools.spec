@@ -1,4 +1,4 @@
-Name:           parquet-tools
+Name:           go-parquet-tools
 Version:        CHANGEME
 Release:        1%{?dist}
 Summary:        Utility to deal with Parquet data
@@ -17,11 +17,11 @@ Utility to deal with Parquet data, for changelog visit https://github.com/hangxi
 %autosetup
 
 %build
-cp /tmp/%{name}.gz %{name}.gz
-gunzip %{name}.gz
+cp /tmp/parquet-tools.gz parquet-tools.gz
+gunzip parquet-tools.gz
 
 %install
-install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
+install -Dpm 0755 parquet-tools %{buildroot}%{_bindir}/parquet-tools
 
 %files
-%{_bindir}/%{name}
+%{_bindir}/parquet-tools

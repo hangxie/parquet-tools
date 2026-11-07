@@ -1,4 +1,4 @@
-Package: parquet-tools
+Package: go-parquet-tools
 Version: CHANGEME
 Section: development
 Priority: optional
