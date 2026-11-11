@@ -38,20 +38,22 @@ func TestParserLimitFlags(t *testing.T) {
 }
 
 func TestWriterFinalizationPreservesCancellation(t *testing.T) {
-	err := fs.WalkDir(os.DirFS("cmd"), ".", func(path string, entry fs.DirEntry, err error) error {
-		require.NoError(t, err)
-		if entry.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
-			return nil
-		}
+	for _, root := range []string{"cmd", "io"} {
+		err := fs.WalkDir(os.DirFS(root), ".", func(path string, entry fs.DirEntry, err error) error {
+			require.NoError(t, err)
+			if entry.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+				return nil
+			}
 
-		source, err := fs.ReadFile(os.DirFS("cmd"), path)
+			source, err := fs.ReadFile(os.DirFS(root), path)
+			require.NoError(t, err)
+			if strings.Contains(string(source), "WriteStopWithContext(context.WithoutCancel(") {
+				t.Errorf("%s/%s detaches writer finalization from cancellation", root, path)
+			}
+			return nil
+		})
 		require.NoError(t, err)
-		if strings.Contains(string(source), "WriteStopWithContext(context.WithoutCancel(") {
-			t.Errorf("%s detaches writer finalization from cancellation", path)
-		}
-		return nil
-	})
-	require.NoError(t, err)
+	}
 }
 
 func TestParserValueMode(t *testing.T) {

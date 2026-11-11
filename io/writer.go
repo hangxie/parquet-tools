@@ -69,7 +69,7 @@ func newAWSS3Writer(ctx context.Context, u *url.URL) (source.ParquetFileWriter, 
 		return nil, err
 	}
 
-	fileWriter, err := s3v2.NewS3FileWriterWithClient(ctx, s3Client, u.Host, strings.TrimLeft(u.Path, "/"), nil)
+	fileWriter, err := s3v2.NewS3FileWriterWithClient(ctx, s3Client, u.Host, strings.TrimLeft(u.Path, "/"), s3UploadOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open S3 object [%s]: %w", u.String(), err)
 	}
@@ -102,7 +102,7 @@ func newHTTPWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, err
 	return nil, fmt.Errorf("writing to [%s] endpoint is not currently supported", u.Scheme)
 }
 
-func newHDFSWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, error) {
+func newHDFSWriter(ctx context.Context, u *url.URL) (source.ParquetFileWriter, error) {
 	userName := u.User.Username()
 	if userName == "" {
 		osUser, err := user.Current()
@@ -114,32 +114,47 @@ func newHDFSWriter(_ context.Context, u *url.URL) (source.ParquetFileWriter, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to open HDFS source [%s]: %w", u.String(), err)
 	}
-	return fileWriter, nil
+	return &hdfsRetryWriter{ParquetFileWriter: fileWriter, ctx: ctx}, nil
+}
+
+type writerBackend struct {
+	open      func(context.Context, *url.URL) (source.ParquetFileWriter, error)
+	streaming bool // commits on Close, so a failed write must cancel the upload first
 }
 
 func NewParquetFileWriter(ctx context.Context, uri string) (source.ParquetFileWriter, error) {
-	writerFuncTable := map[string]func(context.Context, *url.URL) (source.ParquetFileWriter, error){
-		schemeLocal:                 newLocalWriter,
-		schemeAWSS3:                 newAWSS3Writer,
-		schemeGoogleCloudStorage:    newGoogleCloudStorageWriter,
-		schemeAzureStorageBlob:      newAzureStorageBlobWriter,
-		schemeAzureStorageBlobAlias: newAzureStorageBlobWriter,
-		schemeAzureDataLake:         newAzureStorageBlobWriter,
-		schemeAzureDataLakeAlias:    newAzureStorageBlobWriter,
-		schemeAzureShorthand:        newAzureStorageBlobWriter,
-		schemeHTTP:                  newHTTPWriter,
-		schemeHTTPS:                 newHTTPWriter,
-		schemeHDFS:                  newHDFSWriter,
+	backends := map[string]writerBackend{
+		schemeLocal:                 {open: newLocalWriter},
+		schemeAWSS3:                 {open: newAWSS3Writer, streaming: true},
+		schemeGoogleCloudStorage:    {open: newGoogleCloudStorageWriter, streaming: true},
+		schemeAzureStorageBlob:      {open: newAzureStorageBlobWriter, streaming: true},
+		schemeAzureStorageBlobAlias: {open: newAzureStorageBlobWriter, streaming: true},
+		schemeAzureDataLake:         {open: newAzureStorageBlobWriter, streaming: true},
+		schemeAzureDataLakeAlias:    {open: newAzureStorageBlobWriter, streaming: true},
+		schemeAzureShorthand:        {open: newAzureStorageBlobWriter, streaming: true},
+		schemeHTTP:                  {open: newHTTPWriter},
+		schemeHTTPS:                 {open: newHTTPWriter},
+		schemeHDFS:                  {open: newHDFSWriter},
 	}
 
 	u, err := parseURI(uri)
 	if err != nil {
 		return nil, err
 	}
-	if writerFunc, found := writerFuncTable[u.Scheme]; found {
-		return writerFunc(ctx, u)
+	backend, found := backends[u.Scheme]
+	if !found {
+		return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
 	}
-	return nil, fmt.Errorf("unknown location scheme [%s]", u.Scheme)
+	if !backend.streaming {
+		return backend.open(ctx, u)
+	}
+	uploadCtx, cancel := context.WithCancel(ctx)
+	fileWriter, err := backend.open(uploadCtx, u)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+	return &abortWriter{ParquetFileWriter: fileWriter, cancel: cancel}, nil
 }
 
 func NewCSVWriter(ctx context.Context, uri string, opt WriteOption, schema []string) (*writer.CSVWriter, error) {
@@ -155,25 +170,25 @@ func NewCSVWriter(ctx context.Context, uri string, opt WriteOption, schema []str
 
 	columnKeys, err := parseWriterColumnKeys(opt.WriterColumnKeys, opt.FieldDelimiter)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	opts, err := writerOpts(opt, columnKeys)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	encOpts, err := writerColumnEncryptionSchemaOpts(opt, columnKeys, func() (*parquetschema.SchemaHandler, error) {
 		return parquetschema.NewSchemaHandlerFromMetadata(schema)
 	}, "create schema from metadata")
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
 	pw, err := writer.NewCSVWriterWithContext(ctx, schema, fileWriter, opts...)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	return pw, nil
@@ -192,25 +207,25 @@ func NewJSONWriter(ctx context.Context, uri string, opt WriteOption, schema stri
 
 	columnKeys, err := parseWriterColumnKeys(opt.WriterColumnKeys, opt.FieldDelimiter)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	opts, err := writerOpts(opt, columnKeys)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	encOpts, err := writerColumnEncryptionSchemaOpts(opt, columnKeys, func() (*parquetschema.SchemaHandler, error) {
 		return parquetschema.NewSchemaHandlerFromJSON(schema)
 	}, "create schema from JSON")
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
 	pw, err := writer.NewJSONWriterWithContext(ctx, schema, fileWriter, opts...)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	return pw, nil
@@ -229,25 +244,25 @@ func NewGenericWriter(ctx context.Context, uri string, opt WriteOption, schema s
 
 	columnKeys, err := parseWriterColumnKeys(opt.WriterColumnKeys, opt.FieldDelimiter)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	opts, err := writerOpts(opt, columnKeys)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	encOpts, err := writerColumnEncryptionSchemaOpts(opt, columnKeys, func() (*parquetschema.SchemaHandler, error) {
 		return parquetschema.NewSchemaHandlerFromJSON(schema)
 	}, "create schema from JSON")
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	opts = append(opts, encOpts...)
 	pw, err := writer.NewParquetWriterWithContext(ctx, fileWriter, schema, opts...)
 	if err != nil {
-		_ = fileWriter.Close()
+		abortFile(fileWriter)
 		return nil, err
 	}
 	return pw, nil

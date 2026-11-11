@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	parquetSource "github.com/hangxie/parquet-go/v3/source"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hangxie/parquet-tools/cmd/cat"
@@ -30,16 +29,6 @@ const jsonlLineSizeTestSchema = `{
 		{"Tag": "name=Value, inname=Value, type=BYTE_ARRAY, convertedtype=UTF8"}
 	]
 }`
-
-type mockParquetFileWriter struct {
-	closeFunc func() error
-}
-
-func (m *mockParquetFileWriter) Write(p []byte) (int, error) { return len(p), nil }
-func (m *mockParquetFileWriter) Close() error                { return m.closeFunc() }
-func (m *mockParquetFileWriter) Create(_ string) (parquetSource.ParquetFileWriter, error) {
-	return nil, fmt.Errorf("not implemented")
-}
 
 func importTestCatCmd(uri string, option pio.ReadOption) cat.Cmd {
 	return cat.Cmd{
@@ -99,7 +88,7 @@ func TestCmd(t *testing.T) {
 			},
 			"csv-target": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/csv.source", Format: "csv", Schema: "../../testdata/csv.schema", SkipHeader: false, URI: "s3://target"},
-				"failed to close Parquet file",
+				"failed to close [",
 			},
 			"json-schema-file": {
 				Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "json", Schema: "schema", SkipHeader: false, URI: "dummy"},
@@ -127,11 +116,11 @@ func TestCmd(t *testing.T) {
 			},
 			"json-target": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/json.source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: "s3://target"},
-				"failed to close Parquet file",
+				"failed to close [",
 			},
 			"json-schema-mismatch": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/json.bad-source", Format: "json", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
-				"failed to close Parquet writer",
+				"failed to end write",
 			},
 			"jsonl-schema-file": {
 				Cmd{WriteOption: wOpt, Source: "does/not/exist", Format: "jsonl", Schema: "schema", SkipHeader: false, URI: "dummy"},
@@ -155,11 +144,11 @@ func TestCmd(t *testing.T) {
 			},
 			"jsonl-target": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/jsonl.schema", SkipHeader: false, URI: "s3://target"},
-				"failed to close Parquet file",
+				"failed to close [",
 			},
 			"jsonl-schema-mismatch": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/jsonl.source", Format: "jsonl", Schema: "../../testdata/json.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
-				"failed to close Parquet writer",
+				"failed to end write",
 			},
 			"csv-unknown-not-nil": {
 				Cmd{WriteOption: wOpt, Source: "../../testdata/unknown-type-bad.csv", Format: "csv", Schema: "../../testdata/unknown-type-csv.schema", SkipHeader: false, URI: filepath.Join(tempDir, "dummy")},
@@ -935,39 +924,6 @@ func TestCmdEncryptionEncryptAllColumns(t *testing.T) {
 	})
 }
 
-func TestCloseWriter(t *testing.T) {
-	cmd := Cmd{}
-
-	t.Run("success", func(t *testing.T) {
-		mock := &mockParquetFileWriter{closeFunc: func() error { return nil }}
-		err := cmd.closeWriter(mock)
-		require.NoError(t, err)
-	})
-
-	t.Run("non-retryable-error", func(t *testing.T) {
-		mock := &mockParquetFileWriter{closeFunc: func() error { return fmt.Errorf("some other error") }}
-		err := cmd.closeWriter(mock)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "some other error")
-	})
-
-	t.Run("retry-then-success", func(t *testing.T) {
-		callCount := 0
-		mock := &mockParquetFileWriter{
-			closeFunc: func() error {
-				callCount++
-				if callCount <= 1 {
-					return fmt.Errorf("replication in progress")
-				}
-				return nil
-			},
-		}
-		err := cmd.closeWriter(mock)
-		require.NoError(t, err)
-		require.Equal(t, 2, callCount)
-	})
-}
-
 // FuzzImportJSONL walks the JSONL source path with arbitrary content: the line
 // scanner, the per-line JSON check, and the value conversions the writer does,
 // including the "NaN"/"Infinity" spellings cat emits.
@@ -1255,5 +1211,36 @@ func TestImportInvalidJSONSchema(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestCmdFailureLeavesNoReadableOutput(t *testing.T) {
+	wOpt := pio.WriteOption{CompressionCodec: "SNAPPY", PageSize: 1024 * 1024, RowGroupSize: 128 * 1024 * 1024}
+	testCases := map[string]struct {
+		format string
+		schema string
+		source string
+		errMsg string
+	}{
+		"csv-bad-row":      {"csv", "csv.schema", "csv-malformed.source", `parse BOOLEAN "valid"`},
+		"json-write-stop":  {"json", "json.schema", "json.bad-source", "failed to end write"},
+		"jsonl-write-stop": {"jsonl", "json.schema", "jsonl.source", "failed to end write"},
+		"jsonl-bad-line":   {"jsonl", "jsonl.schema", "csv.source", "invalid JSON string"},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			uri := filepath.Join(t.TempDir(), "out.parquet")
+			cmd := Cmd{
+				WriteOption: wOpt,
+				Format:      tc.format,
+				Schema:      "../../testdata/" + tc.schema,
+				Source:      "../../testdata/" + tc.source,
+				URI:         uri,
+			}
+			require.ErrorContains(t, cmd.Run(context.Background()), tc.errMsg)
+			require.FileExists(t, uri)
+			_, err := pio.NewParquetFileReader(context.Background(), uri, pio.ReadOption{})
+			require.Error(t, err, "partial output must not open as Parquet")
+		})
 	}
 }

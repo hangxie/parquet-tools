@@ -82,6 +82,14 @@ section_local() {
 
 	# A known scheme wins over a local path even when the URL is malformed.
 	assert_error 'invalid URL escape "%zz"' "${parquet_tools}" row-count 's3://somewhere/%zz'
+
+	# A write that fails partway leaves no readable output behind.
+	local partial_dir
+	partial_dir=$(mktemp -d)
+	defer "rm -rf '${partial_dir}'"
+	assert_error 'invalid JSON string: {"id": 3' "${parquet_tools}" import -f jsonl \
+		-m testdata/partial-write.schema -s testdata/partial-write.source "${partial_dir}/partial.parquet"
+	assert_error 'read footer' "${parquet_tools}" row-count "${partial_dir}/partial.parquet"
 }
 
 section_s3() {

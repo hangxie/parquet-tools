@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -405,4 +406,71 @@ func TestCheckNameFormat(t *testing.T) {
 			}
 		})
 	}
+}
+
+// The page limit trips while the first target is still mid-write.
+func TestCmdFailureLeavesNoReadableOutput(t *testing.T) {
+	tempDir := t.TempDir()
+	cmd := Cmd{
+		ReadOption:   pio.ReadOption{MaxPageSize: 50},
+		ReadPageSize: 1,
+		RecordCount:  2,
+		NameFormat:   filepath.Join(tempDir, "%d.parquet"),
+		URI:          "../../testdata/repeated-row-group.parquet",
+	}
+	require.ErrorContains(t, cmd.Run(context.Background()), "exceeds limit 50")
+	require.FileExists(t, filepath.Join(tempDir, "0.parquet"))
+	_, err := pio.NewParquetFileReader(context.Background(), filepath.Join(tempDir, "0.parquet"), pio.ReadOption{})
+	require.Error(t, err, "partial output must not open as Parquet")
+}
+
+// cancelOnFile reports cancellation once split has written the PAR1 magic to path.
+type cancelOnFile struct {
+	context.Context
+	path string
+	once sync.Once
+	done chan struct{}
+}
+
+func (c *cancelOnFile) cancelled() bool {
+	if info, err := os.Stat(c.path); err == nil && info.Size() >= 4 {
+		c.once.Do(func() { close(c.done) })
+		return true
+	}
+	return false
+}
+
+func (c *cancelOnFile) Done() <-chan struct{} {
+	c.cancelled()
+	return c.done
+}
+
+func (c *cancelOnFile) Err() error {
+	if c.cancelled() {
+		return context.Canceled
+	}
+	return nil
+}
+
+// Target 0 is finished when target 1 opens, so only target 1 is left without a footer.
+func TestCmdFailureKeepsFinishedOutput(t *testing.T) {
+	tempDir := t.TempDir()
+	ctx := &cancelOnFile{Context: context.Background(), path: filepath.Join(tempDir, "1.parquet"), done: make(chan struct{})}
+	cmd := Cmd{
+		ReadPageSize: 1,
+		RecordCount:  2,
+		NameFormat:   filepath.Join(tempDir, "%d.parquet"),
+		URI:          "../../testdata/good.parquet",
+	}
+	err := cmd.Run(ctx)
+	require.ErrorIs(t, err, context.Canceled)
+	require.ErrorContains(t, err, "failed to write data from")
+
+	reader, err := pio.NewParquetFileReader(context.Background(), filepath.Join(tempDir, "0.parquet"), pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { _ = reader.PFile.Close() }()
+	require.Equal(t, int64(2), reader.GetNumRows())
+	require.FileExists(t, ctx.path)
+	_, err = pio.NewParquetFileReader(context.Background(), ctx.path, pio.ReadOption{})
+	require.Error(t, err, "partial output must not open as Parquet")
 }

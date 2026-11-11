@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/posener/complete"
@@ -59,8 +61,32 @@ func run(kongCtx *kong.Context, ctx context.Context) error {
 	return pio.LimitFlagHint(kongCtx.Run())
 }
 
+// signalGrace absorbs a signal delivered twice at once, e.g. to both the process and its group; a variable so tests can shorten it.
+var signalGrace = 2 * time.Second
+
+// interruptContext is cancelled by the first signal and unregisters after signalGrace, so a later signal can kill a stuck shutdown.
+func interruptContext(signals ...os.Signal) (context.Context, context.CancelFunc) {
+	ctx, stopNotify := signal.NotifyContext(context.Background(), signals...)
+	var mu sync.Mutex
+	var grace *time.Timer
+	stopAfter := context.AfterFunc(ctx, func() {
+		mu.Lock()
+		defer mu.Unlock()
+		grace = time.AfterFunc(signalGrace, stopNotify)
+	})
+	return ctx, func() {
+		stopAfter()
+		mu.Lock()
+		if grace != nil {
+			grace.Stop()
+		}
+		mu.Unlock()
+		stopNotify()
+	}
+}
+
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := interruptContext(os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	parser := newParser(new(cli))
