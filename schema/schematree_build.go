@@ -2,16 +2,22 @@ package schema
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hangxie/parquet-go/v3/common"
 	"github.com/hangxie/parquet-go/v3/parquet"
 	"github.com/hangxie/parquet-go/v3/reader"
+	pqschema "github.com/hangxie/parquet-go/v3/schema"
 )
 
 func buildSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	// The tree is built before any metadata read so a malformed schema is reported, not masked by I/O errors.
-	schemas := reader.SchemaHandler.SchemaElements
+	handler := reader.SchemaHandler
+	if handler == nil {
+		return nil, fmt.Errorf("malformed schema: schema handler is nil")
+	}
+	schemas := handler.SchemaElements
 	if len(schemas) == 0 {
 		return nil, fmt.Errorf("malformed schema: schema has no elements")
 	}
@@ -22,7 +28,10 @@ func buildSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*Schema
 		SchemaElement: *schemas[0],
 		Children:      []*SchemaNode{},
 		InNamePath:    []string{schemas[0].Name},
-		ExNamePath:    strings.Split(reader.SchemaHandler.InPathToExPath[schemas[0].Name], common.ParGoPathDelimiter)[:1],
+	}
+	var err error
+	if root.ExNamePath, err = externalPath(handler, 0, root.InNamePath, nil); err != nil {
+		return nil, err
 	}
 	stack := []*SchemaNode{root}
 
@@ -54,8 +63,9 @@ func buildSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*Schema
 			copy(childNode.InNamePath, node.InNamePath)
 			childNode.InNamePath[len(node.InNamePath)] = schemas[pos].Name
 
-			inPathKey := strings.Join(childNode.InNamePath, common.ParGoPathDelimiter)
-			childNode.ExNamePath = strings.Split(reader.SchemaHandler.InPathToExPath[inPathKey], common.ParGoPathDelimiter)
+			if childNode.ExNamePath, err = externalPath(handler, pos, childNode.InNamePath, node.ExNamePath); err != nil {
+				return nil, err
+			}
 
 			node.Children = append(node.Children, childNode)
 			stack = append(stack, childNode)
@@ -72,4 +82,29 @@ func buildSchemaTree(reader *reader.ParquetReader, option SchemaOption) (*Schema
 		return nil, fmt.Errorf("malformed schema: element %d is outside the root subtree", pos)
 	}
 	return root, nil
+}
+
+// externalPath resolves an element's external path and rejects handler state left stale by schema edits.
+func externalPath(handler *pqschema.SchemaHandler, pos int, inPath, parentExPath []string) ([]string, error) {
+	inPathStr := strings.Join(inPath, ".")
+	exPathKey, found := handler.InPathToExPath[strings.Join(inPath, common.ParGoPathDelimiter)]
+	if !found {
+		return nil, fmt.Errorf("malformed schema: no external path for element %d [%s]", pos, inPathStr)
+	}
+	exPath := strings.Split(exPathKey, common.ParGoPathDelimiter)
+	exPathStr := strings.Join(exPath, ".")
+	if len(exPath) != len(parentExPath)+1 || !slices.Equal(exPath[:len(parentExPath)], parentExPath) {
+		return nil, fmt.Errorf("malformed schema: external path [%s] of element %d [%s] does not extend parent path [%s]",
+			exPathStr, pos, inPathStr, strings.Join(parentExPath, "."))
+	}
+	exName := exPath[len(exPath)-1]
+	if exName == "" {
+		return nil, fmt.Errorf("malformed schema: external path [%s] of element %d [%s] has an empty name", exPathStr, pos, inPathStr)
+	}
+	// Infos holds the authoritative per-element names when it is aligned with the elements.
+	if len(handler.Infos) == len(handler.SchemaElements) && handler.Infos[pos] != nil && handler.Infos[pos].ExName != exName {
+		return nil, fmt.Errorf("malformed schema: external name [%s] of element %d [%s] does not match schema info [%s]",
+			exName, pos, inPathStr, handler.Infos[pos].ExName)
+	}
+	return exPath, nil
 }

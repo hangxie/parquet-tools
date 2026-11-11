@@ -198,6 +198,7 @@ func buildBloomFilterMap(ctx context.Context, pr *reader.ParquetReader) (map[str
 	return result, nil
 }
 
+// NewSchemaTree requires the handler's path maps to match its elements, cross-checked against Infos only when aligned; rebuild it after edits.
 func NewSchemaTree(ctx context.Context, reader *reader.ParquetReader, option SchemaOption) (*SchemaNode, error) {
 	root, err := buildSchemaTree(reader, option)
 	if err != nil {
