@@ -63,14 +63,8 @@ func (c *Cmd) openReader(ctx context.Context) (*reader.ParquetReader, error) {
 }
 
 func (c *Cmd) switchWriter(ctx context.Context) error {
-	if c.current.writer != nil {
-		if err := c.current.writer.WriteStopWithContext(ctx); err != nil {
-			return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
-		}
-		if err := c.current.writer.PFile.Close(); err != nil {
-			return fmt.Errorf("failed to close [%s]: %w", c.current.targetFile, err)
-		}
-		c.current.writer = nil
+	if err := c.closeWriter(ctx); err != nil {
+		return err
 	}
 
 	var err error
@@ -114,12 +108,10 @@ func (c Cmd) Run(ctx context.Context) error {
 	defer func() {
 		_ = parquetReader.PFile.Close()
 	}()
-	// Best-effort close of the in-flight target writer on any early return
-	// (read/write/switch error). closeWriter clears current.writer on the
-	// success path so this does not double-close.
+	// a writer still open here means an early return or a panic; finished targets stay
 	defer func() {
 		if c.current.writer != nil {
-			_ = c.current.writer.PFile.Close()
+			pio.AbortWrite(c.current.writer)
 		}
 	}()
 
@@ -164,14 +156,9 @@ func (c *Cmd) closeWriter(ctx context.Context) error {
 	if c.current.writer == nil {
 		return nil
 	}
-	if err := c.current.writer.WriteStopWithContext(ctx); err != nil {
-		return fmt.Errorf("failed to end write [%s]: %w", c.current.targetFile, err)
-	}
-	if err := c.current.writer.PFile.Close(); err != nil {
-		return fmt.Errorf("failed to close [%s]: %w", c.current.targetFile, err)
-	}
+	w := c.current.writer
 	c.current.writer = nil
-	return nil
+	return pio.FinishWrite(ctx, w, c.current.targetFile)
 }
 
 func checkNameFormat(nameFormat string) error {

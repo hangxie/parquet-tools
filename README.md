@@ -59,6 +59,7 @@ parquet-tools: error: expected one of "cat", "import", "inspect", "merge", "meta
     - [Prebuilt RPM and deb Packages](#prebuilt-rpm-and-deb-packages)
   - [Usage](#usage)
     - [Canceling a Command](#canceling-a-command)
+    - [Failed Writes](#failed-writes)
     - [Obtain Help](#obtain-help)
     - [Parquet File Location](#parquet-file-location)
       - [File System](#file-system)
@@ -244,7 +245,22 @@ For future upgrades, install a newer `go-parquet-tools` release using the same i
 
 ### Canceling a Command
 
-Press Ctrl+C to cancel an active command. `parquet-tools` also handles `SIGTERM`, allowing long-running reads, writes, and inspection operations to stop cleanly.
+Press Ctrl+C to cancel an active command. `parquet-tools` also handles `SIGTERM`, allowing long-running reads, writes, and inspection operations to stop cleanly. If stopping takes too long, for example while a cloud upload is being cancelled, press Ctrl+C again (more than two seconds after the first) to exit immediately. That skips the remaining cleanup, so a cancelled S3 multipart upload can leave its uploaded parts in the bucket, as described in [Failed Writes](#failed-writes).
+
+### Failed Writes
+
+When `import`, `merge`, `retype`, `split`, or `transcode` fails partway, it does not write a footer, so the output is not a valid Parquet file holding only some of the rows. Whatever was written to a local or HDFS file stays there, and opening it fails, so remove it before retrying if your workflow picks up every file in a location. After Ctrl+C, closing an HDFS file is not retried, so the file may stay open for writing until HDFS recovers its lease. Uploads to S3, GCS, and Azure are cancelled so they do not complete. Two cases are uncertain: if the command is interrupted while it finishes the file, or closing fails after the footer was written (such as an HDFS close error), a local or HDFS file may be complete and readable even though the command reports an error.
+
+For example, the third line of this JSONL source is not valid JSON, so `import` fails after reading two records and the output cannot be read:
+
+```bash
+$ parquet-tools import -f jsonl -m testdata/partial-write.schema -s testdata/partial-write.source /tmp/partial.parquet
+parquet-tools: error: invalid JSON string: {"id": 3
+$ parquet-tools row-count /tmp/partial.parquet
+parquet-tools: error: read footer: get footer tail: seek to footer tail: seek /tmp/partial.parquet: invalid argument
+```
+
+Cancelling an upload is best effort. If the failure is only reported after the service has already committed the object, such as a network error while waiting for the final response, the object may still be written and may replace an existing one at the target. A large S3 upload goes up in parts, and cleaning those up on cancel needs the `s3:AbortMultipartUpload` permission. Without it, no object appears, but the parts already uploaded stay in the bucket, and are billed, until removed, for example by a lifecycle rule for incomplete multipart uploads; this is not reported as an error. An existing local file is truncated as soon as writing starts, so a failed command leaves it truncated. When `split` fails, the output files it already finished are complete; only the one it was writing is left without a footer.
 
 ### Obtain Help
 `parquet-tools` provides help information through `-h` flag, whenever you are not sure about a parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:

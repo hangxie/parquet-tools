@@ -130,6 +130,8 @@ func TestNewParquetFileWriter(t *testing.T) {
 		},
 	}
 
+	streamingCases := map[string]bool{"s3-good": true, "azblob-good": true, "azblob-abfss-good": true}
+
 	t.Setenv("AWS_CONFIG_FILE", "/dev/null")
 	t.Setenv("AWS_PROFILE", "")
 	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/dev/null")
@@ -150,6 +152,9 @@ func TestNewParquetFileWriter(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+			// only streaming uploads get the abort wrapper; local and HDFS keep the caller's context
+			_, abortable := pw.(interface{ Abort() })
+			require.Equal(t, streamingCases[name], abortable)
 		})
 	}
 }

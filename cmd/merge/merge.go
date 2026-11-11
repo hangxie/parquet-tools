@@ -25,7 +25,7 @@ type Cmd struct {
 }
 
 // Run does actual merge job
-func (c Cmd) Run(ctx context.Context) (retErr error) {
+func (c Cmd) Run(ctx context.Context) error {
 	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
 		return err
 	}
@@ -52,12 +52,10 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
+	finished := false
 	defer func() {
-		if err := fileWriter.WriteStopWithContext(ctx); err != nil && retErr == nil {
-			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
-		}
-		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
-			retErr = fmt.Errorf("failed to close [%s]: %w", c.URI, err)
+		if !finished {
+			pio.AbortWrite(fileWriter)
 		}
 	}()
 
@@ -87,7 +85,11 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 		return readerGroup.Wait()
 	})
 
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	finished = true
+	return pio.FinishWrite(ctx, fileWriter, c.URI)
 }
 
 func (c Cmd) openSources(ctx context.Context) (_ []*reader.ParquetReader, _ string, retErr error) {

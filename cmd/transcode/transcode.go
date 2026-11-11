@@ -202,7 +202,7 @@ func (c Cmd) modifySchemaTree(schemaTree *pschema.SchemaNode, fieldEncodings, fi
 }
 
 // Run does actual transcode job
-func (c Cmd) Run(ctx context.Context) (retErr error) {
+func (c Cmd) Run(ctx context.Context) error {
 	if err := pio.ValidateFieldDelimiter(c.FieldDelimiter); err != nil {
 		return err
 	}
@@ -259,14 +259,16 @@ func (c Cmd) Run(ctx context.Context) (retErr error) {
 	if err != nil {
 		return fmt.Errorf("failed to write to [%s]: %w", c.URI, err)
 	}
+	finished := false
 	defer func() {
-		if err := fileWriter.WriteStopWithContext(ctx); err != nil && retErr == nil {
-			retErr = fmt.Errorf("failed to end write [%s]: %w", c.URI, err)
-		}
-		if err := fileWriter.PFile.Close(); err != nil && retErr == nil {
-			retErr = fmt.Errorf("failed to close [%s]: %w", c.URI, err)
+		if !finished {
+			pio.AbortWrite(fileWriter)
 		}
 	}()
 
-	return pio.RunPipeline(ctx, fileReader, fileWriter, c.Source, c.URI, c.ReadPageSize, nil)
+	if err := pio.RunPipeline(ctx, fileReader, fileWriter, c.Source, c.URI, c.ReadPageSize, nil); err != nil {
+		return err
+	}
+	finished = true
+	return pio.FinishWrite(ctx, fileWriter, c.URI)
 }

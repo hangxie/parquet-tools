@@ -11,9 +11,6 @@ import (
 	"math"
 	"os"
 	"strings"
-	"time"
-
-	parquetSource "github.com/hangxie/parquet-go/v3/source"
 
 	pio "github.com/hangxie/parquet-tools/io"
 )
@@ -58,20 +55,6 @@ func (c Cmd) Run(ctx context.Context) error {
 	return fmt.Errorf("[%s] is not a recognized source format", c.Format)
 }
 
-func (c Cmd) closeWriter(pf parquetSource.ParquetFileWriter) error {
-	// retry on particular errors according to https://github.com/colinmarc/hdfs/blob/v2.4.0/file_writer.go#L220-L226
-	var err error
-	for range 10 {
-		err = pf.Close()
-		if err != nil && strings.Contains(err.Error(), "replication in progress") {
-			time.Sleep(1 * time.Second)
-			continue
-		}
-		break
-	}
-	return err
-}
-
 func (c Cmd) importCSV(ctx context.Context) error {
 	schemaData, err := os.ReadFile(c.Schema)
 	if err != nil {
@@ -100,12 +83,10 @@ func (c Cmd) importCSV(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create CSV writer: %w", err)
 	}
-	// Best-effort close (with HDFS retry) on every error path once the writer
-	// exists; disabled once the explicit close below takes over.
-	closed := false
+	finished := false
 	defer func() {
-		if !closed {
-			_ = c.closeWriter(parquetWriter.PFile)
+		if !finished {
+			pio.AbortWrite(&parquetWriter.ParquetWriter)
 		}
 	}()
 
@@ -128,16 +109,8 @@ func (c Cmd) importCSV(ctx context.Context) error {
 			return fmt.Errorf("failed to write [%v] to parquet: %w", fields, err)
 		}
 	}
-	if err := parquetWriter.WriteStopWithContext(ctx); err != nil {
-		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
-	}
-
-	closed = true
-	if err := c.closeWriter(parquetWriter.PFile); err != nil {
-		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
-	}
-
-	return nil
+	finished = true
+	return pio.FinishWrite(ctx, &parquetWriter.ParquetWriter, c.URI)
 }
 
 func (c Cmd) importJSON(ctx context.Context) error {
@@ -165,12 +138,10 @@ func (c Cmd) importJSON(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
-	// Best-effort close (with HDFS retry) on every error path once the writer
-	// exists; disabled once the explicit close below takes over.
-	closed := false
+	finished := false
 	defer func() {
-		if !closed {
-			_ = c.closeWriter(parquetWriter.PFile)
+		if !finished {
+			pio.AbortWrite(&parquetWriter.ParquetWriter)
 		}
 	}()
 
@@ -180,15 +151,8 @@ func (c Cmd) importJSON(ctx context.Context) error {
 		}
 	}
 
-	if err := parquetWriter.WriteStopWithContext(ctx); err != nil {
-		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
-	}
-	closed = true
-	if err := c.closeWriter(parquetWriter.PFile); err != nil {
-		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
-	}
-
-	return nil
+	finished = true
+	return pio.FinishWrite(ctx, &parquetWriter.ParquetWriter, c.URI)
 }
 
 func (c Cmd) importJSONL(ctx context.Context) error {
@@ -232,12 +196,10 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create JSON writer: %w", err)
 	}
-	// Best-effort close (with HDFS retry) on every error path once the writer
-	// exists; disabled once the explicit close below takes over.
-	closed := false
+	finished := false
 	defer func() {
-		if !closed {
-			_ = c.closeWriter(parquetWriter.PFile)
+		if !finished {
+			pio.AbortWrite(&parquetWriter.ParquetWriter)
 		}
 	}()
 
@@ -266,13 +228,6 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 			err,
 		)
 	}
-	if err := parquetWriter.WriteStopWithContext(ctx); err != nil {
-		return fmt.Errorf("failed to close Parquet writer [%s]: %w", c.URI, err)
-	}
-	closed = true
-	if err := c.closeWriter(parquetWriter.PFile); err != nil {
-		return fmt.Errorf("failed to close Parquet file [%s]: %w", c.URI, err)
-	}
-
-	return nil
+	finished = true
+	return pio.FinishWrite(ctx, &parquetWriter.ParquetWriter, c.URI)
 }

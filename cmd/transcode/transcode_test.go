@@ -1961,3 +1961,17 @@ func BenchmarkTranscodeCmd(b *testing.B) {
 		}
 	})
 }
+
+func TestCmdFailureLeavesNoReadableOutput(t *testing.T) {
+	uri := filepath.Join(t.TempDir(), "out.parquet")
+	cmd := Cmd{
+		ReadOption:   pio.ReadOption{MaxPageSize: 10},
+		ReadPageSize: 1,
+		Source:       "../../testdata/good.parquet",
+		URI:          uri,
+	}
+	require.ErrorContains(t, cmd.Run(context.Background()), "exceeds limit 10")
+	require.FileExists(t, uri)
+	_, err := pio.NewParquetFileReader(context.Background(), uri, pio.ReadOption{})
+	require.Error(t, err, "partial output must not open as Parquet")
+}
