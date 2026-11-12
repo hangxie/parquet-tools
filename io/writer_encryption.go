@@ -15,15 +15,6 @@ const (
 	writerEncryptionAlgorithmAESGCMCTRV1 = "AES-GCM-CTR-V1"
 )
 
-func validateWriterAESKey(name string, key []byte) error {
-	switch len(key) {
-	case 16, 24, 32:
-		return nil
-	default:
-		return fmt.Errorf("%s must be 16, 24, or 32 bytes after base64 decoding, got %d bytes", name, len(key))
-	}
-}
-
 func writerEncryptionRequested(option WriteOption) bool {
 	// --encryption-algorithm only selects an algorithm once encryption is
 	// enabled by the writer key flags; it does not request encryption by itself.
@@ -133,7 +124,7 @@ func writerEncryptionOpts(option WriteOption, columnKeys []writerColumnKey) ([]w
 	if err != nil {
 		return nil, fmt.Errorf("invalid base64 writer footer key: %w", err)
 	}
-	if err := validateWriterAESKey("writer footer key", footerKey); err != nil {
+	if err := validateAESKey("writer footer key", footerKey); err != nil {
 		return nil, err
 	}
 
@@ -148,7 +139,7 @@ func writerEncryptionOpts(option WriteOption, columnKeys []writerColumnKey) ([]w
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 writer column key for [%s]: %w", ck.Path, err)
 		}
-		if err := validateWriterAESKey("writer column key for ["+ck.Path+"]", key); err != nil {
+		if err := validateAESKey("writer column key for ["+ck.Path+"]", key); err != nil {
 			return nil, err
 		}
 
