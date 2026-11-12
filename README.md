@@ -748,6 +748,17 @@ $ parquet-tools transcode \
     re-encrypted-output.parquet
 ```
 
+To decrypt a file, give only the reader keys. With no writer-encryption flag the output is a plain Parquet file that any tool can read without keys:
+
+```bash
+$ parquet-tools transcode \
+    -s testdata/encrypted-footer.parquet \
+    --key-file testdata/key-file-all.json \
+    /tmp/decrypted.parquet
+$ parquet-tools row-count /tmp/decrypted.parquet
+50
+```
+
 ### Read Limits
 
 Every command that reads Parquet pages guards against pages crafted to exhaust memory, with three limits that each default to 256 MB:
