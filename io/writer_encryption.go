@@ -53,6 +53,9 @@ func applyWriterKeyFile(kf keyFileSchema, opt *WriteOption) {
 }
 
 func applyWriterKeyFileOption(option WriteOption) (WriteOption, error) {
+	if err := applyWriteKeyEnv(&option); err != nil {
+		return option, err
+	}
 	if option.WriterKeyFile == nil {
 		return option, nil
 	}

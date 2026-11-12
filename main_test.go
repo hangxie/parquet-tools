@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -86,5 +88,120 @@ func TestParserValueMode(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestParserKeySourcesMutuallyExclusive(t *testing.T) {
+	readPlain := []string{"--footer-key=a", "--aad-prefix=a", "--column-key=c=a"}
+	readEnv := []string{"--footer-key-env=A", "--aad-prefix-env=A", "--column-key-env=c=A"}
+	readFile := []string{"--key-file=keys.json"}
+	writePlain := []string{"--writer-footer-key=a", "--writer-column-key=c=a"}
+	writeEnv := []string{"--writer-footer-key-env=A", "--writer-column-key-env=c=A"}
+	writeFile := []string{"--writer-key-file=keys.json"}
+
+	testCases := map[string]struct {
+		base []string
+		sets [][]string
+	}{
+		"reader": {[]string{"cat", "testdata/good.parquet"}, [][]string{readPlain, readEnv, readFile}},
+		"writer": {[]string{"transcode", "-s", "testdata/good.parquet", "out.parquet"}, [][]string{writePlain, writeEnv, writeFile}},
+	}
+
+	parse := func(base []string, flags ...string) error {
+		_, err := newParser(new(cli)).Parse(append(append([]string{}, base...), flags...))
+		return err
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			for i, set := range tc.sets {
+				// flags of one set may all be used together
+				require.NoError(t, parse(tc.base, set...), set)
+
+				// any flag of one set conflicts with any flag of another
+				for _, other := range tc.sets[i+1:] {
+					for _, a := range set {
+						for _, b := range other {
+							require.ErrorContains(t, parse(tc.base, a, b), "can't be used together", "%s %s", a, b)
+						}
+					}
+				}
+			}
+		})
+	}
+
+	t.Run("reader-and-writer-independent", func(t *testing.T) {
+		require.NoError(t, parse([]string{"transcode", "-s", "testdata/good.parquet", "out.parquet"}, "--key-file=keys.json", "--writer-footer-key-env=A"))
+	})
+}
+
+// runCLI parses and runs one command line, returning what it wrote to stdout.
+func runCLI(t *testing.T, args ...string) (string, error) {
+	t.Helper()
+	kongCtx, err := newParser(new(cli)).Parse(args)
+	require.NoError(t, err)
+
+	r, w, err := os.Pipe()
+	require.NoError(t, err)
+	output := make(chan string, 1)
+	go func() {
+		data, _ := io.ReadAll(r)
+		_ = r.Close()
+		output <- string(data)
+	}()
+
+	runErr := func() error {
+		// deferred so stdout comes back even if the command panics
+		saved := os.Stdout
+		os.Stdout = w
+		defer func() {
+			os.Stdout = saved
+			_ = w.Close()
+		}()
+		return run(kongCtx, context.Background())
+	}()
+	return <-output, runErr
+}
+
+// Keys named by variables must survive the whole path: encrypt on write, decrypt on read.
+func TestEncryptionRoundTripWithKeysFromEnv(t *testing.T) {
+	t.Setenv("PT_E2E_FOOTER", "MDEyMzQ1Njc4OTAxMjM0NQ==")
+	t.Setenv("PT_E2E_COLUMN", "MTIzNDU2Nzg5MDEyMzQ1MA==")
+	const source = "testdata/good.parquet"
+
+	original, err := runCLI(t, "cat", "--format", "jsonl", source)
+	require.NoError(t, err)
+	require.NotEmpty(t, original)
+
+	keyFile := filepath.Join(t.TempDir(), "keys.json")
+	require.NoError(t, os.WriteFile(keyFile, []byte(`{"footer_key_env":"PT_E2E_FOOTER","column_keys_env":{"shoe_name":"PT_E2E_COLUMN"}}`), 0o600))
+
+	flags := func(prefix string) []string {
+		return []string{"--" + prefix + "footer-key-env", "PT_E2E_FOOTER", "--" + prefix + "column-key-env", "shoe_name=PT_E2E_COLUMN"}
+	}
+	testCases := map[string]struct {
+		writeKeys []string
+		readKeys  []string
+	}{
+		"flags":                {flags("writer-"), flags("")},
+		"key-file":             {[]string{"--writer-key-file", keyFile}, []string{"--key-file", keyFile}},
+		"flags-then-key-file":  {flags("writer-"), []string{"--key-file", keyFile}},
+		"key-file-then-flags":  {[]string{"--writer-key-file", keyFile}, flags("")},
+		"plain-then-env-flags": {[]string{"--writer-footer-key", "MDEyMzQ1Njc4OTAxMjM0NQ==", "--writer-column-key", "shoe_name=MTIzNDU2Nzg5MDEyMzQ1MA=="}, flags("")},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			encrypted := filepath.Join(t.TempDir(), "encrypted.parquet")
+			_, err := runCLI(t, append([]string{"transcode", "-s", source, encrypted}, tc.writeKeys...)...)
+			require.NoError(t, err)
+
+			_, err = runCLI(t, "cat", "--format", "jsonl", encrypted)
+			require.ErrorContains(t, err, "decryption key required")
+
+			decrypted, err := runCLI(t, append([]string{"cat", "--format", "jsonl", encrypted}, tc.readKeys...)...)
+			require.NoError(t, err)
+			require.Equal(t, original, decrypted)
+		})
 	}
 }

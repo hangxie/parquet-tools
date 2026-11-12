@@ -26,16 +26,19 @@ import (
 
 // ReadOption includes options for read operation
 type ReadOption struct {
-	AADPrefix              *string           `name:"aad-prefix" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)."`
+	AADPrefix              *string           `name:"aad-prefix" xor:"rkey-ap-fke,rkey-ap-ape,rkey-ap-cke" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)."`
+	AADPrefixEnv           *string           `name:"aad-prefix-env" xor:"rkey-fk-ape,rkey-ap-ape,rkey-ck-ape" group:"Encryption" help:"(encrypted files only) name of an environment variable holding the base64 AAD prefix. Cannot be combined with plain key flags or --key-file."`
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
-	ColumnKeys             []string          `name:"column-key" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
+	ColumnKeys             []string          `name:"column-key" xor:"rkey-ck-fke,rkey-ck-ape,rkey-ck-cke" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
+	ColumnKeyEnvs          []string          `name:"column-key-env" xor:"rkey-fk-cke,rkey-ap-cke,rkey-ck-cke" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=ENV_NAME', where the environment variable holds the base64 key; repeatable. Cannot be combined with plain key flags or --key-file." placeholder:"column.path=ENV_NAME"`
 	FieldDelimiter         string            `kong:"-"`
-	FooterKey              *string           `name:"footer-key" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first."`
+	FooterKey              *string           `name:"footer-key" xor:"rkey-fk-fke,rkey-fk-ape,rkey-fk-cke" group:"Encryption" help:"(encrypted files only) base64-encoded AES-128/192/256 key to decrypt the footer. KMS is not directly supported; retrieve the key manually first."`
+	FooterKeyEnv           *string           `name:"footer-key-env" xor:"rkey-fk-fke,rkey-ap-fke,rkey-ck-fke" group:"Encryption" help:"(encrypted files only) name of an environment variable holding the base64 footer key. Cannot be combined with plain key flags or --key-file."`
 	HTTPExtraHeaders       map[string]string `mapsep:"," help:"(HTTP URI only) extra HTTP headers." default:""`
 	HTTPIgnoreTLSError     bool              `help:"(HTTP and S3 URI) ignore TLS error." default:"false"`
 	HTTPMultipleConnection bool              `help:"(HTTP URI only) use multiple HTTP connection." default:"false"`
 	ObjectVersion          *string           `help:"(S3, GCS, and Azure only) object version."`
-	KeyFile                *string           `name:"key-file" group:"Encryption" help:"path to a JSON file containing decryption keys ({footer_key, aad_prefix, column_keys}); CLI flags override file values."`
+	KeyFile                *string           `name:"key-file" xor:"rkey-fk-fke,rkey-fk-ape,rkey-fk-cke,rkey-ap-fke,rkey-ap-ape,rkey-ap-cke,rkey-ck-fke,rkey-ck-ape,rkey-ck-cke" group:"Encryption" help:"path to a JSON file containing decryption keys ({footer_key, aad_prefix, column_keys}); a '_env' variant of each field names an environment variable holding the value instead. Cannot be combined with plain key flags or -env key flags."`
 	MaxDecodedBatchBytes   int64             `name:"max-decoded-batch-bytes" group:"Read Limits" help:"Maximum DELTA_BYTE_ARRAY value bytes decoded per 1,024 values; 0 uses the default of 268435456, -1 disables the limit (unsafe for untrusted files)." default:"0"`
 	MaxDecompressedSize    int64             `name:"max-decompressed-size" group:"Read Limits" help:"Maximum decoded page size in bytes; 0 uses the default of 268435456, -1 disables the limit (unsafe for untrusted files)." default:"0"`
 	MaxPageSize            int64             `name:"max-page-size" group:"Read Limits" help:"Maximum stored page size in bytes; 0 uses the default of 268435456, -1 disables the limit (unsafe for untrusted files)." default:"0"`
@@ -210,6 +213,9 @@ func newSourceReader(ctx context.Context, URI string, option ReadOption) (source
 }
 
 func NewParquetFileReader(ctx context.Context, URI string, option ReadOption) (*reader.ParquetReader, error) {
+	if err := applyReadKeyEnv(&option); err != nil {
+		return nil, err
+	}
 	if option.KeyFile != nil {
 		kf, err := parseKeyFile(*option.KeyFile)
 		if err != nil {

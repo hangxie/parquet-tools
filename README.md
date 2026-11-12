@@ -590,6 +590,8 @@ All supplied key and AAD values must be standard base64 with padding (RFC 4648 �
 * `--footer-key`: AES-128, AES-192, or AES-256 footer key.
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
 * `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it.
+* `--footer-key-env`, `--aad-prefix-env`: name of an environment variable holding the value the plain flag would take.
+* `--column-key-env`: column key in `column.path=ENV_NAME` form, where the variable holds the base64 key; repeat the flag for multiple columns.
 
 Nested paths in field and column parameters use `.` as their delimiter by default. Set `--field-delimiter` to use another non-empty string that does not contain `=` (the assignment separator). This is useful when a field name contains a literal dot: for example, `--field-delimiter=/ --column-key 'user.info/ssn=KEY'` addresses the nested field `ssn` under a field literally named `user.info`. The delimiter applies to `--column-key`, `--writer-column-key`, `--field-encoding`, `--field-compression`, `--field-bloom-filter`, and column paths in key files.
 
@@ -610,7 +612,18 @@ $ parquet-tools cat \
     encrypted.parquet
 ```
 
-To keep keys out of shell history and `ps` output, use `--key-file` instead:
+The `-env` flags keep the key itself out of shell history and `ps` output, since only the variable's name is on the command line:
+
+```bash
+$ export PARQUET_FOOTER_KEY=MDEyMzQ1Njc4OTAxMjM0NQ==
+$ export PARQUET_DOUBLE_KEY=MTIzNDU2Nzg5MDEyMzQ1MA==
+$ parquet-tools cat \
+    --footer-key-env PARQUET_FOOTER_KEY \
+    --column-key-env double_field=PARQUET_DOUBLE_KEY \
+    encrypted.parquet
+```
+
+A key file does the same for a whole set of keys; pass it with `--key-file`:
 
 ```bash
 $ parquet-tools cat --key-file ~/.parquet/keys.json encrypted.parquet
@@ -629,11 +642,45 @@ The file is JSON with all fields optional:
 }
 ```
 
-CLI flags take precedence over file values. `--column-key` flags are merged with `column_keys` from the file; CLI wins per column path. Unknown fields and trailing data in the JSON file are rejected. Set the file's permissions to `600` to prevent other users from reading it:
+Unknown fields and trailing data in the JSON file are rejected. Set the file's permissions to `600` to prevent other users from reading it:
 
 ```bash
 chmod 600 ~/.parquet/keys.json
 ```
+
+To keep key material out of the file as well, name an environment variable instead of giving the value. Each field has an `_env` variant that holds the name of a variable, and the variable holds the same base64 value the plain field would:
+
+```json
+{
+  "footer_key_env":  "PARQUET_FOOTER_KEY",
+  "aad_prefix_env":  "PARQUET_AAD_PREFIX",
+  "column_keys_env": {
+    "user.email": "PARQUET_EMAIL_KEY",
+    "user.ssn":   "PARQUET_SSN_KEY"
+  }
+}
+```
+
+```bash
+$ export PARQUET_FOOTER_KEY=MDEyMzQ1Njc4OTAxMjM0NQ==
+$ export PARQUET_AAD_PREFIX=... PARQUET_EMAIL_KEY=... PARQUET_SSN_KEY=...
+$ parquet-tools cat --key-file ~/.parquet/keys.json encrypted.parquet
+```
+
+There is no precedence between the ways of supplying keys, because they cannot be combined:
+
+1. On the command line, choose one of three: plain flags (`--footer-key`, `--aad-prefix`, `--column-key`), `-env` flags (`--footer-key-env`, `--aad-prefix-env`, `--column-key-env`), or `--key-file`. Using flags from more than one of them is an error, even for different values, such as `--footer-key` with `--column-key-env`, or `--key-file` with `--aad-prefix`.
+2. Inside a key file, choose one of two: plain fields (`footer_key`, `aad_prefix`, `column_keys`) or `_env` fields (`footer_key_env`, `aad_prefix_env`, `column_keys_env`). A file with fields of both kinds is an error, even for different values, such as `footer_key_env` with `column_keys`. A field counts as given even when its value is an empty string or an empty object, and an `_env` field with an empty name is an error.
+
+Either error stops the command before it reads any data. Every variable named, on the command line or in the key file, must be set and non-empty; otherwise the command fails and names the variable. Whitespace around a variable's value is ignored.
+
+> [!IMPORTANT]
+> **Changed behavior.** Up to v1.57.4, `--key-file` could be combined with the plain flags, which overrode the file's values. That combination is now rejected. Put every key in the key file, or pass them all as flags.
+
+> [!WARNING]
+> **Plain key values are deprecated**, both the flags (`--footer-key`, `--aad-prefix`, `--column-key`, `--writer-footer-key`, `--writer-column-key`) and the key file fields (`footer_key`, `aad_prefix`, `column_keys`). They still work for now. A future release will print a warning when one is used, and a later one will remove them and accept only the environment-variable forms; see [#1192](https://github.com/hangxie/parquet-tools/issues/1192). Move over by putting each value in an environment variable and switching to the `-env` flag or `_env` field.
+
+Environment variables are visible to other processes of the same user, so this keeps keys off disk and off the command line and lets a secret manager or CI system inject them, but it does not hide them from that user.
 
 These flags — including `--key-file` — are available on `cat`, `schema`, `meta`, `size`, `row-count`, `inspect`, `split`, `retype`, `merge`, and `transcode`. For `merge`, all encrypted source files must use the same supplied key set. To merge files with different keys, first strip encryption by transcoding each file to a plain Parquet file, then merge the plain outputs.
 
@@ -652,7 +699,11 @@ All writer keys must be standard base64 with padding (RFC 4648 §4) and must dec
 
 `--writer-column-key column.path=VALUE` selects per-column encryption for the listed column. `column.path` is the file-schema path of a leaf column **without** the schema root (e.g. `Parent.Child`, not `parquet_go_root.Parent.Child`) and uses `--field-delimiter` between components. `VALUE` is either a base64-encoded AES key (the column gets its own dedicated key) or the literal `@footer-key` (the column is encrypted with `--writer-footer-key`). The leading `@` is outside the base64 alphabet, so the sentinel cannot collide with a key value.
 
+`@footer-key` always stands where a key value would: as `VALUE` here, as a `column_keys` value in a key file, or as the content of the variable named by `--writer-column-key-env` or `column_keys_env`. It is not accepted in place of a variable's name.
+
 By default, columns not listed in `--writer-column-key` are written as plaintext. Set `--encrypt-all-columns` to encrypt every leaf column not otherwise listed with `--writer-footer-key`.
+
+`--writer-footer-key-env ENV_NAME` and `--writer-column-key-env column.path=ENV_NAME` take the key from an environment variable instead, so it stays off the command line. They follow the same rules as the reader's `-env` flags in [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files), including the deprecation of the plain flags. Plain writer flags, `-env` writer flags, and `--writer-key-file` are likewise mutually exclusive, so with `-env` flags a column that should use the footer key takes a variable holding the sentinel: `export SHOE_NAME_KEY=@footer-key`, then `--writer-column-key-env shoe_name=SHOE_NAME_KEY`. The rule applies to reader keys and writer keys separately: a command may read with `--key-file` and write with `--writer-footer-key-env`.
 
 To keep writer keys out of shell history and `ps` output, use `--writer-key-file` instead:
 
@@ -676,7 +727,7 @@ $ parquet-tools import -f csv \
 }
 ```
 
-CLI flags override file values. `--writer-column-key` flags merge with `column_keys`; CLI wins per column path. Unknown fields and trailing data in the JSON file are rejected. Recommend `chmod 600` on the file.
+Unknown fields and trailing data in the JSON file are rejected. Recommend `chmod 600` on the file. The `footer_key_env` and `column_keys_env` variants work here too, with the same rules and the same deprecation of plain values, as described in [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files). In an `_env` file, `@footer-key` goes in the variable, as with the `-env` flags.
 
 Supported write scenarios:
 
