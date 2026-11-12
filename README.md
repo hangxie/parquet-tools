@@ -589,7 +589,7 @@ All supplied key and AAD values must be standard base64 with padding (RFC 4648 ย
 
 * `--footer-key`: AES-128, AES-192, or AES-256 footer key.
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
-* `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it.
+* `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it. When the file stores its own prefix, that stored prefix is used and `--aad-prefix` is not checked against it.
 * `--footer-key-env`, `--aad-prefix-env`: name of an environment variable holding the value the plain flag would take.
 * `--column-key-env`: column key in `column.path=ENV_NAME` form, where the variable holds the base64 key; repeat the flag for multiple columns.
 
@@ -678,7 +678,7 @@ Either error stops the command before it reads any data. Every variable named, o
 > **Changed behavior.** Up to v1.57.4, `--key-file` could be combined with the plain flags, which overrode the file's values. That combination is now rejected. Put every key in the key file, or pass them all as flags.
 
 > [!WARNING]
-> **Plain key values are deprecated**, both the flags (`--footer-key`, `--aad-prefix`, `--column-key`, `--writer-footer-key`, `--writer-column-key`) and the key file fields (`footer_key`, `aad_prefix`, `column_keys`). They still work for now. A future release will print a warning when one is used, and a later one will remove them and accept only the environment-variable forms; see [#1192](https://github.com/hangxie/parquet-tools/issues/1192). Move over by putting each value in an environment variable and switching to the `-env` flag or `_env` field.
+> **Plain key values are deprecated**, both the flags (`--footer-key`, `--aad-prefix`, `--column-key`, `--writer-footer-key`, `--writer-aad-prefix`, `--writer-column-key`) and the key file fields (`footer_key`, `aad_prefix`, `column_keys`). They still work for now. A future release will print a warning when one is used, and a later one will remove them and accept only the environment-variable forms; see [#1192](https://github.com/hangxie/parquet-tools/issues/1192). Move over by putting each value in an environment variable and switching to the `-env` flag or `_env` field.
 
 Environment variables are visible to other processes of the same user, so this keeps keys off disk and off the command line and lets a secret manager or CI system inject them, but it does not hide them from that user.
 
@@ -703,7 +703,20 @@ All writer keys must be standard base64 with padding (RFC 4648 ยง4) and must dec
 
 By default, columns not listed in `--writer-column-key` are written as plaintext. Set `--encrypt-all-columns` to encrypt every leaf column not otherwise listed with `--writer-footer-key`.
 
-`--writer-footer-key-env ENV_NAME` and `--writer-column-key-env column.path=ENV_NAME` take the key from an environment variable instead, so it stays off the command line. They follow the same rules as the reader's `-env` flags in [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files), including the deprecation of the plain flags. Plain writer flags, `-env` writer flags, and `--writer-key-file` are likewise mutually exclusive, so with `-env` flags a column that should use the footer key takes a variable holding the sentinel: `export SHOE_NAME_KEY=@footer-key`, then `--writer-column-key-env shoe_name=SHOE_NAME_KEY`. The rule applies to reader keys and writer keys separately: a command may read with `--key-file` and write with `--writer-footer-key-env`.
+`--writer-aad-prefix` sets a base64-encoded AAD prefix that is bound into every encrypted module, typically naming the file's identity such as a table or path. It is independent of any `--aad-prefix` used to read the source, and requires `--writer-footer-key`. By default the prefix is stored in the file. That still authenticates the contents, but not the file's identity: a moved or swapped file carries its prefix with it and still reads. To bind a file to its identity, also set `--writer-supply-aad-prefix`. The prefix is then left out of the file, readers must pass it with `--aad-prefix`, and a read with the wrong prefix fails to authenticate.
+
+```bash
+$ parquet-tools transcode \
+    -s testdata/good.parquet \
+    --writer-footer-key MDEyMzQ1Njc4OTAxMjM0NQ== \
+    --writer-aad-prefix dGVzdGVy \
+    --writer-supply-aad-prefix \
+    /tmp/aad.parquet
+$ parquet-tools row-count --footer-key MDEyMzQ1Njc4OTAxMjM0NQ== --aad-prefix dGVzdGVy /tmp/aad.parquet
+3
+```
+
+`--writer-footer-key-env ENV_NAME`, `--writer-aad-prefix-env ENV_NAME` and `--writer-column-key-env column.path=ENV_NAME` take the value from an environment variable instead, so it stays off the command line. They follow the same rules as the reader's `-env` flags in [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files), including the deprecation of the plain flags. Plain writer flags, `-env` writer flags, and `--writer-key-file` are likewise mutually exclusive, so with `-env` flags a column that should use the footer key takes a variable holding the sentinel: `export SHOE_NAME_KEY=@footer-key`, then `--writer-column-key-env shoe_name=SHOE_NAME_KEY`. The rule applies to reader keys and writer keys separately: a command may read with `--key-file` and write with `--writer-footer-key-env`.
 
 To keep writer keys out of shell history and `ps` output, use `--writer-key-file` instead:
 
@@ -715,11 +728,12 @@ $ parquet-tools import -f csv \
     output.parquet
 ```
 
-`--writer-key-file` uses the same JSON schema as `--key-file`. `aad_prefix` is accepted but ignored by the writer:
+`--writer-key-file` uses the same JSON schema as `--key-file`, and `aad_prefix` there sets the writer AAD prefix:
 
 ```json
 {
   "footer_key":  "base64-encoded AES-128/192/256 key",
+  "aad_prefix":  "base64-encoded AAD prefix",
   "column_keys": {
     "col.path":  "base64-encoded AES key",
     "other.col": "@footer-key"
@@ -727,7 +741,9 @@ $ parquet-tools import -f csv \
 }
 ```
 
-Unknown fields and trailing data in the JSON file are rejected. Recommend `chmod 600` on the file. The `footer_key_env` and `column_keys_env` variants work here too, with the same rules and the same deprecation of plain values, as described in [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files). In an `_env` file, `@footer-key` goes in the variable, as with the `-env` flags.
+Up to v1.57.4 the writer ignored `aad_prefix`; a writer key file that sets it now binds the output to that prefix. Such files still read without `--aad-prefix`, because the prefix is stored unless `--writer-supply-aad-prefix` is given.
+
+Unknown fields and trailing data in the JSON file are rejected. Recommend `chmod 600` on the file. The `footer_key_env`, `aad_prefix_env` and `column_keys_env` variants work here too, with the same rules and the same deprecation of plain values, as described in [Reading Encrypted Parquet Files](#reading-encrypted-parquet-files). In an `_env` file, `@footer-key` goes in the variable, as with the `-env` flags.
 
 Supported write scenarios:
 

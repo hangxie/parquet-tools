@@ -18,12 +18,16 @@ const (
 func writerEncryptionRequested(option WriteOption) bool {
 	// --encryption-algorithm only selects an algorithm once encryption is
 	// enabled by the writer key flags; it does not request encryption by itself.
-	return option.WriterFooterKey != nil || len(option.WriterColumnKeys) > 0 || option.PlaintextFooter || option.EncryptAllColumns
+	return option.WriterFooterKey != nil || len(option.WriterColumnKeys) > 0 || option.PlaintextFooter || option.EncryptAllColumns ||
+		option.WriterAADPrefix != nil || option.WriterSupplyAADPrefix
 }
 
 func applyWriterKeyFile(kf keyFileSchema, opt *WriteOption) {
 	if opt.WriterFooterKey == nil && kf.FooterKey != "" {
 		opt.WriterFooterKey = &kf.FooterKey
+	}
+	if opt.WriterAADPrefix == nil && kf.AADPrefix != "" {
+		opt.WriterAADPrefix = &kf.AADPrefix
 	}
 	existing := make(map[string]struct{}, len(opt.WriterColumnKeys))
 	for _, ck := range opt.WriterColumnKeys {
@@ -129,6 +133,11 @@ func writerEncryptionOpts(option WriteOption, columnKeys []writerColumnKey) ([]w
 	}
 
 	opts := []writer.WriterOption{writer.WithFooterKey(footerKey)}
+	aadOpts, err := writerAADPrefixOpts(option)
+	if err != nil {
+		return nil, err
+	}
+	opts = append(opts, aadOpts...)
 	for _, ck := range columnKeys {
 		if ck.Value == writerColumnKeyFooterSentinel {
 			opts = append(opts, writer.WithColumnEncrypted(ck.NormalizedPath, writer.ColumnFooterKey()))

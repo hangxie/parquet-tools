@@ -318,6 +318,14 @@ func TestWriterEncryptionRequested(t *testing.T) {
 			option:   WriteOption{EncryptAllColumns: true},
 			expected: true,
 		},
+		"aad-prefix": {
+			option:   WriteOption{WriterAADPrefix: new("YWFk")},
+			expected: true,
+		},
+		"supply-aad-prefix": {
+			option:   WriteOption{WriterSupplyAADPrefix: true},
+			expected: true,
+		},
 		"default-algorithm": {
 			option:   WriteOption{EncryptionAlgorithm: writerEncryptionAlgorithmAESGCMV1},
 			expected: false,
@@ -356,11 +364,11 @@ func TestApplyWriterKeyFile(t *testing.T) {
 				require.Equal(t, new("Zm9vdGVy"), opt.WriterFooterKey)
 			},
 		},
-		"aad-prefix-ignored": {
+		"populates-aad-prefix": {
 			kf: keyFileSchema{AADPrefix: "YWFk"},
 			check: func(t *testing.T, opt WriteOption) {
+				require.Equal(t, new("YWFk"), opt.WriterAADPrefix)
 				require.Nil(t, opt.WriterFooterKey)
-				require.Empty(t, opt.WriterColumnKeys)
 			},
 		},
 		"cli-wins-for-footer-key": {
@@ -454,6 +462,30 @@ func TestWriterOpts(t *testing.T) {
 		"valid-footer-key-32": {
 			option:      WriteOption{WriterFooterKey: testWriterKeyBase64(32)},
 			expectedLen: 3,
+		},
+		"aad-prefix-stored": {
+			option:      WriteOption{WriterFooterKey: testWriterKeyBase64(16), WriterAADPrefix: new("YWFk")},
+			expectedLen: 4,
+		},
+		"aad-prefix-supplied": {
+			option:      WriteOption{WriterFooterKey: testWriterKeyBase64(16), WriterAADPrefix: new("YWFk"), WriterSupplyAADPrefix: true},
+			expectedLen: 5,
+		},
+		"aad-prefix-invalid-base64": {
+			option: WriteOption{WriterFooterKey: testWriterKeyBase64(16), WriterAADPrefix: new("not base64!")},
+			errMsg: "invalid base64 writer AAD prefix",
+		},
+		"aad-prefix-empty": {
+			option: WriteOption{WriterFooterKey: testWriterKeyBase64(16), WriterAADPrefix: new("")},
+			errMsg: "writer AAD prefix must not be empty",
+		},
+		"aad-prefix-without-footer-key": {
+			option: WriteOption{WriterAADPrefix: new("YWFk")},
+			errMsg: "--writer-footer-key is required for encryption",
+		},
+		"supply-aad-prefix-without-prefix": {
+			option: WriteOption{WriterFooterKey: testWriterKeyBase64(16), WriterSupplyAADPrefix: true},
+			errMsg: "--writer-supply-aad-prefix requires an AAD prefix",
 		},
 		"valid-footer-key-standard-base64": {
 			option:      WriteOption{WriterFooterKey: &base64StdKey},

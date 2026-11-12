@@ -95,8 +95,8 @@ func TestParserKeySourcesMutuallyExclusive(t *testing.T) {
 	readPlain := []string{"--footer-key=a", "--aad-prefix=a", "--column-key=c=a"}
 	readEnv := []string{"--footer-key-env=A", "--aad-prefix-env=A", "--column-key-env=c=A"}
 	readFile := []string{"--key-file=keys.json"}
-	writePlain := []string{"--writer-footer-key=a", "--writer-column-key=c=a"}
-	writeEnv := []string{"--writer-footer-key-env=A", "--writer-column-key-env=c=A"}
+	writePlain := []string{"--writer-footer-key=a", "--writer-aad-prefix=a", "--writer-column-key=c=a"}
+	writeEnv := []string{"--writer-footer-key-env=A", "--writer-aad-prefix-env=A", "--writer-column-key-env=c=A"}
 	writeFile := []string{"--writer-key-file=keys.json"}
 
 	testCases := map[string]struct {
@@ -132,6 +132,14 @@ func TestParserKeySourcesMutuallyExclusive(t *testing.T) {
 
 	t.Run("reader-and-writer-independent", func(t *testing.T) {
 		require.NoError(t, parse([]string{"transcode", "-s", "testdata/good.parquet", "out.parquet"}, "--key-file=keys.json", "--writer-footer-key-env=A"))
+	})
+
+	// --writer-supply-aad-prefix is a switch, not a key, so it goes with any key source
+	t.Run("supply-aad-prefix-with-any-source", func(t *testing.T) {
+		base := []string{"transcode", "-s", "testdata/good.parquet", "out.parquet", "--writer-supply-aad-prefix"}
+		for _, set := range [][]string{writePlain, writeEnv, writeFile} {
+			require.NoError(t, parse(base, set...), set)
+		}
 	})
 }
 
@@ -202,6 +210,60 @@ func TestEncryptionRoundTripWithKeysFromEnv(t *testing.T) {
 			decrypted, err := runCLI(t, append([]string{"cat", "--format", "jsonl", encrypted}, tc.readKeys...)...)
 			require.NoError(t, err)
 			require.Equal(t, original, decrypted)
+		})
+	}
+}
+
+// The writer AAD prefix binds the output file; with --writer-supply-aad-prefix readers must pass it back.
+func TestWriterAADPrefixRoundTrip(t *testing.T) {
+	const footerKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
+	const prefix = "dGVzdGVy"
+	t.Setenv("PT_AAD_FOOTER", footerKey)
+	t.Setenv("PT_AAD_PREFIX", prefix)
+	const source = "testdata/good.parquet"
+
+	original, err := runCLI(t, "cat", "--format", "jsonl", source)
+	require.NoError(t, err)
+
+	keyFile := filepath.Join(t.TempDir(), "keys.json")
+	require.NoError(t, os.WriteFile(keyFile, []byte(`{"footer_key_env":"PT_AAD_FOOTER","aad_prefix_env":"PT_AAD_PREFIX"}`), 0o600))
+
+	testCases := map[string]struct {
+		writeKeys []string
+		supplied  bool
+	}{
+		"stored-plain-flags":   {[]string{"--writer-footer-key", footerKey, "--writer-aad-prefix", prefix}, false},
+		"supplied-plain-flags": {[]string{"--writer-footer-key", footerKey, "--writer-aad-prefix", prefix, "--writer-supply-aad-prefix"}, true},
+		"supplied-env-flags":   {[]string{"--writer-footer-key-env", "PT_AAD_FOOTER", "--writer-aad-prefix-env", "PT_AAD_PREFIX", "--writer-supply-aad-prefix"}, true},
+		"supplied-key-file":    {[]string{"--writer-key-file", keyFile, "--writer-supply-aad-prefix"}, true},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			encrypted := filepath.Join(t.TempDir(), "encrypted.parquet")
+			_, err := runCLI(t, append([]string{"transcode", "-s", source, encrypted}, tc.writeKeys...)...)
+			require.NoError(t, err)
+
+			read := func(extra ...string) (string, error) {
+				return runCLI(t, append([]string{"cat", "--format", "jsonl", "--footer-key", footerKey, encrypted}, extra...)...)
+			}
+			got, err := read()
+			if tc.supplied {
+				require.ErrorContains(t, err, "AAD prefix is required")
+				_, err = read("--aad-prefix", "d3Jvbmc=")
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, original, got)
+				// parquet-go uses the stored prefix and ignores a supplied one; update if that changes
+				got, err = read("--aad-prefix", "d3Jvbmc=")
+				require.NoError(t, err)
+				require.Equal(t, original, got)
+			}
+
+			got, err = read("--aad-prefix", prefix)
+			require.NoError(t, err)
+			require.Equal(t, original, got)
 		})
 	}
 }

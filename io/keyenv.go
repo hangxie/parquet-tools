@@ -68,6 +68,9 @@ func applyWriteKeyEnv(opt *WriteOption) error {
 	if err := resolveKeyEnvFlag("writer-footer-key-env", &opt.WriterFooterKey, opt.WriterFooterKeyEnv); err != nil {
 		return err
 	}
+	if err := resolveKeyEnvFlag("writer-aad-prefix-env", &opt.WriterAADPrefix, opt.WriterAADPrefixEnv); err != nil {
+		return err
+	}
 	columnKeys, err := resolveColumnKeyEnvFlags("writer-column-key-env", opt.WriterColumnKeys, opt.WriterColumnKeyEnvs)
 	if err != nil {
 		return err

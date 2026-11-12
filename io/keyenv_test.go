@@ -65,8 +65,10 @@ func TestKeyEnvValuesAreBase64Decoded(t *testing.T) {
 			FooterKeyEnv: new("PT_GOOD"), AADPrefixEnv: new("PT_GOOD"), ColumnKeyEnvs: []string{"c=PT_GOOD"},
 		}), ""},
 		"read-key-file-valid":  {read(ReadOption{KeyFile: keyFile(t, `{"footer_key_env":"PT_GOOD","aad_prefix_env":"PT_GOOD","column_keys_env":{"c":"PT_GOOD"}}`)}), ""},
-		"write-all-valid":      {write(WriteOption{WriterFooterKeyEnv: new("PT_GOOD"), WriterColumnKeyEnvs: []string{"c=PT_GOOD"}}), ""},
-		"write-key-file-valid": {write(WriteOption{WriterKeyFile: keyFile(t, `{"footer_key_env":"PT_GOOD","column_keys_env":{"c":"PT_GOOD"}}`)}), ""},
+		"write-aad-flag":       {write(WriteOption{WriterFooterKeyEnv: new("PT_GOOD"), WriterAADPrefixEnv: new("PT_RAW")}), "invalid base64 writer AAD prefix"},
+		"write-aad-key-file":   {write(WriteOption{WriterKeyFile: keyFile(t, `{"footer_key_env":"PT_GOOD","aad_prefix_env":"PT_RAW"}`)}), "invalid base64 writer AAD prefix"},
+		"write-all-valid":      {write(WriteOption{WriterFooterKeyEnv: new("PT_GOOD"), WriterAADPrefixEnv: new("PT_GOOD"), WriterColumnKeyEnvs: []string{"c=PT_GOOD"}}), ""},
+		"write-key-file-valid": {write(WriteOption{WriterKeyFile: keyFile(t, `{"footer_key_env":"PT_GOOD","aad_prefix_env":"PT_GOOD","column_keys_env":{"c":"PT_GOOD"}}`)}), ""},
 	}
 
 	for name, tc := range testCases {
@@ -193,6 +195,17 @@ func TestApplyWriteKeyEnv(t *testing.T) {
 		"footer-key-env-unset": {
 			option: WriteOption{WriterFooterKeyEnv: new("PT_FOOTER")},
 			errMsg: "--writer-footer-key-env: environment variable [PT_FOOTER] is not set or empty",
+		},
+		"aad-prefix-env": {
+			option: WriteOption{WriterAADPrefixEnv: new("PT_AAD")},
+			env:    map[string]string{"PT_AAD": "YWFk"},
+			check: func(t *testing.T, opt WriteOption) {
+				require.Equal(t, "YWFk", *opt.WriterAADPrefix)
+			},
+		},
+		"aad-prefix-env-unset": {
+			option: WriteOption{WriterAADPrefixEnv: new("PT_AAD")},
+			errMsg: "--writer-aad-prefix-env: environment variable [PT_AAD] is not set or empty",
 		},
 		"column-key-env-unset": {
 			option: WriteOption{WriterColumnKeyEnvs: []string{"a.b=PT_COL_A"}},
