@@ -4,6 +4,7 @@ This document tracks known compatibility issues between parquet-tools and other 
 
 ## Table of Contents
 
+- [Apache Arrow C++ Parquet Tools](#apache-arrow-c-parquet-tools)
 - [Apache parquet-cli / PySpark](#apache-parquet-cli--pyspark)
 - [arrow-rs/parquet](#arrow-rsparquet)
 - [DuckDB](#duckdb)
@@ -17,6 +18,51 @@ This document tracks known compatibility issues between parquet-tools and other 
 ## Overview
 
 Parquet files created or modified by parquet-tools should be readable by other tools, and vice versa. This document lists known issues and workarounds.
+
+## Apache Arrow C++ Parquet Tools
+
+[Apache Arrow C++](https://arrow.apache.org/docs/cpp/parquet.html) ships a set of command line tools: `parquet-reader`, `parquet-scan`, `parquet-dump-schema`, `parquet-dump-footer`, and `parquet-dump-arrow-statistics`. Homebrew installs them with `apache-arrow`, and Ubuntu packages them as `parquet-tools`, the name this project's DEB and RPM packages used before they became `go-parquet-tools`.
+
+They are built on the same C++ library as [PyArrow](#pyarrow), but `parquet-reader` and `parquet-scan` read through its low-level column reader instead of converting to Arrow, so they decode every file PyArrow does and present the values differently.
+
+As of version 26.0.1, the tools read everything `parquet-tools` writes: all compression codecs, all encodings, both data page versions, and files carrying CRC checksums or bloom filters.
+
+**Known Issues:**
+
+#### 1. Values Print in Physical Form
+
+`parquet-reader` prints what is stored and ignores the logical type, so dates, timestamps, and integer decimals show as plain integers, and fixed-length values such as FLOAT16, UUID, INTERVAL, and fixed-length decimals show as a list of byte values. The second row of `testdata/all-types.parquet`, limited to four columns:
+
+```
+$ parquet-reader --columns=5,27,34,42 testdata/all-types.parquet
+Float16Val                    |Date                          |TimestampMillis               |Decimal3                      |
+0 56                          |-1000                         |1640995200001                 |0 0 0 0 0 0 0 0 0 0 0 0       |
+```
+
+`parquet-tools cat` shows the same row as `0.5`, `1967-04-07`, `2022-01-01T00:00:00.001Z`, and `0.0`.
+
+An `UNKNOWN` column likewise shows any value physically stored in it, as `parquet-tools cat --raw-unknown` does, where `cat` alone shows `null`.
+
+#### 2. Nested Columns Are Not Assembled into Rows
+
+`parquet-reader` prints each leaf column as its own list of values, so a LIST or MAP is flattened and its cells no longer line up with rows. For the two-row `testdata/list-map-layout.parquet`, where `athena` is `["a",null,"b"]` then `[]` and `logical_list` is `[1,2,3]` then `[]`:
+
+```
+$ parquet-reader --columns=0,2 testdata/list-map-layout.parquet
+array_element                 |element                       |
+a                             |1                             |
+NULL                          |2                             |
+b                             |3                             |
+NULL                          |NULL                          |
+```
+
+A null element and an empty list both print as `NULL`. For that reason these tools have no row in the [Non-standard LIST and MAP Layouts](#non-standard-list-and-map-layouts) table; PyArrow shows how the library interprets each layout.
+
+#### 3. Encrypted Files
+
+None of the tools takes a decryption key, so they cannot read files using modular encryption. `parquet-dump-schema` still works on a file with a plaintext footer.
+
+**Workaround:** Decrypt the file first with `parquet-tools transcode`, giving it the reader keys and no writer keys. See [Writing Encrypted Parquet Files](README.md#writing-encrypted-parquet-files).
 
 ## Apache parquet-cli / PySpark
 
