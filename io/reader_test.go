@@ -68,6 +68,27 @@ func TestBuildReaderOptions(t *testing.T) {
 		"valid-footer-key-std": {
 			option: ReadOption{FooterKey: testFooterKey},
 		},
+		"valid-footer-key-aes-192": {
+			option: ReadOption{FooterKey: new("MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIz")},
+		},
+		"valid-footer-key-aes-256": {
+			option: ReadOption{FooterKey: new("MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=")},
+		},
+		"footer-key-wrong-length": {
+			option: ReadOption{FooterKey: new("MDEyMzQ1Njc4OTAx")},
+			errMsg: "footer key must be 16, 24, or 32 bytes after base64 decoding, got 12 bytes",
+		},
+		"footer-key-empty": {
+			option: ReadOption{FooterKey: new("")},
+			errMsg: "footer key must be 16, 24, or 32 bytes after base64 decoding, got 0 bytes",
+		},
+		"column-key-wrong-length": {
+			option: ReadOption{ColumnKeys: []string{"col.path=MDEyMzQ1Njc4OTAx"}},
+			errMsg: "column key for [col.path] must be 16, 24, or 32 bytes after base64 decoding, got 12 bytes",
+		},
+		"aad-prefix-any-length": {
+			option: ReadOption{AADPrefix: new("dGVzdGVy")},
+		},
 		"reject-url-safe-base64": {
 			option: ReadOption{FooterKey: new("-_8=")},
 			errMsg: "invalid base64 footer key",
@@ -97,6 +118,26 @@ func TestBuildReaderOptions(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Len(t, opts, len(tc.option.ColumnKeys)+boolToInt(tc.option.FooterKey != nil)+boolToInt(tc.option.AADPrefix != nil))
+		})
+	}
+}
+
+func TestNewParquetFileReaderValidatesKeysBeforeOpening(t *testing.T) {
+	missing := filepath.Join(t.TempDir(), "missing.parquet")
+	testCases := map[string]struct {
+		option ReadOption
+		errMsg string
+	}{
+		"footer-key-not-base64":   {ReadOption{FooterKey: new("!!!")}, "invalid base64 footer key"},
+		"footer-key-wrong-length": {ReadOption{FooterKey: new("MDEyMzQ1Njc4OTAx")}, "footer key must be 16, 24, or 32 bytes"},
+		"column-key-wrong-length": {ReadOption{ColumnKeys: []string{"c=MDEyMzQ1Njc4OTAx"}}, "column key for [c] must be 16, 24, or 32 bytes"},
+		"aad-prefix-not-base64":   {ReadOption{AADPrefix: new("!!!")}, "invalid base64 AAD prefix"},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			_, err := NewParquetFileReader(context.Background(), missing, tc.option)
+			require.ErrorContains(t, err, tc.errMsg)
 		})
 	}
 }

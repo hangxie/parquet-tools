@@ -56,6 +56,15 @@ func decodeBase64(s string) ([]byte, error) {
 	return b, nil
 }
 
+func validateAESKey(name string, key []byte) error {
+	switch len(key) {
+	case 16, 24, 32:
+		return nil
+	default:
+		return fmt.Errorf("%s must be 16, 24, or 32 bytes after base64 decoding, got %d bytes", name, len(key))
+	}
+}
+
 func buildReaderOptions(opt ReadOption) ([]reader.ReaderOption, error) {
 	opts, err := buildLimitOptions(opt)
 	if err != nil {
@@ -66,6 +75,9 @@ func buildReaderOptions(opt ReadOption) ([]reader.ReaderOption, error) {
 		key, err := decodeBase64(*opt.FooterKey)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 footer key: %w", err)
+		}
+		if err := validateAESKey("footer key", key); err != nil {
+			return nil, err
 		}
 		opts = append(opts, reader.WithFooterKey(key))
 	}
@@ -86,6 +98,9 @@ func buildReaderOptions(opt ReadOption) ([]reader.ReaderOption, error) {
 		key, err := decodeBase64(encodedKey)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 column key for [%s]: %w", path, err)
+		}
+		if err := validateAESKey("column key for ["+path+"]", key); err != nil {
+			return nil, err
 		}
 		opts = append(opts, reader.WithColumnKey(NormalizeFieldPath(path, opt.FieldDelimiter), key))
 	}
@@ -224,14 +239,14 @@ func NewParquetFileReader(ctx context.Context, URI string, option ReadOption) (*
 		applyKeyFile(kf, &option)
 	}
 
-	fileReader, err := newSourceReader(ctx, URI, option)
+	// Keys are checked before the source is opened, so a bad key fails without touching it.
+	encOpts, err := buildReaderOptions(option)
 	if err != nil {
 		return nil, err
 	}
 
-	encOpts, err := buildReaderOptions(option)
+	fileReader, err := newSourceReader(ctx, URI, option)
 	if err != nil {
-		_ = fileReader.Close()
 		return nil, err
 	}
 

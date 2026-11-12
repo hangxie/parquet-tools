@@ -585,7 +585,7 @@ Read commands support AES-GCM encrypted Parquet files with explicit base64-encod
 
 **Note on KMS:** KMS (Key Management Service) use cases are not directly supported. If your files are protected by a KMS, you must manually retrieve the key value from the KMS provider and provide it through the CLI parameters below.
 
-All supplied key and AAD values must be standard base64 with padding (RFC 4648 §4). URL-safe and unpadded variants are rejected.
+All supplied key and AAD values must be standard base64 with padding (RFC 4648 §4). URL-safe and unpadded variants are rejected. Footer and column keys must decode to 16 bytes (AES-128), 24 bytes (AES-192), or 32 bytes (AES-256); a key of any other length is rejected before the file is opened.
 
 * `--footer-key`: AES-128, AES-192, or AES-256 footer key.
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
