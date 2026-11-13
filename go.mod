@@ -7,11 +7,11 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.8.3
 	github.com/alecthomas/kong v1.17.0
 	github.com/apache/thrift v0.25.0
-	github.com/aws/aws-sdk-go-v2 v1.47.5
+	github.com/aws/aws-sdk-go-v2 v1.48.0
 	github.com/aws/aws-sdk-go-v2/config v1.33.13
 	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.5.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.6
-	github.com/aws/smithy-go v1.28.7
+	github.com/aws/smithy-go v1.28.9
 	github.com/google/uuid v1.6.0
 	github.com/hangxie/parquet-go/v3 v3.12.0
 	github.com/posener/complete v1.2.3
