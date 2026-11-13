@@ -1038,7 +1038,7 @@ func TestIsEncodingCompatible(t *testing.T) {
 		{"DELTA_LENGTH_BYTE_ARRAY", "BYTE_ARRAY", true},
 		{"DELTA_LENGTH_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", false},
 		{"DELTA_BYTE_ARRAY", "BYTE_ARRAY", true},
-		{"DELTA_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", true},
+		{"DELTA_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", false},
 
 		// Boolean encodings
 		{"RLE", "BOOLEAN", true},
@@ -1116,7 +1116,7 @@ func TestGetAllowedEncodings(t *testing.T) {
 		{
 			name:              "FIXED_LEN_BYTE_ARRAY",
 			dataType:          "FIXED_LEN_BYTE_ARRAY",
-			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "DELTA_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+			expectedEncodings: []string{"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
 		},
 		{
 			name:              "unknown type",

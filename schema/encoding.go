@@ -23,14 +23,15 @@ func EncodingToString(encodings []parquet.Encoding) []string {
 // Per Parquet spec and parquet-go validation rules:
 //   - RLE: BOOLEAN, INT32, INT64 only
 //   - DELTA_BINARY_PACKED: INT32, INT64 only
-//   - DELTA_BYTE_ARRAY, DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only
+//   - DELTA_BYTE_ARRAY, DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only (the spec also allows
+//     DELTA_BYTE_ARRAY on FIXED_LEN_BYTE_ARRAY, but the parquet-go writer does not)
 //   - BYTE_STREAM_SPLIT: FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY
 //   - PLAIN_DICTIONARY: All types (v1 data pages only, validated separately)
 var encodingCompatibilityMap = map[string][]string{
 	"BOOLEAN":              {"BIT_PACKED", "PLAIN_DICTIONARY", "RLE", "RLE_DICTIONARY"},
 	"BYTE_ARRAY":           {"DELTA_BYTE_ARRAY", "DELTA_LENGTH_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
 	"DOUBLE":               {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
-	"FIXED_LEN_BYTE_ARRAY": {"BYTE_STREAM_SPLIT", "DELTA_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
+	"FIXED_LEN_BYTE_ARRAY": {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
 	"FLOAT":                {"BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
 	"INT32":                {"BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},
 	"INT64":                {"BYTE_STREAM_SPLIT", "DELTA_BINARY_PACKED", "PLAIN_DICTIONARY", "RLE_DICTIONARY"},

@@ -600,6 +600,13 @@ func testCmdFieldEncoding(t *testing.T) {
 			errMsg:        "not compatible with field",
 		},
 		{
+			name:            "delta byte array on fixed length byte array fails",
+			source:          "all-types.parquet",
+			fieldEncoding:   []string{"Uuid=DELTA_BYTE_ARRAY"}, // parquet-go writes DELTA_BYTE_ARRAY for BYTE_ARRAY only
+			errMsg:          "not compatible with field",
+			dataPageVersion: 2,
+		},
+		{
 			name:          "boolean dictionary encoding fails",
 			source:        "all-types.parquet",
 			fieldEncoding: []string{"Bool=RLE_DICTIONARY"}, // Arrow cannot decode a BOOLEAN dictionary
@@ -1013,7 +1020,7 @@ func TestCmdIsEncodingCompatible(t *testing.T) {
 		{"DELTA_LENGTH_BYTE_ARRAY", "BYTE_ARRAY", true},
 		{"DELTA_LENGTH_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", false},
 		{"DELTA_BYTE_ARRAY", "BYTE_ARRAY", true},
-		{"DELTA_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", true},
+		{"DELTA_BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY", false},
 		{"RLE_DICTIONARY", "BYTE_ARRAY", true},
 
 		// Byte array encodings should not work with other types
@@ -1255,7 +1262,7 @@ func TestCmd_getAllowedEncodings(t *testing.T) {
 			name:     "FIXED_LEN_BYTE_ARRAY",
 			dataType: "FIXED_LEN_BYTE_ARRAY",
 			expectedEncodings: []string{
-				"PLAIN", "BYTE_STREAM_SPLIT", "DELTA_BYTE_ARRAY", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
+				"PLAIN", "BYTE_STREAM_SPLIT", "PLAIN_DICTIONARY", "RLE_DICTIONARY",
 			},
 		},
 		{
