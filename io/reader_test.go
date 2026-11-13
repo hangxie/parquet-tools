@@ -49,6 +49,10 @@ func TestBuildReaderOptions(t *testing.T) {
 			option: ReadOption{AADPrefix: new("!!!")},
 			errMsg: "invalid base64 AAD prefix",
 		},
+		"empty-aad-prefix": {
+			option: ReadOption{AADPrefix: new("")},
+			errMsg: "AAD prefix must not be empty",
+		},
 		"column-key-missing-equal": {
 			option: ReadOption{ColumnKeys: []string{"colpath"}},
 			errMsg: "invalid column key format",
@@ -132,6 +136,7 @@ func TestNewParquetFileReaderValidatesKeysBeforeOpening(t *testing.T) {
 		"footer-key-wrong-length": {ReadOption{FooterKey: new("MDEyMzQ1Njc4OTAx")}, "footer key must be 16, 24, or 32 bytes"},
 		"column-key-wrong-length": {ReadOption{ColumnKeys: []string{"c=MDEyMzQ1Njc4OTAx"}}, "column key for [c] must be 16, 24, or 32 bytes"},
 		"aad-prefix-not-base64":   {ReadOption{AADPrefix: new("!!!")}, "invalid base64 AAD prefix"},
+		"aad-prefix-empty":        {ReadOption{AADPrefix: new("")}, "AAD prefix must not be empty"},
 	}
 
 	for name, tc := range testCases {

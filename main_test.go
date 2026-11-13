@@ -214,7 +214,7 @@ func TestEncryptionRoundTripWithKeysFromEnv(t *testing.T) {
 	}
 }
 
-// The writer AAD prefix binds the output file; with --writer-supply-aad-prefix readers must pass it back.
+// The writer AAD prefix binds the output file; a supplied --aad-prefix must match it, and with --writer-supply-aad-prefix readers must pass it back.
 func TestWriterAADPrefixRoundTrip(t *testing.T) {
 	const footerKey = "MDEyMzQ1Njc4OTAxMjM0NQ=="
 	const prefix = "dGVzdGVy"
@@ -251,14 +251,12 @@ func TestWriterAADPrefixRoundTrip(t *testing.T) {
 			if tc.supplied {
 				require.ErrorContains(t, err, "AAD prefix is required")
 				_, err = read("--aad-prefix", "d3Jvbmc=")
-				require.Error(t, err)
+				require.ErrorContains(t, err, "message authentication failed")
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, original, got)
-				// parquet-go uses the stored prefix and ignores a supplied one; update if that changes
-				got, err = read("--aad-prefix", "d3Jvbmc=")
-				require.NoError(t, err)
-				require.Equal(t, original, got)
+				_, err = read("--aad-prefix", "d3Jvbmc=")
+				require.ErrorContains(t, err, "AAD prefix mismatch")
 			}
 
 			got, err = read("--aad-prefix", prefix)
@@ -266,4 +264,13 @@ func TestWriterAADPrefixRoundTrip(t *testing.T) {
 			require.Equal(t, original, got)
 		})
 	}
+
+	t.Run("no-prefix-in-file", func(t *testing.T) {
+		encrypted := filepath.Join(t.TempDir(), "encrypted.parquet")
+		_, err := runCLI(t, "transcode", "-s", source, encrypted, "--writer-footer-key", footerKey)
+		require.NoError(t, err)
+
+		_, err = runCLI(t, "cat", "--format", "jsonl", "--footer-key", footerKey, "--aad-prefix", prefix, encrypted)
+		require.ErrorContains(t, err, "AAD prefix supplied but not used")
+	})
 }

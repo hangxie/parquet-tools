@@ -75,10 +75,17 @@ func (file keyFileJSON) resolve() (keyFileSchema, error) {
 	usesEnv := file.FooterKeyEnv != nil || file.AADPrefixEnv != nil || file.ColumnKeysEnv != nil
 	if !usesEnv {
 		kf := keyFileSchema{ColumnKeys: file.ColumnKeys}
+		// An empty value would otherwise read as absent and skip the key and prefix checks.
 		if file.FooterKey != nil {
+			if *file.FooterKey == "" {
+				return keyFileSchema{}, fmt.Errorf("footer_key must not be empty")
+			}
 			kf.FooterKey = *file.FooterKey
 		}
 		if file.AADPrefix != nil {
+			if *file.AADPrefix == "" {
+				return keyFileSchema{}, fmt.Errorf("aad_prefix must not be empty")
+			}
 			kf.AADPrefix = *file.AADPrefix
 		}
 		return kf, nil

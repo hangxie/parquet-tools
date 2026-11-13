@@ -26,7 +26,7 @@ import (
 
 // ReadOption includes options for read operation
 type ReadOption struct {
-	AADPrefix              *string           `name:"aad-prefix" xor:"rkey-ap-fke,rkey-ap-ape,rkey-ap-cke" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix (if not stored in file)."`
+	AADPrefix              *string           `name:"aad-prefix" xor:"rkey-ap-fke,rkey-ap-ape,rkey-ap-cke" group:"Encryption" help:"(encrypted files only) base64-encoded AAD prefix the file was written with; see README for when it is required."`
 	AADPrefixEnv           *string           `name:"aad-prefix-env" xor:"rkey-fk-ape,rkey-ap-ape,rkey-ck-ape" group:"Encryption" help:"(encrypted files only) name of an environment variable holding the base64 AAD prefix. Cannot be combined with plain key flags or --key-file."`
 	Anonymous              bool              `help:"(S3, GCS, and Azure only) object is publicly accessible." default:"false"`
 	ColumnKeys             []string          `name:"column-key" xor:"rkey-ck-fke,rkey-ck-ape,rkey-ck-cke" group:"Encryption" help:"(encrypted files only) column decryption key as 'column.path=base64key'; repeatable. KMS is not directly supported; retrieve the key manually first." placeholder:"column.path=base64key"`
@@ -86,6 +86,10 @@ func buildReaderOptions(opt ReadOption) ([]reader.ReaderOption, error) {
 		prefix, err := decodeBase64(*opt.AADPrefix)
 		if err != nil {
 			return nil, fmt.Errorf("invalid base64 AAD prefix: %w", err)
+		}
+		// parquet-go treats an empty prefix as none, which would skip the prefix checks.
+		if len(prefix) == 0 {
+			return nil, fmt.Errorf("AAD prefix must not be empty")
 		}
 		opts = append(opts, reader.WithAADPrefix(prefix))
 	}

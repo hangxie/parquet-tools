@@ -589,7 +589,12 @@ All supplied key and AAD values must be standard base64 with padding (RFC 4648 ย
 
 * `--footer-key`: AES-128, AES-192, or AES-256 footer key.
 * `--column-key`: column key in `column.path=base64key` form; repeat the flag for multiple columns.
-* `--aad-prefix`: base64-encoded AAD prefix for files that require the reader to supply it. When the file stores its own prefix, that stored prefix is used and `--aad-prefix` is not checked against it.
+* `--aad-prefix`: base64-encoded AAD prefix the file was written with. The rules below apply however the prefix is supplied: `--aad-prefix`, `--aad-prefix-env`, or `aad_prefix` in `--key-file`. An empty value is rejected in all three. Whether it is needed depends on how the file was written:
+  * Written with `--writer-supply-aad-prefix`, so the prefix is not saved in the file: `--aad-prefix` is required.
+  * Written with a prefix saved in the file (the default): `--aad-prefix` is optional. When given, it must equal the saved prefix, which catches a file that was moved or swapped.
+  * Written without a prefix: `--aad-prefix` must not be given.
+
+  Up to v1.57.4, a supplied prefix was ignored unless the file required one, so a read with a wrong or unneeded prefix succeeded; both now fail. A key file that sets `aad_prefix` therefore no longer reads files written without a prefix.
 * `--footer-key-env`, `--aad-prefix-env`: name of an environment variable holding the value the plain flag would take.
 * `--column-key-env`: column key in `column.path=ENV_NAME` form, where the variable holds the base64 key; repeat the flag for multiple columns.
 
@@ -670,7 +675,7 @@ $ parquet-tools cat --key-file ~/.parquet/keys.json encrypted.parquet
 There is no precedence between the ways of supplying keys, because they cannot be combined:
 
 1. On the command line, choose one of three: plain flags (`--footer-key`, `--aad-prefix`, `--column-key`), `-env` flags (`--footer-key-env`, `--aad-prefix-env`, `--column-key-env`), or `--key-file`. Using flags from more than one of them is an error, even for different values, such as `--footer-key` with `--column-key-env`, or `--key-file` with `--aad-prefix`.
-2. Inside a key file, choose one of two: plain fields (`footer_key`, `aad_prefix`, `column_keys`) or `_env` fields (`footer_key_env`, `aad_prefix_env`, `column_keys_env`). A file with fields of both kinds is an error, even for different values, such as `footer_key_env` with `column_keys`. A field counts as given even when its value is an empty string or an empty object, and an `_env` field with an empty name is an error.
+2. Inside a key file, choose one of two: plain fields (`footer_key`, `aad_prefix`, `column_keys`) or `_env` fields (`footer_key_env`, `aad_prefix_env`, `column_keys_env`). A file with fields of both kinds is an error, even for different values, such as `footer_key_env` with `column_keys`. A field counts as given even when its value is an empty string or an empty object. An empty `footer_key` or `aad_prefix` is an error, as is an `_env` field with an empty name; up to v1.57.4 an empty `footer_key` or `aad_prefix` was silently ignored.
 
 Either error stops the command before it reads any data. Every variable named, on the command line or in the key file, must be set and non-empty; otherwise the command fails and names the variable. Whitespace around a variable's value is ignored.
 
@@ -703,7 +708,7 @@ All writer keys must be standard base64 with padding (RFC 4648 ยง4) and must dec
 
 By default, columns not listed in `--writer-column-key` are written as plaintext. Set `--encrypt-all-columns` to encrypt every leaf column not otherwise listed with `--writer-footer-key`.
 
-`--writer-aad-prefix` sets a base64-encoded AAD prefix that is bound into every encrypted module, typically naming the file's identity such as a table or path. It is independent of any `--aad-prefix` used to read the source, and requires `--writer-footer-key`. By default the prefix is stored in the file. That still authenticates the contents, but not the file's identity: a moved or swapped file carries its prefix with it and still reads. To bind a file to its identity, also set `--writer-supply-aad-prefix`. The prefix is then left out of the file, readers must pass it with `--aad-prefix`, and a read with the wrong prefix fails to authenticate.
+`--writer-aad-prefix` sets a base64-encoded AAD prefix that is bound into every encrypted module, typically naming the file's identity such as a table or path. It is independent of any `--aad-prefix` used to read the source, and requires `--writer-footer-key`. By default the prefix is stored in the file. That still authenticates the contents, and a reader that passes `--aad-prefix` detects a moved or swapped file because the stored prefix does not match; a reader that omits it accepts whatever prefix the file carries. To make the prefix mandatory for readers, also set `--writer-supply-aad-prefix`. The prefix is then left out of the file, readers must pass it with `--aad-prefix`, and a read with the wrong prefix fails to authenticate.
 
 ```bash
 $ parquet-tools transcode \

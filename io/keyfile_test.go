@@ -132,12 +132,13 @@ func TestParseKeyFile(t *testing.T) {
 				require.Empty(t, kf.ColumnKeys)
 			},
 		},
-		"plain-empty-strings-are-absent": {
-			contents: `{"footer_key":"","aad_prefix":""}`,
-			check: func(t *testing.T, kf keyFileSchema) {
-				require.Empty(t, kf.FooterKey)
-				require.Empty(t, kf.AADPrefix)
-			},
+		"plain-footer-key-empty": {
+			contents: `{"footer_key":""}`,
+			errMsg:   "footer_key must not be empty",
+		},
+		"plain-aad-prefix-empty": {
+			contents: `{"footer_key":"Zm9vdGVy","aad_prefix":""}`,
+			errMsg:   "aad_prefix must not be empty",
 		},
 		"env-footer-key-unset": {
 			contents: `{"footer_key_env":"PT_FOOTER"}`,
