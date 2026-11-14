@@ -64,9 +64,8 @@ func (c Cmd) parseFieldEncodings() (map[string]string, error) {
 			return nil, fmt.Errorf("PLAIN_DICTIONARY encoding is only allowed with data page version 1, use RLE_DICTIONARY instead for field [%s]", fieldPath)
 		}
 
-		// Delta encodings are only allowed in v2 data pages
+		// parquet-go writes these two only in v2 data pages; DELTA_BYTE_ARRAY works in both
 		if (strings.ToUpper(encoding) == "DELTA_BINARY_PACKED" ||
-			strings.ToUpper(encoding) == "DELTA_BYTE_ARRAY" ||
 			strings.ToUpper(encoding) == "DELTA_LENGTH_BYTE_ARRAY") && c.DataPageVersion != 2 {
 			return nil, fmt.Errorf("[%s] encoding is only allowed with data page version 2 for field [%s]", encoding, fieldPath)
 		}

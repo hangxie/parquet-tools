@@ -839,27 +839,20 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	tempDir := t.TempDir()
 
+	byteArrayTag := "name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=DELTA_BYTE_ARRAY"
+	fixedLenTag := "name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=DELTA_BYTE_ARRAY"
 	testCases := []struct {
-		name          string
-		source        string
-		column        string
-		fieldEncoding string
-		schemaTag     string
+		name            string
+		source          string
+		column          string
+		fieldEncoding   string
+		schemaTag       string
+		dataPageVersion int32
 	}{
-		{
-			name:          "byte-array",
-			source:        "good.parquet",
-			column:        "shoe_name",
-			fieldEncoding: "shoe_name=DELTA_BYTE_ARRAY",
-			schemaTag:     "name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=DELTA_BYTE_ARRAY",
-		},
-		{
-			name:          "fixed-len-byte-array",
-			source:        "all-types.parquet",
-			column:        "Uuid",
-			fieldEncoding: "Uuid=DELTA_BYTE_ARRAY",
-			schemaTag:     "name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=DELTA_BYTE_ARRAY",
-		},
+		{"byte-array-v1", "good.parquet", "shoe_name", "shoe_name=DELTA_BYTE_ARRAY", byteArrayTag, 1},
+		{"byte-array-v2", "good.parquet", "shoe_name", "shoe_name=DELTA_BYTE_ARRAY", byteArrayTag, 2},
+		{"fixed-len-byte-array-v1", "all-types.parquet", "Uuid", "Uuid=DELTA_BYTE_ARRAY", fixedLenTag, 1},
+		{"fixed-len-byte-array-v2", "all-types.parquet", "Uuid", "Uuid=DELTA_BYTE_ARRAY", fixedLenTag, 2},
 	}
 
 	dataPageEncodings := func(t *testing.T, uri, column string) []parquet.Encoding {
@@ -908,7 +901,7 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 				ReadOption:    rOpt,
 				WriteOption: pio.WriteOption{
 					CompressionCodec: "ZSTD",
-					DataPageVersion:  2,
+					DataPageVersion:  tc.dataPageVersion,
 					PageSize:         1024 * 1024,
 					RowGroupSize:     128 * 1024 * 1024,
 				},
@@ -1207,6 +1200,27 @@ func TestCmdParseFieldEncodings(t *testing.T) {
 			dataPageVersion: 2,
 			fieldEncoding:   []string{"field=PLAIN_DICTIONARY"},
 			errMsg:          "PLAIN_DICTIONARY encoding is only allowed with data page version 1",
+		},
+		{
+			name:            "delta_byte_array allowed in v1",
+			fieldDelimiter:  "|",
+			dataPageVersion: 1,
+			fieldEncoding:   []string{"field=DELTA_BYTE_ARRAY"},
+			expected:        map[string]string{"field": "DELTA_BYTE_ARRAY"},
+		},
+		{
+			name:            "delta_binary_packed not allowed in v1",
+			fieldDelimiter:  "|",
+			dataPageVersion: 1,
+			fieldEncoding:   []string{"field=DELTA_BINARY_PACKED"},
+			errMsg:          "[DELTA_BINARY_PACKED] encoding is only allowed with data page version 2",
+		},
+		{
+			name:            "delta_length_byte_array not allowed in v1",
+			fieldDelimiter:  "|",
+			dataPageVersion: 1,
+			fieldEncoding:   []string{"field=DELTA_LENGTH_BYTE_ARRAY"},
+			errMsg:          "[DELTA_LENGTH_BYTE_ARRAY] encoding is only allowed with data page version 2",
 		},
 	}
 
