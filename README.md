@@ -1024,9 +1024,9 @@ Parquet supports various encodings for different data types. Encoding can be spe
 | `PLAIN`                   | All types                                         | Default encoding, no compression                                    |
 | `RLE`                     | BOOLEAN                                           | Run-length encoding for repeated values                             |
 | `BIT_PACKED`              | BOOLEAN, INT32, INT64                             | Deprecated and not widely supported (e.g., DuckDB), use RLE instead |
-| `DELTA_BINARY_PACKED`     | INT32, INT64                                      | Delta encoding for sorted integers                                  |
+| `DELTA_BINARY_PACKED`     | INT32, INT64                                      | Delta encoding for sorted integers (v2 data pages only)             |
 | `DELTA_BYTE_ARRAY`        | BYTE_ARRAY, FIXED_LEN_BYTE_ARRAY                  | Delta encoding for strings and fixed-length byte arrays             |
-| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY                                        | Delta encoding for variable-length byte arrays                      |
+| `DELTA_LENGTH_BYTE_ARRAY` | BYTE_ARRAY                                        | Delta encoding for variable-length byte arrays (v2 data pages only) |
 | `BYTE_STREAM_SPLIT`       | FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY | Byte interleaving for floating-point data                           |
 | `RLE_DICTIONARY`          | All types except BOOLEAN                          | Dictionary encoding with RLE, efficient for low-cardinality data    |
 | `PLAIN_DICTIONARY`        | All types except BOOLEAN                          | Dictionary encoding (v1 data pages only, use RLE_DICTIONARY for v2) |
