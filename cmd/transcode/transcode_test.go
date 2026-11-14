@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
+
+	"github.com/hangxie/parquet-go/v3/parquet"
 
 	"github.com/stretchr/testify/require"
 
@@ -835,72 +839,101 @@ func testCmdOverridesEncodingWhenSpecified(t *testing.T) {
 	rOpt := pio.ReadOption{}
 	tempDir := t.TempDir()
 
-	// Transcode with explicit field encoding override
-	transcodedFile := filepath.Join(tempDir, "transcoded-override.parquet")
-
-	// Use good.parquet which has BYTE_ARRAY fields
-	// Override one of the fields to use DELTA_BYTE_ARRAY
-	cmd := Cmd{
-		FieldEncoding: []string{"shoe_name=DELTA_BYTE_ARRAY"},
-		ReadOption:    rOpt,
-		WriteOption: pio.WriteOption{
-			CompressionCodec: "ZSTD",
-			DataPageVersion:  2,
-			PageSize:         1024 * 1024,
-			RowGroupSize:     128 * 1024 * 1024,
+	testCases := []struct {
+		name          string
+		source        string
+		column        string
+		fieldEncoding string
+		schemaTag     string
+	}{
+		{
+			name:          "byte-array",
+			source:        "good.parquet",
+			column:        "shoe_name",
+			fieldEncoding: "shoe_name=DELTA_BYTE_ARRAY",
+			schemaTag:     "name=shoe_name, type=BYTE_ARRAY, convertedtype=UTF8, logicaltype=STRING, encoding=DELTA_BYTE_ARRAY",
 		},
-		ReadPageSize: 10,
-		Source:       "../../testdata/good.parquet",
-		URI:          transcodedFile,
-	}
-	err := cmd.Run(context.Background())
-	require.NoError(t, err)
-
-	// Get schema from transcoded file
-	schemaCmd := schema.Cmd{
-		Format:     "go",
-		ReadOption: rOpt,
-		URI:        transcodedFile,
-	}
-	transcodedSchema, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, schemaCmd.Run(context.Background()))
-	})
-
-	// Verify the encoding was overridden for shoe_name
-	require.Contains(t, transcodedSchema, "encoding=DELTA_BYTE_ARRAY")
-
-	// Verify data integrity by checking row count and basic data
-	reader, err := pio.NewParquetFileReader(context.Background(), transcodedFile, rOpt)
-	require.NoError(t, err)
-	require.Equal(t, int64(3), reader.GetNumRows())
-	_ = reader.PFile.Close()
-
-	// Verify data using cat
-	catTranscoded := cat.Cmd{
-		ReadOption:   rOpt,
-		ReadPageSize: 1000,
-		SampleRatio:  1.0,
-		Format:       "json",
-		GeoFormat:    "geojson",
-		URI:          transcodedFile,
-	}
-	catOriginal := cat.Cmd{
-		ReadOption:   rOpt,
-		ReadPageSize: 1000,
-		SampleRatio:  1.0,
-		Format:       "json",
-		GeoFormat:    "geojson",
-		URI:          "../../testdata/good.parquet",
+		{
+			name:          "fixed-len-byte-array",
+			source:        "all-types.parquet",
+			column:        "Uuid",
+			fieldEncoding: "Uuid=DELTA_BYTE_ARRAY",
+			schemaTag:     "name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=DELTA_BYTE_ARRAY",
+		},
 	}
 
-	transcodedOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catTranscoded.Run(context.Background()))
-	})
-	originalOutput, _ := testutils.CaptureStdoutStderr(func() {
-		require.NoError(t, catOriginal.Run(context.Background()))
-	})
+	dataPageEncodings := func(t *testing.T, uri, column string) []parquet.Encoding {
+		pr, err := pio.NewParquetFileReader(context.Background(), uri, rOpt)
+		require.NoError(t, err)
+		defer func() { require.NoError(t, pr.PFile.Close()) }()
 
-	require.Equal(t, originalOutput, transcodedOutput)
+		colIndex := slices.IndexFunc(pr.Footer.RowGroups[0].Columns, func(col *parquet.ColumnChunk) bool {
+			return strings.EqualFold(strings.Join(col.MetaData.PathInSchema, "."), column)
+		})
+		require.GreaterOrEqual(t, colIndex, 0, "column [%s] not found", column)
+
+		headers, err := pr.GetAllPageHeadersWithContext(context.Background(), 0, colIndex)
+		require.NoError(t, err)
+		var encodings []parquet.Encoding
+		for _, h := range headers {
+			if h.PageType == parquet.PageType_DATA_PAGE || h.PageType == parquet.PageType_DATA_PAGE_V2 {
+				encodings = append(encodings, h.Encoding)
+			}
+		}
+		require.NotEmpty(t, encodings)
+		return encodings
+	}
+
+	catOutput := func(t *testing.T, uri string) string {
+		catCmd := cat.Cmd{
+			ReadOption:   rOpt,
+			ReadPageSize: 1000,
+			SampleRatio:  1.0,
+			Format:       "json",
+			GeoFormat:    "geojson",
+			URI:          uri,
+		}
+		output, _ := testutils.CaptureStdoutStderr(func() {
+			require.NoError(t, catCmd.Run(context.Background()))
+		})
+		return output
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			source := filepath.Join("..", "..", "testdata", tc.source)
+			transcodedFile := filepath.Join(tempDir, tc.name+".parquet")
+			cmd := Cmd{
+				FieldEncoding: []string{tc.fieldEncoding},
+				ReadOption:    rOpt,
+				WriteOption: pio.WriteOption{
+					CompressionCodec: "ZSTD",
+					DataPageVersion:  2,
+					PageSize:         1024 * 1024,
+					RowGroupSize:     128 * 1024 * 1024,
+				},
+				ReadPageSize: 10,
+				Source:       source,
+				URI:          transcodedFile,
+			}
+			require.NoError(t, cmd.Run(context.Background()))
+
+			schemaCmd := schema.Cmd{
+				Format:     "go",
+				ReadOption: rOpt,
+				URI:        transcodedFile,
+			}
+			transcodedSchema, _ := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, schemaCmd.Run(context.Background()))
+			})
+			require.Contains(t, transcodedSchema, tc.schemaTag)
+			for _, encoding := range dataPageEncodings(t, transcodedFile, tc.column) {
+				require.Equal(t, parquet.Encoding_DELTA_BYTE_ARRAY, encoding)
+			}
+
+			require.Equal(t, catOutput(t, source), catOutput(t, transcodedFile))
+		})
+	}
 }
 
 func testCmdPreservesEncodingsWithCompressionChange(t *testing.T) {

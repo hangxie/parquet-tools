@@ -23,7 +23,8 @@ func EncodingToString(encodings []parquet.Encoding) []string {
 // Per Parquet spec and parquet-go validation rules:
 //   - RLE: BOOLEAN, INT32, INT64 only
 //   - DELTA_BINARY_PACKED: INT32, INT64 only
-//   - DELTA_BYTE_ARRAY, DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only
+//   - DELTA_BYTE_ARRAY: BYTE_ARRAY, FIXED_LEN_BYTE_ARRAY
+//   - DELTA_LENGTH_BYTE_ARRAY: BYTE_ARRAY only
 //   - BYTE_STREAM_SPLIT: FLOAT, DOUBLE, INT32, INT64, FIXED_LEN_BYTE_ARRAY
 //   - PLAIN_DICTIONARY: All types (v1 data pages only, validated separately)
 var encodingCompatibilityMap = map[string][]string{
