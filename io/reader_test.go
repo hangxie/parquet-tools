@@ -193,7 +193,7 @@ func TestNewParquetFileReader(t *testing.T) {
 		"local-file-not-parquet": {
 			"../testdata/not-a-parquet-file",
 			rOpt,
-			"invalid argument",
+			"seek to footer tail",
 		},
 		"local-file-good": {
 			"../testdata/good.parquet",
@@ -666,5 +666,21 @@ func TestNewParquetFileReaderMalformedSchema(t *testing.T) {
 			require.ErrorContains(t, err, "malformed schema")
 			require.ErrorContains(t, err, tt.errMsg)
 		})
+	}
+}
+
+func TestCloseParquetFileReader(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	pr, err := NewParquetFileReader(ctx, "../testdata/good.parquet", ReadOption{})
+	require.NoError(t, err)
+	cancel()
+	CloseParquetFileReader(ctx, pr)
+
+	_, err = pr.PFile.Read(make([]byte, 1))
+	require.ErrorIs(t, err, os.ErrClosed)
+	require.NotEmpty(t, pr.ColumnBuffers)
+	for _, column := range pr.ColumnBuffers {
+		_, err := column.PFile.Read(make([]byte, 1))
+		require.ErrorIs(t, err, os.ErrClosed)
 	}
 }

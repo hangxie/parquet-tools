@@ -71,9 +71,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = fileReader.PFile.Close()
-	}()
+	defer pio.CloseParquetFileReader(ctx, fileReader)
 
 	return c.outputRows(ctx, fileReader, os.Stdout)
 }

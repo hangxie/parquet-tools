@@ -29,9 +29,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = reader.PFile.Close()
-	}()
+	defer pio.CloseParquetFileReader(ctx, reader)
 
 	footerSize, err := reader.GetFooterSizeWithContext(ctx)
 	if err != nil {

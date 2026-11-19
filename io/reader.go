@@ -257,12 +257,15 @@ func NewParquetFileReader(ctx context.Context, URI string, option ReadOption) (*
 	readerOpts := append(encOpts, reader.WithNP(int64(runtime.NumCPU())))
 	pr, err := reader.NewParquetReaderWithContext(ctx, fileReader, nil, readerOpts...)
 	if err != nil {
+		if pr != nil {
+			_ = pr.ReadStopWithContext(context.WithoutCancel(ctx))
+		}
 		_ = fileReader.Close()
 		return nil, err
 	}
 	internalFooter, err := pr.InternalFooter()
 	if err != nil {
-		_ = fileReader.Close()
+		CloseParquetFileReader(ctx, pr)
 		return nil, fmt.Errorf("translate footer to internal names: %w", err)
 	}
 	if internalFooter != nil {
@@ -273,9 +276,15 @@ func NewParquetFileReader(ctx context.Context, URI string, option ReadOption) (*
 	hasEncryptionOptions := option.FooterKey != nil || len(option.ColumnKeys) > 0 || option.AADPrefix != nil
 	isEncrypted := pr.FileCrypto != nil || (pr.Footer != nil && pr.Footer.IsSetEncryptionAlgorithm())
 	if hasEncryptionOptions && !isEncrypted {
-		_ = fileReader.Close()
+		CloseParquetFileReader(ctx, pr)
 		return nil, fmt.Errorf("encryption keys provided but parquet file is not encrypted")
 	}
 
 	return pr, nil
+}
+
+// CloseParquetFileReader releases column readers and their shared source.
+func CloseParquetFileReader(ctx context.Context, pr *reader.ParquetReader) {
+	_ = pr.ReadStopWithContext(context.WithoutCancel(ctx))
+	_ = pr.PFile.Close()
 }

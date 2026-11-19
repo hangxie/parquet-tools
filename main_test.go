@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/csv"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -273,4 +275,31 @@ func TestWriterAADPrefixRoundTrip(t *testing.T) {
 		_, err = runCLI(t, "cat", "--format", "jsonl", "--footer-key", footerKey, "--aad-prefix", prefix, encrypted)
 		require.ErrorContains(t, err, "AAD prefix supplied but not used")
 	})
+}
+
+func TestUltraWideCat(t *testing.T) {
+	const columns = 2048
+	out, err := runCLI(t, "cat", "--format", "csv", "--read-page-size", "1", "testdata/ultra-wide.parquet")
+	require.NoError(t, err)
+	rows, err := csv.NewReader(strings.NewReader(out)).ReadAll()
+	require.NoError(t, err)
+	require.Len(t, rows, 3)
+	for r, row := range rows {
+		require.Len(t, row, columns)
+		for i, field := range row {
+			want := "c" + strconv.Itoa(i)
+			if r > 0 {
+				want = strconv.Itoa((r-1)*columns + i)
+			}
+			require.Equal(t, want, field)
+		}
+	}
+}
+
+func Example_main_ultraWideRowCount() {
+	saved := os.Args
+	defer func() { os.Args = saved }()
+	os.Args = []string{"parquet-tools", "row-count", "testdata/ultra-wide.parquet"}
+	main()
+	// Output: 2
 }

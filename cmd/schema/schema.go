@@ -33,9 +33,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = reader.PFile.Close()
-	}()
+	defer pio.CloseParquetFileReader(ctx, reader)
 
 	schemaRoot, err := pschema.NewSchemaTree(ctx, reader, pschema.SchemaOption{FailOnInt96: false, SkipPageEncoding: c.SkipPageEncoding})
 	if err != nil {

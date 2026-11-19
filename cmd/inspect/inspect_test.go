@@ -218,6 +218,10 @@ func TestInspect(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, URI: "data-page-v2.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
 			golden: "inspect-data-page-v2-rg0-cc0-pg0.json",
 		},
+		"page/ultra-wide-last-column": {
+			cmd:    Cmd{ReadOption: rOpt, URI: "ultra-wide.parquet", RowGroup: new(0), ColumnChunk: new(2047), Page: new(0)},
+			golden: "inspect-ultra-wide-rg0-cc2047-pg0.json",
+		},
 		"page/crc32-page-0": {
 			cmd:    Cmd{ReadOption: rOpt, URI: "crc32.parquet", RowGroup: new(0), ColumnChunk: new(0), Page: new(0)},
 			golden: "inspect-crc32-rg0-cc0-pg0.json",

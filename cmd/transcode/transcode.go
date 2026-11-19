@@ -232,9 +232,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to read from [%s]: %w", c.Source, err)
 	}
-	defer func() {
-		_ = fileReader.PFile.Close()
-	}()
+	defer pio.CloseParquetFileReader(ctx, fileReader)
 
 	// Get schema from source
 	schemaTree, err := pschema.NewSchemaTree(ctx, fileReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
