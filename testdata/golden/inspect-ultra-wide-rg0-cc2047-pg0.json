@@ -1,0 +1,24 @@
+{
+  "page": {
+    "index": 0,
+    "offset": 116683,
+    "type": "DATA_PAGE",
+    "compressedSize": 10,
+    "uncompressedSize": 8,
+    "numValues": 2,
+    "encoding": "PLAIN",
+    "definitionLevelEncoding": "RLE",
+    "repetitionLevelEncoding": "RLE",
+    "statistics": {
+      "isMaxValueExact": true,
+      "isMinValueExact": true,
+      "maxValue": 4095,
+      "minValue": 2047,
+      "nullCount": 0
+    }
+  },
+  "values": [
+    2047,
+    4095
+  ]
+}

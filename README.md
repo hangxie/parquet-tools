@@ -305,6 +305,8 @@ Most commands can output JSON format result which can be processed by utilities 
 
 #### File System
 
+Local reads share one file descriptor across columns, including when reading thousands of columns.
+
 For files from the file system, you can specify `file://` scheme or just ignore it:
 
 ```bash
@@ -538,6 +540,8 @@ $ parquet-tools row-count hdfs://localhost:9000/temp/good.parquet
 ```
 
 Similar to cloud storage, `parquet-tools` downloads only necessary data from HDFS.
+
+HDFS readers share a pool of up to 256 data streams per input file. Files with more columns can be read within that limit. When a column’s stream has been evicted, the reader reopens it at its saved offset.
 
 #### HTTP Endpoint
 

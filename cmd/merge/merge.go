@@ -42,7 +42,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	}
 	defer func() {
 		for _, fileReader := range fileReaders {
-			_ = fileReader.PFile.Close()
+			pio.CloseParquetFileReader(ctx, fileReader)
 		}
 	}()
 
@@ -101,7 +101,7 @@ func (c Cmd) openSources(ctx context.Context) (_ []*reader.ParquetReader, _ stri
 	defer func() {
 		if retErr != nil {
 			for _, fileReader := range fileReaders {
-				_ = fileReader.PFile.Close()
+				pio.CloseParquetFileReader(ctx, fileReader)
 			}
 		}
 	}()

@@ -44,7 +44,7 @@ func (c *Cmd) openReader(ctx context.Context) (*reader.ParquetReader, error) {
 	}
 	schemaRoot, err := pschema.NewSchemaTree(ctx, parquetReader, pschema.SchemaOption{FailOnInt96: c.FailOnInt96})
 	if err != nil {
-		_ = parquetReader.PFile.Close()
+		pio.CloseParquetFileReader(ctx, parquetReader)
 		return nil, fmt.Errorf("failed to load schema for [%s]: %w", c.URI, err)
 	}
 	c.current.schemaJSON = schemaRoot.JSONSchema()
@@ -105,9 +105,7 @@ func (c Cmd) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = parquetReader.PFile.Close()
-	}()
+	defer pio.CloseParquetFileReader(ctx, parquetReader)
 	// a writer still open here means an early return or a panic; finished targets stay
 	defer func() {
 		if c.current.writer != nil {

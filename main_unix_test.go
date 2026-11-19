@@ -56,3 +56,10 @@ func TestInterruptContextLaterSignalKills(t *testing.T) {
 	require.True(t, status.Signaled(), "child survived a signal after the grace period")
 	require.Equal(t, syscall.SIGTERM, status.Signal())
 }
+
+func TestUltraWideCatWithLimitedDescriptors(t *testing.T) {
+	// Lower the limit only in the child so other tests retain their descriptor budget.
+	cmd := exec.Command("sh", "-c", `ulimit -n 64 && exec "$@"`, "sh", os.Args[0], "-test.run=^TestUltraWideCat$")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "%s", out)
+}

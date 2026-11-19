@@ -111,18 +111,11 @@ func TestNewSchemaTree(t *testing.T) {
 	}
 
 	t.Run("encoding map error propagates", func(t *testing.T) {
-		tmpFile := t.TempDir() + "/encoding-error.parquet"
-		data, err := os.ReadFile("../testdata/good.parquet")
+		ctx := t.Context()
+		pr, err := pio.NewParquetFileReader(ctx, "../testdata/good.parquet", pio.ReadOption{})
 		require.NoError(t, err)
-		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
-
-		pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
-		require.NoError(t, err)
-		defer func() {
-			_ = pr.PFile.Close()
-		}()
-
-		require.NoError(t, os.Remove(tmpFile))
+		defer pio.CloseParquetFileReader(ctx, pr)
+		require.NoError(t, pr.PFile.Close())
 
 		_, err = NewSchemaTree(context.Background(), pr, SchemaOption{})
 		require.Error(t, err)
@@ -190,20 +183,11 @@ func TestBuildEncodingMap(t *testing.T) {
 	}
 
 	t.Run("clone error propagates", func(t *testing.T) {
-		// Open a valid parquet file, then delete it so Clone() fails
-		tmpFile := t.TempDir() + "/clone-error.parquet"
-		data, err := os.ReadFile("../testdata/good.parquet")
+		ctx := t.Context()
+		pr, err := pio.NewParquetFileReader(ctx, "../testdata/good.parquet", pio.ReadOption{})
 		require.NoError(t, err)
-		require.NoError(t, os.WriteFile(tmpFile, data, 0o644))
-
-		pr, err := pio.NewParquetFileReader(context.Background(), tmpFile, pio.ReadOption{})
-		require.NoError(t, err)
-		defer func() {
-			_ = pr.PFile.Close()
-		}()
-
-		// Delete the file so Clone() cannot re-open it
-		require.NoError(t, os.Remove(tmpFile))
+		defer pio.CloseParquetFileReader(ctx, pr)
+		require.NoError(t, pr.PFile.Close())
 
 		_, err = buildEncodingMap(context.Background(), pr)
 		require.Error(t, err)

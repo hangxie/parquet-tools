@@ -456,6 +456,8 @@ $PT inspect --row-group 0 --column-chunk 0 --page 1 "$TESTDATA_DIR/good.parquet"
 # inspect-row-group-rg0-cc0-pg5.json
 $PT inspect --row-group 0 --column-chunk 0 --page 5 "$TESTDATA_DIR/row-group.parquet" | format_json > "$GOLDEN_DIR/inspect-row-group-rg0-cc0-pg5.json"
 
+$PT inspect --row-group 0 --column-chunk 2047 --page 0 "$TESTDATA_DIR/ultra-wide.parquet" | format_json > "$GOLDEN_DIR/inspect-ultra-wide-rg0-cc2047-pg0.json"
+
 # inspect-crc32-rg0-cc0-pg0
 $PT inspect --row-group 0 --column-chunk 0 --page 0 "$TESTDATA_DIR/crc32.parquet" | format_json > "$GOLDEN_DIR/inspect-crc32-rg0-cc0-pg0.json"
 
