@@ -1713,6 +1713,10 @@ $ parquet cat /tmp/timestamp.parquet
 
 BSON is a binary format that some tools (e.g., DuckDB and hyparquet) do not support. You can use `--bson-to-string` to convert BSON columns to plain strings with STRING logical type. The BSON data is decoded and re-encoded as JSON strings.
 
+JSON does not keep BSON's value types or field order, so different documents can become the same string: `{a: int32(1)}`, `{a: int64(1)}` and `{a: 1.0}` all become `{"a":1}`, an ObjectId becomes its hex text, and fields are written in sorted order. When a BSON column is a map key, two such keys in one map make `retype` stop with an error, as described in the note above.
+
+The Parquet specification allows a map key of any type, but only string keys read consistently across tools; see [Non-string MAP Keys](compatibility.md#non-string-map-keys). Keep map keys as strings wherever possible, which `--bson-to-string` does for BSON keys.
+
 ```bash
 $ parquet-tools retype --bson-to-string -s testdata/all-types.parquet /tmp/bson-to-string.parquet
 ```

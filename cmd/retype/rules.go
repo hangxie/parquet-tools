@@ -208,6 +208,7 @@ var RuleRegistry = map[RuleID]*RetypeRule{
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal VARIANT to JSON: %w", err)
 			}
+			// string rather than []byte, matching BSON, which must stay comparable for map keys
 			return string(jsonData), nil
 		},
 		TargetType: reflect.TypeFor[string](),
@@ -393,5 +394,7 @@ func bsonToJSONString(value string) (any, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal to JSON: %w", err)
 	}
+	// string rather than []byte: a BSON column can sit in a map key, even inside a struct key,
+	// and Go map keys must be comparable, which []byte never is
 	return string(jsonData), nil
 }
