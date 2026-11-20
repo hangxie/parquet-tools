@@ -324,6 +324,51 @@ func TestCmdJSONIntegerValues(t *testing.T) {
 	}
 }
 
+func TestCmdJSONRowsKeepTheirValues(t *testing.T) {
+	// Enough rows that the JSONL scanner refills its buffer over rows already written.
+	const rowCount = 1000
+	values := make([]string, rowCount)
+	for i := range values {
+		values[i] = fmt.Sprintf("value-%04d-%s", i, strings.Repeat("x", 200))
+	}
+	want, err := json.Marshal(func() []map[string]string {
+		rows := make([]map[string]string, rowCount)
+		for i, v := range values {
+			rows[i] = map[string]string{"Value": v}
+		}
+		return rows
+	}())
+	require.NoError(t, err)
+
+	for _, format := range []string{"json", "jsonl"} {
+		t.Run(format, func(t *testing.T) {
+			dir := t.TempDir()
+			schemaPath := filepath.Join(dir, "schema.json")
+			require.NoError(t, os.WriteFile(schemaPath, []byte(jsonlLineSizeTestSchema), 0o600))
+			lines := make([]string, rowCount)
+			for i, v := range values {
+				lines[i] = fmt.Sprintf(`{"Value":%q}`, v)
+			}
+			input := strings.Join(lines, "\n")
+			if format == "json" {
+				input = "[" + strings.Join(lines, ",") + "]"
+			}
+			sourcePath := filepath.Join(dir, "input."+format)
+			require.NoError(t, os.WriteFile(sourcePath, []byte(input), 0o600))
+
+			cmd := Cmd{Format: format, Schema: schemaPath, Source: sourcePath, URI: filepath.Join(dir, "output.parquet")}
+			require.NoError(t, cmd.Run(context.Background()))
+
+			catCmd := importTestCatCmd(cmd.URI, pio.ReadOption{})
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				require.NoError(t, catCmd.Run(context.Background()))
+			})
+			require.JSONEq(t, string(want), stdout)
+			require.Empty(t, stderr)
+		})
+	}
+}
+
 func TestCmdJSONLLineSize(t *testing.T) {
 	testCases := []struct {
 		name             string

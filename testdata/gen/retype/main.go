@@ -15,26 +15,26 @@ import (
 
 // DeepNestedBson is nested inside MapValueStruct to test deep conversion
 type DeepNestedBson struct {
-	DeepBson string `parquet:"name=DeepBson, type=BYTE_ARRAY, convertedtype=BSON, encoding=DELTA_BYTE_ARRAY, compression=UNCOMPRESSED"`
+	DeepBson []byte `parquet:"name=DeepBson, type=BYTE_ARRAY, convertedtype=BSON, encoding=DELTA_BYTE_ARRAY, compression=UNCOMPRESSED"`
 }
 
 // MapValueStruct is used as the value type in a map
 type MapValueStruct struct {
-	ValueBson   string         `parquet:"name=ValueBson, type=BYTE_ARRAY, convertedtype=BSON, encoding=PLAIN, compression=SNAPPY"`
+	ValueBson   []byte         `parquet:"name=ValueBson, type=BYTE_ARRAY, convertedtype=BSON, encoding=PLAIN, compression=SNAPPY"`
 	ValueInt96  string         `parquet:"name=ValueInt96, type=INT96, compression=LZ4_RAW"`
 	ValueNested DeepNestedBson `parquet:"name=ValueNested"`
 }
 
 // ListElementStruct is used as elements in a list
 type ListElementStruct struct {
-	ElemBson  string `parquet:"name=ElemBson, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=LZ4_RAW"`
+	ElemBson  []byte `parquet:"name=ElemBson, type=BYTE_ARRAY, logicaltype=BSON, encoding=DELTA_BYTE_ARRAY, compression=LZ4_RAW"`
 	ElemInt96 string `parquet:"name=ElemInt96, type=INT96, compression=LZ4_RAW"`
 	ElemName  string `parquet:"name=ElemName, type=BYTE_ARRAY, convertedtype=UTF8, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=ZSTD"`
 }
 
 // NestedContainer has a map containing structs with BSON
 type NestedContainer struct {
-	ContainerBson string `parquet:"name=ContainerBson, type=BYTE_ARRAY, convertedtype=BSON, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=GZIP"`
+	ContainerBson []byte `parquet:"name=ContainerBson, type=BYTE_ARRAY, convertedtype=BSON, encoding=DELTA_LENGTH_BYTE_ARRAY, compression=GZIP"`
 }
 
 // RetypeTest is the struct for testing retype command with deep nesting
@@ -56,12 +56,12 @@ type RetypeTest struct {
 	// Top-level BSON fields (both convertedtype and logicaltype variants)
 	// bsonField uses a lowercase-starting parquet name so InName != ExName, exercising
 	// the applyRule matchedFields lookup path via ReadByNumber's dynamic struct field names.
-	BsonField  string `parquet:"name=bsonField, type=BYTE_ARRAY, convertedtype=BSON"`
-	BsonField2 string `parquet:"name=BsonField2, type=BYTE_ARRAY, logicaltype=BSON"`
+	BsonField  []byte `parquet:"name=bsonField, type=BYTE_ARRAY, convertedtype=BSON"`
+	BsonField2 []byte `parquet:"name=BsonField2, type=BYTE_ARRAY, logicaltype=BSON"`
 
 	// Top-level JSON fields (both convertedtype and logicaltype variants)
-	JsonField  string `parquet:"name=JsonField, type=BYTE_ARRAY, convertedtype=JSON"`
-	JsonField2 string `parquet:"name=JsonField2, type=BYTE_ARRAY, logicaltype=JSON"`
+	JsonField  []byte `parquet:"name=JsonField, type=BYTE_ARRAY, convertedtype=JSON"`
+	JsonField2 []byte `parquet:"name=JsonField2, type=BYTE_ARRAY, logicaltype=JSON"`
 
 	// Top-level FLOAT16 fields
 	Float16Field string `parquet:"name=Float16Field, type=FIXED_LEN_BYTE_ARRAY, length=2, logicaltype=FLOAT16"`
@@ -76,10 +76,10 @@ type RetypeTest struct {
 	MapOfStructs map[string]MapValueStruct `parquet:"name=MapOfStructs, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8"`
 
 	// List of BSON values directly (tests list of BSON conversion)
-	BsonList []string `parquet:"name=BsonList, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
+	BsonList [][]byte `parquet:"name=BsonList, type=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
 
 	// Map with BSON values directly (tests map with BSON values)
-	BsonMap map[string]string `parquet:"name=BsonMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
+	BsonMap map[string][]byte `parquet:"name=BsonMap, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=BYTE_ARRAY, valueconvertedtype=BSON"`
 
 	// Legacy repeated primitive (non-standard LIST)
 	LegacyRepeated []int32 `parquet:"name=LegacyRepeated, type=INT32, repetitiontype=REPEATED"`
@@ -158,18 +158,18 @@ func main() {
 			Id:           int32(i),
 			Name:         fmt.Sprintf("record-%d", i),
 			Int96Field:   int96Str,
-			BsonField:    string(bsonStr),
-			BsonField2:   string(bsonStr),
-			JsonField:    string(jsonStr),
-			JsonField2:   string(jsonStr),
+			BsonField:    bsonStr,
+			BsonField2:   bsonStr,
+			JsonField:    jsonStr,
+			JsonField2:   jsonStr,
 			Float16Field: float16Val,
 			Nested: NestedContainer{
-				ContainerBson: string(nestedBsonStr),
+				ContainerBson: nestedBsonStr,
 			},
 			ListOfStructs:  []ListElementStruct{},
 			MapOfStructs:   map[string]MapValueStruct{},
-			BsonList:       []string{},
-			BsonMap:        map[string]string{},
+			BsonList:       [][]byte{},
+			BsonMap:        map[string][]byte{},
 			LegacyRepeated: []int32{},
 		}
 
@@ -191,7 +191,7 @@ func main() {
 			elemBsonStr, _ := bson.Marshal(elemBsonObj)
 
 			value.ListOfStructs = append(value.ListOfStructs, ListElementStruct{
-				ElemBson:  string(elemBsonStr),
+				ElemBson:  elemBsonStr,
 				ElemInt96: elemInt96,
 				ElemName:  fmt.Sprintf("elem-%d-%d", i, j),
 			})
@@ -206,10 +206,10 @@ func main() {
 			valueBsonStr, _ := bson.Marshal(valueBsonObj)
 
 			value.MapOfStructs[mapKey] = MapValueStruct{
-				ValueBson:  string(valueBsonStr),
+				ValueBson:  valueBsonStr,
 				ValueInt96: mapInt96,
 				ValueNested: DeepNestedBson{
-					DeepBson: string(deepBsonStr),
+					DeepBson: deepBsonStr,
 				},
 			}
 		}
@@ -218,14 +218,14 @@ func main() {
 		for j := range i {
 			listBsonObj := map[string]any{"list_item": j}
 			listBsonStr, _ := bson.Marshal(listBsonObj)
-			value.BsonList = append(value.BsonList, string(listBsonStr))
+			value.BsonList = append(value.BsonList, listBsonStr)
 		}
 
 		// Add BSON values directly to map
 		for j := range i {
 			mapBsonObj := map[string]any{"map_item": j}
 			mapBsonStr, _ := bson.Marshal(mapBsonObj)
-			value.BsonMap[fmt.Sprintf("bson-key-%d", j)] = string(mapBsonStr)
+			value.BsonMap[fmt.Sprintf("bson-key-%d", j)] = mapBsonStr
 		}
 
 		// Use the prepared BSON strings for consistency
