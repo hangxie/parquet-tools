@@ -3,9 +3,9 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -48,7 +48,7 @@ func TestInterruptContextLaterSignalKills(t *testing.T) {
 	cmd := exec.Command(os.Args[0], "-test.run=^TestInterruptContextLaterSignalKills$")
 	cmd.Env = append(os.Environ(), "PARQUET_TOOLS_INTERRUPT_CHILD=1")
 	out, err := cmd.Output()
-	require.True(t, strings.Contains(string(out), "survived-repeat"), "a repeat inside the grace period killed the child")
+	require.True(t, bytes.Contains(out, []byte("survived-repeat")), "a repeat inside the grace period killed the child")
 	var exitErr *exec.ExitError
 	require.ErrorAs(t, err, &exitErr)
 	status, ok := exitErr.Sys().(syscall.WaitStatus)

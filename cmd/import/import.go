@@ -146,7 +146,7 @@ func (c Cmd) importJSON(ctx context.Context) error {
 	}()
 
 	for _, record := range records {
-		if err := parquetWriter.WriteWithContext(ctx, string(record)); err != nil {
+		if err := parquetWriter.WriteWithContext(ctx, []byte(record)); err != nil {
 			return fmt.Errorf("failed to write to parquet file: %w", err)
 		}
 	}
@@ -213,10 +213,10 @@ func (c Cmd) importJSONL(ctx context.Context) error {
 			)
 		}
 		if err := json.Unmarshal(jsonData, &dummy); err != nil {
-			return fmt.Errorf("invalid JSON string: %s", string(jsonData))
+			return fmt.Errorf("invalid JSON string: %s", jsonData)
 		}
 
-		if err := parquetWriter.WriteWithContext(ctx, string(jsonData)); err != nil {
+		if err := parquetWriter.WriteWithContext(ctx, jsonData); err != nil {
 			return fmt.Errorf("failed to write to parquet file: %w", err)
 		}
 	}

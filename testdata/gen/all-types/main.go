@@ -39,11 +39,11 @@ type AllTypes struct {
 	Double            float64             `parquet:"name=Double, type=DOUBLE, encoding=BYTE_STREAM_SPLIT, compression=UNCOMPRESSED"`
 	ByteArray         string              `parquet:"name=ByteArray, type=BYTE_ARRAY, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	Enum              string              `parquet:"name=Enum, type=BYTE_ARRAY, convertedtype=ENUM, encoding=RLE_DICTIONARY, compression=GZIP"`
-	Uuid              string              `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN, compression=LZ4_RAW"`
-	Json              string              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON, encoding=RLE_DICTIONARY, compression=ZSTD"`
-	Bson              string              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, encoding=RLE_DICTIONARY, compression=BROTLI"`
-	Json2             string              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
-	Bson2             string              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=RLE_DICTIONARY, compression=SNAPPY"`
+	Uuid              []byte              `parquet:"name=Uuid, type=FIXED_LEN_BYTE_ARRAY, length=16, logicaltype=UUID, encoding=PLAIN, compression=LZ4_RAW"`
+	Json              []byte              `parquet:"name=Json, type=BYTE_ARRAY, convertedtype=JSON, encoding=RLE_DICTIONARY, compression=ZSTD"`
+	Bson              []byte              `parquet:"name=Bson, type=BYTE_ARRAY, convertedtype=BSON, encoding=RLE_DICTIONARY, compression=BROTLI"`
+	Json2             []byte              `parquet:"name=Json2, type=BYTE_ARRAY, logicaltype=JSON, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
+	Bson2             []byte              `parquet:"name=Bson2, type=BYTE_ARRAY, logicaltype=BSON, encoding=RLE_DICTIONARY, compression=SNAPPY"`
 	Variant           any                 `parquet:"name=Variant, type=VARIANT, logicaltype=VARIANT, encoding=RLE_DICTIONARY, compression=GZIP"`
 	FixedLenByteArray string              `parquet:"name=FixedLenByteArray, type=FIXED_LEN_BYTE_ARRAY, length=10, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
 	Utf8              string              `parquet:"name=Utf8, type=BYTE_ARRAY, convertedtype=UTF8, encoding=RLE_DICTIONARY, compression=ZSTD"`
@@ -68,7 +68,7 @@ type AllTypes struct {
 	TimestampMicros   int64               `parquet:"name=TimestampMicros, type=INT64, convertedtype=TIMESTAMP_MICROS, encoding=RLE_DICTIONARY, compression=BROTLI"`
 	TimestampMicros2  int64               `parquet:"name=TimestampMicros2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS, encoding=RLE_DICTIONARY, compression=UNCOMPRESSED"`
 	TimestampNanos2   int64               `parquet:"name=TimestampNanos2, type=INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=NANOS, encoding=RLE_DICTIONARY, compression=SNAPPY"`
-	Interval          string              `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN, compression=GZIP"`
+	Interval          []byte              `parquet:"name=Interval, type=FIXED_LEN_BYTE_ARRAY, convertedtype=INTERVAL, length=12, encoding=PLAIN, compression=GZIP"`
 	Decimal1          int32               `parquet:"name=Decimal1, type=INT32, convertedtype=DECIMAL, scale=2, precision=9, encoding=RLE_DICTIONARY, compression=LZ4_RAW"`
 	Decimal2          int64               `parquet:"name=Decimal2, type=INT64, convertedtype=DECIMAL, scale=2, precision=18, encoding=RLE_DICTIONARY, compression=ZSTD"`
 	Decimal3          string              `parquet:"name=Decimal3, type=FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12, encoding=PLAIN, compression=BROTLI"`
@@ -120,11 +120,11 @@ func main() {
 			Double:            float64(i) * 0.5,
 			ByteArray:         fmt.Sprintf("ByteArray-%d", i),
 			Enum:              fmt.Sprintf("Enum-%d", i),
-			Uuid:              string(bytes.Repeat([]byte{byte(i)}, 16)),
-			Json:              string(jsonStr),
-			Bson:              string(bsonStr),
-			Json2:             string(jsonStr),
-			Bson2:             string(bsonStr),
+			Uuid:              bytes.Repeat([]byte{byte(i)}, 16),
+			Json:              jsonStr,
+			Bson:              bsonStr,
+			Json2:             jsonStr,
+			Bson2:             bsonStr,
 			Variant:           map[string]any{strI: i},
 			FixedLenByteArray: fmt.Sprintf("Fixed-%04d", i),
 			Utf8:              fmt.Sprintf("UTF8-%d", i),
@@ -149,7 +149,7 @@ func main() {
 			TimestampMicros:   int64(i) + 1_640_995_200_000_000,
 			TimestampMicros2:  int64(i) + 1_640_995_200_000_000,
 			TimestampNanos2:   int64(i) + 1_640_995_200_000_000_000,
-			Interval:          string(bytes.Repeat(interval, 3)),
+			Interval:          bytes.Repeat(interval, 3),
 			Decimal1:          decimals[i],
 			Decimal2:          int64(decimals[i]),
 			Decimal3:          types.StrIntToBinary(fmt.Sprintf("%0.2f", float32(decimals[i]/100.0)), "BigEndian", 12, true),

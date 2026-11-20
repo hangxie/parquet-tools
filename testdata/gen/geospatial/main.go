@@ -13,8 +13,8 @@ import (
 )
 
 type Geospatial struct {
-	Geometry  string `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
-	Geography string `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, omitstats=true"`
+	Geometry  []byte `parquet:"name=Geometry, type=BYTE_ARRAY, logicaltype=GEOMETRY"`
+	Geography []byte `parquet:"name=Geography, type=BYTE_ARRAY, logicaltype=GEOGRAPHY, omitstats=true"`
 }
 
 func main() {
@@ -77,8 +77,8 @@ func main() {
 		}
 
 		value := Geospatial{
-			Geometry:  string(geom),
-			Geography: string(geog),
+			Geometry:  geom,
+			Geography: geog,
 		}
 
 		if err = pw.WriteWithContext(context.Background(), value); err != nil {

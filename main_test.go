@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/csv"
 	"io"
@@ -51,7 +52,7 @@ func TestWriterFinalizationPreservesCancellation(t *testing.T) {
 
 			source, err := fs.ReadFile(os.DirFS(root), path)
 			require.NoError(t, err)
-			if strings.Contains(string(source), "WriteStopWithContext(context.WithoutCancel(") {
+			if bytes.Contains(source, []byte("WriteStopWithContext(context.WithoutCancel(")) {
 				t.Errorf("%s/%s detaches writer finalization from cancellation", root, path)
 			}
 			return nil
