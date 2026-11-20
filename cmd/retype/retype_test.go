@@ -1120,6 +1120,82 @@ func TestReaderContextCancellation(t *testing.T) {
 	require.ErrorIs(t, err, context.Canceled)
 }
 
+// writeRetypeSource writes rows into a fresh Parquet file and returns its path.
+func writeRetypeSource(t *testing.T, schema any, rows ...any) string {
+	t.Helper()
+	source := filepath.Join(t.TempDir(), "source.parquet")
+	fw, err := local.NewLocalFileWriter(source)
+	require.NoError(t, err)
+	pw, err := writer.NewParquetWriterWithContext(context.Background(), fw, schema, writer.WithNP(1))
+	require.NoError(t, err)
+	for _, row := range rows {
+		require.NoError(t, pw.WriteWithContext(context.Background(), row))
+	}
+	require.NoError(t, pw.WriteStopWithContext(context.Background()))
+	require.NoError(t, fw.Close())
+	return source
+}
+
+func TestCmdBsonMapKey(t *testing.T) {
+	type docKey struct {
+		Doc string `parquet:"name=doc, type=BYTE_ARRAY, convertedtype=BSON"`
+	}
+	type outerKey struct {
+		Inner docKey `parquet:"name=inner"`
+	}
+	type directRow struct {
+		Data map[string]string `parquet:"name=data, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=BSON, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	}
+	type structRow struct {
+		Data map[docKey]string `parquet:"name=data, type=MAP, keytype=STRUCT, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	}
+	type nestedRow struct {
+		Data map[outerKey]string `parquet:"name=data, type=MAP, keytype=STRUCT, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	}
+	empty, err := bson.Marshal(bson.M{})
+	require.NoError(t, err)
+	doc := string(empty)
+
+	testCases := map[string]struct {
+		schema   any
+		row      any
+		expected string
+	}{
+		"direct-key": {new(directRow), directRow{Data: map[string]string{doc: "v"}}, `{"data":{"{}":"v"}}`},
+		"struct-key": {new(structRow), structRow{Data: map[docKey]string{{Doc: doc}: "v"}}, `{"data":{"map[doc:{}]":"v"}}`},
+		"nested-key": {new(nestedRow), nestedRow{Data: map[outerKey]string{{Inner: docKey{Doc: doc}}: "v"}}, `{"data":{"map[inner:map[doc:{}]]":"v"}}`},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			cmd := Cmd{BsonToString: true, ReadPageSize: 10, Source: writeRetypeSource(t, tc.schema, tc.row), URI: filepath.Join(t.TempDir(), "retyped.parquet")}
+			require.NoError(t, cmd.Run(context.Background()))
+
+			stdout, stderr := testutils.CaptureStdoutStderr(func() {
+				catCmd := cat.Cmd{ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", URI: cmd.URI}
+				require.NoError(t, catCmd.Run(context.Background()))
+			})
+			require.Empty(t, stderr)
+			require.JSONEq(t, tc.expected, stdout)
+		})
+	}
+}
+
+func TestCmdBsonMapKeyCollision(t *testing.T) {
+	type row struct {
+		Data map[string]string `parquet:"name=data, type=MAP, keytype=BYTE_ARRAY, keyconvertedtype=BSON, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	}
+	// distinct BSON documents whose field order JSON encoding does not keep
+	ab, err := bson.Marshal(bson.D{{Key: "a", Value: 1}, {Key: "b", Value: 2}})
+	require.NoError(t, err)
+	ba, err := bson.Marshal(bson.D{{Key: "b", Value: 2}, {Key: "a", Value: 1}})
+	require.NoError(t, err)
+	require.NotEqual(t, ab, ba)
+
+	source := writeRetypeSource(t, new(row), row{Data: map[string]string{string(ab): "first", string(ba): "second"}})
+	cmd := Cmd{BsonToString: true, ReadPageSize: 10, Source: source, URI: filepath.Join(t.TempDir(), "retyped.parquet")}
+	require.ErrorContains(t, cmd.Run(context.Background()), `map [Data] has keys that both convert to map key [{"a":1,"b":2}]`)
+}
+
 func TestCmdRuleMatchesExactColumn(t *testing.T) {
 	type int96Holder struct {
 		Ts string `parquet:"name=ts, type=INT96"`

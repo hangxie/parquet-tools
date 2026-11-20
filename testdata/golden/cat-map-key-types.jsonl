@@ -1,0 +1,28 @@
+{
+  "binary_key": {
+    "AP8=": 1
+  },
+  "int_key": {
+    "1": "one"
+  },
+  "string_key": {
+    "a": 1
+  },
+  "struct_key": {
+    "map[x:1 y:2]": "p12"
+  }
+}
+{
+  "binary_key": {
+    "AQ==": 2
+  },
+  "int_key": {
+    "2": "two"
+  },
+  "string_key": {
+    "b": 2
+  },
+  "struct_key": {
+    "map[x:3 y:4]": "p34"
+  }
+}

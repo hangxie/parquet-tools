@@ -111,6 +111,10 @@ func TestCmd(t *testing.T) {
 			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "list-map-layout.parquet"},
 			golden: "schema-list-map-layout-json.json",
 		},
+		"json-map-key-types": {
+			cmd:    schema.Cmd{ReadOption: rOpt, Format: "json", URI: "map-key-types.parquet"},
+			golden: "schema-map-key-types-json.json",
+		},
 		"go-list-map-layout": {
 			cmd:    schema.Cmd{ReadOption: rOpt, Format: "go", URI: "list-map-layout.parquet"},
 			golden: "schema-list-map-layout-go.txt",

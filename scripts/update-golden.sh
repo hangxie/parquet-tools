@@ -141,6 +141,9 @@ $PT cat --format jsonl "$TESTDATA_DIR/nested-array.parquet" | format_jsonl > "$G
 # cat-list-map-layout.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/list-map-layout.parquet" | format_jsonl > "$GOLDEN_DIR/cat-list-map-layout.jsonl"
 
+# cat-map-key-types.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/map-key-types.parquet" | format_jsonl > "$GOLDEN_DIR/cat-map-key-types.jsonl"
+
 # cat-row-group.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group.jsonl"
 
@@ -226,6 +229,9 @@ $PT schema --format json "$TESTDATA_DIR/map-value-map.parquet" | format_json > "
 
 # schema-list-map-layout-json.json
 $PT schema --format json "$TESTDATA_DIR/list-map-layout.parquet" | format_json > "$GOLDEN_DIR/schema-list-map-layout-json.json"
+
+# schema-map-key-types-json.json
+$PT schema --format json "$TESTDATA_DIR/map-key-types.parquet" | format_json > "$GOLDEN_DIR/schema-map-key-types-json.json"
 
 # schema-list-map-layout-go.txt
 $PT schema --format go "$TESTDATA_DIR/list-map-layout.parquet" > "$GOLDEN_DIR/schema-list-map-layout-go.txt"
