@@ -204,9 +204,9 @@ You can pull the image from either location:
 
 ```bash
 $ docker run --rm hangxie/parquet-tools version
-v1.58.1
+v1.58.2
 $ podman run --rm ghcr.io/hangxie/parquet-tools version
-v1.58.1
+v1.58.2
 ```
 
 ### Prebuilt RPM and deb Packages
@@ -217,10 +217,10 @@ Download the package for your architecture, then install it (replace the example
 
 ```bash
 # Debian / Ubuntu
-$ sudo apt install ./go-parquet-tools_1.58.1_amd64.deb
+$ sudo apt install ./go-parquet-tools_1.58.2_amd64.deb
 
 # RPM-based distributions
-$ sudo rpm -Uhv go-parquet-tools-1.58.1-1.x86_64.rpm
+$ sudo rpm -Uhv go-parquet-tools-1.58.2-1.x86_64.rpm
 
 $ parquet-tools version
 ```
@@ -2286,7 +2286,7 @@ $ parquet-tools transcode -s testdata/all-types.parquet -z ZSTD output.parquet
 
 ```bash
 $ parquet-tools version
-v1.58.1
+v1.58.2
 ```
 
 #### Print All Information
@@ -2295,8 +2295,8 @@ v1.58.1
 
 ```bash
 $ parquet-tools version -a
-v1.58.1
-2026-11-19T06:24:07Z
+v1.58.2
+2026-11-20T21:55:12Z
 Homebrew
 ```
 
@@ -2304,14 +2304,14 @@ Homebrew
 
 ```bash
 $ parquet-tools version --build-time --json
-{"Version":"v1.58.1","BuildTime":"2026-11-19T06:24:07Z"}
+{"Version":"v1.58.2","BuildTime":"2026-11-20T21:55:12Z"}
 ```
 
 #### Print Version in JSON Format
 
 ```bash
 $ parquet-tools version -j
-{"Version":"v1.58.1"}
+{"Version":"v1.58.2"}
 ```
 
 ## Local Development
