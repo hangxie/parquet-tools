@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.115.0
 	github.com/aws/smithy-go v1.28.9
 	github.com/google/uuid v1.6.0
-	github.com/hangxie/parquet-go/v3 v3.13.2-0.20261121060439-1194b20a2b49
+	github.com/hangxie/parquet-go/v3 v3.13.2-0.20261121062220-000c8a0b6fe3
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.12.1
 	github.com/willabides/kongplete v0.4.0
