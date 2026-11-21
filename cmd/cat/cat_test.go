@@ -305,6 +305,10 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "list-map-layout.parquet"},
 			golden: "cat-list-map-layout.jsonl",
 		},
+		"map-key-types-raw": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, ValueMode: "raw", Format: "jsonl", NoHeader: true, URI: "map-key-types.parquet"},
+			golden: "cat-map-key-types.jsonl",
+		},
 		"map-key-types": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "map-key-types.parquet"},
 			golden: "cat-map-key-types.jsonl",

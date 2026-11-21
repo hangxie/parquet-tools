@@ -15,10 +15,16 @@ import (
 	pschema "github.com/hangxie/parquet-tools/schema"
 )
 
-func TestRawValueModeRoundTrip(t *testing.T) {
-	for _, fixture := range []string{"all-types.parquet", "geospatial.parquet", "retype.parquet"} {
-		t.Run(fixture, func(t *testing.T) {
-			path := filepath.Join("../../testdata", fixture)
+func TestValueModeRoundTrip(t *testing.T) {
+	for _, tc := range []struct{ fixture, mode string }{
+		{"all-types.parquet", "raw"},
+		{"geospatial.parquet", "raw"},
+		{"retype.parquet", "raw"},
+		{"map-key-types.parquet", "raw"},
+		{"map-key-types.parquet", "interpreted"},
+	} {
+		t.Run(tc.fixture+"/"+tc.mode, func(t *testing.T) {
+			path := filepath.Join("../../testdata", tc.fixture)
 			reader, err := pio.NewParquetFileReader(context.Background(), path, pio.ReadOption{})
 			require.NoError(t, err)
 			tree, err := pschema.NewSchemaTree(context.Background(), reader, pschema.SchemaOption{})
@@ -28,14 +34,14 @@ func TestRawValueModeRoundTrip(t *testing.T) {
 				t.Run(format, func(t *testing.T) {
 					dir := t.TempDir()
 					catCmd := importTestCatCmd(path, pio.ReadOption{})
-					catCmd.ValueMode = "raw"
+					catCmd.ValueMode = tc.mode
 					catCmd.Format = format
 					original := testutils.CommandStdout(t, catCmd)
 					source, schema := filepath.Join(dir, "input"), filepath.Join(dir, "schema")
 					require.NoError(t, os.WriteFile(source, []byte(original), 0o600))
 					require.NoError(t, os.WriteFile(schema, []byte(tree.JSONSchema()), 0o600))
 					output := filepath.Join(dir, "output.parquet")
-					importCmd := Cmd{Source: source, Schema: schema, Format: format, ValueMode: "raw", URI: output}
+					importCmd := Cmd{Source: source, Schema: schema, Format: format, ValueMode: tc.mode, URI: output}
 					require.NoError(t, importCmd.Run(context.Background()))
 					catCmd.URI = output
 					require.Equal(t, original, testutils.CommandStdout(t, catCmd))

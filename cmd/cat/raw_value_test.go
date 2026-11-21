@@ -152,3 +152,12 @@ func TestRawStructArray(t *testing.T) {
 		})
 	}
 }
+
+func TestRawMapUnencodableStructKey(t *testing.T) {
+	handler, err := schema.NewSchemaHandlerFromJSON(`{"Tag":"name=root","Fields":[{"Tag":"name=Entries, type=MAP","Fields":[{"Tag":"name=Key","Fields":[{"Tag":"name=Id, type=INT32"}]},{"Tag":"name=Value, type=INT32"}]}]}`)
+	require.NoError(t, err)
+	path := handler.GetRootInName() + common.ParGoPathDelimiter + "Entries"
+	type key struct{ Id chan int }
+	_, err = rawValue(reflect.ValueOf(map[key]int32{{make(chan int)}: 1}), path, handler)
+	require.ErrorContains(t, err, "encode struct map key")
+}
