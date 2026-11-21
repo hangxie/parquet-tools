@@ -1304,7 +1304,7 @@ $ parquet-tools cat -f jsonl --concurrent testdata/good.parquet
 
 #### Value Modes
 
-`cat` uses a compact JSON object as the property name for a struct MAP key in both value modes. For example, the key string `{"x":1,"y":2}` replaces `map[x:1 y:2]`. Parse the property name as JSON to access its fields.
+`cat` uses a compact JSON object as the property name for a struct MAP key in both value modes. For example, the key string `{"x":1,"y":2}` replaces `map[x:1 y:2]`. `import` reads this property name back into the struct fields when given the same schema.
 
 Both `cat` and `import` accept `--value-mode interpreted|raw`, defaulting to `interpreted`. Interpreted mode uses the human-readable logical formats described below. Raw mode uses the physical representation of each leaf column:
 
