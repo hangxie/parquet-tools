@@ -305,9 +305,21 @@ func TestCmd(t *testing.T) {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "list-map-layout.parquet"},
 			golden: "cat-list-map-layout.jsonl",
 		},
+		"map-key-types-raw": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, ValueMode: "raw", Format: "jsonl", NoHeader: true, URI: "map-key-types.parquet"},
+			golden: "cat-map-key-types.jsonl",
+		},
 		"map-key-types": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "map-key-types.parquet"},
 			golden: "cat-map-key-types.jsonl",
+		},
+		"struct-map-keys-raw": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, ValueMode: "raw", Format: "jsonl", NoHeader: true, URI: "struct-map-keys.parquet"},
+			golden: "cat-struct-map-keys-raw.jsonl",
+		},
+		"struct-map-keys": {
+			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "struct-map-keys.parquet"},
+			golden: "cat-struct-map-keys.jsonl",
 		},
 		"multi-row-groups": {
 			cmd:    Cmd{ReadOption: rOpt, Skip: 0, Limit: 0, ReadPageSize: 10, SampleRatio: 1.0, Format: "jsonl", NoHeader: true, URI: "row-group.parquet"},

@@ -144,6 +144,12 @@ $PT cat --format jsonl "$TESTDATA_DIR/list-map-layout.parquet" | format_jsonl > 
 # cat-map-key-types.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/map-key-types.parquet" | format_jsonl > "$GOLDEN_DIR/cat-map-key-types.jsonl"
 
+# cat-struct-map-keys.jsonl
+$PT cat --format jsonl "$TESTDATA_DIR/struct-map-keys.parquet" | format_jsonl > "$GOLDEN_DIR/cat-struct-map-keys.jsonl"
+
+# cat-struct-map-keys-raw.jsonl
+$PT cat --format jsonl --value-mode raw "$TESTDATA_DIR/struct-map-keys.parquet" | format_jsonl > "$GOLDEN_DIR/cat-struct-map-keys-raw.jsonl"
+
 # cat-row-group.jsonl
 $PT cat --format jsonl "$TESTDATA_DIR/row-group.parquet" | format_jsonl > "$GOLDEN_DIR/cat-row-group.jsonl"
 

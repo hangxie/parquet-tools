@@ -1162,8 +1162,8 @@ func TestCmdBsonMapKey(t *testing.T) {
 		expected string
 	}{
 		"direct-key": {new(directRow), directRow{Data: map[string]string{doc: "v"}}, `{"data":{"{}":"v"}}`},
-		"struct-key": {new(structRow), structRow{Data: map[docKey]string{{Doc: doc}: "v"}}, `{"data":{"map[doc:{}]":"v"}}`},
-		"nested-key": {new(nestedRow), nestedRow{Data: map[outerKey]string{{Inner: docKey{Doc: doc}}: "v"}}, `{"data":{"map[inner:map[doc:{}]]":"v"}}`},
+		"struct-key": {new(structRow), structRow{Data: map[docKey]string{{Doc: doc}: "v"}}, `{"data":{"{\"doc\":\"{}\"}":"v"}}`},
+		"nested-key": {new(nestedRow), nestedRow{Data: map[outerKey]string{{Inner: docKey{Doc: doc}}: "v"}}, `{"data":{"{\"inner\":{\"doc\":\"{}\"}}":"v"}}`},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
