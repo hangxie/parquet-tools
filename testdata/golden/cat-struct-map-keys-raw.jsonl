@@ -1,0 +1,16 @@
+{
+  "bytes_key": {
+    "{\"amount\":\"MDk=\",\"doc\":\"EAAAAAJiAAQAAAB0d28AAA==\",\"fixed\":\"/////////4U=\",\"float16\":\"ADw=\",\"json\":\"{\\\"k\\\":[1,2]}\",\"raw\":\"AP8=\",\"text\":\"{\\\"x\\\":1}\",\"uuid\":\"EjRWeJq83vASNFZ4mrze8A==\"}": "b1"
+  },
+  "nested_key": {
+    "{\"id\":1,\"inner\":{\"doc\":\"DAAAABBhAAEAAAAA\",\"x\":2}}": "n1"
+  }
+}
+{
+  "bytes_key": {
+    "{\"amount\":\"/w==\",\"doc\":\"BQAAAAA=\",\"fixed\":\"AAAAAAAAAAA=\",\"float16\":\"AMA=\",\"json\":\"\\\"s\\\"\",\"raw\":\"AQ==\",\"text\":\"plain\",\"uuid\":\"AAAAAAAAAAAAAAAAAAAAAQ==\"}": "b2"
+  },
+  "nested_key": {
+    "{\"id\":1,\"inner\":{\"doc\":\"DAAAABBhAAIAAAAA\",\"x\":3}}": "n2"
+  }
+}
