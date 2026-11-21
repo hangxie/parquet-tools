@@ -356,7 +356,7 @@ The Parquet specification requires a MAP key to be `required` and the first fiel
 | arrow-rs 60.1.0 | Map | Map | Map | Map |
 | hyparquet 1.33.1 | Map | Keys decoded as text, losing bytes such as `0xff` | Keys as strings: `"1"` | Every key becomes `"[object Object]"`, so distinct keys collide |
 
-`parquet-tools cat` writes a map as a JSON object, whose keys are always strings, so a non-string key appears as text. A struct key uses Go's formatting, which no reader parses back, and `parquet-tools schema --format go` fails on it with `type not set`.
+`parquet-tools cat` writes a map as a JSON object, whose keys are always strings, so a non-string key appears as text. A struct key uses a compact JSON object as its key string, such as `{"x":1,"y":2}`. Separately, `parquet-tools schema --format go` fails on it with `type not set`.
 
 Use STRING keys wherever possible. For BSON keys, `parquet-tools retype --bson-to-string` rewrites them as STRING keys.
 

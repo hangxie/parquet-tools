@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hangxie/parquet-go/v3/common"
+	"github.com/hangxie/parquet-go/v3/marshal"
 	"github.com/hangxie/parquet-go/v3/parquet"
 	"github.com/hangxie/parquet-go/v3/schema"
 	"github.com/hangxie/parquet-go/v3/types"
@@ -72,11 +73,15 @@ func rawMap(value reflect.Value, path string, handler *schema.SchemaHandler) (an
 		if err != nil {
 			return nil, err
 		}
+		keyString, err := marshal.FormatJSONMapKey(key)
+		if err != nil {
+			return nil, err
+		}
 		converted, err := rawValue(iter.Value(), entryPath+"Value", handler)
 		if err != nil {
 			return nil, err
 		}
-		result[fmt.Sprint(key)] = converted
+		result[keyString] = converted
 	}
 	return result, nil
 }
