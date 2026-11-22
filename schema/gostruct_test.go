@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"go/format"
+	"go/token"
+	"go/types"
 	"os"
 	"testing"
 
@@ -304,4 +306,81 @@ func TestGoStructNode(t *testing.T) {
 		prefix := fmt.Sprintf("type %s ", root.InNamePath[0])
 		require.Equal(t, string(expected), prefix+typeStr+"\n")
 	})
+}
+
+func TestGoStructMapKeys(t *testing.T) {
+	for _, fixture := range []string{"map-key-types", "struct-map-keys"} {
+		t.Run(fixture, func(t *testing.T) {
+			pr, err := pio.NewParquetFileReader(t.Context(), "../testdata/"+fixture+".parquet", pio.ReadOption{})
+			require.NoError(t, err)
+			defer func() { _ = pr.PFile.Close() }()
+			root, err := NewSchemaTree(t.Context(), pr, SchemaOption{})
+			require.NoError(t, err)
+			src, err := goStructNode{SchemaNode: *root}.String()
+			require.NoError(t, err)
+			_, err = types.Eval(token.NewFileSet(), nil, token.NoPos, src)
+			require.NoError(t, err)
+			require.Contains(t, src, "map[struct {")
+			require.Contains(t, src, "keytype=STRUCT")
+		})
+	}
+}
+
+func TestGoStructMapKeyShapes(t *testing.T) {
+	pr, err := pio.NewParquetFileReader(t.Context(), "../testdata/map-key-types.parquet", pio.ReadOption{})
+	require.NoError(t, err)
+	defer func() { _ = pr.PFile.Close() }()
+	root, err := NewSchemaTree(t.Context(), pr, SchemaOption{})
+	require.NoError(t, err)
+	field := func(parent *SchemaNode, name string) *SchemaNode {
+		t.Helper()
+		for _, child := range parent.Children {
+			if child.Name == name {
+				return child
+			}
+		}
+		t.Fatalf("missing field %q under %q", name, parent.Name)
+		return nil
+	}
+	for _, tc := range []struct {
+		name, column  string
+		repetition    parquet.FieldRepetitionType
+		list, variant bool
+		want, wantErr string
+	}{
+		{name: "optional scalar key", column: "string_key", repetition: parquet.FieldRepetitionType_OPTIONAL, want: "map[string]int32"},
+		{name: "required member", column: "struct_key", repetition: parquet.FieldRepetitionType_REQUIRED, want: "X int32"},
+		{name: "required variant", column: "struct_key", repetition: parquet.FieldRepetitionType_REQUIRED, variant: true, wantErr: "VARIANT MAP key field [Parquet_go_root.Struct_key.Key_value.Key.X] can hold a non-comparable Go value"},
+		{name: "optional variant", column: "struct_key", repetition: parquet.FieldRepetitionType_OPTIONAL, variant: true, wantErr: "VARIANT MAP key field [Parquet_go_root.Struct_key.Key_value.Key.X] can hold a non-comparable Go value"},
+		{name: "optional member", column: "struct_key", repetition: parquet.FieldRepetitionType_OPTIONAL, wantErr: "OPTIONAL MAP key field [Parquet_go_root.Struct_key.Key_value.Key.X] would compare by pointer address in Go"},
+		{name: "optional list", column: "struct_key", repetition: parquet.FieldRepetitionType_OPTIONAL, list: true, wantErr: "OPTIONAL MAP key field [Parquet_go_root.Struct_key.Key_value.Key.X] would compare by pointer address in Go"},
+		{name: "repeated member", column: "struct_key", repetition: parquet.FieldRepetitionType_REPEATED, wantErr: "MAP key field [Parquet_go_root.Struct_key.Key_value.Key.X] is not comparable in Go"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			column := field(root, tc.column).cloneForRendering()
+			target := field(field(column, "key_value"), "key")
+			if tc.column == "struct_key" {
+				target = field(target, "x")
+			}
+			if tc.variant {
+				target.Type = nil
+				target.LogicalType = &parquet.LogicalType{VARIANT: parquet.NewVariantType()}
+			}
+			if tc.list {
+				element := target.cloneForRendering()
+				element.RepetitionType = new(parquet.FieldRepetitionType_REPEATED)
+				target.Children = []*SchemaNode{element}
+				target.Type = nil
+				target.ConvertedType = new(parquet.ConvertedType_LIST)
+			}
+			target.RepetitionType = &tc.repetition
+			got, err := goStructNode{SchemaNode: *column}.String()
+			if tc.wantErr != "" {
+				require.EqualError(t, err, tc.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			require.Contains(t, got, tc.want)
+		})
+	}
 }
