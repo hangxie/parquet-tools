@@ -10,7 +10,8 @@ import (
 
 type goStructNode struct {
 	SchemaNode
-	ForceCamelCase bool
+	ForceCamelCase    bool
+	requireComparable bool
 }
 
 var goTypeStrMap = map[parquet.Type]string{
@@ -42,8 +43,9 @@ func (n goStructNode) asStruct() (string, error) {
 			return "", fmt.Errorf("invalid schema: nil child in [%s]", n.Name)
 		}
 		structStr, err := goStructNode{
-			SchemaNode:     *child,
-			ForceCamelCase: n.ForceCamelCase,
+			SchemaNode:        *child,
+			requireComparable: n.requireComparable,
+			ForceCamelCase:    n.ForceCamelCase,
 		}.stringWithName()
 		if err != nil {
 			return "", err
@@ -111,13 +113,18 @@ func (n goStructNode) asList() (string, error) {
 
 // asMap renders a node that isMap has already matched to the reader's key_value layout.
 func (n goStructNode) asMap() (string, error) {
-	keyChild := n.Children[0].Children[0]
+	keyChild := *n.Children[0].Children[0]
+	// Preserve scalar key output for files that mark a MAP key OPTIONAL.
+	if keyChild.Type != nil && keyChild.GetRepetitionType() == parquet.FieldRepetitionType_OPTIONAL {
+		keyChild.RepetitionType = new(parquet.FieldRepetitionType_REQUIRED)
+	}
 	valueChild := n.Children[0].Children[1]
 
 	keyStr, err := goStructNode{
-		SchemaNode:     *keyChild,
-		ForceCamelCase: n.ForceCamelCase,
-	}.asScalar()
+		SchemaNode:        keyChild,
+		requireComparable: true,
+		ForceCamelCase:    n.ForceCamelCase,
+	}.String()
 	if err != nil {
 		return "", err
 	}
@@ -132,18 +139,30 @@ func (n goStructNode) asMap() (string, error) {
 }
 
 func (n goStructNode) String() (string, error) {
+	isVariant := n.LogicalType != nil && n.LogicalType.IsSetVARIANT()
+	if n.requireComparable && isVariant {
+		return "", fmt.Errorf("VARIANT MAP key field [%s] can hold a non-comparable Go value", strings.Join(n.InNamePath, "."))
+	}
+
 	typePrefix := ""
 	switch n.GetRepetitionType() {
 	case parquet.FieldRepetitionType_OPTIONAL:
+		if n.requireComparable {
+			return "", fmt.Errorf("OPTIONAL MAP key field [%s] would compare by pointer address in Go", strings.Join(n.InNamePath, "."))
+		}
 		typePrefix = "*"
 	case parquet.FieldRepetitionType_REPEATED:
 		typePrefix = "[]"
 	}
 
+	if n.requireComparable && (n.isRepeated() || n.isList() || n.isMap()) {
+		return "", fmt.Errorf("MAP key field [%s] is not comparable in Go", strings.Join(n.InNamePath, "."))
+	}
+
 	var typeStr string
 	var err error
 	switch {
-	case n.LogicalType != nil && n.LogicalType.IsSetVARIANT():
+	case isVariant:
 		typeStr = "any"
 		if typePrefix == "*" {
 			typePrefix = ""

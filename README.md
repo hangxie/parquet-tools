@@ -1871,7 +1871,7 @@ $ parquet-tools schema --format raw testdata/good.parquet
 
 #### Go Struct Format
 
-go struct format generates go struct definition snippet that can be used in go:
+The Go format generates a struct definition with Parquet field tags. A MAP with a struct key uses an anonymous Go struct. Binary fields in the key use `string` to preserve their bytes and keep them comparable. The renderer rejects OPTIONAL fields inside struct keys because Go compares pointer fields by address. It also rejects VARIANT keys and VARIANT fields inside struct keys, including OPTIONAL VARIANT fields, because their values can include maps and slices.
 
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet
