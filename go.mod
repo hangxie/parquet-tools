@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.48.0
 	github.com/aws/aws-sdk-go-v2/config v1.33.19
 	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.5.9
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.115.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.116.0
 	github.com/aws/smithy-go v1.28.9
 	github.com/google/uuid v1.6.0
 	github.com/hangxie/parquet-go/v3 v3.13.3-0.20261121163137-69053113733b
